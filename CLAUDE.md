@@ -71,7 +71,10 @@ alive so `GamePlayer`'s jobs can re-roll randomness every frame instead of freez
 - **Utils/** — `BHSDKMath` (Unity-independent math, since the core assembly can't reference
   `UnityEngine.Mathf`), `DimensionalIndexer2` (flat-array↔2D-grid indexing), `LevelUtils`
   (`RectObject` id/parent/bounds setters), `LevelCapacityUtils` (sweep-line "peak simultaneous
-  objects per type" measurement backing `LevelHints.Limits` — see below), `ModelUtils`
+  objects per type" measurement backing `LevelHints.Limits` — see below), `LevelStatsUtils`
+  (`LevelStats`/`LevelObjectStats`/`LevelResourceStats` — what a level *holds*, one O(n) allocation-free
+  pass, for showing rather than for sizing; don't reach for it when you need `LevelCapacityUtils`'
+  peak-simultaneous answer, and don't reach for that one to fill a readout), `ModelUtils`
   (deep-copy/equality/hash helpers for `List`/`Dictionary`/`Array` of `ICopyable<T>`),
   `ModificationUtils`/`TypeExtensions`, `ShapeGeometryUtils` (+`ShapeGeometryReport`) — the single
   implementation of "what a valid shape is" and "how to make an invalid one valid", shared by
@@ -366,6 +369,14 @@ layer, converted once at load via `LevelStateBuilder`).
   Each effect's "enabled" state is encoded as `MixLevel > -80dB` (`AudioRules.IsActiveMixLevel`) —
   **no explicit bool per effect**. `LevelTrackEffects.Active` (track-level, default `false`) *is* an
   explicit bool — don't confuse the two.
+  **`LevelTrack.Volume` (`[0, 1]`, default `1`) is the track's own fader and the SECOND thing on it
+  called volume** - the first being `Effects.Volumes`, the keyframed curve. They MULTIPLY at playback
+  rather than compete (the consumer does it in `BuildAudioJob`): the fader is what the whole track
+  sits behind, the curve is what fades it in and out inside that, and an author wanting "this track,
+  quieter" should not have to rewrite every key on it. Additive with a constructor default, so it
+  needed no migration and `AudioLevel` stays at `(1, 0)` - a pre-fader file reads back at full
+  volume, which is exactly how it used to sound. Note this is the opposite call from `Speed`
+  below, whose pre-Speed default deserialized to a silent `0`.
   `LevelTrack.Speed` (`[-2, 2]`, default `1`) is the track's own resample rate — faster is also
   higher-pitched, negative **reverses** the track (it starts at the clip's END and plays back to its
   start, with `OffsetTime` skipping the tail rather than the head), `0` freezes it silent — and it
@@ -424,7 +435,23 @@ attribute sees one property at a time — and like every graph finding it carrie
 `LevelSettings` (`Level.Settings`, per-level: `Framerate`, `FrameDuration`, `ObjectIdCounter`,
 `AudioIdCounter` — the `IObjectIdCounter` implementation — and `Seed`) has nothing to do with the
 rest of this folder (`GeneralSettings`/`ControlsSettings`/`AudioSettings`/`GraphicsSettings`/
-`GameEditorSettings`), which are all sub-groups of `UserSettings` (per-device, `settings.json`).
+`GameEditorSettings`/`InterfaceSettings`), which are all sub-groups of `UserSettings` (per-device,
+`settings.json`).
+
+`InterfaceSettings` is the newest of them (the game's own overlays — today the diagnostics readout's
+`StatsActive` + `StatsAlignmentX`/`Y`) and shipped **without bumping the `UserSettings` domain**: an
+additive property whose constructor supplies a default needs no snapshot and no migrator, exactly like
+`LevelSettings.Seed` and `GameEvents.Beats`. Its alignment pair is two free `[0,1]` floats rather than
+a nine-value enum, because it is the same convention level content is authored in (`0,0` lower-left) —
+the settings screen offers the nine presets, a hand-edited value between them is legal data.
+`GameEditorSettings.GridSize`/`GridOpacity` (the editor's viewport grid — one world unit per cell
+and a quarter opacity by default, floored at `ValueRules.MinGridSize` and ranged `[0,1]`) shipped the
+same way and are worth reading as the worked example of what belongs here at all: how the grid LOOKS
+is how the author works and is remembered, while whether it is currently drawn is the current view
+and stays in the editor's session (`Services.GameEditor`'s `GridModeService`) — the same split the
+active gizmo has. Opacity is the only part of its colour anyone authors; the hue is derived from the
+camera background live, which is why there is no grid colour here.
+
 The `UserSettings` sub-groups additionally implement `IMoveable<T>` (`Pull(source)` — an in-place
 merge, distinct from `IModel<T>`'s `Copy`/`Reset`).
 

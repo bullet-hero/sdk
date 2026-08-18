@@ -43,6 +43,8 @@
         public const string Settings = "settings";
         public const string General = "general";
         public const string Graphics = "graphics";
+        public const string Interface = "iface";
+        public const string Stats = "stats";
         public const string Game = "game";
         public const string UI = "ui";
         public const string Audio = "audio";
@@ -509,6 +511,8 @@
         public const string Style = "style";
         public const string Default = "default";
         public const string Gizmos = "gizmos";
+        public const string Grid = "grid";
+        public const string Opacity = "opacity";
         public const string Reset = "reset";
         public const string Serialize = "serialize";
         public const string Copy = "copy";
@@ -535,8 +539,13 @@
         public const string ResourcesSerializeMode = Resources + _ + Serialize + _ + Mode;
         public const string CopySerializeMode = Copy + _ + Serialize + _ + Mode;
         public const string MultiSelectRequiresHold = Multi + _ + Selection + _ + Requires + _ + Hold;
+        public const string GridSize = Grid + _ + Size;
+        public const string GridOpacity = Grid + _ + Opacity;
         
         public const string GameEditor = Game + _ + Editor;
+        public const string StatsActive = Stats + _ + Active;
+        public const string StatsAlignmentX = Stats + _ + Alignment + _ + CoordX;
+        public const string StatsAlignmentY = Stats + _ + Alignment + _ + CoordY;
         public const string FramerateTarget = Framerate + _ + Target;
         public const string FixedFramerate = Fixed + _ + Framerate;
         public const string RenderEffects = Render + _ + Effects;
@@ -789,6 +798,7 @@
         public const string OrbitalVelocity = Orbital + _ + Velocity;
         public const string OrbitalCenterOffset = Orbital + _ + Center + _ + Offset;
         public const string VelocitySpeed = Velocity + _ + Speed;
+        public const string VelocityPoint = Velocity + _ + Point;
         public const string LinearForce = Linear + _ + Force;
         
         public const string RadiusMajor = Radius + _ + Major;

@@ -38,6 +38,19 @@ namespace BH.SDK.Rules
         public const int MinLayer = -1000;
         public const int MaxLayer = 1000;
         public const float MinLayerSelection = MaxLayer + MinLayerDelta;
+
+        // Between the two bands rather than beside them: the grid is a backdrop for the CONTENT, so
+        // it has to sit above every authored layer, and it is also the one overlay a gizmo handle is
+        // dragged across, so it has to sit below the handles. The selection band grows upwards from
+        // MinLayerSelection by MinLayerDelta per line, so this leaves it ~25k lines of room before
+        // the two could meet - the same reasoning that puts the gizmos at 1500.
+        public const int MinLayerGrid = 1250;
+
+        // The editor's viewport grid, whose cell size is a user preference (GameEditorSettings
+        // .GridSize) rather than level data - a floor rather than a range, since how far out an
+        // author zooms is what actually bounds it, and the overlay stops drawing on its own once the
+        // cells stop being distinguishable.
+        public const float MinGridSize = 0.001f;
         public const int MinLayerGizmos = 1500;
 
         // Not an authored limit and not validated by any rule - the camera has no Layer field. This
@@ -64,9 +77,16 @@ namespace BH.SDK.Rules
         public const float DefaultPosX = 0f;
         public const float DefaultPosY = 0f;
         
-        // 100^2 = 10000, apply to coord rules
-        public const float MinSca = -100f;
-        public const float MaxSca = 100f;
+        // A size is measured in the SAME world units a position is, so it gets the same range rather
+        // than one of its own: an object may legitimately be as long as the space it is placed in,
+        // and the old +-100 was a tenth of that with nothing behind the number. Real content proved
+        // it: levels converted from Afterbeat carry sizes to 820, and 5% of their objects broke a
+        // rule this format had no reason to hold them to.
+        //
+        // Derived rather than repeated, because the reason they agree is the point - a size that
+        // outgrew MinPos/MaxPos would be an object bigger than any coordinate can address.
+        public const float MinSca = MinPos;
+        public const float MaxSca = MaxPos;
         public const float DefaultScaX = 1f;
         public const float DefaultScaY = 1f;
         

@@ -1,5 +1,6 @@
 ﻿using System;
 using BH.SDK.Models.Interfaces;
+using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
 using BH.SDK.Serialization.Serializers;
 using Newtonsoft.Json;
@@ -60,6 +61,29 @@ namespace BH.SDK.Models.SettingGroups
         [JsonProperty(Names.GizmosResetOnPlayer)]
         public bool GizmosResetOnPlayer { get; set; }
 
+        // Viewport grid
+
+        // The grid's own visibility is NOT here, and that is the split: whether the lines are drawn
+        // right now is the current view, like the active gizmo, and lives in the session
+        // (GridModeService). How BIG a cell is describes how the author works - a level authored on
+        // a half-unit grid stays authored on one across sessions - so only that is remembered.
+
+        /// <summary> Side of one cell of the editor's viewport grid, in world units. </summary>
+        [RuleMin(ValueRules.MinGridSize)]
+        [JsonProperty(Names.GridSize)]
+        public float GridSize { get; set; }
+
+        // Alpha only, and deliberately the ONLY thing authored about the grid's colour: the hue is
+        // the inverse of whatever the camera is showing on the current frame, so the one decision
+        // left is how far the lines fade into it. The camera's OWN alpha never takes part - a level
+        // fading its background out would otherwise take the grid with it, and a guide that
+        // disappears while the content it guides is still on screen is worse than no guide.
+
+        /// <summary> Opacity of the editor viewport grid's lines. </summary>
+        [RuleInRange(0f, 1f)]
+        [JsonProperty(Names.GridOpacity)]
+        public float GridOpacity { get; set; }
+
         // Selection
 
         // Whether multi-selection is a MODIFIER or a MODE is a real preference, not a constant: on a
@@ -104,7 +128,8 @@ namespace BH.SDK.Models.SettingGroups
         }
         public GameEditorSettings(bool autosave, float autosaveRate, int maxAutosaveFiles,
             float cameraMinSize, float cameraMaxSize, bool playerActiveDefault, bool gizmosResetOnPlayer,
-            bool multiSelectRequiresHold, SerializationType levelSerializeMode,
+            bool multiSelectRequiresHold, float gridSize, float gridOpacity,
+            SerializationType levelSerializeMode,
             SerializationType resourcesSerializeMode, SerializationType copySerializeMode)
         {
             Autosave = autosave;
@@ -115,6 +140,8 @@ namespace BH.SDK.Models.SettingGroups
             PlayerActiveDefault = playerActiveDefault;
             GizmosResetOnPlayer = gizmosResetOnPlayer;
             MultiSelectRequiresHold = multiSelectRequiresHold;
+            GridSize = gridSize;
+            GridOpacity = gridOpacity;
             LevelSerializeMode = levelSerializeMode;
             ResourcesSerializeMode = resourcesSerializeMode;
             CopySerializeMode = copySerializeMode;
@@ -133,6 +160,8 @@ namespace BH.SDK.Models.SettingGroups
             PlayerActiveDefault = true;
             GizmosResetOnPlayer = true;
             MultiSelectRequiresHold = true;
+            GridSize = 1f;
+            GridOpacity = 0.25f;
             LevelSerializeMode = SerializationType.Json;
             ResourcesSerializeMode = SerializationType.Json;
             CopySerializeMode = SerializationType.Json;
@@ -140,7 +169,7 @@ namespace BH.SDK.Models.SettingGroups
 
         public object Clone() => Copy();
         public GameEditorSettings Copy() => new(Autosave, AutosaveRate, MaxAutosaveFiles, CameraMinSize,
-            CameraMaxSize, PlayerActiveDefault, GizmosResetOnPlayer, MultiSelectRequiresHold,
+            CameraMaxSize, PlayerActiveDefault, GizmosResetOnPlayer, MultiSelectRequiresHold, GridSize, GridOpacity,
             LevelSerializeMode, ResourcesSerializeMode, CopySerializeMode);
 
         public void Pull(GameEditorSettings source)
@@ -153,6 +182,8 @@ namespace BH.SDK.Models.SettingGroups
             PlayerActiveDefault = source.PlayerActiveDefault;
             GizmosResetOnPlayer = source.GizmosResetOnPlayer;
             MultiSelectRequiresHold = source.MultiSelectRequiresHold;
+            GridSize = source.GridSize;
+            GridOpacity = source.GridOpacity;
             LevelSerializeMode = source.LevelSerializeMode;
             ResourcesSerializeMode = source.ResourcesSerializeMode;
             CopySerializeMode = source.CopySerializeMode;
@@ -160,12 +191,12 @@ namespace BH.SDK.Models.SettingGroups
 
         public override bool Equals(object obj) => obj is GameEditorSettings value && Equals(value);
 
-        // HashCode.Combine takes at most 8 values, and this class holds 11 - the tail folds into the
+        // HashCode.Combine takes at most 8 values, and this class holds 13 - the tail folds into the
         // eighth slot rather than being dropped.
         public override int GetHashCode() => HashCode.Combine(Autosave, AutosaveRate, MaxAutosaveFiles,
             CameraMinSize, CameraMaxSize, PlayerActiveDefault, GizmosResetOnPlayer,
-            HashCode.Combine(MultiSelectRequiresHold, LevelSerializeMode, ResourcesSerializeMode,
-                CopySerializeMode));
+            HashCode.Combine(MultiSelectRequiresHold, GridSize, GridOpacity, LevelSerializeMode,
+                ResourcesSerializeMode, CopySerializeMode));
 
         public bool Equals(GameEditorSettings other)
         {
@@ -179,6 +210,8 @@ namespace BH.SDK.Models.SettingGroups
                    && PlayerActiveDefault == other.PlayerActiveDefault
                    && GizmosResetOnPlayer == other.GizmosResetOnPlayer
                    && MultiSelectRequiresHold == other.MultiSelectRequiresHold
+                   && GridSize.Equals(other.GridSize)
+                   && GridOpacity.Equals(other.GridOpacity)
                    && LevelSerializeMode == other.LevelSerializeMode
                    && ResourcesSerializeMode == other.ResourcesSerializeMode
                    && CopySerializeMode == other.CopySerializeMode;

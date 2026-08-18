@@ -92,6 +92,87 @@ namespace BH.SDK.Tests
             Assert.IsFalse(a.Equals(d));
         }
 
+        // The editor's viewport grid: only the CELL SIZE is remembered, never whether the lines are
+        // currently drawn - that is the session's business (GridModeService), the same split the
+        // active gizmo already has.
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.VeryEasy)]
+        public void GridSize_DefaultsToOneUnit()
+        {
+            var settings = new GameEditorSettings();
+            Assert.AreEqual(1f, settings.GridSize);
+
+            settings.GridSize = 0.25f;
+            settings.Reset();
+            Assert.AreEqual(1f, settings.GridSize);
+        }
+
+        // The grid's opacity is the ONLY part of its colour anyone authors - the hue is the inverse
+        // of the camera background of the current frame, resolved live by the editor.
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.VeryEasy)]
+        public void GridOpacity_DefaultsToAQuarter()
+        {
+            var settings = new GameEditorSettings();
+            Assert.AreEqual(0.25f, settings.GridOpacity);
+
+            settings.GridOpacity = 1f;
+            settings.Reset();
+            Assert.AreEqual(0.25f, settings.GridOpacity);
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Easy)]
+        public void GridSize_SurvivesCopyPullAndEquality()
+        {
+            var source = new GameEditorSettings { GridSize = 0.5f, GridOpacity = 0.8f };
+
+            var copy = source.Copy();
+            Assert.AreEqual(0.5f, copy.GridSize);
+            Assert.AreEqual(0.8f, copy.GridOpacity);
+            Assert.IsTrue(source.Equals(copy));
+
+            var pulled = new GameEditorSettings();
+            pulled.Pull(source);
+            Assert.AreEqual(0.5f, pulled.GridSize);
+            Assert.AreEqual(0.8f, pulled.GridOpacity);
+            Assert.AreEqual(source.GetHashCode(), pulled.GetHashCode());
+
+            // Two fields, seen independently - a Copy/Pull folding them together would pass the
+            // asserts above and still lose one of them.
+            var other = source.Copy();
+            other.GridSize = 2f;
+            Assert.IsFalse(source.Equals(other));
+
+            var dimmer = source.Copy();
+            dimmer.GridOpacity = 0.1f;
+            Assert.IsFalse(source.Equals(dimmer));
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Normal)]
+        public void Grid_SurvivesARoundTrip()
+        {
+            var service = new SerializationService(new SerializationSettings());
+
+            var settings = new UserSettings();
+            settings.GameEditor.GridSize = 0.125f;
+            settings.GameEditor.GridOpacity = 0.6f;
+
+            var restored = service.DeserializeData<UserSettings>(service.SerializeData(settings));
+
+            Assert.AreEqual(0.125f, restored.GameEditor.GridSize);
+            Assert.AreEqual(0.6f, restored.GameEditor.GridOpacity);
+        }
+
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]

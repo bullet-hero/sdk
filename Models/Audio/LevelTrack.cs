@@ -66,6 +66,19 @@ namespace BH.SDK.Models.Audio
         [JsonProperty(Names.Speed)]
         public float Speed { get; set; }
 
+        // The track's own level, and the SECOND thing called Volume on it - the first being
+        // Effects.Volumes, the keyframed one. They multiply rather than compete: this is the fader
+        // the whole track sits behind (set once, never animated), the keyframes are what fades it in
+        // and out over the level, and an author who only wants "this track a bit quieter" should not
+        // have to author a flat curve to say so. A general fader is also the one thing a keyframed
+        // track cannot express without rewriting every key it has.
+
+        /// <summary> Constant level multiplied into everything this track plays, keyframed volume
+        /// included. </summary>
+        [RuleInRange(AudioRules.MinVolume, AudioRules.MaxVolume)]
+        [JsonProperty(Names.Volume)]
+        public float Volume { get; set; }
+
         /// <summary> Mixing slot this track occupies, so simultaneous tracks stay separable
         /// (music / sfx / voice ...). Not a render layer - unrelated to RectObject.Layer. </summary>
         [RuleInRange(AudioRules.MinAudioLayer, AudioRules.MaxAudioLayer)]
@@ -91,18 +104,21 @@ namespace BH.SDK.Models.Audio
             Span = new FrameSpan();
             OffsetTime = AudioRules.OffsetTimeDefault;
             Speed = AudioRules.SpeedDefault;
+            Volume = AudioRules.VolumeDefault;
             AudioLayer = AudioRules.MinAudioLayer;
             Name = string.Empty;
             Effects = new LevelTrackEffects();
         }
         public LevelTrack(AudioId audioId, AudioResourceId audioResourceId, FrameSpan span,
-            float offsetTime, float speed, int audioLayer, string name, LevelTrackEffects effects)
+            float offsetTime, float speed, float volume, int audioLayer, string name,
+            LevelTrackEffects effects)
         {
             AudioId = audioId;
             AudioResourceId = audioResourceId;
             Span = span;
             OffsetTime = offsetTime;
             Speed = speed;
+            Volume = volume;
             AudioLayer = audioLayer;
             Name = name;
             Effects = effects;
@@ -114,6 +130,7 @@ namespace BH.SDK.Models.Audio
             Span = new FrameSpan();
             OffsetTime = AudioRules.OffsetTimeDefault;
             Speed = AudioRules.SpeedDefault;
+            Volume = AudioRules.VolumeDefault;
             AudioLayer = AudioRules.MinAudioLayer;
             Name = string.Empty;
             Effects.Reset();
@@ -121,11 +138,14 @@ namespace BH.SDK.Models.Audio
 
         public object Clone() => Copy();
         public LevelTrack Copy() => new(AudioId, AudioResourceId, Span,
-            OffsetTime, Speed, AudioLayer, Name, Effects.Copy());
+            OffsetTime, Speed, Volume, AudioLayer, Name, Effects.Copy());
 
         public override bool Equals(object obj) => obj is LevelTrack value && Equals(value);
+        // HashCode.Combine takes at most 8 values and this carries 9 - the tail folds into the
+        // eighth slot rather than being dropped.
         public override int GetHashCode() => HashCode.Combine(AudioId,
-            Span, OffsetTime, Speed, AudioResourceId, AudioLayer, Name, Effects);
+            Span, OffsetTime, Speed, AudioResourceId, AudioLayer, Name,
+            HashCode.Combine(Volume, Effects));
 
         public bool Equals(LevelTrack other)
         {
@@ -135,6 +155,7 @@ namespace BH.SDK.Models.Audio
                          && Span.Equals(other.Span)
                          && OffsetTime.Equals(other.OffsetTime)
                          && Speed.Equals(other.Speed)
+                         && Volume.Equals(other.Volume)
                          && AudioResourceId.Equals(other.AudioResourceId)
                          && AudioLayer.Equals(other.AudioLayer)
                          && Name.Equals(other.Name)

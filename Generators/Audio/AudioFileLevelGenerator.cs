@@ -71,7 +71,8 @@ namespace BH.SDK.Generators.Audio
             var audioId = level.Settings.GetNextAudioId();
             level.Audio.Tracks[audioId] = new LevelTrack(audioId, resourceId,
                 new FrameSpan(FrameRules.MinFrame, level.Settings.FrameDuration), parameters.OffsetSeconds,
-                AudioRules.SpeedDefault, AudioRules.MinAudioLayer, TrackName(parameters), new LevelTrackEffects());
+                AudioRules.SpeedDefault, AudioRules.VolumeDefault, AudioRules.MinAudioLayer,
+                TrackName(parameters), new LevelTrackEffects());
 
             var meta = new LevelMeta
             {

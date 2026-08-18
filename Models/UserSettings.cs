@@ -39,6 +39,16 @@ namespace BH.SDK.Models
         [JsonProperty(Names.Graphics)]
         public GraphicsSettings Graphics { get; set; }
 
+        // Added after the domain was already at 1.0 and deliberately does NOT bump it: a settings.json
+        // written before this group existed simply has no "iface" key, and Newtonsoft leaves the
+        // constructor's defaults in place. That is the same call the Controls group's removed property
+        // made - an additive property with a default needs no snapshot and no migrator.
+
+        /// <summary> Interface overlays the game draws over every screen. </summary>
+        [RuleNotNull]
+        [JsonProperty(Names.Interface)]
+        public InterfaceSettings Interface { get; set; }
+
         /// <summary> In-game level editor preferences. Present even for players who never open the
         /// editor - the file has a fixed shape. </summary>
         [RuleNotNull]
@@ -52,15 +62,18 @@ namespace BH.SDK.Models
             Audio = new AudioSettings();
             Graphics = new GraphicsSettings();
             GameEditor = new GameEditorSettings();
+            Interface = new InterfaceSettings();
         }
         public UserSettings(GeneralSettings general, ControlsSettings controls,
-            AudioSettings audio, GraphicsSettings graphics, GameEditorSettings gameEditor)
+            AudioSettings audio, GraphicsSettings graphics, GameEditorSettings gameEditor,
+            InterfaceSettings interfaceSettings)
         {
             General = general;
             Controls = controls;
             Audio = audio;
             Graphics = graphics;
             GameEditor = gameEditor;
+            Interface = interfaceSettings;
         }
         public void Reset()
         {
@@ -69,11 +82,12 @@ namespace BH.SDK.Models
             Audio.Reset();
             Graphics.Reset();
             GameEditor.Reset();
+            Interface.Reset();
         }
 
         public object Clone() => Copy();
         public UserSettings Copy() => new(General.Copy(), Controls.Copy(),
-            Audio.Copy(), Graphics.Copy(), GameEditor.Copy());
+            Audio.Copy(), Graphics.Copy(), GameEditor.Copy(), Interface.Copy());
         
         public void Pull(UserSettings source)
         {
@@ -82,6 +96,7 @@ namespace BH.SDK.Models
             Audio.Pull(source.Audio);
             Graphics.Pull(source.Graphics);
             GameEditor.Pull(source.GameEditor);
+            Interface.Pull(source.Interface);
         }
 
         public bool Equals(UserSettings other)
@@ -92,10 +107,11 @@ namespace BH.SDK.Models
                    && Controls.Equals(other.Controls)
                    && Audio.Equals(other.Audio)
                    && Graphics.Equals(other.Graphics)
-                   && GameEditor.Equals(other.GameEditor);
+                   && GameEditor.Equals(other.GameEditor)
+                   && Interface.Equals(other.Interface);
         }
         
         public override bool Equals(object obj) => obj is UserSettings value && Equals(value);
-        public override int GetHashCode() => HashCode.Combine(General, Controls, Audio, Graphics, GameEditor);
+        public override int GetHashCode() => HashCode.Combine(General, Controls, Audio, Graphics, GameEditor, Interface);
     }
 }
