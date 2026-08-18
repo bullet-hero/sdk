@@ -1,4 +1,5 @@
 ﻿using System;
+using BH.SDK.Models.Enums;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Models.Interfaces.Values;
 using BH.SDK.Models.Values;
@@ -37,19 +38,37 @@ namespace BH.SDK.Models.Events
         [JsonProperty(Names.Color)]
         public IColor4 Color4 { get; set; }
 
+        /// <summary> Where a retry puts the player, read in <see cref="Space"/>. Polymorphic like
+        /// every other authored point, so a checkpoint can scatter its respawn. </summary>
+        [RuleNotNull(typeof(Vector2Value)), RuleIVector2InRange(ValueRules.MinPos, ValueRules.MaxPos)]
+        [JsonProperty(Names.Position)]
+        public IVector2 Position { get; set; }
+
+        /// <summary> How <see cref="Position"/> is interpreted. </summary>
+        [RuleEnumValid]
+        [JsonProperty(Names.Space)]
+        public CheckpointSpace Space { get; set; }
+
         public Checkpoint()
         {
             Frame = FrameRules.MinFrame;
             Name = string.Empty;
             Active = true;
             Color4 = Color4Value.white;
+            Position = Vector2Value.Zero;
+            Space = CheckpointSpace.World;
         }
         public Checkpoint(string name, bool active, IColor4 color4, int frame)
+            : this(name, active, color4, frame, Vector2Value.Zero, CheckpointSpace.World) { }
+        public Checkpoint(string name, bool active, IColor4 color4, int frame,
+            IVector2 position, CheckpointSpace space)
         {
             Frame = frame;
             Name = name;
             Active = active;
             Color4 = color4;
+            Position = position;
+            Space = space;
         }
         public void Reset()
         {
@@ -57,13 +76,15 @@ namespace BH.SDK.Models.Events
             Name = string.Empty;
             Active = true;
             Color4 = Color4Value.white;
+            Position = Vector2Value.Zero;
+            Space = CheckpointSpace.World;
         }
 
         public object Clone() => Copy();
-        public Checkpoint Copy() => new(Name, Active, Color4.Copy(), Frame);
+        public Checkpoint Copy() => new(Name, Active, Color4.Copy(), Frame, Position.Copy(), Space);
 
         public override bool Equals(object obj) => obj is Checkpoint value && Equals(value);
-        public override int GetHashCode() => HashCode.Combine(Frame, Name, Active, Color4);
+        public override int GetHashCode() => HashCode.Combine(Frame, Name, Active, Color4, Position, Space);
 
         public bool Equals(Checkpoint other)
         {
@@ -72,7 +93,9 @@ namespace BH.SDK.Models.Events
             var result = Frame.Equals(other.Frame)
                          && Name.Equals(other.Name)
                          && Active == other.Active
-                         && Color4.Equals(other.Color4);
+                         && Color4.Equals(other.Color4)
+                         && Position.Equals(other.Position)
+                         && Space == other.Space;
             return result;
         }
     }

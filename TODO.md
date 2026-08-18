@@ -1,6 +1,6 @@
 ﻿Serialization
 - verify SerializationService stability/correctness across all keyframe/value/effect type combinations (round-trip tests + real saved level files), especially after the IRequiresDefaultSerializer refactor
-- model versioning core is implemented (DataVersionAttribute + VersionedTypeRegistry + VersionedEnvelopeConverter, replacing CompatibilityService/SaveData<T>/JsonConverterData<T>) - see VERSION-UPDATE.md for what's still open: nested/optional aggregates below the six SaveData kinds (e.g. splitting Level into Settings/Game/Audio/Resources envelopes), the first real migrator once a version actually needs to bump, and Project Arrhythmya import
+- model versioning core is implemented (DataVersionAttribute + VersionedTypeRegistry + VersionedEnvelopeConverter, replacing CompatibilityService/SaveData<T>/JsonConverterData<T>) - see VERSION-UPDATE.md for what's still open: nested/optional aggregates below the six SaveData kinds (e.g. splitting Level into Settings/Game/Audio/Resources envelopes), and the first real migrator once a version actually needs to bump (Project Arrhythmya import is done and lives in Interop/AfterBeat, deliberately outside the versioning system - a foreign format is not a generation of this one)
 
 Licensing
 - Add mail for "notice-and-takedown" process, for UGC content and DMCA complience
