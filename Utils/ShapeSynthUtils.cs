@@ -125,6 +125,213 @@ namespace BH.SDK.Utils
 
         #endregion
 
+        #region Rounded shapes
+
+        // A polygon with ROUNDED CORNERS, which is a different generator rather than a nicety: each
+        // corner becomes a quadratic Bezier fillet, so the point count multiplies and a six-sided
+        // shape stops reading as a hexagon and starts reading as a squircle. It exists because a
+        // foreign format has it - Afterbeat's custom polygon rounds by default - and building those
+        // sharp is the difference between a shape that is recognisably the same and one that is
+        // recognisably blockier, which no amount of side count fixes.
+        //
+        // THE FILLET RESOLUTION IS NOT FIXED, and cannot be. This format caps a shape at
+        // ValueRules.MaxShapeTriangles, and a filleted corner costs points per corner on both loops
+        // of a ring - so a twelve-sided rounded ring at five points a corner wants 120 triangles for
+        // a 64-triangle budget. Rather than refuse the shape or silently drop the rounding, the
+        // fillet is thinned until it fits: five points a corner where there is room, fewer where
+        // there is not, one being a sharp corner again. A shape that has to degrade degrades in
+        // smoothness, which is the least visible thing about it.
+
+        /// <summary> Points a fully resolved corner fillet is drawn with. </summary>
+        public const int MaxFilletPoints = 5;
+
+        /// <summary>
+        /// Rounded regular polygon, ring or slice - the general case of all three. A
+        /// <paramref name="thickness"/> of 1 is filled and anything less is a ring of that width;
+        /// <paramref name="turns"/> is the fraction of a full turn covered, 1 being closed;
+        /// <paramref name="roundness"/> is the fillet size as a fraction of the radius, 0 being
+        /// sharp corners. <paramref name="radius"/> lets a caller inscribe the shape by something
+        /// other than its circumradius, and is scaled down when the result would leave the box.
+        /// </summary>
+        public static CompositeShape RoundedShape(ShapeId shapeId, string name, int sides,
+            float roundness, float thickness, float turns,
+            float radius = Radius, bool halfStepPhase = false)
+        {
+            sides = BHSDKMath.Clamp(sides, MinSides, ValueRules.MaxShapeTriangles);
+            roundness = BHSDKMath.Clamp(roundness, 0f, 1f);
+            thickness = BHSDKMath.Clamp(thickness, 0.01f, 1f);
+            turns = BHSDKMath.Clamp(turns, 0.001f, 1f);
+            radius = FitRadius(radius, sides, halfStepPhase);
+
+            var filled = thickness >= 1f;
+            var closed = turns >= 1f;
+            var segments = closed ? sides : Math.Max(1, (int)Math.Round(sides * turns));
+
+            var fillet = ResolveFilletPoints(roundness, segments, filled);
+            var outer = BuildRim(sides, segments, closed, fillet, roundness, radius, halfStepPhase);
+            if (outer.Count < ValueRules.MinShapeVertices && !filled) return null;
+
+            return filled
+                ? BuildFan(shapeId, name, outer, closed)
+                : BuildStrip(shapeId, name, outer,
+                    BuildRim(sides, segments, closed, fillet, roundness * (1f - thickness),
+                        radius * (1f - thickness), halfStepPhase),
+                    closed);
+        }
+
+        // A polygon is inscribed by its CIRCUMRADIUS, so the radius that makes it fill the box is
+        // not the same number for every side count - a square needs sqrt(2)/2 to have its corners on
+        // the box, a hexagon needs exactly a half. A caller passing a radius the box cannot hold
+        // gets the shape scaled to fit rather than clipped: Sanitize clamps a stray point onto the
+        // boundary, which flattens the corner it belonged to instead of shrinking the shape.
+        /// <summary> The radius a polygon can actually be drawn at without leaving the box - the
+        /// requested one, or as much of it as fits. Public because a caller that has to compensate
+        /// for the shrink elsewhere needs to know it happened. </summary>
+        public static float FitRadius(float radius, int sides, bool halfStepPhase)
+        {
+            radius = BHSDKMath.Clamp(radius, 0.01f, 4f);
+
+            var extent = 0.0;
+            for (var i = 0; i < sides; i++)
+            {
+                var angle = CornerAngle(i, sides, halfStepPhase);
+                extent = Math.Max(extent, Math.Abs(Math.Sin(angle)));
+                extent = Math.Max(extent, Math.Abs(Math.Cos(angle)));
+            }
+
+            var reach = radius * (float)extent;
+            return reach > Radius ? radius * (Radius / reach) : radius;
+        }
+
+        // Where a rounded polygon's corner i sits, in the angle OnCircle takes - which measures from
+        // straight up and turns clockwise, while every polygon convention worth matching measures
+        // from straight down and turns anticlockwise. Hence the half turn and the subtraction: they
+        // are the change of basis between the two, not a fudge.
+        //
+        // Both halves matter and for different reasons. The HALF STEP is what puts a corner at the
+        // top of an odd-sided shape - a triangle built without it points down, and the set of
+        // corners is only symmetric enough to hide that on even side counts. The DIRECTION only
+        // shows on a slice: a full polygon covers the same corners either way round, while a slice
+        // starting at the same corner and sweeping the other way is the mirror sector.
+        private static double CornerAngle(int index, int sides, bool halfStepPhase)
+        {
+            var step = 2.0 * Math.PI / sides;
+            var start = Math.PI - (halfStepPhase ? step * 0.5 : 0.0);
+            return start - index * step;
+        }
+
+        private static int ResolveFilletPoints(float roundness, int segments, bool filled)
+        {
+            if (roundness <= 0f) return 1;
+
+            // A filled fan costs one triangle per rim point; a ring costs two.
+            var budget = filled ? ValueRules.MaxShapeTriangles : ValueRules.MaxShapeTriangles / 2;
+            var affordable = segments > 0 ? budget / segments : MaxFilletPoints;
+            return BHSDKMath.Clamp(affordable, 1, MaxFilletPoints);
+        }
+
+        // One loop of the shape. The corners themselves are the polygon's; what is emitted per
+        // corner is either the corner (sharp) or a fillet across it, and an OPEN shape keeps both of
+        // its cut ends sharp - they are where the slice was made, not corners of the polygon.
+        private static List<Vector2Value> BuildRim(int sides, int segments, bool closed,
+            int filletPoints, float roundness, float radius, bool halfStepPhase)
+        {
+            var corners = new List<Vector2Value>(segments + 1);
+            for (var i = 0; i <= segments; i++)
+                corners.Add(OnCircle(CornerAngle(i, sides, halfStepPhase), radius));
+
+            var rim = new List<Vector2Value>((segments + 1) * filletPoints);
+            var inset = radius * roundness;
+
+            for (var i = 0; i < segments; i++)
+            {
+                var corner = corners[i];
+                if (filletPoints <= 1 || inset <= 0f || (!closed && i == 0))
+                {
+                    rim.Add(corner);
+                    continue;
+                }
+
+                var previous = closed ? corners[(i - 1 + segments) % segments] : corners[i - 1];
+                var next = corners[i + 1];
+
+                var from = Towards(corner, previous, inset);
+                var to = Towards(corner, next, inset);
+
+                for (var k = 0; k < filletPoints; k++)
+                    rim.Add(QuadraticBezier(from, corner, to, k / (float)(filletPoints - 1)));
+            }
+
+            if (!closed) rim.Add(corners[segments]);
+            return rim;
+        }
+
+        private static CompositeShape BuildFan(ShapeId shapeId, string name,
+            List<Vector2Value> rim, bool closed)
+        {
+            var vertices = new List<Vector2Value>(rim.Count + 1) { new(0f, 0f) };
+            vertices.AddRange(rim);
+
+            var spans = closed ? rim.Count : rim.Count - 1;
+            var indices = new List<int>(spans * 3);
+            for (var i = 0; i < spans; i++)
+            {
+                indices.Add(0);
+                indices.Add(1 + (i + 1) % rim.Count);
+                indices.Add(1 + i);
+            }
+            return Build(shapeId, name, vertices, indices);
+        }
+
+        private static CompositeShape BuildStrip(ShapeId shapeId, string name,
+            List<Vector2Value> outer, List<Vector2Value> inner, bool closed)
+        {
+            var count = Math.Min(outer.Count, inner.Count);
+            if (count < 2) return null;
+
+            var vertices = new List<Vector2Value>(count * 2);
+            for (var i = 0; i < count; i++)
+            {
+                vertices.Add(outer[i]);
+                vertices.Add(inner[i]);
+            }
+
+            var spans = closed ? count : count - 1;
+            var indices = new List<int>(spans * 6);
+            for (var i = 0; i < spans; i++)
+            {
+                var o0 = i * 2;
+                var i0 = i * 2 + 1;
+                var o1 = (i + 1) % count * 2;
+                var i1 = (i + 1) % count * 2 + 1;
+
+                indices.Add(o0); indices.Add(i1); indices.Add(o1);
+                indices.Add(o0); indices.Add(i0); indices.Add(i1);
+            }
+            return Build(shapeId, name, vertices, indices);
+        }
+
+        private static Vector2Value Towards(Vector2Value from, Vector2Value to, float distance)
+        {
+            var dx = to.X - from.X;
+            var dy = to.Y - from.Y;
+            var length = (float)Math.Sqrt(dx * dx + dy * dy);
+            if (length <= float.Epsilon) return new Vector2Value(from.X, from.Y);
+
+            var scale = Math.Min(distance, length * 0.5f) / length;
+            return new Vector2Value(from.X + dx * scale, from.Y + dy * scale);
+        }
+
+        private static Vector2Value QuadraticBezier(Vector2Value a, Vector2Value b, Vector2Value c, float t)
+        {
+            var u = 1f - t;
+            return new Vector2Value(
+                u * u * a.X + 2f * u * t * b.X + t * t * c.X,
+                u * u * a.Y + 2f * u * t * b.Y + t * t * c.Y);
+        }
+
+        #endregion
+
         #region Arrows
 
         /// <summary>
