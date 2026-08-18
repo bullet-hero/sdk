@@ -303,6 +303,19 @@ type's own plain members without recursively re-wrapping them — see `IRequires
 implying otherwise). `SerializationService.GetConverters` auto-wires this for any converter
 implementing the interface — adding a new polymorphic-value converter needs no other bookkeeping.
 
+**What a serializer actually holds is two converters, not thirty-five.** Newtonsoft resolves a
+settings-level converter by walking `JsonSerializer.Converters` and calling `CanConvert` on each,
+once per **value**, caching nothing — so a long list is paid for on every value in the file, and
+`JsonConverter<T>.CanConvert` is `sealed`, so a converter cannot memoize its own answer. The list in
+`GetConverters` is therefore handed to a `ConverterRouter` (`Converters/Base/`), which resolves
+`Type → converter` once and answers from a cache afterwards; first match wins over the same list in
+the same order, so **order still decides which converter handles a type, and adding one works
+exactly as before**. `VersionedEnvelopeConverter` is the one that cannot be routed and sits in the
+list beside the router: its `CanConvert` answers differently depending on which domain is currently
+being written (the `_activeDomains` guard, which is what stops it re-wrapping its own payload), and a
+per-type cache cannot express that. Each `IRequiresDefaultSerializer`'s private serializer gets its
+own router, since each excludes a different converter.
+
 Same 2-element-array mechanism backs several other polymorphic families beyond the table above:
 `EffectAngleConverter`/`EffectColorConverter`/`EffectScaleConverter`/`EffectShapeConverter`/
 `EffectShapeSpreadConverter` (effect emitter sub-shapes, see "Effects" below), `Color4X4KeyConverter`
@@ -553,6 +566,23 @@ untyped payload) — `JsonDataSerializer`/`BsonDataSerializer` share all envelop
 `SerializationType` is `byte`-backed (`Json=0, Bson=1, JsonPretty=2`);
 `SerializationTypeExtensions.ToFileExtension`/`TryFromFileExtension` map `.json`/`.bson`.
 
+**Nothing on the read path materializes a `JToken` tree, and that is a rule, not an implementation
+detail.** A version has to be known before the payload can be typed, and reading it used to mean
+loading the whole document into a `JObject` and walking that tree a second time to deserialize — per
+domain, and domains nest, so a `Level`'s tree was cloned again for `GameLevel`, again for each of the
+four event aggregates, and again for **every** `Prefab` in its resources. `DeserializeEnvelope` now
+makes two streaming passes (the first stops at the version property, only the second reads content)
+and `VersionedEnvelopeConverter.ReadJson` reads envelope properties straight off the reader. Since
+`WriteJson` emits the version first, the ordinary document buffers nothing at all; a document whose
+value happens to come first (hand-edited, or written by another tool) is still read correctly, by
+buffering that one subtree until the version that types it arrives. `Tests/SerializationPerformance
+Tests` pins both formats.
+
+**BSON is not the fast format here, and it was measured.** On a 4.7k-object level it reads ~5% faster
+than JSON while writing a file ~30% *larger* — what dominates is Newtonsoft binding members by
+reflection, which both formats pay identically, not tokenizing. Choose between them for what they are
+(one is readable and diffable, the other is not), not for speed.
+
 **`JsonPretty` is a write-only distinction and `Formatting` lives on the MODE, not on the settings.**
 It writes the same document as `Json` with indentation, shares its `.json` extension, and is read by
 the same reader — so `TryFromFileExtension` resolves `.json` to `Json` alone, deliberately: nothing
@@ -656,10 +686,19 @@ interfaces, switching per concrete variant to check/clamp.
 hardcoded to `Level`) and returns `List<RuleIssue>`; `RuleFixer` applies fixes **in reverse trace
 order** deliberately (fixing may invalidate/shift deeper issues). `RuleIssue`/`RulePath` carry the
 full trace from root to the failing property (including list index / dict key) so a fix knows exactly
-where to write. **This whole system is opt-in library code — nothing in the SDK or the Unity project
-currently calls `RuleAnalyzer`/`RuleFixer` outside the SDK's own tests.** If a consumer (e.g. the
-in-game editor, before allowing a save) wants validation, it has to call this explicitly; there is no
-automatic hook on load/save today.
+where to write. **The analyzer logs nothing** — an issue used to go to the console the moment it was
+found, on top of whatever the caller did with the returned list, so a level breaking one rule on
+every object paid for each finding twice in Editor stack traces; what to do about a report is
+`ValidationFacade`'s caller's policy.
+
+**The walk is on a level's load path**, so its per-node cost is that level's load time: the Unity
+project's `LevelLoaderService.LoadLevel` runs `ValidationFacade.Validate` on every level it reads
+(reporting only — it never refuses or repairs). Two things it therefore must not do per node, both
+removed after measuring ~1.3 s on a 4.7k-object level: query `[RuleContainer]` uncached (a Mono
+custom-attribute lookup allocates a fresh attribute instance every call), and read a property whose
+value can lead nowhere. `RuleContainerAttribute` is `AttributeTargets.Class`, so a value type — or a
+collection of value types, since the walk only descends into items/values — is a proven dead end and
+is never fetched at all. `Tests/RuleAnalyzerPerformanceTests` pins the result.
 
 `Roslyn/RuleContainerAnalyzer.cs` (separate `BulletHeroSDK.Roslyn` asmdef, `#if BHSDK_ROSLYN`-gated,
 so inert inside the Unity project) enforces at compile time that every `[RuleContainer]` class is

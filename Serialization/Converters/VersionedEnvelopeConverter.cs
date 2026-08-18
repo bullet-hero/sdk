@@ -53,6 +53,14 @@ namespace BH.SDK.Serialization.Converters
             writer.WriteEndObject();
         }
 
+        // Read straight off the reader, one envelope property at a time, instead of loading the
+        // envelope into a JObject first. The old shape cost a materialized JToken tree PER DOMAIN,
+        // and domains nest: a Level's own tree was cloned again for GameLevel, again for each of the
+        // four event aggregates, and again for every Prefab in its resources - each clone one JToken
+        // per value in that subtree. WriteJson emits the version first, so the ordinary document
+        // needs nothing buffered at all; a document that happens to carry the value first (hand
+        // edited, or written by another tool) is still read correctly, by buffering that one subtree
+        // until the version that types it arrives.
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
             if (reader.TokenType == JsonToken.Null) return null;
@@ -60,24 +68,65 @@ namespace BH.SDK.Serialization.Converters
                 throw new JsonSerializationException($"Expected start of versioned envelope for '{objectType}'");
 
             var domain = VersionedTypeRegistry.GetDomain(objectType);
-            var jObject = JObject.Load(reader);
 
-            // load version
-            var versionToken = jObject[Names.Version];
-            if (versionToken == null)
+            var hasVersion = false;
+            Version version = default;
+            object raw = null;
+            JToken pendingValue = null;
+
+            while (reader.Read() && reader.TokenType == JsonToken.PropertyName)
+            {
+                var propertyName = (string)reader.Value;
+                if (!reader.Read())
+                    throw new JsonSerializationException($"Truncated versioned envelope for domain '{domain}'");
+
+                if (propertyName == Names.Version)
+                {
+                    version = serializer.Deserialize<Version>(reader);
+                    hasVersion = true;
+
+                    if (pendingValue != null)
+                    {
+                        raw = ReadPayload(pendingValue, domain, version, serializer);
+                        pendingValue = null;
+                    }
+                }
+                else if (propertyName == Names.Value)
+                {
+                    if (hasVersion) raw = ReadPayload(reader, domain, version, serializer);
+                    else pendingValue = JToken.Load(reader);
+                }
+                else reader.Skip();
+            }
+
+            if (!hasVersion)
                 throw new JsonSerializationException($"Missing '{Names.Version}' property for domain '{domain}'");
-            var version = versionToken.ToObject<Version>(serializer);
+
+            return VersionedTypeRegistry.UpgradeToLatest(domain, raw, version.Major, version.Minor);
+        }
+
+        private object ReadPayload(JsonReader reader, string domain, Version version, JsonSerializer serializer)
+        {
+            if (reader.TokenType == JsonToken.Null) return null;
 
             var concreteType = VersionedTypeRegistry.Resolve(domain, version.Major, version.Minor);
 
-            var valueToken = jObject[Names.Value];
-            
             _activeDomains.Add(domain);
-            var raw = valueToken?.ToObject(concreteType, serializer);
+            var raw = serializer.Deserialize(reader, concreteType);
             _activeDomains.Remove(domain);
+            return raw;
+        }
 
-            // load and convert version type
-            return VersionedTypeRegistry.UpgradeToLatest(domain, raw, version.Major, version.Minor);
+        private object ReadPayload(JToken token, string domain, Version version, JsonSerializer serializer)
+        {
+            if (token == null || token.Type == JTokenType.Null) return null;
+
+            var concreteType = VersionedTypeRegistry.Resolve(domain, version.Major, version.Minor);
+
+            _activeDomains.Add(domain);
+            var raw = token.ToObject(concreteType, serializer);
+            _activeDomains.Remove(domain);
+            return raw;
         }
     }
 }

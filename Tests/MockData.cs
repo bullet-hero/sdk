@@ -535,6 +535,49 @@ namespace BH.SDK.Tests
             return new CompositeShape(shapeId, shapeName, vertices, indices);
         }
 
+        // Sized off a real imported level (~4.7k objects, ~30k keyframes, 33 prefab templates) so
+        // the performance fixtures measure something the format actually meets. Deliberately
+        // rule-valid and deliberately monotonous: what is being measured is cost per node, so every
+        // object being the same shape is a feature, not a shortcut.
+
+        /// <summary> A level of realistic heavy-level magnitude, for the performance fixtures. </summary>
+        public static Level CreateLargeTestLevel(int objectCount, int prefabCount, int prefabObjectCount)
+        {
+            var level = new Level();
+            level.Settings.Framerate = 60;
+            level.Settings.ObjectIdCounter = objectCount + 1;
+
+            for (var i = 1; i <= objectCount; i++)
+                level.Game.Objects.Add(new ObjectId(i), CreateLargeTestShape(i));
+
+            for (var p = 0; p < prefabCount; p++)
+            {
+                var prefab = new Prefab { PrefabId = PrefabId.NewGuid(), ObjectIdCounter = prefabObjectCount + 1 };
+                for (var i = 1; i <= prefabObjectCount; i++)
+                    prefab.Objects.Add(new ObjectId(i), CreateLargeTestShape(i));
+                level.Resources.Prefabs.Add(prefab.PrefabId, prefab);
+            }
+
+            return level;
+        }
+
+        private static ShapeObject CreateLargeTestShape(int id)
+        {
+            var shape = new ShapeObject
+            {
+                ObjectId = new ObjectId(id),
+                Span = new FrameSpan(id % 600, 120),
+            };
+            shape.Positions.Add(new PosKey());
+            shape.Rotations.Add(new AngleKey());
+            shape.Scales.Add(new ScaKey());
+            shape.Sizes.Add(new ScaKey());
+            shape.AnchorsMin.Add(new AlignmentKey());
+            shape.AnchorsMax.Add(new AlignmentKey());
+            shape.Pivots.Add(new AlignmentKey());
+            return shape;
+        }
+
         public static UserSettings CreateValidTestSettings()
         {
             var settings = new UserSettings

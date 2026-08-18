@@ -66,12 +66,24 @@ namespace BH.SDK.Serialization
             Serializer = JsonSerializer.Create(settings);
         }
 
+        // The list below is not what a serializer ends up holding: it is handed to a ConverterRouter,
+        // and the serializer holds that one plus VersionedEnvelopeConverter. Newtonsoft asks every
+        // converter in a serializer's list whether it can convert, once per value and cached nowhere,
+        // so a list this long is paid for on every number in the file - see ConverterRouter's header
+        // for what that measured. Order still decides which converter wins a type, and the router
+        // preserves it exactly, so adding a converter here works the same as it always did.
+        //
+        // VersionedEnvelopeConverter is the one that cannot be routed: its CanConvert answers
+        // differently depending on which domain is currently being written, which is what stops it
+        // re-wrapping its own payload, and a per-type cache cannot express that.
+
+        /// <summary> Builds the converter set a serializer needs, already routed. </summary>
         public static List<JsonConverter> GetConverters(JsonSerializerSettings settingsDefault)
         {
+            var versionedEnvelope = new VersionedEnvelopeConverter();
             var converters = new List<JsonConverter>
             {
                 new VersionConverter(),
-                new VersionedEnvelopeConverter(),
 
                 new DictionaryObjectsConverter(),
                 new DictionaryAudiosConverter(),
@@ -117,19 +129,25 @@ namespace BH.SDK.Serialization
             // private "default" JsonSerializer to populate that concrete type's own members (see
             // IRequiresDefaultSerializer for why). Wired automatically here, so adding a new converter of
             // that kind to the list above is the only step a future change needs - nothing here has to change.
+            // Each gets its own router, since each excludes a different converter (itself) and a router
+            // caches the answers for the exact set it was built with.
             foreach (var converter in converters.OfType<IRequiresDefaultSerializer>())
             {
                 var excluded = new HashSet<JsonConverter>(converter.GetExcludedConverters(converters));
-                var defaultSerializer = JsonSerializer.CreateDefault(settingsDefault);
+                var included = new List<JsonConverter>(converters.Count);
                 foreach (var other in converters)
                 {
                     if (!excluded.Contains(other))
-                        defaultSerializer.Converters.Add(other);
+                        included.Add(other);
                 }
+
+                var defaultSerializer = JsonSerializer.CreateDefault(settingsDefault);
+                defaultSerializer.Converters.Add(versionedEnvelope);
+                defaultSerializer.Converters.Add(new ConverterRouter(included));
                 converter.SetDefaultSerializer(defaultSerializer);
             }
 
-            return converters;
+            return new List<JsonConverter> { versionedEnvelope, new ConverterRouter(converters) };
         }
         
         public class ContractResolver : DefaultContractResolver

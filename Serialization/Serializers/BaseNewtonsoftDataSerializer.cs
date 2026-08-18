@@ -47,32 +47,57 @@ namespace BH.SDK.Serialization.Serializers
             return stream.ToArray();
         }
 
+        // Two streaming passes over the bytes, not one materialized tree. The version has to be
+        // known before the payload can be typed, and reading it used to mean loading the WHOLE
+        // document into a JObject and then walking that tree a second time to deserialize - so a
+        // level was parsed twice, the second time out of a tree that cost one JToken per value.
+        // The first pass here stops at the version property; only the second one reads content.
+        //
+        // Both passes are format-agnostic: subclasses supply the reader, and nothing below it cares
+        // whether the bytes are JSON or BSON.
+
+        /// <summary>
+        /// Reads one envelope. VersionedEnvelopeConverter resolves the concrete historical type for
+        /// the version it finds and upgrades it to the domain's current shape in one step, so what
+        /// comes back is already current-shape - "raw" only means handed back untyped.
+        /// </summary>
         public EnvelopeData DeserializeEnvelope(byte[] data, Type payloadType)
         {
             VersionedTypeRegistry.ThrowIfNoDomain(payloadType);
 
-            using var peekStream = new MemoryStream(data);
-            using var peekReader = CreateReader(peekStream);
-            var jObject = JObject.Load(peekReader);
+            var version = ReadVersion(data, payloadType);
 
-            var versionToken = jObject[Names.Version];
-            if (versionToken == null)
-            {
-                throw new JsonSerializationException($"Missing '{Names.Version}' property for type '{payloadType}'");
-            }
-
-            var version = versionToken.ToObject<Version>(_serializer);
-
-            // JObject.CreateReader() returns a format-agnostic JTokenReader over the already-parsed
-            // tree, so this replay works the same regardless of whether jObject came from JSON or BSON.
-            // VersionedEnvelopeConverter.ReadJson resolves the concrete historical type for this
-            // version and upgrades it to the domain's current shape in one step, so what comes back
-            // here is already current-shape, not the pre-migration snapshot - "raw" refers to it being
-            // handed back untyped (object), matching the interface's format-agnostic contract.
-            using var valueReader = jObject.CreateReader();
-            var rawPayload = _serializer.Deserialize(valueReader, payloadType);
+            using var stream = new MemoryStream(data);
+            using var reader = CreateReader(stream);
+            var rawPayload = _serializer.Deserialize(reader, payloadType);
 
             return new EnvelopeData(version, rawPayload);
+        }
+
+        private Version ReadVersion(byte[] data, Type payloadType)
+        {
+            using var stream = new MemoryStream(data);
+            using var reader = CreateReader(stream);
+
+            if (!reader.Read() || reader.TokenType != JsonToken.StartObject)
+                throw new JsonSerializationException($"Expected a versioned envelope for type '{payloadType}'");
+
+            while (reader.Read() && reader.TokenType == JsonToken.PropertyName)
+            {
+                var isVersion = (string)reader.Value == Names.Version;
+                if (!reader.Read()) break;
+
+                // Skip() rather than a full read: everything before the version is content this
+                // pass has no use for, and the ordinary document has nothing there at all.
+                if (!isVersion)
+                {
+                    reader.Skip();
+                    continue;
+                }
+                return _serializer.Deserialize<Version>(reader);
+            }
+
+            throw new JsonSerializationException($"Missing '{Names.Version}' property for type '{payloadType}'");
         }
     }
 }
