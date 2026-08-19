@@ -755,7 +755,8 @@ non-static, non-abstract, and has a public parameterless constructor — because
 - **`ValueRules`' layer constants define reserved draw-order bands, not just a clamp.** Authored
   content is capped to `[MinLayer, MaxLayer]` = `[-1000, 1000]`; everything above that is reserved
   for the Unity project's editor-only overlays (`MinLayerSelection` = `MaxLayer + MinLayerDelta` for
-  selection outlines, `MinLayerGizmos` = 1500 for viewport gizmo handles, each overlay piece
+  selection outlines, `MinLayerGrid` = 1250 for the viewport grid, `MinLayerColliders` = 1400 for the
+  collider fills, `MinLayerGizmos` = 1500 for viewport gizmo handles, each overlay piece
   stepping by `MinLayerDelta` so same-set pieces never z-fight — see `Services.GameEditor`'s
   `LayerPolicy`), and `[MinCameraLayer, MaxCameraLayer]` bounds the camera itself. Don't widen the
   authored range without moving those bands too. Layer is **parent-relative** (a child's effective

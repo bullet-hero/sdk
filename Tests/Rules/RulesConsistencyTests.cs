@@ -154,7 +154,9 @@ namespace BH.SDK.Tests.Rules
         public void TestLayerBandsDoNotOverlap()
         {
             Assert.Less(ValueRules.MaxLayer, ValueRules.MinLayerSelection);
-            Assert.Less(ValueRules.MinLayerSelection, ValueRules.MinLayerGizmos);
+            Assert.Less(ValueRules.MinLayerSelection, ValueRules.MinLayerGrid);
+            Assert.Less(ValueRules.MinLayerGrid, ValueRules.MinLayerColliders);
+            Assert.Less(ValueRules.MinLayerColliders, ValueRules.MinLayerGizmos);
             Assert.Less(ValueRules.MinLayerGizmos, ValueRules.MaxCameraLayer);
         }
     }

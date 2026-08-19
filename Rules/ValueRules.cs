@@ -51,6 +51,16 @@ namespace BH.SDK.Rules
         // author zooms is what actually bounds it, and the overlay stops drawing on its own once the
         // cells stop being distinguishable.
         public const float MinGridSize = 0.001f;
+
+        // The editor's collider overlay, which draws a semi-transparent fill over whatever a
+        // ShapeObject's ColliderId actually is. Above the grid because a hitbox is content the author
+        // is inspecting rather than a backdrop, and below the handles for the same reason the grid
+        // is: a gizmo dragged across a collider must stay visible and grabbable. It allocates ONE
+        // layer per drawn collider (overlapping translucent fills at an equal z pick their own draw
+        // order and flicker), so it spends the band rather than sitting on a single value - 10k
+        // slots at MinLayerDelta, far above any cap the overlay itself allows.
+        public const int MinLayerColliders = 1400;
+
         public const int MinLayerGizmos = 1500;
 
         // Not an authored limit and not validated by any rule - the camera has no Layer field. This
