@@ -109,6 +109,46 @@ namespace BH.SDK.Tests
             Assert.AreEqual(1f, settings.GridSize);
         }
 
+        // The one preference here that defaults to OFF. The overlay it gates covers the object the
+        // author has just selected, so it is in the way far more often than it answers a question -
+        // and a default of true would also make it appear for every existing settings file, since
+        // false is what a missing JSON key deserializes to either way.
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.VeryEasy)]
+        public void PreviewColliderOnSelect_DefaultsToOff()
+        {
+            var settings = new GameEditorSettings();
+            Assert.IsFalse(settings.PreviewColliderOnSelect);
+
+            settings.PreviewColliderOnSelect = true;
+            settings.Reset();
+            Assert.IsFalse(settings.PreviewColliderOnSelect);
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Easy)]
+        public void PreviewColliderOnSelect_SurvivesCopyPullAndEquality()
+        {
+            var source = new GameEditorSettings { PreviewColliderOnSelect = true };
+
+            var copy = source.Copy();
+            Assert.IsTrue(copy.PreviewColliderOnSelect);
+            Assert.IsTrue(source.Equals(copy));
+
+            var pulled = new GameEditorSettings();
+            pulled.Pull(source);
+            Assert.IsTrue(pulled.PreviewColliderOnSelect);
+            Assert.AreEqual(source.GetHashCode(), pulled.GetHashCode());
+
+            var other = source.Copy();
+            other.PreviewColliderOnSelect = false;
+            Assert.IsFalse(source.Equals(other));
+        }
+
         // The grid's opacity is the ONLY part of its colour anyone authors - the hue is the inverse
         // of the camera background of the current frame, resolved live by the editor.
         [Test]

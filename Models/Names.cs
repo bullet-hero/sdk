@@ -459,6 +459,7 @@
         public const string Shared = "shared";
         public const string Priority = "priority";
         public const string Selection = "selection";
+        public const string Preview = "preview";
         public const string Manual = "manual";
         public const string Device = "device";
         public const string Keyboard = "keyboard";
@@ -539,6 +540,7 @@
         public const string ResourcesSerializeMode = Resources + _ + Serialize + _ + Mode;
         public const string CopySerializeMode = Copy + _ + Serialize + _ + Mode;
         public const string MultiSelectRequiresHold = Multi + _ + Selection + _ + Requires + _ + Hold;
+        public const string PreviewColliderOnSelect = Preview + _ + Collider + _ + On + _ + Selection;
         public const string GridSize = Grid + _ + Size;
         public const string GridOpacity = Grid + _ + Opacity;
         

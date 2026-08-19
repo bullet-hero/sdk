@@ -98,6 +98,16 @@ namespace BH.SDK.Models.SettingGroups
         [JsonProperty(Names.MultiSelectRequiresHold)]
         public bool MultiSelectRequiresHold { get; set; }
 
+        // Off by default, unlike almost everything else here, and the asymmetry is the point: the fill
+        // covers the object an author has just selected and is about to work on, so it is in the way
+        // far more often than it answers a question. The global collider view (a session toggle, not a
+        // preference) is what an author reaches for when the question is actually about hitboxes; this
+        // one exists for the case where they want the answer without leaving that view on.
+
+        /// <summary> Whether selecting an object draws its collider. </summary>
+        [JsonProperty(Names.PreviewColliderOnSelect)]
+        public bool PreviewColliderOnSelect { get; set; }
+
         // Serialization
 
         // Which wire format the editor WRITES with, split by what is being written rather than kept as
@@ -128,7 +138,7 @@ namespace BH.SDK.Models.SettingGroups
         }
         public GameEditorSettings(bool autosave, float autosaveRate, int maxAutosaveFiles,
             float cameraMinSize, float cameraMaxSize, bool playerActiveDefault, bool gizmosResetOnPlayer,
-            bool multiSelectRequiresHold, float gridSize, float gridOpacity,
+            bool multiSelectRequiresHold, bool previewColliderOnSelect, float gridSize, float gridOpacity,
             SerializationType levelSerializeMode,
             SerializationType resourcesSerializeMode, SerializationType copySerializeMode)
         {
@@ -140,6 +150,7 @@ namespace BH.SDK.Models.SettingGroups
             PlayerActiveDefault = playerActiveDefault;
             GizmosResetOnPlayer = gizmosResetOnPlayer;
             MultiSelectRequiresHold = multiSelectRequiresHold;
+            PreviewColliderOnSelect = previewColliderOnSelect;
             GridSize = gridSize;
             GridOpacity = gridOpacity;
             LevelSerializeMode = levelSerializeMode;
@@ -160,6 +171,7 @@ namespace BH.SDK.Models.SettingGroups
             PlayerActiveDefault = true;
             GizmosResetOnPlayer = true;
             MultiSelectRequiresHold = true;
+            PreviewColliderOnSelect = false;
             GridSize = 1f;
             GridOpacity = 0.25f;
             LevelSerializeMode = SerializationType.Json;
@@ -169,7 +181,8 @@ namespace BH.SDK.Models.SettingGroups
 
         public object Clone() => Copy();
         public GameEditorSettings Copy() => new(Autosave, AutosaveRate, MaxAutosaveFiles, CameraMinSize,
-            CameraMaxSize, PlayerActiveDefault, GizmosResetOnPlayer, MultiSelectRequiresHold, GridSize, GridOpacity,
+            CameraMaxSize, PlayerActiveDefault, GizmosResetOnPlayer, MultiSelectRequiresHold,
+            PreviewColliderOnSelect, GridSize, GridOpacity,
             LevelSerializeMode, ResourcesSerializeMode, CopySerializeMode);
 
         public void Pull(GameEditorSettings source)
@@ -182,6 +195,7 @@ namespace BH.SDK.Models.SettingGroups
             PlayerActiveDefault = source.PlayerActiveDefault;
             GizmosResetOnPlayer = source.GizmosResetOnPlayer;
             MultiSelectRequiresHold = source.MultiSelectRequiresHold;
+            PreviewColliderOnSelect = source.PreviewColliderOnSelect;
             GridSize = source.GridSize;
             GridOpacity = source.GridOpacity;
             LevelSerializeMode = source.LevelSerializeMode;
@@ -191,12 +205,12 @@ namespace BH.SDK.Models.SettingGroups
 
         public override bool Equals(object obj) => obj is GameEditorSettings value && Equals(value);
 
-        // HashCode.Combine takes at most 8 values, and this class holds 13 - the tail folds into the
+        // HashCode.Combine takes at most 8 values, and this class holds 14 - the tail folds into the
         // eighth slot rather than being dropped.
         public override int GetHashCode() => HashCode.Combine(Autosave, AutosaveRate, MaxAutosaveFiles,
             CameraMinSize, CameraMaxSize, PlayerActiveDefault, GizmosResetOnPlayer,
-            HashCode.Combine(MultiSelectRequiresHold, GridSize, GridOpacity, LevelSerializeMode,
-                ResourcesSerializeMode, CopySerializeMode));
+            HashCode.Combine(MultiSelectRequiresHold, PreviewColliderOnSelect, GridSize, GridOpacity,
+                LevelSerializeMode, ResourcesSerializeMode, CopySerializeMode));
 
         public bool Equals(GameEditorSettings other)
         {
@@ -210,6 +224,7 @@ namespace BH.SDK.Models.SettingGroups
                    && PlayerActiveDefault == other.PlayerActiveDefault
                    && GizmosResetOnPlayer == other.GizmosResetOnPlayer
                    && MultiSelectRequiresHold == other.MultiSelectRequiresHold
+                   && PreviewColliderOnSelect == other.PreviewColliderOnSelect
                    && GridSize.Equals(other.GridSize)
                    && GridOpacity.Equals(other.GridOpacity)
                    && LevelSerializeMode == other.LevelSerializeMode
