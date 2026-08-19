@@ -60,6 +60,27 @@ namespace BH.SDK.Rules
         public const float MaxCameraLayer = 2000f;
 
         public const int DefaultLayer = 0;
+
+        // A MULTIPLIER of whatever size the player already is, so the neutral value is 1 rather
+        // than any number of world units - see PlayerEvents.Sizes. No maximum: a player scaled to
+        // nothing is still there, controllable and hittable at a point, and a level that wants a
+        // giant one is not this format's argument to have.
+
+        /// <summary> Smallest player size a level may ask for. </summary>
+        public const float MinPlayerSize = 0f;
+
+        /// <summary> What the player is scaled by when a level says nothing. </summary>
+        public const float DefaultPlayerSize = 1f;
+
+        // Multiplies every speed the avatar has at once - see PlayerEvents.Speeds. Zero is a player
+        // that is frozen where it stands while the level keeps running, which the Controls track
+        // already expresses in its own way, so there is nothing to forbid here either.
+
+        /// <summary> Slowest the player may be asked to move, as a multiple of its own speed. </summary>
+        public const float MinPlayerSpeed = 0f;
+
+        /// <summary> What the player's speed is multiplied by when a level says nothing. </summary>
+        public const float DefaultPlayerSpeed = 1f;
         
         public const float MinColor = 0f;
         public const float MaxColor = 1f;

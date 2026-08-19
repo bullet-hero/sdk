@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Models.Objects;
 using BH.SDK.Models.Primitives;
@@ -160,6 +160,8 @@ namespace BH.SDK.Generators.Modifiers
             Trim(context, player.Visibles, window, invert);
             Trim(context, player.Controls, window, invert);
             Trim(context, player.Collisions, window, invert);
+            Trim(context, player.Sizes, window, invert);
+            Trim(context, player.Speeds, window, invert);
         }
 
         /// <summary> A keyframe is a point, so "overlaps the window" and "lies inside it" are the same

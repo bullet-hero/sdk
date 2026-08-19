@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using BH.SDK.Models;
 using BH.SDK.Models.Audio;
@@ -182,6 +182,10 @@ namespace BH.SDK.Tests
             level.Game.PlayerEvents.Visibles.Add(new BoolKey());
             level.Game.PlayerEvents.Controls.Add(new BoolKey());
             level.Game.PlayerEvents.Collisions.Add(new BoolKey());
+            // Deliberately not the neutral 1: a round trip that dropped the track would still come
+            // back equal against a default-valued key and prove nothing.
+            level.Game.PlayerEvents.Sizes.Add(new FloatKey(new FloatValue(2.5f), 0));
+            level.Game.PlayerEvents.Speeds.Add(new FloatKey(new FloatValue(0.5f), 0));
 
             var shapeObject = new ShapeObject()
             {
