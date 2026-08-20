@@ -116,16 +116,22 @@ namespace BH.SDK.Utils
                 return hash;
             }
         }
+        // Order-INDEPENDENT by construction, never by sorting the keys first. Sorting demanded an
+        // IComparable key, which most id structs here are not (ObjectId, every TypedResourceId,
+        // every Guid-based id) - so PrefabObject.GetHashCode threw the moment anything put a
+        // placement in a HashSet. Entry hashes are summed instead: a Dictionary's enumeration order
+        // is not part of its value, and the keys are unique, so no two entries can trade places.
+
         public static int GetDictionaryHashCode<TKey, TValue>(this Dictionary<TKey, TValue> dictionary)
         {
             if (dictionary is null) return 0;
             unchecked
             {
                 int hash = 17;
-                foreach (var kvp in dictionary.OrderBy(kvp => kvp.Key))
+                foreach (var kvp in dictionary)
                 {
-                    hash = hash * 31 + (kvp.Key?.GetHashCode() ?? 0);
-                    hash = hash * 31 + (kvp.Value?.GetHashCode() ?? 0);
+                    var entry = (kvp.Key?.GetHashCode() ?? 0) * 31 + (kvp.Value?.GetHashCode() ?? 0);
+                    hash += entry;
                 }
                 return hash;
             }

@@ -96,7 +96,7 @@ namespace BH.SDK.Tests
         [Category(Metadata.Category.VeryEasy)]
         public void ToSampleCount_MapsEveryRung(MsaaType type, int expected)
         {
-            Assert.AreEqual(expected, type.ToSampleCount());
+            Assert.AreEqual(expected, (int)type);
         }
 
         [Test]

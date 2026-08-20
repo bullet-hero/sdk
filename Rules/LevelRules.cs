@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Runtime.CompilerServices;
 
 namespace BH.SDK.Rules
@@ -9,7 +9,15 @@ namespace BH.SDK.Rules
         public const int MaxCheckpointEvents = 128;
         public const int MaxBeatEvents = 256;
         public const int MaxBackgroundEvents = 128;
-        public const int MaxThemeEvents = 128;
+
+        // 512 RATHER THAN THE 128 THE OTHER ONE-SHOT EVENT LISTS GET, because this one is not a
+        // list of one-shots: the theme track is an animated track like the camera's, interpolated
+        // between neighbours, so an author states a colour change with a PAIR of keyframes and a
+        // level whose palette follows its music spends them at that rate. A real imported level
+        // came in at 146 and lost the last stretch of its colour work to the old cap. Raising a cap
+        // invalidates nothing already authored - it only allows what could not be said before.
+        public const int MaxThemeEvents = 512;
+
         public const int MaxScreenLimitEvents = 128;
 
         public const int MaxPlayerKeys = 512;
