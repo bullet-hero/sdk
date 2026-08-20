@@ -1,4 +1,4 @@
-﻿// ReSharper disable InconsistentNaming
+// ReSharper disable InconsistentNaming
 
 using System.Collections.Generic;
 using BH.SDK.Models.Enums.Values;
@@ -77,7 +77,7 @@ namespace BH.SDK.Rules
             public static readonly TextureResourceId TextureResourceId_Default = TextureResourceId.Null;
 
             /// <summary> The quad. </summary>
-            public static readonly ShapeId ParticleShapeId_Default = ShapeId.Square;
+            public static readonly ShapeId ParticleShapeId_Default = ShapeId.Square.Fill;
 
             // The whole texture, i.e. no atlas cell to select. Matches what TextureRegistry
             // .TryGetTextureUV hands back for an id it cannot resolve, so a missing texture and an

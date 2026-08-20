@@ -1,4 +1,4 @@
-﻿using BH.SDK.Utils;
+using BH.SDK.Utils;
 
 namespace BH.SDK.Rules
 {
@@ -163,8 +163,14 @@ namespace BH.SDK.Rules
         // A shape needs at least one triangle to be a shape at all - an empty one is a shape that
         // silently draws and collides with nothing, which is worse than no shape (that is what a
         // Null ShapeId already means, explicitly).
+        //
+        // THE CAP IS 128 BECAUSE 64 WAS NOT ENOUGH FOR THE GAME'S OWN SHAPES, which is the clearest
+        // sign a bound is too tight: an inverted 32-sided ring is the box's rim, the ring's outer
+        // rim and its inner disc, and that is 94 triangles. Six more built-in shapes sat at exactly
+        // 64 with no room at all. Raising it can invalidate nothing - it only lets a hand-written
+        // file carry more than it could before - and 128 triangles is still nothing to draw.
         public const int MinShapeTriangles = 1;
-        public const int MaxShapeTriangles = 64;
+        public const int MaxShapeTriangles = 128;
 
         // Vertices are capped separately rather than derived from the triangle cap, because indexed
         // geometry shares corners: 64 triangles need 192 vertices unwelded and roughly a third of
@@ -175,8 +181,14 @@ namespace BH.SDK.Rules
 
         // A shape occupies exactly the object's own rect, the same box a quad used to. Rendering
         // reads UV out of the position (positionOS.xy + 0.5), so a point outside this range samples
-        // past its own atlas cell; collision would simply extend past what is drawn. Both failures
-        // are silent, which is why the bound is enforced rather than documented.
+        // past [0, 1]; collision would simply extend past what is drawn. Both failures are silent,
+        // which is why the bound is enforced rather than documented.
+        //
+        // The game's own shapes obey it now too. The library that shipped before was centred on each
+        // polygon's CIRCUMCENTRE, which for an odd side count is not the centre of its bounding box -
+        // so 31 of 78 presets reached out to 0.577 and the editor carried a margin to compensate.
+        // Centring on the bounding box instead brings every one of them inside, and costs nothing:
+        // each form's longer axis measures exactly 1 either way.
         public const float MinShapePoint = -0.5f;
         public const float MaxShapePoint = 0.5f;
 

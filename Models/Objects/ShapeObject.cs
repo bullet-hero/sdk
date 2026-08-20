@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using BH.SDK.Models.Enums;
 using BH.SDK.Models.Interfaces;
@@ -71,7 +71,7 @@ namespace BH.SDK.Models.Objects
         public ShapeObject()
         {
             ShaderType = ShaderType.Auto;
-            ShapeId = ShapeId.Square;
+            ShapeId = ShapeId.Square.Fill;
             ColliderId = ShapeId.Null;
             TextureResourceId = TextureResourceId.Null;
             Colors = new List<IColor4X4Key>();
@@ -96,7 +96,7 @@ namespace BH.SDK.Models.Objects
         {
             base.Reset();
             ShaderType = ShaderType.Auto;
-            ShapeId = ShapeId.Square;
+            ShapeId = ShapeId.Square.Fill;
             ColliderId = ShapeId.Null;
             TextureResourceId = TextureResourceId.Null;
             Colors.Clear();

@@ -46,7 +46,7 @@ namespace BH.SDK.Models.Effects
         
         /// <summary> Geometry each particle is drawn with, out of the same shape pool ShapeObject
         /// draws from. Null draws NOTHING, exactly like ShapeObject.ShapeId; the quad is an
-        /// ordinary value (ShapeId.Square) and is this field's default. </summary>
+        /// ordinary value (ShapeId.Square.Fill) and is this field's default. </summary>
         [JsonProperty(Names.ShapeId)]
         public ShapeId ParticleShapeId { get; set; }
 

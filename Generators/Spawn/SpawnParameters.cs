@@ -28,7 +28,7 @@ namespace BH.SDK.Generators.Spawn
         // silently produces invisible objects reads as the generator being broken.
 
         /// <summary> Shape every spawned object draws. </summary>
-        public ShapeId Shape = ShapeId.Square;
+        public ShapeId Shape = ShapeId.Square.Fill;
 
         /// <summary> Image painted onto that shape, Null for none - the same default a hand-created
         /// ShapeObject gets, since the shape itself is the silhouette now. </summary>

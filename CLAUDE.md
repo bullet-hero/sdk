@@ -76,7 +76,15 @@ alive so `GamePlayer`'s jobs can re-roll randomness every frame instead of freez
   pass, for showing rather than for sizing; don't reach for it when you need `LevelCapacityUtils`'
   peak-simultaneous answer, and don't reach for that one to fill a readout), `ModelUtils`
   (deep-copy/equality/hash helpers for `List`/`Dictionary`/`Array` of `ICopyable<T>`),
-  `ModificationUtils`/`TypeExtensions`, `ShapeGeometryUtils` (+`ShapeGeometryReport`) — the single
+  `ModificationUtils`/`TypeExtensions`, `ShapeLoopUtils` (radial loops - the two emitters every
+  built-in shape is built out of, a fan and a resampled annulus, plus sector clipping; its header
+  explains why angles are always measured RELATIVE to a reference and why the annulus resamples both
+  rims instead of walking them in lockstep, both of which were real bugs), `ShapeSynthUtils`
+  (procedural geometry for shapes the built-in library cannot name - **the Afterbeat importer's
+  rounded custom polygons and its two arrows, and nothing else** now that the library covers its own
+  parameter space; it reasons in the OPPOSITE angular convention to `ShapeLoopUtils`, measuring from
+  straight down, so the two must never share a phase predicate), `ShapeGeometryUtils`
+  (+`ShapeGeometryReport`) — the single
   implementation of "what a valid shape is" and "how to make an invalid one valid", shared by
   `RuleShapeGeometry.Fix` and the consumer's in-game shape editor on Save. Its `Sanitize` order is
   load-bearing (clamp → weld → drop malformed → drop degenerate → trim → drop orphans → fix
@@ -85,7 +93,13 @@ alive so `GamePlayer`'s jobs can re-roll randomness every frame instead of freez
 - **Services/** — `SerializationService`-adjacent but SDK-root-level: `CryptographyService`
   (AES-256-CBC), `ModificationService` (reflection path-based get/set, see "Modification system"
   below), `TextFormatService` (`{variable}` string templating), `FontCharacterService` (builds
-  `LevelHints.FontCharacters`, see below).
+  `LevelHints.FontCharacters`, see below), and **`Shapes/ShapeCatalogService`** + `ShapeParameters`
+  — the game's own built-in shape library, which lives HERE rather than in the consumer because it
+  is what a `ShapeId` means: 497 shapes as the cross product of a form, a sector, a thickness rung
+  and an invert flag, an id that IS those parameters packed one axis per nibble
+  (`Encode`/`TryDecode`), and `Build` producing the geometry in pure C#. The consuming project only
+  bakes what this enumerates. Read its header before touching the id layout — the six rules there
+  are what make a future axis free and an inserted side count harmless.
 - **Generators/** — authoring automation: a generator produces level content from a few parameters.
   Non-generic `IGenerator` root (so `GeneratorRegistry`'s reflection scan and a reflection-built
   form are possible) split into `ILevelGenerator` (builds a whole `Level`+`LevelMeta`) and
@@ -151,7 +165,11 @@ alive so `GamePlayer`'s jobs can re-roll randomness every frame instead of freez
   comment before writing new tests that need a `Level`/`Prefab`/etc. Root-level files cover
   serialization (`SerializationTests`, `SerializationTypeExtensionsTests`), modification
   (`ModificationTests`), validation (`ValidatorTests`), capacity (`LevelCapacityUtilsTests`),
-  cryptography, text formatting, `ShapeIdTests` and `ShapeGeometryUtilsTests`. **`Tests/Rules/` is the bulk** — 42 files,
+  cryptography, text formatting, `ShapeIdTests` and `ShapeGeometryUtilsTests`, plus
+`Tests/Services/ShapeCatalogServiceTests` (the built-in shape library — id round trip, retired and
+future-axis ids refused, and the two geometric invariants a person cannot eyeball across five
+hundred entries: a shape and its inverse tile the sector they were cut from, and slices tile the
+whole). **`Tests/Rules/` is the bulk** — 42 files,
   roughly one per `[RuleXxx]` attribute on top of `BaseRuleTests` (the shared analyze/fix harness),
   `RuleCoverageTests` (fails if a rule has no test file), `RuleContextTests`, `RulesConsistencyTests`,
   `LevelGraphAnalyzerTests`, `ValidationFacadeTests`, `ModificationCheckedWriteTests`.
@@ -183,6 +201,14 @@ beam that is drawn but harmless, a hitbox simpler than the art it guards, an inv
 type serves both because a shape and a hitbox are the same data: triangles inside `[-0.5, 0.5]`.
 Both resolve against the same two collections (the game's own shape presets, or
 `Level.Resources.CompositeShapes`), so a user-authored shape is usable for either or both.
+
+**A built-in `ShapeId` is its parameters packed**, and the constants naming them live in the
+generated half of the type (`Models/Primitives/ShapeId.g.cs`, one nested class per form —
+`ShapeId.Hexagon.S4_2_T8_I`). `Services/Shapes/ShapeCatalogService` owns the layout and is the only
+thing that may write that file. The previous library numbered its 78 shapes 1..78 by their position
+in the consumer's array, so inserting a form renumbered everything after it; form code 0 is now
+reserved and never issued, which is what makes every one of those retired ids decode to nothing
+rather than to some other shape.
 
 **`RectObject.Active` replaced `Visible`, and the change is semantic, not cosmetic.** `Visible`
 gated rendering only, so an invisible object still hit the player — a trap, since nothing in the
@@ -680,6 +706,12 @@ type" rule in detail; this section only adds what it doesn't cover.
 `TextRules`) — `EffectRules` is the one exception, constructing default `CurveValue`/`GradientValue`
 model instances. `RuleGroup` (`None/Error/Warning/Advice`) is a severity enum that exists but is
 **never actually set away from its `Error` default** by any current rule attribute.
+
+**`ValueRules.MaxShapeTriangles` is 128, and it was 64 until the game's own shapes outgrew it** —
+an inverted 32-sided ring is the box's rim, the ring's outer rim and its inner disc, which is 94
+triangles, and six more built-in shapes sat at exactly 64 with no room at all. Raising a cap can
+invalidate nothing (it only lets a hand-written file carry more than it could before), and
+`MaxShapeVertices` is derived from it rather than restated.
 
 **`CompositeShape`'s geometry carries no per-property collection rule beyond `[RuleNotNull]`, and
 that is deliberate.** Every generic collection fix is index-destructive on indexed geometry:

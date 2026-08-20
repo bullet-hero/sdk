@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using BH.SDK.Models;
 using BH.SDK.Models.Audio;
@@ -79,7 +79,7 @@ namespace BH.SDK.Tests
                     ParticleCount = 1200,
                     LifetimeBounds = new Vector2Value(1f, 5f),
                     TextureResourceId = new TextureResourceId(-2),
-                    ParticleShapeId = ShapeId.Triangle,
+                    ParticleShapeId = ShapeId.Triangle.Fill,
                     ParticlePivot = new Alignment(new Vector2Value(0.25f, 0.75f)),
                 },
                 Forces = new EffectObjectForces
