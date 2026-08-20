@@ -127,6 +127,7 @@ namespace BH.SDK.Tests
                 {
                     Arc = new FloatValue(6.29f),
                     Radius = new FloatValue(1f),
+                    Aspect = new FloatValue(0.5f),
                     Spread = new EffectShapeSpreadLoop(1f, 2f),
                     Thickness = new FloatValue(1f),
                 },

@@ -29,7 +29,9 @@ namespace BH.SDK.Models.Effects
         [JsonProperty(Names.RadiusMajor)]
         public IFloat RadiusMajor { get; set; }
 
-        /// <summary> Portion of the ring used, in degrees. </summary>
+        /// <summary> Portion of the ring used, in radians, measured counter-clockwise from the +X
+        /// axis - the same convention <see cref="EffectShapeCircle"/> and
+        /// <see cref="EffectShapeCone"/> follow. </summary>
         [RuleNotNull, RuleIFloatInRange(EffectRules.Shape.Arc_Min, EffectRules.Shape.Arc_Max)]
         [JsonProperty(Names.Arc)]
         public IFloat Arc { get; set; }

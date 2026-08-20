@@ -29,7 +29,14 @@ namespace BH.SDK.Models.Effects
         [JsonProperty(Names.BaseRadius)]
         public IFloat BaseRadius { get; set; }
 
-        /// <summary> Portion of the cone's circumference used, in degrees. </summary>
+        // FLATTENED, so its arc is a FAN rather than a sector: a 2D scene keeps one of the two axes
+        // the cone sweeps and throws the other away, which makes the arc sweep the fan from one
+        // edge to the other instead of going round. A full turn is the whole fan either way; a
+        // partial one is what the phase decides, and it starts at +X like the other two shapes.
+
+        /// <summary> Portion of the cone's circumference used, in radians, measured
+        /// counter-clockwise from the +X axis - the same convention
+        /// <see cref="EffectShapeCircle"/> and <see cref="EffectShapeTorus"/> follow. </summary>
         [RuleNotNull, RuleIFloatInRange(EffectRules.Shape.Arc_Min, EffectRules.Shape.Arc_Max)]
         [JsonProperty(Names.Arc)]
         public IFloat Arc { get; set; }

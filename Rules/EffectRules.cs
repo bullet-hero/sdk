@@ -124,7 +124,16 @@ namespace BH.SDK.Rules
             
             public const float CircleRadius_Min = 0f;
             public const float CircleRadius_Default = 1f;
-            
+
+            // The vertical semi-axis as a multiple of the horizontal one - a RATIO rather than a
+            // second radius, so an unauthored value is a CIRCLE. The default has to be the neutral
+            // one, or every file written before this existed - and every consumer-side asset
+            // holding the same slot - reads back as an ellipse.
+
+            public const float CircleAspect_Min = 0f;
+            public const float CircleAspect_Max = 1000f;
+            public const float CircleAspect_Default = 1f;
+
             public const float Arc_Min = 0f;
             public const float Arc_Max = BHSDKMath.PI2;
             public const float Arc_Default = Arc_Max;
