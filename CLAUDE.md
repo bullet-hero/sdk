@@ -478,6 +478,15 @@ and stays in the editor's session (`Services.GameEditor`'s `GridModeService`) �
 active gizmo has. Opacity is the only part of its colour anyone authors; the hue is derived from the
 camera background live, which is why there is no grid colour here.
 
+`AntiAliasingGraphicsSettings` (`Type`/`Msaa`/`Hdr`) is the one graphics sub-group that does **not**
+derive from `BaseGraphicsSettings`, and the omission is deliberate: an inherited `Render` would mean
+"is anti-aliasing on", which is exactly what `Type = None` already says, and two switches for one
+decision can disagree. It shipped additively like everything else here — the domain stays at
+`(1, 0)`, and a settings file written before it deserializes to the constructor's defaults (MSAA,
+x2, no HDR) rather than to a zeroed pair that would read as "off". `MsaaType`'s value **is** its
+sample count, except `None = 0`, which every graphics API states as 1 — convert with
+`MsaaTypeExtensions.ToSampleCount`, never a cast.
+
 The `UserSettings` sub-groups additionally implement `IMoveable<T>` (`Pull(source)` — an in-place
 merge, distinct from `IModel<T>`'s `Copy`/`Reset`).
 

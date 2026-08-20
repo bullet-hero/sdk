@@ -1,4 +1,4 @@
-using BH.SDK.Models;
+﻿using BH.SDK.Models;
 using BH.SDK.Models.SettingGroups;
 using BH.SDK.Serialization;
 using BH.SDK.Serialization.Serializers;
@@ -146,6 +146,47 @@ namespace BH.SDK.Tests
 
             var other = source.Copy();
             other.PreviewColliderOnSelect = false;
+            Assert.IsFalse(source.Equals(other));
+        }
+
+        // The second preference here defaulting to OFF, and for the same kind of reason: a click
+        // lands on what the object DRAWS, so the empty padding of a slice or a ring belongs to
+        // whatever is behind it. Turning it on hands every object its whole rect back.
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.VeryEasy)]
+        public void PickInvisibleAABB_DefaultsToOff()
+        {
+            var settings = new GameEditorSettings();
+            Assert.IsFalse(settings.PickInvisibleAABB);
+
+            settings.PickInvisibleAABB = true;
+            settings.Reset();
+            Assert.IsFalse(settings.PickInvisibleAABB);
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Easy)]
+        public void PickInvisibleAABB_SurvivesCopyPullAndEquality()
+        {
+            var source = new GameEditorSettings { PickInvisibleAABB = true };
+
+            var copy = source.Copy();
+            Assert.IsTrue(copy.PickInvisibleAABB);
+            Assert.IsTrue(source.Equals(copy));
+
+            var pulled = new GameEditorSettings();
+            pulled.Pull(source);
+            Assert.IsTrue(pulled.PickInvisibleAABB);
+            Assert.AreEqual(source.GetHashCode(), pulled.GetHashCode());
+
+            // The two selection toggles sit next to each other in the folded hash and in Equals -
+            // one standing in for the other would pass every assert above.
+            var other = source.Copy();
+            other.PickInvisibleAABB = false;
             Assert.IsFalse(source.Equals(other));
         }
 

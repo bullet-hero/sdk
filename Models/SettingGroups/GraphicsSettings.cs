@@ -45,6 +45,13 @@ namespace BH.SDK.Models.SettingGroups
         [JsonProperty(Names.PostProcessing)]
         public PostProcessingGraphicsSettings PostProcessing { get; set; }
 
+        /// <summary> How the camera's own target is configured - anti-aliasing method, MSAA sample
+        /// count, HDR. The only sub-group here that is not a BaseGraphicsSettings; see its own
+        /// header for why an inherited Render switch would be wrong for it. </summary>
+        [RuleNotNull]
+        [JsonProperty(Names.AntiAliasing)]
+        public AntiAliasingGraphicsSettings AntiAliasing { get; set; }
+
         public GraphicsSettings()
         {
             FramerateTarget = FramerateTarget.ScreenHz;
@@ -52,16 +59,18 @@ namespace BH.SDK.Models.SettingGroups
             Audio = new AudioGraphicsSettings();
             Effects = new EffectsGraphicsSettings();
             PostProcessing = new PostProcessingGraphicsSettings();
+            AntiAliasing = new AntiAliasingGraphicsSettings();
         }
         public GraphicsSettings(FramerateTarget framerateTarget, int fixedFramerate,
             AudioGraphicsSettings audio, EffectsGraphicsSettings effects,
-            PostProcessingGraphicsSettings postProcessing)
+            PostProcessingGraphicsSettings postProcessing, AntiAliasingGraphicsSettings antiAliasing)
         {
             FramerateTarget = framerateTarget;
             FixedFramerate = fixedFramerate;
             Audio = audio;
             Effects = effects;
             PostProcessing = postProcessing;
+            AntiAliasing = antiAliasing;
         }
         public void Reset()
         {
@@ -70,11 +79,13 @@ namespace BH.SDK.Models.SettingGroups
             Audio.Reset();
             Effects.Reset();
             PostProcessing.Reset();
+            AntiAliasing.Reset();
         }
 
         public object Clone() => Copy();
         public GraphicsSettings Copy() => new(FramerateTarget, FixedFramerate, (AudioGraphicsSettings)Audio.Clone(),
-            (EffectsGraphicsSettings)Effects.Clone(), (PostProcessingGraphicsSettings)PostProcessing.Clone());
+            (EffectsGraphicsSettings)Effects.Clone(), (PostProcessingGraphicsSettings)PostProcessing.Clone(),
+            AntiAliasing.Copy());
 
         public void Pull(GraphicsSettings source)
         {
@@ -82,11 +93,12 @@ namespace BH.SDK.Models.SettingGroups
             Audio.Pull(source.Audio);
             Effects.Pull(source.Effects);
             PostProcessing.Pull(source.PostProcessing);
+            AntiAliasing.Pull(source.AntiAliasing);
         }
 
         public override bool Equals(object obj) => obj is GraphicsSettings value && Equals(value);
         public override int GetHashCode() => HashCode.Combine((int)FramerateTarget,
-            FixedFramerate, Audio, Effects, PostProcessing);
+            FixedFramerate, Audio, Effects, PostProcessing, AntiAliasing);
 
         public bool Equals(GraphicsSettings other)
         {
@@ -96,7 +108,8 @@ namespace BH.SDK.Models.SettingGroups
                    && FixedFramerate == other.FixedFramerate
                    && Audio.Equals(other.Audio)
                    && Effects.Equals(other.Effects)
-                   && PostProcessing.Equals(other.PostProcessing);
+                   && PostProcessing.Equals(other.PostProcessing)
+                   && AntiAliasing.Equals(other.AntiAliasing);
         }
     }
 }

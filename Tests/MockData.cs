@@ -681,6 +681,14 @@ namespace BH.SDK.Tests
                         FixedFramerate = 90,
                         MaxScrubTime = 0.3f,
                     },
+                    // Every field away from its default, so a round trip that dropped one is visible:
+                    // the defaults are Msaa/X2/false.
+                    AntiAliasing =
+                    {
+                        Type = AntiAliasingType.Fxaa,
+                        Msaa = MsaaType.X8,
+                        Hdr = true,
+                    },
                     PostProcessing =
                     {
                         RenderBloom = false,

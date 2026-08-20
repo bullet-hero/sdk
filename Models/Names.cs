@@ -460,6 +460,9 @@
         public const string Priority = "priority";
         public const string Selection = "selection";
         public const string Preview = "preview";
+        public const string Pick = "pick";
+        public const string Invisible = "invisible";
+        public const string AABB = "aabb";
         public const string Manual = "manual";
         public const string Device = "device";
         public const string Keyboard = "keyboard";
@@ -541,6 +544,7 @@
         public const string CopySerializeMode = Copy + _ + Serialize + _ + Mode;
         public const string MultiSelectRequiresHold = Multi + _ + Selection + _ + Requires + _ + Hold;
         public const string PreviewColliderOnSelect = Preview + _ + Collider + _ + On + _ + Selection;
+        public const string PickInvisibleAABB = Pick + _ + Invisible + _ + AABB;
         public const string GridSize = Grid + _ + Size;
         public const string GridOpacity = Grid + _ + Opacity;
         
@@ -620,6 +624,13 @@
         public const string TiltCenterY = Tilt + _ + Center + _ + CoordY;
         public const string DashSource = Dash + _ + Source;
 
+
+        // Anti-aliasing. One key per field of AntiAliasingGraphicsSettings, plus the group's own
+        // key on GraphicsSettings; the group reuses the shared Type key, which is safe because no
+        // other model in this aggregate carries one.
+        public const string AntiAliasing = "aa";
+        public const string Msaa = "msaa";
+        public const string Hdr = "hdr";
 
         public const string PostProcessing = Post + Processing;
         public const string RenderBloom = Render + _ + BloomShort;
