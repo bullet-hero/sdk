@@ -118,6 +118,20 @@ namespace BH.SDK.Models.SettingGroups
         [JsonProperty(Names.PickInvisibleAABB)]
         public bool PickInvisibleAABB { get; set; }
 
+        // Frame hierarchy
+
+        // Off by default, and for the same shape of reason as the two above: inframes are what an
+        // effect SPAWNS while it plays - engine-owned rows that cannot be selected, edited or
+        // addressed, appearing and vanishing on their own as the playhead moves. That is a diagnostic
+        // view of the simulation rather than the content the tree exists to navigate, so it is the
+        // author who asks for it. Added after the domain reached 1.0 and deliberately does NOT bump
+        // it: a settings.json written before this property existed simply has no key for it, and
+        // Newtonsoft leaves the constructor's default in place - see UserSettings.Interface.
+
+        /// <summary> Whether the editor's frame hierarchy lists the objects effects spawn at runtime. </summary>
+        [JsonProperty(Names.RenderInframes)]
+        public bool RenderInframes { get; set; }
+
         // Serialization
 
         // Which wire format the editor WRITES with, split by what is being written rather than kept as
@@ -149,7 +163,7 @@ namespace BH.SDK.Models.SettingGroups
         public GameEditorSettings(bool autosave, float autosaveRate, int maxAutosaveFiles,
             float cameraMinSize, float cameraMaxSize, bool playerActiveDefault, bool gizmosResetOnPlayer,
             bool multiSelectRequiresHold, bool previewColliderOnSelect, bool pickInvisibleAABB,
-            float gridSize, float gridOpacity,
+            bool renderInframes, float gridSize, float gridOpacity,
             SerializationType levelSerializeMode,
             SerializationType resourcesSerializeMode, SerializationType copySerializeMode)
         {
@@ -163,6 +177,7 @@ namespace BH.SDK.Models.SettingGroups
             MultiSelectRequiresHold = multiSelectRequiresHold;
             PreviewColliderOnSelect = previewColliderOnSelect;
             PickInvisibleAABB = pickInvisibleAABB;
+            RenderInframes = renderInframes;
             GridSize = gridSize;
             GridOpacity = gridOpacity;
             LevelSerializeMode = levelSerializeMode;
@@ -185,6 +200,7 @@ namespace BH.SDK.Models.SettingGroups
             MultiSelectRequiresHold = true;
             PreviewColliderOnSelect = false;
             PickInvisibleAABB = false;
+            RenderInframes = false;
             GridSize = 1f;
             GridOpacity = 0.25f;
             LevelSerializeMode = SerializationType.Json;
@@ -195,7 +211,7 @@ namespace BH.SDK.Models.SettingGroups
         public object Clone() => Copy();
         public GameEditorSettings Copy() => new(Autosave, AutosaveRate, MaxAutosaveFiles, CameraMinSize,
             CameraMaxSize, PlayerActiveDefault, GizmosResetOnPlayer, MultiSelectRequiresHold,
-            PreviewColliderOnSelect, PickInvisibleAABB, GridSize, GridOpacity,
+            PreviewColliderOnSelect, PickInvisibleAABB, RenderInframes, GridSize, GridOpacity,
             LevelSerializeMode, ResourcesSerializeMode, CopySerializeMode);
 
         public void Pull(GameEditorSettings source)
@@ -210,6 +226,7 @@ namespace BH.SDK.Models.SettingGroups
             MultiSelectRequiresHold = source.MultiSelectRequiresHold;
             PreviewColliderOnSelect = source.PreviewColliderOnSelect;
             PickInvisibleAABB = source.PickInvisibleAABB;
+            RenderInframes = source.RenderInframes;
             GridSize = source.GridSize;
             GridOpacity = source.GridOpacity;
             LevelSerializeMode = source.LevelSerializeMode;
@@ -219,12 +236,13 @@ namespace BH.SDK.Models.SettingGroups
 
         public override bool Equals(object obj) => obj is GameEditorSettings value && Equals(value);
 
-        // HashCode.Combine takes at most 8 values, and this class holds 15 - the tail folds into the
-        // eighth slot rather than being dropped.
+        // HashCode.Combine takes at most 8 values, and this class holds 16 - the tail folds into the
+        // eighth slot rather than being dropped, twice over.
         public override int GetHashCode() => HashCode.Combine(Autosave, AutosaveRate, MaxAutosaveFiles,
             CameraMinSize, CameraMaxSize, PlayerActiveDefault, GizmosResetOnPlayer,
             HashCode.Combine(MultiSelectRequiresHold, PreviewColliderOnSelect, PickInvisibleAABB,
-                GridSize, GridOpacity, LevelSerializeMode, ResourcesSerializeMode, CopySerializeMode));
+                GridSize, GridOpacity, LevelSerializeMode, ResourcesSerializeMode,
+                HashCode.Combine(CopySerializeMode, RenderInframes)));
 
         public bool Equals(GameEditorSettings other)
         {
@@ -240,6 +258,7 @@ namespace BH.SDK.Models.SettingGroups
                    && MultiSelectRequiresHold == other.MultiSelectRequiresHold
                    && PreviewColliderOnSelect == other.PreviewColliderOnSelect
                    && PickInvisibleAABB == other.PickInvisibleAABB
+                   && RenderInframes == other.RenderInframes
                    && GridSize.Equals(other.GridSize)
                    && GridOpacity.Equals(other.GridOpacity)
                    && LevelSerializeMode == other.LevelSerializeMode

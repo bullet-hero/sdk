@@ -515,6 +515,7 @@
         public const string Style = "style";
         public const string Default = "default";
         public const string Gizmos = "gizmos";
+        public const string Inframes = "inframes";
         public const string Grid = "grid";
         public const string Opacity = "opacity";
         public const string Reset = "reset";
@@ -545,6 +546,7 @@
         public const string MultiSelectRequiresHold = Multi + _ + Selection + _ + Requires + _ + Hold;
         public const string PreviewColliderOnSelect = Preview + _ + Collider + _ + On + _ + Selection;
         public const string PickInvisibleAABB = Pick + _ + Invisible + _ + AABB;
+        public const string RenderInframes = Render + _ + Inframes;
         public const string GridSize = Grid + _ + Size;
         public const string GridOpacity = Grid + _ + Opacity;
         

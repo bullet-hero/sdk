@@ -190,6 +190,48 @@ namespace BH.SDK.Tests
             Assert.IsFalse(source.Equals(other));
         }
 
+        // Inframes are what an effect SPAWNS while it plays - rows the author can neither select nor
+        // edit - so the hierarchy leaves them out until asked. Newly added to a 1.0 domain, hence the
+        // default is what a settings.json predating the property reads back as.
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.VeryEasy)]
+        public void RenderInframes_DefaultsToOff()
+        {
+            var settings = new GameEditorSettings();
+            Assert.IsFalse(settings.RenderInframes);
+
+            settings.RenderInframes = true;
+            settings.Reset();
+            Assert.IsFalse(settings.RenderInframes);
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Easy)]
+        public void RenderInframes_SurvivesCopyPullAndEquality()
+        {
+            var source = new GameEditorSettings { RenderInframes = true };
+
+            var copy = source.Copy();
+            Assert.IsTrue(copy.RenderInframes);
+            Assert.IsTrue(source.Equals(copy));
+
+            var pulled = new GameEditorSettings();
+            pulled.Pull(source);
+            Assert.IsTrue(pulled.RenderInframes);
+            Assert.AreEqual(source.GetHashCode(), pulled.GetHashCode());
+
+            // It is the sixteenth field, i.e. the one folded deepest into GetHashCode - the nesting
+            // that keeps it from being dropped is exactly what this asserts.
+            var other = source.Copy();
+            other.RenderInframes = false;
+            Assert.IsFalse(source.Equals(other));
+            Assert.AreNotEqual(source.GetHashCode(), other.GetHashCode());
+        }
+
         // The grid's opacity is the ONLY part of its colour anyone authors - the hue is the inverse
         // of the camera background of the current frame, resolved live by the editor.
         [Test]
