@@ -14,6 +14,9 @@ namespace BH.SDK.Generators
     {
         public override string NameKey => "gen_level_empty";
 
+        // First in the list: the level everything else is a shortcut to.
+        public override int ListOrder => -20;
+
         public override GeneratorHints Hints => HintsValue;
 
         private static readonly GeneratorHints HintsValue = new GeneratorHints.Builder()

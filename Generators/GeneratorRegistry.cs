@@ -36,7 +36,11 @@ namespace BH.SDK.Generators
                 found.Add((IGenerator)Activator.CreateInstance(type));
             }
 
-            found.Sort(static (a, b) => string.CompareOrdinal(a.NameKey, b.NameKey));
+            found.Sort(static (a, b) =>
+            {
+                var byOrder = a.ListOrder.CompareTo(b.ListOrder);
+                return byOrder != 0 ? byOrder : string.CompareOrdinal(a.NameKey, b.NameKey);
+            });
 
             ByKey = new Dictionary<string, IGenerator>(found.Count);
             foreach (var generator in found)
@@ -56,7 +60,8 @@ namespace BH.SDK.Generators
             Ordered = found.ToArray();
         }
 
-        /// <summary> Every generator, ordered by NameKey so a host's list is stable across runs. </summary>
+        /// <summary> Every generator, ordered by <see cref="IGenerator.ListOrder"/> and then by
+        /// NameKey, so a host's list reads sensibly and is stable across runs. </summary>
         public static IReadOnlyList<IGenerator> All => Ordered;
 
         public static IGenerator Get(string nameKey) => ByKey[nameKey];

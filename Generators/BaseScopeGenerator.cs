@@ -15,6 +15,9 @@ namespace BH.SDK.Generators
         public abstract string NameKey { get; }
         public abstract GeneratorKind Kind { get; }
 
+        /// <inheritdoc/>
+        public virtual int ListOrder => 0;
+
         public virtual GeneratorRequirements Requirements => GeneratorRequirements.None;
         public virtual GeneratorHints Hints => GeneratorHints.Empty;
 

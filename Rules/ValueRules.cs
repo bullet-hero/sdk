@@ -21,10 +21,13 @@ namespace BH.SDK.Rules
         // minimal allowed delta for no clipping editor object through each other
         public const float MinLayerDelta = 0.01f;
 
-        // Depth tie-break for objects sharing a layer. Early-Z only rejects what DIFFERS in depth,
-        // and LayerCoefficient puts whole layers exactly 1.0 apart, so two objects on one layer are
-        // coplanar and ZTest LEqual keeps both - every overlapping pair shades twice, and which one
-        // wins is undefined. A small deterministic offset per object separates them.
+        // Depth tie-break for objects sharing a layer, used by BOTH render paths. LayerCoefficient
+        // puts whole layers exactly 1.0 apart, so two objects on one layer are coplanar - and each
+        // path then fails its own way. Opaque: early-Z only rejects what DIFFERS in depth, so every
+        // overlapping pair shades twice and ZTest LEqual hands the pixel to whichever drew last.
+        // Transparent: the depth sort ties, and the tie is broken by an index that moves between
+        // frames, so the pair visibly REORDERS. A small deterministic offset per object separates
+        // them. Inframe objects are exempt - they stack themselves by MinLayerDelta above.
         //
         // Step times count must stay strictly below 1.0 or an object bleeds into the next layer's
         // band and the draw order the author sees stops matching the one they wrote. 512 leaves half

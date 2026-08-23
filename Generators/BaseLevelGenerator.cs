@@ -12,6 +12,9 @@ namespace BH.SDK.Generators
 
         public GeneratorKind Kind => GeneratorKind.Level;
 
+        /// <inheritdoc/>
+        public virtual int ListOrder => 0;
+
         public virtual GeneratorRequirements Requirements => GeneratorRequirements.None;
         public virtual GeneratorHints Hints => GeneratorHints.Empty;
 

@@ -22,6 +22,21 @@ namespace BH.SDK.Generators
 
         GeneratorKind Kind { get; }
 
+        // A HOST LISTS GENERATORS IN ONE ORDER AND IT HAS TO MEAN SOMETHING. Alphabetical by NameKey
+        // is stable, which is all the registry needed while every generator was equal - but the
+        // level-creation list is a first impression, and there "Afterbeat import" cannot come before
+        // "Empty". Sorting by a declared rank rather than by a list kept in the UI is what keeps a
+        // generator's place a property OF THE GENERATOR: adding one means writing one number in it,
+        // not editing a screen that has never heard of it.
+        //
+        // Rank first, NameKey second, so everything at the default is still alphabetical and still
+        // stable. Negative pulls forward (the obvious starting points), positive pushes back (an
+        // import from another game's format, which is nobody's first answer to "make a level").
+
+        /// <summary> Where this sits in a host's list. Lower is earlier; 0 is the default and sorts
+        /// alphabetically among its peers. </summary>
+        int ListOrder { get; }
+
         /// <summary> What the host must provide before this can run. </summary>
         GeneratorRequirements Requirements { get; }
 

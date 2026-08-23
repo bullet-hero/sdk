@@ -30,6 +30,9 @@ namespace BH.SDK.Generators.Audio
     {
         public override string NameKey => "gen_level_audio_file";
 
+        // Second: the one thing almost every level starts from is a track.
+        public override int ListOrder => -10;
+
         public override GeneratorRequirements Requirements => GeneratorRequirements.ExternalAnalysis;
 
         public override GeneratorHints Hints { get; } = new GeneratorHints.Builder()
