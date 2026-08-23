@@ -13,7 +13,7 @@ namespace BH.SDK.Generators.Geometry
     /// </summary>
     public class PolygonGenerator : BaseSpawnGenerator<PolygonGenerator.Parameters>
     {
-        public override string NameKey => "gen_polygon";
+        public override string NameKey => "gen_geometry_polygon";
 
         public override GeneratorHints Hints { get; } = new GeneratorHints.Builder()
             .Section(GeneratorSections.Main, SpawnParameters.MainFields)

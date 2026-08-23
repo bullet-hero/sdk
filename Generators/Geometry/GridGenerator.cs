@@ -9,7 +9,7 @@ namespace BH.SDK.Generators.Geometry
     /// </summary>
     public class GridGenerator : BaseSpawnGenerator<GridGenerator.Parameters>
     {
-        public override string NameKey => "gen_grid";
+        public override string NameKey => "gen_geometry_grid";
 
         public override GeneratorHints Hints { get; } = new GeneratorHints.Builder()
             .Section(GeneratorSections.Main, SpawnParameters.MainFields)

@@ -23,7 +23,7 @@ namespace BH.SDK.Models.SettingGroups
         public bool Autosave { get; set; }
 
         /// <summary> Seconds between autosaves. </summary>
-        [RuleMin(1f)]
+        [RuleMinValue(1f)]
         [JsonProperty(Names.AutosaveRate)]
         public float AutosaveRate { get; set; }
 
@@ -36,12 +36,12 @@ namespace BH.SDK.Models.SettingGroups
         // Editor Camera
 
         /// <summary> Closest the editor camera may zoom in. </summary>
-        [RuleMin(0f)]
+        [RuleMinValue(0f)]
         [JsonProperty(Names.CameraMinSize)]
         public float CameraMinSize { get; set; }
 
         /// <summary> Furthest the editor camera may zoom out. </summary>
-        [RuleMin(0f)]
+        [RuleMinValue(0f)]
         [JsonProperty(Names.CameraMaxSize)]
         public float CameraMaxSize { get; set; }
 
@@ -69,7 +69,7 @@ namespace BH.SDK.Models.SettingGroups
         // a half-unit grid stays authored on one across sessions - so only that is remembered.
 
         /// <summary> Side of one cell of the editor's viewport grid, in world units. </summary>
-        [RuleMin(ValueRules.MinGridSize)]
+        [RuleMinValue(ValueRules.MinGridSize)]
         [JsonProperty(Names.GridSize)]
         public float GridSize { get; set; }
 

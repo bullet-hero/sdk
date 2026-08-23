@@ -23,13 +23,13 @@ namespace BH.SDK.Models.SettingGroups.Graphics
 
         /// <summary> Explicit effect update rate, used when FramerateTarget says so. Lower than the
         /// game framerate by default. </summary>
-        [RuleMin(1)]
+        [RuleMinValue(1)]
         [JsonProperty(Names.FixedFramerate)]
         public int FixedFramerate { get; set; }
 
         /// <summary> Longest effect state the player will fast-forward when seeking, before it gives
         /// up and starts the effect fresh. </summary>
-        [RuleMin(0.2f)]
+        [RuleMinValue(0.2f)]
         [JsonProperty(Names.MaxScrubTime)]
         public float MaxScrubTime { get; set; }
 

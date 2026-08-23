@@ -8,7 +8,7 @@ namespace BH.SDK.Generators.Geometry
     /// </summary>
     public class RadialGenerator : BaseSpawnGenerator<RadialGenerator.Parameters>
     {
-        public override string NameKey => "gen_radial";
+        public override string NameKey => "gen_geometry_radial";
 
         public override GeneratorHints Hints { get; } = new GeneratorHints.Builder()
             .Section(GeneratorSections.Main, SpawnParameters.MainFields)

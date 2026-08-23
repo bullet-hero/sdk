@@ -211,7 +211,7 @@ namespace BH.SDK.Tests.Rules
 
         // A two-sided range is the only numeric rule that rejects every non-finite value, because
         // NaN fails the lower bound and the infinities fail one side each. This is what makes
-        // RuleInRange - and not RuleMin/RuleMax - the safe default for authored floats.
+        // RuleInRange - and not RuleMinValue/RuleMaxValue - the safe default for authored floats.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]

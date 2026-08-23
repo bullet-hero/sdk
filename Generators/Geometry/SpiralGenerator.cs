@@ -9,7 +9,7 @@ namespace BH.SDK.Generators.Geometry
     /// </summary>
     public class SpiralGenerator : BaseSpawnGenerator<SpiralGenerator.Parameters>
     {
-        public override string NameKey => "gen_spiral";
+        public override string NameKey => "gen_geometry_spiral";
 
         public override GeneratorHints Hints { get; } = new GeneratorHints.Builder()
             .Section(GeneratorSections.Main, SpawnParameters.MainFields)

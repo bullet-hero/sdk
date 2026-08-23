@@ -14,7 +14,7 @@ namespace BH.SDK.Models.Interfaces
     // [0, N), so the last playable frame is N - 1 and N itself is the end boundary, not a frame.
     public interface IFrameDuration
     {
-        [RuleMin(FrameRules.MinFrameDuration)]
+        [RuleMinValue(FrameRules.MinFrameDuration)]
         [JsonProperty(Names.FrameDurationShort)]
         public int FrameDuration { get; set; }
     }

@@ -55,6 +55,21 @@ namespace BH.SDK.Models
         [JsonProperty(Names.GameEditor)]
         public GameEditorSettings GameEditor { get; set; }
 
+        // Additive like the Interface group above, and for the same reason: an older settings.json
+        // has no "keys" key and Newtonsoft leaves the constructor's empty map in place, so no
+        // snapshot and no migrator.
+        //
+        // The key is Names.Keys, which CurveValue also uses for its keyframe list. That reuse is
+        // what the file's own header allows - "a key is only ever reused across models that can
+        // never co-occur" - and a curve lives inside a level while this lives inside settings.json,
+        // so the two can never appear on one model.
+
+        /// <summary> Which key runs which command, as overrides on the shipped defaults. Empty for a
+        /// player who never rebound anything, which is most of them. </summary>
+        [RuleNotNull]
+        [JsonProperty(Names.Keys)]
+        public KeybindingsSettings Keybindings { get; set; }
+
         public UserSettings()
         {
             General = new GeneralSettings();
@@ -63,10 +78,12 @@ namespace BH.SDK.Models
             Graphics = new GraphicsSettings();
             GameEditor = new GameEditorSettings();
             Interface = new InterfaceSettings();
+            Keybindings = new KeybindingsSettings();
         }
+
         public UserSettings(GeneralSettings general, ControlsSettings controls,
             AudioSettings audio, GraphicsSettings graphics, GameEditorSettings gameEditor,
-            InterfaceSettings interfaceSettings)
+            InterfaceSettings interfaceSettings, KeybindingsSettings keybindings)
         {
             General = general;
             Controls = controls;
@@ -74,7 +91,9 @@ namespace BH.SDK.Models
             Graphics = graphics;
             GameEditor = gameEditor;
             Interface = interfaceSettings;
+            Keybindings = keybindings;
         }
+
         public void Reset()
         {
             General.Reset();
@@ -83,12 +102,14 @@ namespace BH.SDK.Models
             Graphics.Reset();
             GameEditor.Reset();
             Interface.Reset();
+            Keybindings.Reset();
         }
 
         public object Clone() => Copy();
+
         public UserSettings Copy() => new(General.Copy(), Controls.Copy(),
-            Audio.Copy(), Graphics.Copy(), GameEditor.Copy(), Interface.Copy());
-        
+            Audio.Copy(), Graphics.Copy(), GameEditor.Copy(), Interface.Copy(), Keybindings.Copy());
+
         public void Pull(UserSettings source)
         {
             General.Pull(source.General);
@@ -97,6 +118,7 @@ namespace BH.SDK.Models
             Graphics.Pull(source.Graphics);
             GameEditor.Pull(source.GameEditor);
             Interface.Pull(source.Interface);
+            Keybindings.Pull(source.Keybindings);
         }
 
         public bool Equals(UserSettings other)
@@ -108,10 +130,13 @@ namespace BH.SDK.Models
                    && Audio.Equals(other.Audio)
                    && Graphics.Equals(other.Graphics)
                    && GameEditor.Equals(other.GameEditor)
-                   && Interface.Equals(other.Interface);
+                   && Interface.Equals(other.Interface)
+                   && Keybindings.Equals(other.Keybindings);
         }
-        
+
         public override bool Equals(object obj) => obj is UserSettings value && Equals(value);
-        public override int GetHashCode() => HashCode.Combine(General, Controls, Audio, Graphics, GameEditor, Interface);
+
+        public override int GetHashCode() =>
+            HashCode.Combine(General, Controls, Audio, Graphics, GameEditor, Interface, Keybindings);
     }
 }

@@ -88,7 +88,7 @@ namespace BH.SDK.Rules
         // perfectly VALID authored data - it is what an unpinned level stores.
         //
         // Two ranges, not one, and confusing them is the easy mistake here. [MinSeed, MaxValidSeed]
-        // is what the FIELD accepts, NullSeed included - that is what RuleMin validates and what a
+        // is what the FIELD accepts, NullSeed included - that is what RuleMinValue validates and what a
         // seed input clamps to. [MinValidSeed, MaxValidSeed] is what a REAL seed lives in, and it is
         // what every generator must draw from: hand a run seed 0 and it silently means "unseeded",
         // so a generator that could produce it would occasionally produce a run nobody can reproduce.

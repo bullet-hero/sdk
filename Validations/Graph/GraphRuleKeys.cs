@@ -19,7 +19,7 @@ namespace BH.SDK.Validations.Graph
         {
             return rule switch
             {
-                GraphRule.None => "graph_none",
+                GraphRule.None => "graph_rule_none",
                 GraphRule.DuplicateObjectId => "graph_duplicate_object_id",
                 GraphRule.MissingParent => "graph_missing_parent",
                 GraphRule.ParentCycle => "graph_parent_cycle",

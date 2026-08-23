@@ -48,7 +48,7 @@ namespace BH.SDK.Models.SettingGroups.Graphics
         public bool UseScrub { get; set; }
 
         /// <summary> Length of that scrub burst, in seconds. </summary>
-        [RuleMin(0f)]
+        [RuleMinValue(0f)]
         [JsonProperty(Names.ScrubTime)]
         public float ScrubTime { get; set; }
 

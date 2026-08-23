@@ -464,6 +464,18 @@ rest of this folder (`GeneralSettings`/`ControlsSettings`/`AudioSettings`/`Graph
 `GameEditorSettings`/`InterfaceSettings`), which are all sub-groups of `UserSettings` (per-device,
 `settings.json`).
 
+`KeybindingsSettings` is the newest of them and the one whose shape is unlike the rest: a sparse
+`Dictionary<string, string>` of shortcut id to binding string, holding only what a player actually
+rebound. It is also **the SDK's first serialized string-keyed dictionary**, which needs no converter
+at all - every existing dict converter in `SerializationService.GetConverters()` exists solely because
+Newtonsoft's default dictionary serialization throws for value-type keys, and a `string` key takes its
+happy path. What a binding string may SAY lives in `Utils/ShortcutSyntax` (and is validated by
+`RuleShortcutBindings`); which KEYS exist deliberately does not - there is no `KeyToken` enum here,
+for the reason `KeyBindingMask`'s own header gives, and the consumer resolves the name against
+`UnityEngine.InputSystem.Key`. An empty value is a real state ("the player unbound this") and is not
+the same as an absent key ("the player never touched it"). It shipped additively like everything else
+here, so `UserSettings` stays at `(1, 0)`.
+
 `InterfaceSettings` is the newest of them (the game's own overlays — today the diagnostics readout's
 `StatsActive` + `StatsAlignmentX`/`Y`) and shipped **without bumping the `UserSettings` domain**: an
 additive property whose constructor supplies a default needs no snapshot and no migrator, exactly like

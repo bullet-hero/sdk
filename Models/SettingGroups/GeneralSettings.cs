@@ -21,7 +21,7 @@ namespace BH.SDK.Models.SettingGroups
 
         /// <summary> Seconds before a remote resource fetch is given up on and its next fallback
         /// source is tried. </summary>
-        [RuleMin(0f)]
+        [RuleMinValue(0f)]
         [JsonProperty(Names.ResourceWebTimeout)]
         public float ResourceWebTimeout { get; set; }
         

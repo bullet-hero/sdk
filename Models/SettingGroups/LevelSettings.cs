@@ -37,7 +37,7 @@ namespace BH.SDK.Models.SettingGroups
         public int ObjectIdCounter { get; set; }
 
         /// <summary> Next free audio track id, same never-reused rule. </summary>
-        [RuleMin(AudioId.MinValue)]
+        [RuleMinValue(AudioId.MinValue)]
         [JsonProperty(Names.AudioIdCounter)]
         public int AudioIdCounter { get; set; }
 
@@ -49,7 +49,7 @@ namespace BH.SDK.Models.SettingGroups
 
         /// <summary> Seed every random-tagged value in this level resolves against.
         /// <see cref="LevelRules.NullSeed"/> = unset. </summary>
-        [RuleMin(LevelRules.MinSeed)]
+        [RuleMinValue(LevelRules.MinSeed)]
         [JsonProperty(Names.Seed)]
         public int Seed { get; set; }
 

@@ -39,7 +39,7 @@ namespace BH.SDK.Generators.Modifiers
     /// </summary>
     public class StaggerGenerator : BaseModifier<StaggerGenerator.Parameters>
     {
-        public override string NameKey => "mod_stagger";
+        public override string NameKey => "mod_span_stagger";
 
         public override GeneratorHints Hints { get; } = new GeneratorHints.Builder()
             .Section(GeneratorSections.Main, nameof(Parameters.StepFrames), nameof(Parameters.Order))

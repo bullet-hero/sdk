@@ -88,7 +88,7 @@ namespace BH.SDK.Models.SettingGroups.Controls
         public float DashButtonSize { get; set; }
 
         /// <summary> Which icon the dash button draws, by index into the game's own set. </summary>
-        [RuleMin(0)]
+        [RuleMinValue(0)]
         [JsonProperty(Names.DashButtonIcon)]
         public int DashButtonIcon { get; set; }
 

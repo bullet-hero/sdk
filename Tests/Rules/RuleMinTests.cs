@@ -3,68 +3,68 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests.Rules
 {
-    // decimal is deliberately untested: RuleMinAttribute has a decimal ctor, but decimal is not a
-    // legal attribute-argument type in C#, so that overload can never be reached from a [RuleMin]
-    // declaration. Same holds for RuleMax/RuleInRange.
+    // decimal is deliberately untested: RuleMinValueAttribute has a decimal ctor, but decimal is not a
+    // legal attribute-argument type in C#, so that overload can never be reached from a [RuleMinValue]
+    // declaration. Same holds for RuleMaxValue/RuleInRange.
 
     /// <summary>
-    /// RuleMin: value must be >= Min. Fix clamps to DefaultValue when set, to Min otherwise.
+    /// RuleMinValue: value must be >= Min. Fix clamps to DefaultValue when set, to Min otherwise.
     /// </summary>
     public class RuleMinTests : BaseRuleTests
     {
         [RuleContainer]
         private class IntModel
         {
-            [RuleMin(10)]
+            [RuleMinValue(10)]
             public int Value { get; set; } = 10;
         }
 
         [RuleContainer]
         private class IntDefaultModel
         {
-            [RuleMin(10, 42)]
+            [RuleMinValue(10, 42)]
             public int Value { get; set; } = 42;
         }
 
         [RuleContainer]
         private class FloatModel
         {
-            [RuleMin(1.5f)]
+            [RuleMinValue(1.5f)]
             public float Value { get; set; } = 1.5f;
         }
 
         [RuleContainer]
         private class ByteModel
         {
-            [RuleMin((byte)5)]
+            [RuleMinValue((byte)5)]
             public byte Value { get; set; } = 5;
         }
 
         [RuleContainer]
         private class UIntModel
         {
-            [RuleMin(5u)]
+            [RuleMinValue(5u)]
             public uint Value { get; set; } = 5u;
         }
 
         [RuleContainer]
         private class LongModel
         {
-            [RuleMin(5L)]
+            [RuleMinValue(5L)]
             public long Value { get; set; } = 5L;
         }
 
         [RuleContainer]
         private class DoubleModel
         {
-            [RuleMin(1.5d)]
+            [RuleMinValue(1.5d)]
             public double Value { get; set; } = 1.5d;
         }
 
         [RuleContainer]
         private class WrongTypeModel
         {
-            [RuleMin(1)]
+            [RuleMinValue(1)]
             public string Value { get; set; } = "text";
         }
 
@@ -92,7 +92,7 @@ namespace BH.SDK.Tests.Rules
         [Category(Metadata.Category.VeryEasy)]
         public void TestJustUnder()
         {
-            AssertInvalid<RuleMinAttribute>(new IntModel { Value = 9 });
+            AssertInvalid<RuleMinValueAttribute>(new IntModel { Value = 9 });
         }
 
         [Test]
@@ -122,7 +122,7 @@ namespace BH.SDK.Tests.Rules
         public void TestByte()
         {
             AssertValid(new ByteModel { Value = 5 });
-            AssertInvalid<RuleMinAttribute>(new ByteModel { Value = 4 });
+            AssertInvalid<RuleMinValueAttribute>(new ByteModel { Value = 4 });
         }
 
         [Test]
@@ -132,7 +132,7 @@ namespace BH.SDK.Tests.Rules
         public void TestUInt()
         {
             AssertValid(new UIntModel { Value = 5u });
-            AssertInvalid<RuleMinAttribute>(new UIntModel { Value = 4u });
+            AssertInvalid<RuleMinValueAttribute>(new UIntModel { Value = 4u });
         }
 
         [Test]
@@ -142,7 +142,7 @@ namespace BH.SDK.Tests.Rules
         public void TestLong()
         {
             AssertValid(new LongModel { Value = 5L });
-            AssertInvalid<RuleMinAttribute>(new LongModel { Value = 4L });
+            AssertInvalid<RuleMinValueAttribute>(new LongModel { Value = 4L });
         }
 
         [Test]
@@ -152,7 +152,7 @@ namespace BH.SDK.Tests.Rules
         public void TestFloat()
         {
             AssertValid(new FloatModel { Value = 1.5f });
-            AssertInvalid<RuleMinAttribute>(new FloatModel { Value = 1.49f });
+            AssertInvalid<RuleMinValueAttribute>(new FloatModel { Value = 1.49f });
         }
 
         [Test]
@@ -162,7 +162,7 @@ namespace BH.SDK.Tests.Rules
         public void TestDouble()
         {
             AssertValid(new DoubleModel { Value = 1.5d });
-            AssertInvalid<RuleMinAttribute>(new DoubleModel { Value = 1.49d });
+            AssertInvalid<RuleMinValueAttribute>(new DoubleModel { Value = 1.49d });
         }
 
         // NaN compares as less than everything, so it lands on the "below Min" branch. That is the
@@ -174,7 +174,7 @@ namespace BH.SDK.Tests.Rules
         [Category(Metadata.Category.VeryEasy)]
         public void TestNaNIsInvalid()
         {
-            AssertInvalid<RuleMinAttribute>(new FloatModel { Value = float.NaN });
+            AssertInvalid<RuleMinValueAttribute>(new FloatModel { Value = float.NaN });
         }
 
         [Test]
@@ -183,11 +183,11 @@ namespace BH.SDK.Tests.Rules
         [Category(Metadata.Category.VeryEasy)]
         public void TestNegativeInfinityIsInvalid()
         {
-            AssertInvalid<RuleMinAttribute>(new FloatModel { Value = float.NegativeInfinity });
+            AssertInvalid<RuleMinValueAttribute>(new FloatModel { Value = float.NegativeInfinity });
         }
 
-        // Positive infinity satisfies a lower bound - RuleMin alone cannot keep it out. Any property
-        // that must stay finite needs an upper bound too (RuleInRange), not just RuleMin.
+        // Positive infinity satisfies a lower bound - RuleMinValue alone cannot keep it out. Any property
+        // that must stay finite needs an upper bound too (RuleInRange), not just RuleMinValue.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]

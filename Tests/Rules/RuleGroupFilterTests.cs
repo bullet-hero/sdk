@@ -44,7 +44,7 @@ namespace BH.SDK.Tests.Rules
         [RuleContainer]
         private class ErrorModel
         {
-            [RuleMin(10)]
+            [RuleMinValue(10)]
             public int Value { get; set; }
         }
 
@@ -54,7 +54,7 @@ namespace BH.SDK.Tests.Rules
             [AlwaysFailsAdvice]
             public int Advice { get; set; }
 
-            [RuleMin(10)]
+            [RuleMinValue(10)]
             public int Error { get; set; }
         }
 
@@ -109,7 +109,7 @@ namespace BH.SDK.Tests.Rules
             var issues = Analyze(new MixedModel(), Reporting(RuleGroup.Error));
 
             Assert.AreEqual(1, issues.Count);
-            Assert.IsTrue(issues.All(issue => issue.Rule is RuleMinAttribute));
+            Assert.IsTrue(issues.All(issue => issue.Rule is RuleMinValueAttribute));
         }
 
         [Test]

@@ -4,35 +4,35 @@ using NUnit.Framework;
 namespace BH.SDK.Tests.Rules
 {
     /// <summary>
-    /// RuleFinite: rejects NaN and the infinities on the floats no two-sided range covers.
+    /// RuleFiniteNumber: rejects NaN and the infinities on the floats no two-sided range covers.
     /// </summary>
     public class RuleFiniteTests : BaseRuleTests
     {
         [RuleContainer]
         private class FloatModel
         {
-            [RuleFinite]
+            [RuleFiniteNumber]
             public float Value { get; set; }
         }
 
         [RuleContainer]
         private class DoubleModel
         {
-            [RuleFinite]
+            [RuleFiniteNumber]
             public double Value { get; set; }
         }
 
         [RuleContainer]
         private class DefaultModel
         {
-            [RuleFinite(1.5f)]
+            [RuleFiniteNumber(1.5f)]
             public float Value { get; set; }
         }
 
         [RuleContainer]
         private class WrongTypeModel
         {
-            [RuleFinite]
+            [RuleFiniteNumber]
             public int Value { get; set; }
         }
 
@@ -53,7 +53,7 @@ namespace BH.SDK.Tests.Rules
         [Category(Metadata.Category.Easy)]
         public void TestNaN()
         {
-            AssertInvalid<RuleFiniteAttribute>(new FloatModel { Value = float.NaN });
+            AssertInvalid<RuleFiniteNumberAttribute>(new FloatModel { Value = float.NaN });
         }
 
         [Test]
@@ -62,8 +62,8 @@ namespace BH.SDK.Tests.Rules
         [Category(Metadata.Category.Easy)]
         public void TestInfinities()
         {
-            AssertInvalid<RuleFiniteAttribute>(new FloatModel { Value = float.PositiveInfinity });
-            AssertInvalid<RuleFiniteAttribute>(new FloatModel { Value = float.NegativeInfinity });
+            AssertInvalid<RuleFiniteNumberAttribute>(new FloatModel { Value = float.PositiveInfinity });
+            AssertInvalid<RuleFiniteNumberAttribute>(new FloatModel { Value = float.NegativeInfinity });
         }
 
         [Test]
@@ -73,8 +73,8 @@ namespace BH.SDK.Tests.Rules
         public void TestDouble()
         {
             AssertValid(new DoubleModel { Value = 1d });
-            AssertInvalid<RuleFiniteAttribute>(new DoubleModel { Value = double.NaN });
-            AssertInvalid<RuleFiniteAttribute>(new DoubleModel { Value = double.NegativeInfinity });
+            AssertInvalid<RuleFiniteNumberAttribute>(new DoubleModel { Value = double.NaN });
+            AssertInvalid<RuleFiniteNumberAttribute>(new DoubleModel { Value = double.NegativeInfinity });
         }
 
         // Zero rather than a bound: the rule exists precisely where there is no bound to clamp to.

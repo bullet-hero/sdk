@@ -28,7 +28,7 @@ namespace BH.SDK.Generators.Geometry
     /// </summary>
     public class FractalGenerator : BaseSpawnGenerator<FractalGenerator.Parameters>
     {
-        public override string NameKey => "gen_fractal";
+        public override string NameKey => "gen_geometry_fractal";
 
         public override GeneratorHints Hints { get; } = new GeneratorHints.Builder()
             .Section(GeneratorSections.Main, SpawnParameters.MainFields)

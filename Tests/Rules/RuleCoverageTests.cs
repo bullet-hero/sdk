@@ -21,8 +21,8 @@ namespace BH.SDK.Tests.Rules
     {
         private static readonly Dictionary<Type, string> Covered = new()
         {
-            { typeof(RuleMinAttribute), nameof(RuleMinTests) },
-            { typeof(RuleMaxAttribute), nameof(RuleMaxTests) },
+            { typeof(RuleMinValueAttribute), nameof(RuleMinTests) },
+            { typeof(RuleMaxValueAttribute), nameof(RuleMaxTests) },
             { typeof(RuleInRangeAttribute), nameof(RuleInRangeTests) },
             { typeof(RuleNotNullAttribute), nameof(RuleNotNullTests) },
             { typeof(RuleStringMaxAttribute), nameof(RuleStringMaxTests) },
@@ -58,7 +58,7 @@ namespace BH.SDK.Tests.Rules
 
             { typeof(RuleEnumValidAttribute), nameof(RuleEnumValidTests) },
             { typeof(RuleEnumFlagsValidAttribute), nameof(RuleEnumFlagsValidTests) },
-            { typeof(RuleFiniteAttribute), nameof(RuleFiniteTests) },
+            { typeof(RuleFiniteNumberAttribute), nameof(RuleFiniteTests) },
             { typeof(RuleIVector2OrderedAttribute), nameof(RuleIVector2OrderedTests) },
             { typeof(RuleCollectionMinCountAttribute), nameof(RuleCollectionMinCountTests) },
             { typeof(RuleCollectionNoNullItemsAttribute), nameof(RuleCollectionNoNullItemsTests) },
@@ -73,6 +73,7 @@ namespace BH.SDK.Tests.Rules
 
             { typeof(RuleControlPriorityAttribute), nameof(RuleControlPriorityTests) },
             { typeof(RuleAnyDeviceActiveAttribute), nameof(RuleAnyDeviceActiveTests) },
+            { typeof(RuleShortcutBindingsAttribute), nameof(RuleShortcutBindingsTests) },
         };
 
         private static IEnumerable<Type> ConcreteRules => typeof(BaseRuleAttribute).Assembly.GetTypes()
@@ -175,6 +176,7 @@ namespace BH.SDK.Tests.Rules
                 words.Add(name[start..i]);
                 start = i;
             }
+
             words.Add(name[start..]);
 
             if (words.Count > 1 && words[0] == "I")

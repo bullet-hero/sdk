@@ -25,7 +25,7 @@ namespace BH.SDK.Models.SettingGroups
         // if > 0 - target framerate
 
         /// <summary> Explicit framerate cap, used when FramerateTarget says so. </summary>
-        [RuleMin(1)]
+        [RuleMinValue(1)]
         [JsonProperty(Names.FixedFramerate)]
         public int FixedFramerate { get; set; }
 

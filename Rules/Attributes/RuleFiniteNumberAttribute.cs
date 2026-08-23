@@ -5,7 +5,7 @@ namespace BH.SDK.Rules.Attributes
 {
     // Covers the gap the numeric rules leave open. RuleInRange rejects every non-finite value for
     // free (NaN fails its lower half, the infinities fail one side each), but the one-sided rules do
-    // not: NaN sorts below every real number, so RuleMax accepts it, and +Infinity satisfies RuleMin.
+    // not: NaN sorts below every real number, so RuleMaxValue accepts it, and +Infinity satisfies RuleMinValue.
     // A property with only one bound - or with no numeric rule at all - can therefore hold NaN, and
     // NaN spreads: one poisoned position turns every derived transform, bound and collision result
     // into NaN for the rest of the frame.
@@ -15,20 +15,20 @@ namespace BH.SDK.Rules.Attributes
 
     /// <summary> A floating-point field must hold a real number - not NaN, not an infinity. </summary>
     [AttributeUsage(PropertyTarget)]
-    public class RuleFiniteAttribute : BasePropertyRuleAttribute
+    public class RuleFiniteNumberAttribute : BasePropertyRuleAttribute
     {
-        public override string RuleNameKey => "rule_finite";
+        public override string RuleNameKey => "rule_finite_number";
 
         public object DefaultValue { get; set; }
 
-        public RuleFiniteAttribute() { }
+        public RuleFiniteNumberAttribute() { }
 
-        public RuleFiniteAttribute(float defaultValue)
+        public RuleFiniteNumberAttribute(float defaultValue)
         {
             DefaultValue = defaultValue;
         }
 
-        public RuleFiniteAttribute(double defaultValue)
+        public RuleFiniteNumberAttribute(double defaultValue)
         {
             DefaultValue = defaultValue;
         }

@@ -44,7 +44,7 @@ namespace BH.SDK.Tests
     public static class MockData
     {
         #region Actual Version
-        
+
         public static EffectObject CreateTestEffect()
         {
             var effect = new EffectObject
@@ -66,6 +66,7 @@ namespace BH.SDK.Tests
             effect.Pivots.Add(new AlignmentKey());
             return effect;
         }
+
         public static EffectData CreateTestEffectData()
         {
             var effect = new EffectData
@@ -276,20 +277,25 @@ namespace BH.SDK.Tests
 
             var textureResource = new TextureResource(new TextureResourceId(-1), new List<ResourceKey>
             {
-                new(ResourceUriType.DirectUrl, "https://upload.wikimedia.org/wikipedia/commons/4/47/PNG_transparency_demonstration_1.png")
+                new(ResourceUriType.DirectUrl,
+                    "https://upload.wikimedia.org/wikipedia/commons/4/47/PNG_transparency_demonstration_1.png")
             })
             {
                 TextureResourceUV = new Vector4Value(2f, 2f, 0.1f, 0.1f),
             };
             level.Resources.Textures.Add(textureResource.TextureResourceId, textureResource);
-            level.Resources.Fonts.Add(new FontResourceId(-1), new FontResource(new FontResourceId(-1), new List<ResourceKey>
-            {
-                new(ResourceUriType.DirectUrl, "https://github.com/google/fonts/raw/refs/heads/main/ofl/dekko/Dekko-Regular.ttf"),
-            }));
-            level.Resources.Audios.Add(new AudioResourceId(-1), new AudioResource(new AudioResourceId(-1), new List<ResourceKey>
-            {
-                new(ResourceUriType.DirectUrl, "https://upload.wikimedia.org/wikipedia/commons/7/7a/%22six-seven%22.ogg"),
-            }));
+            level.Resources.Fonts.Add(new FontResourceId(-1), new FontResource(new FontResourceId(-1),
+                new List<ResourceKey>
+                {
+                    new(ResourceUriType.DirectUrl,
+                        "https://github.com/google/fonts/raw/refs/heads/main/ofl/dekko/Dekko-Regular.ttf"),
+                }));
+            level.Resources.Audios.Add(new AudioResourceId(-1), new AudioResource(new AudioResourceId(-1),
+                new List<ResourceKey>
+                {
+                    new(ResourceUriType.DirectUrl,
+                        "https://upload.wikimedia.org/wikipedia/commons/7/7a/%22six-seven%22.ogg"),
+                }));
 
             // Both IString shapes and both id ranges, so the whole-Level round trip covers the
             // FontCharacters converter without a test of its own: a game-defined font (positive id,
@@ -409,18 +415,24 @@ namespace BH.SDK.Tests
             var invalidLevelThemeId = ThemeId.NewGuid();
             level.Resources.Themes.Add(invalidLevelThemeId, new ThemeData(invalidLevelThemeId));
 
-            level.Resources.Textures.Add(new TextureResourceId(0), new TextureResource(new TextureResourceId(0), new List<ResourceKey>
-            {
-                new(ResourceUriType.DirectUrl, "https://upload.wikimedia.org/wikipedia/commons/4/47/PNG_transparency_demonstration_1.png")
-            }));
-            level.Resources.Fonts.Add(new FontResourceId(0), new FontResource(new FontResourceId(0), new List<ResourceKey>
-            {
-                new(ResourceUriType.DirectUrl, "https://github.com/google/fonts/raw/refs/heads/main/ofl/dekko/Dekko-Regular.ttf"),
-            }));
-            level.Resources.Audios.Add(new AudioResourceId(0), new AudioResource(new AudioResourceId(0), new List<ResourceKey>
-            {
-                new(ResourceUriType.DirectUrl, "https://upload.wikimedia.org/wikipedia/commons/7/7a/%22six-seven%22.ogg"),
-            }));
+            level.Resources.Textures.Add(new TextureResourceId(0), new TextureResource(new TextureResourceId(0),
+                new List<ResourceKey>
+                {
+                    new(ResourceUriType.DirectUrl,
+                        "https://upload.wikimedia.org/wikipedia/commons/4/47/PNG_transparency_demonstration_1.png")
+                }));
+            level.Resources.Fonts.Add(new FontResourceId(0), new FontResource(new FontResourceId(0),
+                new List<ResourceKey>
+                {
+                    new(ResourceUriType.DirectUrl,
+                        "https://github.com/google/fonts/raw/refs/heads/main/ofl/dekko/Dekko-Regular.ttf"),
+                }));
+            level.Resources.Audios.Add(new AudioResourceId(0), new AudioResource(new AudioResourceId(0),
+                new List<ResourceKey>
+                {
+                    new(ResourceUriType.DirectUrl,
+                        "https://upload.wikimedia.org/wikipedia/commons/7/7a/%22six-seven%22.ogg"),
+                }));
 
             var trackEffects = new LevelTrackEffects();
             var track = new LevelTrack(new AudioId(1), new AudioResourceId(0), FrameSpan.FromBounds(0, 1001),
@@ -713,6 +725,18 @@ namespace BH.SDK.Tests
                     CameraMinSize = 0.5f,
                     CameraMaxSize = 50f,
                 },
+                // Three shapes at once, since the map's whole surface is what a round trip can drop:
+                // a rebound shortcut, a modifiers-only one (what a held shortcut looks like), and an
+                // explicitly cleared one - the empty string is a real value here, not an absence.
+                Keybindings =
+                {
+                    Overrides =
+                    {
+                        ["editor.duplicate"] = "ctrl+shift+d",
+                        ["timeline.zoom_modifier"] = "alt",
+                        ["editor.beat_tap"] = "",
+                    },
+                },
             };
             return settings;
         }
@@ -766,7 +790,7 @@ namespace BH.SDK.Tests
         #endregion
 
         #region Version v0.0
-        
+
         // Mock data for the Versions/V0_0 migration-test generation (see VERSION-UPDATE.md, "a real
         // (test) generation exists", and TestLevelV0_0Migration in SerializationTests.cs). Built from
         // the actual LevelSettingsV0_0/GameEventsV0_0/GameLevelV0_0/LevelResourcesV0_0 snapshot
@@ -831,7 +855,7 @@ namespace BH.SDK.Tests
 
             return levelJson.ToString();
         }
-        
+
         #endregion
     }
 }
