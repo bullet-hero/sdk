@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using BH.SDK.Models.Primitives;
 using BH.SDK.Serialization.Converters;
 using BH.SDK.Serialization.Converters.Base;
@@ -37,8 +38,8 @@ namespace BH.SDK.Serialization
 
         public SerializationService() : this(new SerializationSettings())
         {
-
         }
+
         public SerializationService(SerializationSettings serializationSettings)
         {
             var contractResolver = new ContractResolver(serializationSettings);
@@ -149,7 +150,7 @@ namespace BH.SDK.Serialization
 
             return new List<JsonConverter> { versionedEnvelope, new ConverterRouter(converters) };
         }
-        
+
         public class ContractResolver : DefaultContractResolver
         {
             private readonly SerializationSettings _serializationSettings;
@@ -158,16 +159,17 @@ namespace BH.SDK.Serialization
             {
                 _serializationSettings = serializationSettings;
             }
+
             protected override JsonObjectContract CreateObjectContract(Type objectType)
             {
                 var contract = base.CreateObjectContract(objectType);
-                
+
                 contract.MemberSerialization = _serializationSettings.memberSerialization;
-        
+
                 return contract;
             }
         }
-        
+
         // The mode reaches the writer, not the shared Serializer: Formatting used to live on
         // SerializationSettings and therefore applied to every save this service ever made, which is
         // the opposite of what a per-save choice needs. Bson is not a valid argument here - this is
@@ -188,6 +190,7 @@ namespace BH.SDK.Serialization
             var json = stringWriter.ToString();
             return json;
         }
+
         public TValue DeserializeData<TValue>(string json)
         {
             if (!VersionedTypeRegistry.CanConvert(typeof(TValue)))
@@ -199,6 +202,42 @@ namespace BH.SDK.Serialization
             using var jsonTextReader = new JsonTextReader(stringReader);
 
             return (TValue)Serializer.Deserialize(jsonTextReader, typeof(TValue));
+        }
+
+        // THE BYTE-LEVEL COUNTERPARTS OF SerializeData/DeserializeData, and the pair anything that
+        // moves a whole aggregate around needs: a level package writes a document into an archive
+        // entry, a reader takes one back out, and a server stores one in a column. Every one of
+        // them holds BYTES, and none of them can go through the string API without deciding that
+        // Bson does not exist.
+        //
+        // The domain and the version come off the type's own [DataVersion] rather than from the
+        // caller, for the same reason the string API refuses a type without one: an envelope whose
+        // version was supplied by whoever wrote it is an envelope that can lie about what it holds.
+
+        /// <summary> Serializes a versioned aggregate into an envelope's bytes. </summary>
+        public byte[] SerializeEnvelope<TValue>(TValue value, SerializationType type)
+        {
+            if (value == null) throw new ArgumentNullException(nameof(value));
+
+            var attribute = value.GetType().GetCustomAttribute<DataVersionAttribute>();
+            if (attribute == null)
+                throw new ArgumentException(CantConvertMessage<TValue>(nameof(SerializeEnvelope)), typeof(TValue).Name);
+
+            return GetDataSerializer(type)
+                .SerializeEnvelope(attribute.Domain, new EnvelopeData(attribute.Version, value));
+        }
+
+        /// <summary> Reads a versioned aggregate back out of an envelope's bytes, migrating it to
+        /// the domain's current shape on the way. </summary>
+        public TValue DeserializeEnvelope<TValue>(byte[] bytes, SerializationType type)
+        {
+            if (bytes == null) throw new ArgumentNullException(nameof(bytes));
+
+            if (!VersionedTypeRegistry.CanConvert(typeof(TValue)))
+                throw new ArgumentException(CantConvertMessage<TValue>(nameof(DeserializeEnvelope)),
+                    typeof(TValue).Name);
+
+            return GetDataSerializer(type).DeserializeEnvelope(bytes, typeof(TValue)).GetPayload<TValue>();
         }
 
         private static string CantConvertMessage<TValue>(string methodName)

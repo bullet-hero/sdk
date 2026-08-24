@@ -162,11 +162,11 @@ namespace BH.SDK.Models.Clipboard
         public void Pull(ClipboardData src)
         {
             Content = src.Content;
-            Objects = src.Objects.CopyDictionary();
-            PrefabObjects = src.PrefabObjects.CopyDictionary();
-            KeyObjects = src.KeyObjects.CopyDictionary();
-            KeyTracks = src.KeyTracks.CopyDictionary();
-            AudioTracks = src.AudioTracks.CopyDictionary();
+            Objects.PullDictionary(src.Objects, LevelUtils.PullObject);
+            PrefabObjects.PullDictionary(src.PrefabObjects, LevelUtils.PullObject);
+            KeyObjects.PullDictionary(src.KeyObjects, LevelUtils.PullObject);
+            KeyTracks.PullDictionary(src.KeyTracks);
+            AudioTracks.PullDictionary(src.AudioTracks);
             GameKeys.Pull(src.GameKeys);
             CameraKeys.Pull(src.CameraKeys);
             PostProcessingKeys.Pull(src.PostProcessingKeys);

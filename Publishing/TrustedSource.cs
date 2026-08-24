@@ -133,6 +133,28 @@ namespace BH.SDK.Publishing
         public TrustedSource Copy() => new(Key, Title, Url, new List<string>(Domains),
             Trust, new List<TypicalLicenseType>(Licenses), Note);
 
+        public void Update(TrustedSource src)
+        {
+            Key = src.Key;
+            Title = src.Title;
+            Url = src.Url;
+            Domains = new List<string>(src.Domains);
+            Trust = src.Trust;
+            Licenses = new List<TypicalLicenseType>(src.Licenses);
+            Note = src.Note;
+        }
+
+        public void Pull(TrustedSource src)
+        {
+            Key = src.Key;
+            Title = src.Title;
+            Url = src.Url;
+            Domains = new List<string>(src.Domains);
+            Trust = src.Trust;
+            Licenses = new List<TypicalLicenseType>(src.Licenses);
+            Note = src.Note;
+        }
+
         public override bool Equals(object obj) => obj is TrustedSource value && Equals(value);
         public override int GetHashCode()
         {

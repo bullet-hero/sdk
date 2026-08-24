@@ -104,7 +104,7 @@ namespace BH.SDK.Models.Objects
         {
             PrefabId = src.PrefabId;
             Name = src.Name;
-            Objects = src.Objects.CopyDictionary();
+            Objects.PullDictionary(src.Objects, LevelUtils.PullObject);
             ObjectIdCounter = src.ObjectIdCounter;
             FrameDuration = src.FrameDuration;
         }

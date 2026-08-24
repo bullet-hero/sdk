@@ -282,6 +282,7 @@ namespace BH.SDK.Tests
             })
             {
                 TextureResourceUV = new Vector4Value(2f, 2f, 0.1f, 0.1f),
+                Kind = TextureKind.PixelArt,
             };
             level.Resources.Textures.Add(textureResource.TextureResourceId, textureResource);
             level.Resources.Fonts.Add(new FontResourceId(-1), new FontResource(new FontResourceId(-1),

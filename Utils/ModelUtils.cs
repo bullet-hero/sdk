@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using BH.SDK.Models.Interfaces;
@@ -61,6 +62,68 @@ namespace BH.SDK.Utils
                 copyDictionary.Add(key.Copy(), value.Copy());
             return copyDictionary;
         }
+
+        // The one place a POLYMORPHIC model field is merged, and the reason it exists rather than
+        // a bare target.Pull(source): a Vector2Value cannot become a RandomVector2, so the instance
+        // is keepable only while the two concrete types agree. Pulling blindly would silently keep
+        // the old value - every interface-level Pull here is a no-op on a sibling implementation -
+        // which is the failure this returns a replacement for instead. A field whose declared type
+        // is a concrete model needs none of it and calls Pull directly.
+
+        /// <summary> Merges source into target in place while their concrete types allow it, and
+        /// returns what the field must now hold - the same instance, or a fresh copy of source. </summary>
+        public static T PullFrom<T>(this T target, T source) where T : class, IModel<T>
+        {
+            if (source is null) return null;
+            if (target is null || target.GetType() != source.GetType()) return source.Copy();
+            target.Pull(source);
+            return target;
+        }
+
+        // The keyed counterpart of PullFrom, and it exists for the collections something HOLDS INTO.
+        // Every other collection here is replaced wholesale by Pull on purpose - an element is
+        // addressed by its index or key, so keeping the instance buys nothing - but in an object scope
+        // (GameLevel, Prefab) the reference IS what everything else holds: the editor's selection, its
+        // operation buffer and every materialized prefab child point at RectObjects. A ClipboardData's
+        // five sections are the same case one level up, each held as its own timeline's buffer.
+        //
+        // pullValue is a delegate rather than a constraint because the value type may be a polymorphic
+        // BASE, and target.Pull(source) through a base reference writes the base half and stops
+        // (CLAUDE.md, "IModel<T> pattern"). Who dispatches to the concrete overload cannot live in a
+        // generic method - LevelUtils.PullObject is what the three object scopes pass; a concretely
+        // typed value like LevelTrack needs no callback and takes the overload below.
+
+        /// <summary> Merges source into target key by key: keys source no longer has are dropped,
+        /// and every remaining value is whatever pullValue returns for the pair (a null target means
+        /// the key is new). The dictionary instance itself is never replaced. </summary>
+        public static void PullDictionary<TKey, TValue>(this Dictionary<TKey, TValue> target,
+            Dictionary<TKey, TValue> source, Func<TValue, TValue, TValue> pullValue)
+        {
+            if (ReferenceEquals(target, source)) return;
+
+            List<TKey> stale = null;
+            foreach (var key in target.Keys)
+            {
+                if (source.ContainsKey(key)) continue;
+                stale ??= new List<TKey>();
+                stale.Add(key);
+            }
+            if (stale != null)
+                foreach (var key in stale)
+                    target.Remove(key);
+
+            foreach (var (key, value) in source)
+            {
+                target.TryGetValue(key, out var mine);
+                target[key] = pullValue(mine, value);
+            }
+        }
+
+        /// <summary> The same merge where the value type is concrete, so PullFrom already knows how
+        /// to dispatch and no callback is needed. </summary>
+        public static void PullDictionary<TKey, TValue>(this Dictionary<TKey, TValue> target,
+            Dictionary<TKey, TValue> source) where TValue : class, IModel<TValue>
+            => target.PullDictionary(source, PullFrom);
 
         public static bool ArrayEquals<T>(this T[] array, T[] other)
         {

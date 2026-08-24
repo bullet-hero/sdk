@@ -312,6 +312,46 @@ namespace BH.SDK.Publishing
             UnknownSourceTrust = UnknownSourceTrust,
         };
 
+        public void Update(PublishProfile src)
+        {
+            ProfileKey = src.ProfileKey;
+            AllowedLicenses = new List<TypicalLicenseType>(src.AllowedLicenses);
+            AllowedUriTypes = new List<ResourceUriType>(src.AllowedUriTypes);
+            AllowUnknownLicense = src.AllowUnknownLicense;
+            AllowPermissionInstead = src.AllowPermissionInstead;
+            RequireResourceMeta = src.RequireResourceMeta;
+            RequireResourceUrl = src.RequireResourceUrl;
+            RequireAttribution = src.RequireAttribution;
+            RequireAgeRating = src.RequireAgeRating;
+            RequireLevelAuthors = src.RequireLevelAuthors;
+            RequireHashes = src.RequireHashes;
+            MaxResourceBytes = src.MaxResourceBytes;
+            MaxDataFileBytes = src.MaxDataFileBytes;
+            MaxTotalBytes = src.MaxTotalBytes;
+            Sources = src.Sources.CopyList();
+            UnknownSourceTrust = src.UnknownSourceTrust;
+        }
+
+        public void Pull(PublishProfile src)
+        {
+            ProfileKey = src.ProfileKey;
+            AllowedLicenses = new List<TypicalLicenseType>(src.AllowedLicenses);
+            AllowedUriTypes = new List<ResourceUriType>(src.AllowedUriTypes);
+            AllowUnknownLicense = src.AllowUnknownLicense;
+            AllowPermissionInstead = src.AllowPermissionInstead;
+            RequireResourceMeta = src.RequireResourceMeta;
+            RequireResourceUrl = src.RequireResourceUrl;
+            RequireAttribution = src.RequireAttribution;
+            RequireAgeRating = src.RequireAgeRating;
+            RequireLevelAuthors = src.RequireLevelAuthors;
+            RequireHashes = src.RequireHashes;
+            MaxResourceBytes = src.MaxResourceBytes;
+            MaxDataFileBytes = src.MaxDataFileBytes;
+            MaxTotalBytes = src.MaxTotalBytes;
+            Sources = src.Sources.CopyList();
+            UnknownSourceTrust = src.UnknownSourceTrust;
+        }
+
         public override bool Equals(object obj) => obj is PublishProfile value && Equals(value);
         public override int GetHashCode()
         {

@@ -90,8 +90,21 @@ alive so `GamePlayer`'s jobs can re-roll randomness every frame instead of freez
   load-bearing (clamp → weld → drop malformed → drop degenerate → trim → drop orphans → fix
   winding): every step can reintroduce a problem an earlier one fixed, and this is the order in
   which none does.
-- **Services/** — `SerializationService`-adjacent but SDK-root-level: `CryptographyService`
-  (AES-256-CBC), `ModificationService` (reflection path-based get/set, see "Modification system"
+- **Services/** — `SerializationService`-adjacent but SDK-root-level. **Four of its subfolders are
+  the level-package feature and only make sense read together** (design record:
+  `docs/issues/PACKAGE_HISTORY.md` in the consuming project): `Content/` (`IContentStore` — a named
+  set of blobs, ROOTED BY CONSTRUCTION, so "does this escape the folder" is a property of the type
+  rather than a check at every call site; `DirectoryContentStore`/`MemoryContentStore` are two
+  implementations rather than two parallel APIs, which is what lets the same pipeline serve a disk,
+  a test and a server), `Archive/` (tar.gz — and its unpack refuses a link entry, which is the one
+  attack surface tar has that ZIP did not), `Crypto/` (`PgpSymmetricService`, OpenPGP symmetric,
+  SEIPD v1 because GnuPG does not implement RFC 9580 — read its header before touching the
+  `...Utf8` overloads, which are what make a Cyrillic passphrase interoperate with gpg at all), and
+  `Package/` (what a level package contains, written and read; the reader is also the future
+  server's entry point, which is why every refusal is a value rather than an exception).
+  **This is where the SDK started reading files**, so any header claiming it reads none is stale.
+  Also `CryptographyService`
+  (AES-256-CBC, and NOT what protects a level any more — see its own header), `ModificationService` (reflection path-based get/set, see "Modification system"
   below), `TextFormatService` (`{variable}` string templating), `FontCharacterService` (builds
   `LevelHints.FontCharacters`, see below), and **`Shapes/ShapeCatalogService`** + `ShapeParameters`
   — the game's own built-in shape library, which lives HERE rather than in the consumer because it
@@ -131,6 +144,7 @@ alive so `GamePlayer`'s jobs can re-roll randomness every frame instead of freez
   generator implements to say "this parameter comes from the host" — matched by interface, not by
   field name, so a rename is a compile error), `Modifiers/` (`ObjectTrackMask`/`ObjectTracks` —
   generic enumeration of an object's ten keyframe tracks, plus the modifiers themselves),
+  `Import/` (`LevelPackageGenerator`, `gen_level_package` - importing this project's OWN package, as opposed to `Interop/`'s foreign formats),
   `Geometry/`, `Bullets/`, `Audio/`, `Textures/`, `Utility/` (the concrete generators — 20 of them,
   the roster the design document calls complete plus `mod_content_remover`/`mod_framerate_remap` and
   `mod_span_fit`, which fits every child's lifetime to its parent's and is what replaced the removed
@@ -499,8 +513,19 @@ x2, no HDR) rather than to a zeroed pair that would read as "off". `MsaaType`'s 
 sample count, except `None = 0`, which every graphics API states as 1 — convert with
 `MsaaTypeExtensions.ToSampleCount`, never a cast.
 
-The `UserSettings` sub-groups additionally implement `IMoveable<T>` (`Pull(source)` — an in-place
-merge, distinct from `IModel<T>`'s `Copy`/`Reset`).
+`TexturesGraphicsSettings` (`Compression`/`SizeLimit`/`Mipmaps`) is the newest of them and the one
+whose design is half outside this repo: it is the DEVICE's half of how a level's images are loaded,
+while the author's half is one field on the image itself (`TextureResource.Kind`, a `TextureKind`).
+Neither can express the other - a level has to play the same everywhere, so an author may not author
+a device's memory budget, and a player must never be asked what a picture depicts. Every field
+defaults to `Auto` and resolves per platform in the consumer (`Core`'s `TextureLoadPlanner`), which
+is what makes an older `settings.json` with no `"textures"` key correct rather than merely tolerated.
+Additive like everything else here, so `UserSettings` stays at `(1, 0)`.
+
+The `UserSettings` sub-groups are the reason `IMoveable<T>`'s `Pull(source)` exists at all — an
+in-place merge that keeps every sub-group instance, since the device hands them out one at a time.
+It is part of `IModel<T>` now, so every model has one; see "`IModel<T>` pattern" for how it differs
+from `Update`.
 
 `LevelSettings.Seed` is the level's own random seed, and **`LevelRules.NullSeed` (0) is its
 default and means "not authored"**, not seed number zero — test it with `LevelRules.IsValidSeed`,
@@ -581,6 +606,12 @@ resources are baked into the game/its own registries and never appear in a level
 `AudioResourceId`/`BytesResourceId`/`TextResourceId` are narrow per-category wrappers sharing this
 range, freely convertible to/from the untyped `TypedResourceId`.
 
+**`TextureResource` is the one resource carrying an authored field beyond its id, UV and sources**:
+`Kind` (`TextureKind`: `Auto`/`Photo`/`Graphic`/`PixelArt`). It is deliberately ARTISTIC - it names
+what the picture is and says nothing about formats, sizes or switches, all of which belong to the
+player's own `UserSettings.Graphics.Textures`. Additive with a zero default, so a level written
+before it reads back as `Auto` and `LevelResources` stays at `(1, 0)`.
+
 **`FontCharacters` used to live here and no longer does** — it was never a resource, only a fact
 *about* the resources, so it moved to `Level.Hints` with the rest of the advisory data. Don't look
 for it under `Level.Resources`.
@@ -619,12 +650,49 @@ without them.
 
 ## `IModel<T>` pattern
 
-`IModel<T> : ICopyable<T>, IEquatable<T>, IResetable` — every live domain model implements: `Copy()`
-(new instance), `Equals(T)`/`Equals(object)`/`GetHashCode()` (hand-written, not generated — this is
-exactly the kind of boilerplate a copy-paste mistake hides in, see "Conventions" below), `Reset()`
-(back to defaults, in place, no allocation). Some additionally implement `IUpdatable<T>`
-(`Update(src)` — in-place field copy from another instance, distinct from both `Copy` and `Reset`;
-used by `RectObject`+subclasses, `EffectData`+its sub-groups). **Frozen historical snapshot classes
+`IModel<T> : ICopyable<T>, IEquatable<T>, IResetable, IUpdatable<T>, IMoveable<T>` — every live
+domain model implements: `Copy()` (new instance), `Equals(T)`/`Equals(object)`/`GetHashCode()`
+(hand-written, not generated — this is exactly the kind of boilerplate a copy-paste mistake hides in,
+see "Conventions" below), `Reset()` (back to defaults, in place, no allocation), and the two
+become-another-instance operations, `Update(src)` and `Pull(src)`.
+
+**`Update` and `Pull` are what a model offers when its reference is already held somewhere else** —
+`GameData` hands `UserSettings` out live, the editor's operation buffer holds an object across an
+undo, and for both of them replacing the reference is the one thing that must not happen. They differ
+in exactly one way, and it is not which fields they write: **how deep the identity promise reaches**.
+`Update` replaces every nested model with a fresh copy, so only the receiver itself survives; `Pull`
+writes into the nested instances it already has, so a reference anyone holds anywhere in that subtree
+stays live — which is why the `UserSettings` groups are pulled, being handed out one sub-group at a
+time. On a model carrying no nested model of its own the two bodies coincide; that is the contract
+agreeing rather than duplication to collapse, and a nested model added later changes `Pull` alone.
+**Collections are replaced wholesale by both, except the keyed ones something holds into**: an
+element is normally addressed by index or key rather than by reference, so keeping the instance buys
+nothing. An **object scope** is where the reference *is* the address — the editor's selection, its
+operation buffer and every materialized prefab child hold `RectObject`s — and a **clipboard's**
+sections are held one per timeline, so `GameLevel`, `Prefab` and `ClipboardData` merge theirs key by
+key with `ModelUtils.PullDictionary`: keys the source no longer has are dropped, a key whose concrete
+type changed is replaced by a copy, everything else is pulled into the instance already there, and
+the dictionary object itself is never swapped. What merges one **value** is the caller's choice —
+`LevelUtils.PullObject` for a `RectObject`, the constrained `PullDictionary` overload (i.e.
+`PullFrom`) for a concretely typed value like `LevelTrack`. `PullObject` is a hand-kept switch over
+the five `ObjectType`s for the same reason `ObjectConverter.GetType` is one — pulling through a
+`RectObject` reference would write the base half and drop the subclass's own, so **a new `RectObject`
+subtype extends both switches**, and `PullObject` throws rather than truncate if it does not.
+`AudioLevel.Tracks` and the seven `LevelResources` dictionaries are still replaced; nothing is known
+to hold into them across a pull, and they take the same two lines when something does.
+
+A **polymorphic** field (`IVector2`, `IFloat`, `IEffectShape` …) cannot always keep its instance — a
+`Vector2Value` cannot become a `RandomVector2` — so it goes through `ModelUtils.PullFrom`, which
+pulls in place while the concrete types match and copies when they do not. Each concrete type also
+implements the *interface's* own `Update`/`Pull` explicitly, and those do **nothing** when handed a
+sibling implementation; `PullFrom` is the correct path, the no-op is what stops a wrong call writing
+one variant's fields out of another's.
+
+Neither is **virtual**, and `Copy()` being virtual is the contrast worth noticing: a subclass adds an
+*overload* (`Update(ShapeObject)` beside the inherited `Update(RectObject)`), so `Update` called
+through the base type writes the base half and leaves the rest — exactly what `Equals(RectObject)`
+already does. Address a model by its own type and it is total. `Tests/ModelHierarchyTests` pins both
+halves. **Frozen historical snapshot classes
 under `Versions/VX_Y/` deliberately skip all of this** — they're one-shot deserialization targets,
 not domain objects; don't expect every `[JsonProperty]`-bearing class in this codebase to implement
 `IModel<T>`.
