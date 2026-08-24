@@ -81,6 +81,33 @@ namespace BH.SDK.Models.Values
         IVector2 ICopyable<IVector2>.Copy() => new Vector2RectStep(MinX, MinY, MaxX, MaxY, Step);
         public Vector2RectStep Copy() => new(MinX, MinY, MaxX, MaxY, Step);
 
+        public void Update(Vector2RectStep src)
+        {
+            MinX = src.MinX;
+            MinY = src.MinY;
+            MaxX = src.MaxX;
+            MaxY = src.MaxY;
+            Step = src.Step;
+        }
+
+        public void Pull(Vector2RectStep src)
+        {
+            MinX = src.MinX;
+            MinY = src.MinY;
+            MaxX = src.MaxX;
+            MaxY = src.MaxY;
+            Step = src.Step;
+        }
+
+        void IUpdatable<IVector2>.Update(IVector2 src)
+        {
+            if (src is Vector2RectStep value) Update(value);
+        }
+        void IMoveable<IVector2>.Pull(IVector2 src)
+        {
+            if (src is Vector2RectStep value) Pull(value);
+        }
+
         public override bool Equals(object obj) => obj is Vector2RectStep value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(MinX, MinY, MaxX, MaxY, Step);
         

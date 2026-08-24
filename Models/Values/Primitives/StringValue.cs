@@ -41,6 +41,25 @@ namespace BH.SDK.Models.Values
         IString ICopyable<IString>.Copy() => new StringValue(Value);
         public StringValue Copy() => new(Value);
 
+        public void Update(StringValue src)
+        {
+            Value = src.Value;
+        }
+
+        public void Pull(StringValue src)
+        {
+            Value = src.Value;
+        }
+
+        void IUpdatable<IString>.Update(IString src)
+        {
+            if (src is StringValue value) Update(value);
+        }
+        void IMoveable<IString>.Pull(IString src)
+        {
+            if (src is StringValue value) Pull(value);
+        }
+
         public override bool Equals(object obj) => obj is StringValue value && Equals(value);
         public override int GetHashCode() => Value != null ? Value.GetHashCode() : 0;
         

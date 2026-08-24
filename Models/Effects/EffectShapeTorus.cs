@@ -6,6 +6,7 @@ using BH.SDK.Models.Interfaces.Values;
 using BH.SDK.Models.Values;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
+using BH.SDK.Utils;
 using Newtonsoft.Json;
 
 // ReSharper disable NonReadonlyMemberInGetHashCode
@@ -75,6 +76,31 @@ namespace BH.SDK.Models.Effects
         public object Clone() => Copy();
         IEffectShape ICopyable<IEffectShape>.Copy() => new EffectShapeTorus(RadiusMinor.Copy(), RadiusMajor.Copy(), Arc.Copy(), Spread.Copy());
         public EffectShapeTorus Copy() => new(RadiusMinor.Copy(), RadiusMajor.Copy(), Arc.Copy(), Spread.Copy());
+
+        public void Update(EffectShapeTorus src)
+        {
+            RadiusMinor = src.RadiusMinor.Copy();
+            RadiusMajor = src.RadiusMajor.Copy();
+            Arc = src.Arc.Copy();
+            Spread = src.Spread.Copy();
+        }
+
+        public void Pull(EffectShapeTorus src)
+        {
+            RadiusMinor = RadiusMinor.PullFrom(src.RadiusMinor);
+            RadiusMajor = RadiusMajor.PullFrom(src.RadiusMajor);
+            Arc = Arc.PullFrom(src.Arc);
+            Spread = Spread.PullFrom(src.Spread);
+        }
+
+        void IUpdatable<IEffectShape>.Update(IEffectShape src)
+        {
+            if (src is EffectShapeTorus value) Update(value);
+        }
+        void IMoveable<IEffectShape>.Pull(IEffectShape src)
+        {
+            if (src is EffectShapeTorus value) Pull(value);
+        }
 
         public override bool Equals(object obj) => obj is EffectShapeTorus value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(RadiusMinor, RadiusMajor, Arc, Spread);

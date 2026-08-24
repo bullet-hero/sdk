@@ -51,6 +51,18 @@ namespace BH.SDK.Models.Values
         public object Clone() => Copy();
         public ScreenAspect Copy() => new(Width, Height);
 
+        public void Update(ScreenAspect src)
+        {
+            Width = src.Width;
+            Height = src.Height;
+        }
+
+        public void Pull(ScreenAspect src)
+        {
+            Width = src.Width;
+            Height = src.Height;
+        }
+
         public override bool Equals(object obj) => obj is ScreenAspect value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(Width, Height);
 

@@ -6,6 +6,7 @@ using BH.SDK.Models.Interfaces.Values;
 using BH.SDK.Models.Values;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
+using BH.SDK.Utils;
 using Newtonsoft.Json;
 
 // ReSharper disable NonReadonlyMemberInGetHashCode
@@ -66,6 +67,27 @@ namespace BH.SDK.Models.Effects
         public object Clone() => Copy();
         IEffectColor ICopyable<IEffectColor>.Copy() => new EffectColorRandomUniform(Color4A.Copy(), Color4B.Copy());
         public EffectColorRandomUniform Copy() => new(Color4A.Copy(), Color4B.Copy());
+
+        public void Update(EffectColorRandomUniform src)
+        {
+            Color4A = src.Color4A.Copy();
+            Color4B = src.Color4B.Copy();
+        }
+
+        public void Pull(EffectColorRandomUniform src)
+        {
+            Color4A = Color4A.PullFrom(src.Color4A);
+            Color4B = Color4B.PullFrom(src.Color4B);
+        }
+
+        void IUpdatable<IEffectColor>.Update(IEffectColor src)
+        {
+            if (src is EffectColorRandomUniform value) Update(value);
+        }
+        void IMoveable<IEffectColor>.Pull(IEffectColor src)
+        {
+            if (src is EffectColorRandomUniform value) Pull(value);
+        }
 
         public override bool Equals(object obj) => obj is EffectColorRandomUniform value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(Color4A, Color4B);

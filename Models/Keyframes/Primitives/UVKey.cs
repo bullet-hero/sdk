@@ -51,6 +51,22 @@ namespace BH.SDK.Models.Keyframes
         
         private UVKey CopyImpl() => new(Tilling.Copy(), Offset.Copy(), Frame, Ease);
 
+        public void Update(UVKey src)
+        {
+            base.Update(src);
+
+            Tilling = src.Tilling.Copy();
+            Offset = src.Offset.Copy();
+        }
+
+        public void Pull(UVKey src)
+        {
+            base.Pull(src);
+
+            Tilling.Pull(src.Tilling);
+            Offset.Pull(src.Offset);
+        }
+
         public override bool Equals(object obj) => obj is UVKey value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), Tilling, Offset);
 

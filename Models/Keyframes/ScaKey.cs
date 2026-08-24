@@ -5,6 +5,7 @@ using BH.SDK.Models.Interfaces.Values;
 using BH.SDK.Models.Values;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
+using BH.SDK.Utils;
 using Newtonsoft.Json;
 
 namespace BH.SDK.Models.Keyframes
@@ -41,6 +42,20 @@ namespace BH.SDK.Models.Keyframes
         ScaKey ICopyable<ScaKey>.Copy() => CopyImpl();
         
         private ScaKey CopyImpl() => new(Scale.Copy(), Frame, Ease);
+
+        public void Update(ScaKey src)
+        {
+            base.Update(src);
+
+            Scale = src.Scale.Copy();
+        }
+
+        public void Pull(ScaKey src)
+        {
+            base.Pull(src);
+
+            Scale = Scale.PullFrom(src.Scale);
+        }
 
         public override bool Equals(object obj) => obj is ScaKey value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), Scale);

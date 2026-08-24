@@ -58,6 +58,27 @@ namespace BH.SDK.Models.Values
         IVector2 ICopyable<IVector2>.Copy() => new Vector2Value(X, Y);
         public Vector2Value Copy() => new(X, Y);
         
+        public void Update(Vector2Value src)
+        {
+            X = src.X;
+            Y = src.Y;
+        }
+
+        public void Pull(Vector2Value src)
+        {
+            X = src.X;
+            Y = src.Y;
+        }
+
+        void IUpdatable<IVector2>.Update(IVector2 src)
+        {
+            if (src is Vector2Value value) Update(value);
+        }
+        void IMoveable<IVector2>.Pull(IVector2 src)
+        {
+            if (src is Vector2Value value) Pull(value);
+        }
+
         public override bool Equals(object obj) => obj is Vector2Value value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(X, Y);
         

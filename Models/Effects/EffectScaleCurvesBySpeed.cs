@@ -6,6 +6,7 @@ using BH.SDK.Models.Interfaces.Values;
 using BH.SDK.Models.Values;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
+using BH.SDK.Utils;
 using Newtonsoft.Json;
 
 // ReSharper disable NonReadonlyMemberInGetHashCode
@@ -63,6 +64,29 @@ namespace BH.SDK.Models.Effects
         public object Clone() => Copy();
         IEffectScale ICopyable<IEffectScale>.Copy() => new EffectScaleCurvesBySpeed(CurveX.Copy(), CurveY.Copy(), SpeedRange.Copy());
         public EffectScaleCurvesBySpeed Copy() => new(CurveX.Copy(), CurveY.Copy(), SpeedRange.Copy());
+
+        public void Update(EffectScaleCurvesBySpeed src)
+        {
+            CurveX = src.CurveX.Copy();
+            CurveY = src.CurveY.Copy();
+            SpeedRange = src.SpeedRange.Copy();
+        }
+
+        public void Pull(EffectScaleCurvesBySpeed src)
+        {
+            CurveX.Pull(src.CurveX);
+            CurveY.Pull(src.CurveY);
+            SpeedRange = SpeedRange.PullFrom(src.SpeedRange);
+        }
+
+        void IUpdatable<IEffectScale>.Update(IEffectScale src)
+        {
+            if (src is EffectScaleCurvesBySpeed value) Update(value);
+        }
+        void IMoveable<IEffectScale>.Pull(IEffectScale src)
+        {
+            if (src is EffectScaleCurvesBySpeed value) Pull(value);
+        }
 
         public override bool Equals(object obj) => obj is EffectScaleCurvesBySpeed value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(CurveX, CurveY, SpeedRange);

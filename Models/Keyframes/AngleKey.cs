@@ -5,6 +5,7 @@ using BH.SDK.Models.Interfaces.Values;
 using BH.SDK.Models.Values;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
+using BH.SDK.Utils;
 using Newtonsoft.Json;
 
 // ReSharper disable NonReadonlyMemberInGetHashCode
@@ -45,6 +46,20 @@ namespace BH.SDK.Models.Keyframes
         AngleKey ICopyable<AngleKey>.Copy() => CopyImpl();
         
         private AngleKey CopyImpl() => new(Angle.Copy(), Frame, Ease);
+
+        public void Update(AngleKey src)
+        {
+            base.Update(src);
+
+            Angle = src.Angle.Copy();
+        }
+
+        public void Pull(AngleKey src)
+        {
+            base.Pull(src);
+
+            Angle = Angle.PullFrom(src.Angle);
+        }
 
         public override bool Equals(object obj) => obj is AngleKey value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), Angle);

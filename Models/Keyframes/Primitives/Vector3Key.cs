@@ -5,6 +5,7 @@ using BH.SDK.Models.Interfaces.Values;
 using BH.SDK.Models.Values;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
+using BH.SDK.Utils;
 using Newtonsoft.Json;
 
 namespace BH.SDK.Models.Keyframes
@@ -40,6 +41,20 @@ namespace BH.SDK.Models.Keyframes
         Vector3Key ICopyable<Vector3Key>.Copy() => CopyImpl();
         
         private Vector3Key CopyImpl() => new(Value.Copy(), Frame, Ease);
+
+        public void Update(Vector3Key src)
+        {
+            base.Update(src);
+
+            Value = src.Value.Copy();
+        }
+
+        public void Pull(Vector3Key src)
+        {
+            base.Pull(src);
+
+            Value = Value.PullFrom(src.Value);
+        }
 
         public override bool Equals(object obj) => obj is Vector3Key value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), Value);

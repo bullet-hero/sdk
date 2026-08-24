@@ -5,6 +5,7 @@ using BH.SDK.Models.Interfaces.Values;
 using BH.SDK.Models.Values;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
+using BH.SDK.Utils;
 using Newtonsoft.Json;
 
 // ReSharper disable NonReadonlyMemberInGetHashCode
@@ -52,6 +53,22 @@ namespace BH.SDK.Models.Keyframes
         VelocityPoint ICopyable<VelocityPoint>.Copy() => CopyImpl();
         
         private VelocityPoint CopyImpl() => new(Center.Copy(), Force, Frame, Ease);
+
+        public void Update(VelocityPoint src)
+        {
+            base.Update(src);
+
+            Center = src.Center.Copy();
+            Force = src.Force;
+        }
+
+        public void Pull(VelocityPoint src)
+        {
+            base.Pull(src);
+
+            Center = Center.PullFrom(src.Center);
+            Force = src.Force;
+        }
 
         public override bool Equals(object obj) => obj is VelocityPoint value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), Center, Force);

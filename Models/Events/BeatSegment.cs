@@ -110,6 +110,26 @@ namespace BH.SDK.Models.Events
         public object Clone() => Copy();
         public BeatSegment Copy() => new(Span, Bpm, Offset, BeatsPerBar, Name, Color4.Copy());
 
+        public void Update(BeatSegment src)
+        {
+            Span = src.Span;
+            Bpm = src.Bpm;
+            Offset = src.Offset;
+            BeatsPerBar = src.BeatsPerBar;
+            Name = src.Name;
+            Color4 = src.Color4.Copy();
+        }
+
+        public void Pull(BeatSegment src)
+        {
+            Span = src.Span;
+            Bpm = src.Bpm;
+            Offset = src.Offset;
+            BeatsPerBar = src.BeatsPerBar;
+            Name = src.Name;
+            Color4.Pull(src.Color4);
+        }
+
         public override bool Equals(object obj) => obj is BeatSegment value && Equals(value);
         public override int GetHashCode() =>
             HashCode.Combine(Span, Bpm, Offset, BeatsPerBar, Name, Color4);

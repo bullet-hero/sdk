@@ -4,6 +4,7 @@ using BH.SDK.Models.Interfaces;
 using BH.SDK.Models.Interfaces.Values;
 using BH.SDK.Models.Values;
 using BH.SDK.Rules.Attributes;
+using BH.SDK.Utils;
 using Newtonsoft.Json;
 
 namespace BH.SDK.Models.Keyframes
@@ -39,6 +40,20 @@ namespace BH.SDK.Models.Keyframes
         Vector2Key ICopyable<Vector2Key>.Copy() => CopyImpl();
         
         private Vector2Key CopyImpl() => new(Value.Copy(), Frame, Ease);
+
+        public void Update(Vector2Key src)
+        {
+            base.Update(src);
+
+            Value = src.Value.Copy();
+        }
+
+        public void Pull(Vector2Key src)
+        {
+            base.Pull(src);
+
+            Value = Value.PullFrom(src.Value);
+        }
 
         public override bool Equals(object obj) => obj is Vector2Key value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), Value);

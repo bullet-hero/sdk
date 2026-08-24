@@ -97,6 +97,16 @@ namespace BH.SDK.Models.SettingGroups.Controls
             DashButtons = source.DashButtons;
         }
 
+        public void Update(GamepadControlsSettings src)
+        {
+            base.Update(src);
+
+            Mode = src.Mode;
+            MotionStick = src.MotionStick;
+            ResponseCurve = src.ResponseCurve;
+            DashButtons = src.DashButtons;
+        }
+
         public override bool Equals(object obj) => obj is GamepadControlsSettings value && Equals(value);
         public override int GetHashCode()
             => HashCode.Combine(base.GetHashCode(), Mode, MotionStick, ResponseCurve, DashButtons);

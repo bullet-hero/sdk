@@ -50,6 +50,27 @@ namespace BH.SDK.Models.Values
         IInt ICopyable<IInt>.Copy() => new IntMinMax(Min, Max);
         public IntMinMax Copy() => new(Min, Max);
 
+        public void Update(IntMinMax src)
+        {
+            Min = src.Min;
+            Max = src.Max;
+        }
+
+        public void Pull(IntMinMax src)
+        {
+            Min = src.Min;
+            Max = src.Max;
+        }
+
+        void IUpdatable<IInt>.Update(IInt src)
+        {
+            if (src is IntMinMax value) Update(value);
+        }
+        void IMoveable<IInt>.Pull(IInt src)
+        {
+            if (src is IntMinMax value) Pull(value);
+        }
+
         public override bool Equals(object obj) => obj is IntMinMax value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(Min, Max);
         

@@ -43,6 +43,20 @@ namespace BH.SDK.Models.Events
         
         private ThemeKeyframe CopyImpl() => new(ThemeId, Frame, Ease);
         
+        public void Update(ThemeKeyframe src)
+        {
+            base.Update(src);
+
+            ThemeId = src.ThemeId;
+        }
+
+        public void Pull(ThemeKeyframe src)
+        {
+            base.Pull(src);
+
+            ThemeId = src.ThemeId;
+        }
+
         public bool Equals(ThemeKeyframe other)
         {
             if (other is null) return false;

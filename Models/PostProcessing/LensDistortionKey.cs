@@ -6,6 +6,7 @@ using BH.SDK.Models.Keyframes;
 using BH.SDK.Models.Values;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
+using BH.SDK.Utils;
 using Newtonsoft.Json;
 
 // ReSharper disable NonReadonlyMemberInGetHashCode
@@ -73,6 +74,26 @@ namespace BH.SDK.Models.PostProcessing
         LensDistortionKey ICopyable<LensDistortionKey>.Copy() => CopyImpl();
         
         private LensDistortionKey CopyImpl() => new(Intensity, Multiplier.Copy(), Center.Copy(), Scale, Active, Frame, Ease);
+
+        public void Update(LensDistortionKey src)
+        {
+            base.Update(src);
+
+            Intensity = src.Intensity;
+            Multiplier = src.Multiplier.Copy();
+            Center = src.Center.Copy();
+            Scale = src.Scale;
+        }
+
+        public void Pull(LensDistortionKey src)
+        {
+            base.Pull(src);
+
+            Intensity = src.Intensity;
+            Multiplier = Multiplier.PullFrom(src.Multiplier);
+            Center = Center.PullFrom(src.Center);
+            Scale = src.Scale;
+        }
 
         public override bool Equals(object obj) => obj is LensDistortionKey value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), Intensity, Multiplier, Center, Scale);

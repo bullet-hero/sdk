@@ -116,6 +116,43 @@ namespace BH.SDK.Models.Values
 
 
 
+        public void Update(CustomLicense src)
+        {
+            LicenseName = src.LicenseName;
+            LicenseUrl = src.LicenseUrl;
+            LicenseText = src.LicenseText;
+            Aggressive = src.Aggressive;
+            AllowsDistribution = src.AllowsDistribution;
+            AllowsModification = src.AllowsModification;
+            AllowsCommercialUse = src.AllowsCommercialUse;
+            RequiresAttribution = src.RequiresAttribution;
+            RequiresSourceDisclosure = src.RequiresSourceDisclosure;
+            RequiresSameLicense = src.RequiresSameLicense;
+        }
+
+        public void Pull(CustomLicense src)
+        {
+            LicenseName = src.LicenseName;
+            LicenseUrl = src.LicenseUrl;
+            LicenseText = src.LicenseText;
+            Aggressive = src.Aggressive;
+            AllowsDistribution = src.AllowsDistribution;
+            AllowsModification = src.AllowsModification;
+            AllowsCommercialUse = src.AllowsCommercialUse;
+            RequiresAttribution = src.RequiresAttribution;
+            RequiresSourceDisclosure = src.RequiresSourceDisclosure;
+            RequiresSameLicense = src.RequiresSameLicense;
+        }
+
+        void IUpdatable<ILicense>.Update(ILicense src)
+        {
+            if (src is CustomLicense value) Update(value);
+        }
+        void IMoveable<ILicense>.Pull(ILicense src)
+        {
+            if (src is CustomLicense value) Pull(value);
+        }
+
         public override bool Equals(object obj) => obj is CustomLicense value && Equals(value);
         public override int GetHashCode()
         {

@@ -65,6 +65,26 @@ namespace BH.SDK.Models.AudioEffects
 
         private AudioFlange CopyImpl() => new(MixLevel, DryMix, WetMix, Depth, Rate);
 
+        public void Update(AudioFlange src)
+        {
+            base.Update(src);
+
+            DryMix = src.DryMix;
+            WetMix = src.WetMix;
+            Depth = src.Depth;
+            Rate = src.Rate;
+        }
+
+        public void Pull(AudioFlange src)
+        {
+            base.Pull(src);
+
+            DryMix = src.DryMix;
+            WetMix = src.WetMix;
+            Depth = src.Depth;
+            Rate = src.Rate;
+        }
+
         public override bool Equals(object obj) => obj is AudioFlange value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), DryMix, WetMix, Depth, Rate);
 

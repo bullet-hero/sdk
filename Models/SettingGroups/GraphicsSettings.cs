@@ -52,6 +52,17 @@ namespace BH.SDK.Models.SettingGroups
         [JsonProperty(Names.AntiAliasing)]
         public AntiAliasingGraphicsSettings AntiAliasing { get; set; }
 
+        // Added after the domain was already at 1.0 and deliberately does NOT bump it, the same
+        // additive call UserSettings' own Interface and Keybindings groups made: a settings.json
+        // written before this group existed has no "textures" key, Newtonsoft leaves the
+        // constructor's defaults in place, and every one of those defaults is Auto.
+
+        /// <summary> How a level's images are turned into GPU textures here - compression, size cap,
+        /// mip-maps. Read when a level's resources load, not per frame. </summary>
+        [RuleNotNull]
+        [JsonProperty(Names.Textures)]
+        public TexturesGraphicsSettings Textures { get; set; }
+
         public GraphicsSettings()
         {
             FramerateTarget = FramerateTarget.ScreenHz;
@@ -60,10 +71,13 @@ namespace BH.SDK.Models.SettingGroups
             Effects = new EffectsGraphicsSettings();
             PostProcessing = new PostProcessingGraphicsSettings();
             AntiAliasing = new AntiAliasingGraphicsSettings();
+            Textures = new TexturesGraphicsSettings();
         }
+
         public GraphicsSettings(FramerateTarget framerateTarget, int fixedFramerate,
             AudioGraphicsSettings audio, EffectsGraphicsSettings effects,
-            PostProcessingGraphicsSettings postProcessing, AntiAliasingGraphicsSettings antiAliasing)
+            PostProcessingGraphicsSettings postProcessing, AntiAliasingGraphicsSettings antiAliasing,
+            TexturesGraphicsSettings textures)
         {
             FramerateTarget = framerateTarget;
             FixedFramerate = fixedFramerate;
@@ -71,7 +85,9 @@ namespace BH.SDK.Models.SettingGroups
             Effects = effects;
             PostProcessing = postProcessing;
             AntiAliasing = antiAliasing;
+            Textures = textures;
         }
+
         public void Reset()
         {
             FramerateTarget = FramerateTarget.ScreenHz;
@@ -80,25 +96,41 @@ namespace BH.SDK.Models.SettingGroups
             Effects.Reset();
             PostProcessing.Reset();
             AntiAliasing.Reset();
+            Textures.Reset();
         }
 
         public object Clone() => Copy();
+
         public GraphicsSettings Copy() => new(FramerateTarget, FixedFramerate, (AudioGraphicsSettings)Audio.Clone(),
             (EffectsGraphicsSettings)Effects.Clone(), (PostProcessingGraphicsSettings)PostProcessing.Clone(),
-            AntiAliasing.Copy());
+            AntiAliasing.Copy(), Textures.Copy());
 
         public void Pull(GraphicsSettings source)
         {
             FramerateTarget = source.FramerateTarget;
+            FixedFramerate = source.FixedFramerate;
             Audio.Pull(source.Audio);
             Effects.Pull(source.Effects);
             PostProcessing.Pull(source.PostProcessing);
             AntiAliasing.Pull(source.AntiAliasing);
+            Textures.Pull(source.Textures);
+        }
+
+        public void Update(GraphicsSettings src)
+        {
+            FramerateTarget = src.FramerateTarget;
+            FixedFramerate = src.FixedFramerate;
+            Audio = (AudioGraphicsSettings)src.Audio.Clone();
+            Effects = (EffectsGraphicsSettings)src.Effects.Clone();
+            PostProcessing = (PostProcessingGraphicsSettings)src.PostProcessing.Clone();
+            AntiAliasing = src.AntiAliasing.Copy();
+            Textures = src.Textures.Copy();
         }
 
         public override bool Equals(object obj) => obj is GraphicsSettings value && Equals(value);
+
         public override int GetHashCode() => HashCode.Combine((int)FramerateTarget,
-            FixedFramerate, Audio, Effects, PostProcessing, AntiAliasing);
+            FixedFramerate, Audio, Effects, PostProcessing, AntiAliasing, Textures);
 
         public bool Equals(GraphicsSettings other)
         {
@@ -109,7 +141,8 @@ namespace BH.SDK.Models.SettingGroups
                    && Audio.Equals(other.Audio)
                    && Effects.Equals(other.Effects)
                    && PostProcessing.Equals(other.PostProcessing)
-                   && AntiAliasing.Equals(other.AntiAliasing);
+                   && AntiAliasing.Equals(other.AntiAliasing)
+                   && Textures.Equals(other.Textures);
         }
     }
 }

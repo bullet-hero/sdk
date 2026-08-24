@@ -64,6 +64,13 @@ namespace BH.SDK.Models.SettingGroups
             Language = source.Language;
         }
 
+        public void Update(GeneralSettings src)
+        {
+            ResourceParallelLoadCount = src.ResourceParallelLoadCount;
+            ResourceWebTimeout = src.ResourceWebTimeout;
+            Language = src.Language;
+        }
+
         public override bool Equals(object obj) => obj is GeneralSettings value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(ResourceParallelLoadCount, ResourceWebTimeout, Language);
 

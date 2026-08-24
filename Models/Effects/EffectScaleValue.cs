@@ -6,6 +6,7 @@ using BH.SDK.Models.Interfaces.Values;
 using BH.SDK.Models.Values;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
+using BH.SDK.Utils;
 using Newtonsoft.Json;
 
 // ReSharper disable NonReadonlyMemberInGetHashCode
@@ -45,6 +46,25 @@ namespace BH.SDK.Models.Effects
         public object Clone() => Copy();
         IEffectScale ICopyable<IEffectScale>.Copy() => new EffectScaleValue(Scale.Copy());
         public EffectScaleValue Copy() => new(Scale.Copy());
+
+        public void Update(EffectScaleValue src)
+        {
+            Scale = src.Scale.Copy();
+        }
+
+        public void Pull(EffectScaleValue src)
+        {
+            Scale = Scale.PullFrom(src.Scale);
+        }
+
+        void IUpdatable<IEffectScale>.Update(IEffectScale src)
+        {
+            if (src is EffectScaleValue value) Update(value);
+        }
+        void IMoveable<IEffectScale>.Pull(IEffectScale src)
+        {
+            if (src is EffectScaleValue value) Pull(value);
+        }
 
         public override bool Equals(object obj) => obj is EffectScaleValue value && Equals(value);
         public override int GetHashCode() => Scale != null ? Scale.GetHashCode() : 0;

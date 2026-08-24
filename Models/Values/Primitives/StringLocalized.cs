@@ -47,6 +47,25 @@ namespace BH.SDK.Models.Values
         IString ICopyable<IString>.Copy() => Copy();
         public StringLocalized Copy() => new(Strings.CopyList());
         
+        public void Update(StringLocalized src)
+        {
+            Strings = src.Strings.CopyList();
+        }
+
+        public void Pull(StringLocalized src)
+        {
+            Strings = src.Strings.CopyList();
+        }
+
+        void IUpdatable<IString>.Update(IString src)
+        {
+            if (src is StringLocalized value) Update(value);
+        }
+        void IMoveable<IString>.Pull(IString src)
+        {
+            if (src is StringLocalized value) Pull(value);
+        }
+
         public override bool Equals(object obj) => obj is StringLocalized value && Equals(value);
         public override int GetHashCode() => Strings.GetListHashCode();
         

@@ -46,6 +46,20 @@ namespace BH.SDK.Models.Resources
         
         private BytesResource CopyImpl() => new(ByteResourceId, Sources.CopyList());
 
+        public void Update(BytesResource src)
+        {
+            base.Update(src);
+
+            ByteResourceId = src.ByteResourceId;
+        }
+
+        public void Pull(BytesResource src)
+        {
+            base.Pull(src);
+
+            ByteResourceId = src.ByteResourceId;
+        }
+
         public override bool Equals(object obj) => obj is BytesResource value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), ByteResourceId);
 

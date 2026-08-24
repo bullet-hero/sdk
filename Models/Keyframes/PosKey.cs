@@ -5,6 +5,7 @@ using BH.SDK.Models.Interfaces.Values;
 using BH.SDK.Models.Values;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
+using BH.SDK.Utils;
 using Newtonsoft.Json;
 
 namespace BH.SDK.Models.Keyframes
@@ -41,6 +42,20 @@ namespace BH.SDK.Models.Keyframes
         PosKey ICopyable<PosKey>.Copy() => CopyImpl();
         
         private PosKey CopyImpl() => new(Pos.Copy(), Frame, Ease);
+
+        public void Update(PosKey src)
+        {
+            base.Update(src);
+
+            Pos = src.Pos.Copy();
+        }
+
+        public void Pull(PosKey src)
+        {
+            base.Pull(src);
+
+            Pos = Pos.PullFrom(src.Pos);
+        }
 
         public override bool Equals(object obj) => obj is PosKey value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), Pos);

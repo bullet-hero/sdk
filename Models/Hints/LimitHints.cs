@@ -97,6 +97,26 @@ namespace BH.SDK.Models.Hints
             Tracks = 0;
         }
 
+        public void Update(LimitHints src)
+        {
+            Instances = src.Instances;
+            ShapesOpaque = src.ShapesOpaque;
+            ShapesTransparent = src.ShapesTransparent;
+            Effects = src.Effects;
+            Texts = src.Texts;
+            Tracks = src.Tracks;
+        }
+
+        public void Pull(LimitHints src)
+        {
+            Instances = src.Instances;
+            ShapesOpaque = src.ShapesOpaque;
+            ShapesTransparent = src.ShapesTransparent;
+            Effects = src.Effects;
+            Texts = src.Texts;
+            Tracks = src.Tracks;
+        }
+
         public override bool Equals(object obj) => obj is LimitHints value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(Instances, ShapesOpaque,
             ShapesTransparent, Effects, Texts, Tracks);

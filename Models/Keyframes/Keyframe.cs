@@ -51,6 +51,18 @@ namespace BH.SDK.Models.Keyframes
         
         private Keyframe CopyImpl() => new(Frame, Ease);
 
+        public void Update(Keyframe src)
+        {
+            Frame = src.Frame;
+            Ease = src.Ease;
+        }
+
+        public void Pull(Keyframe src)
+        {
+            Frame = src.Frame;
+            Ease = src.Ease;
+        }
+
         public override bool Equals(object obj) => obj is Keyframe value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(Frame, (int)Ease);
 

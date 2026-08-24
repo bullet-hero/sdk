@@ -68,6 +68,31 @@ namespace BH.SDK.Models.Values
         IVector4 ICopyable<IVector4>.Copy() => new Vector4Value(X, Y, Z, W);
         public Vector4Value Copy() => new(X, Y, Z, W);
 
+        public void Update(Vector4Value src)
+        {
+            X = src.X;
+            Y = src.Y;
+            Z = src.Z;
+            W = src.W;
+        }
+
+        public void Pull(Vector4Value src)
+        {
+            X = src.X;
+            Y = src.Y;
+            Z = src.Z;
+            W = src.W;
+        }
+
+        void IUpdatable<IVector4>.Update(IVector4 src)
+        {
+            if (src is Vector4Value value) Update(value);
+        }
+        void IMoveable<IVector4>.Pull(IVector4 src)
+        {
+            if (src is Vector4Value value) Pull(value);
+        }
+
         public override bool Equals(object obj) => obj is Vector4Value value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(X, Y, Z, W);
         

@@ -6,6 +6,7 @@ using BH.SDK.Models.Interfaces.Values;
 using BH.SDK.Models.Values;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
+using BH.SDK.Utils;
 using Newtonsoft.Json;
 
 // ReSharper disable NonReadonlyMemberInGetHashCode
@@ -66,6 +67,29 @@ namespace BH.SDK.Models.Effects
         public object Clone() => Copy();
         IEffectShape ICopyable<IEffectShape>.Copy() => new EffectShapeLine(Start.Copy(), End.Copy(), Spread.Copy());
         public EffectShapeLine Copy() => new(Start.Copy(), End.Copy(), Spread.Copy());
+
+        public void Update(EffectShapeLine src)
+        {
+            Start = src.Start.Copy();
+            End = src.End.Copy();
+            Spread = src.Spread.Copy();
+        }
+
+        public void Pull(EffectShapeLine src)
+        {
+            Start = Start.PullFrom(src.Start);
+            End = End.PullFrom(src.End);
+            Spread = Spread.PullFrom(src.Spread);
+        }
+
+        void IUpdatable<IEffectShape>.Update(IEffectShape src)
+        {
+            if (src is EffectShapeLine value) Update(value);
+        }
+        void IMoveable<IEffectShape>.Pull(IEffectShape src)
+        {
+            if (src is EffectShapeLine value) Pull(value);
+        }
 
         public override bool Equals(object obj) => obj is EffectShapeLine value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(Start, End, Spread);

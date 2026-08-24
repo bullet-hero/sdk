@@ -73,6 +73,33 @@ namespace BH.SDK.Models.Values
         IVector4 ICopyable<IVector4>.Copy() => new Vector4Circle(X, Y, Z, W, Radius);
         public Vector4Circle Copy() => new(X, Y, Z, W, Radius);
 
+        public void Update(Vector4Circle src)
+        {
+            X = src.X;
+            Y = src.Y;
+            Z = src.Z;
+            W = src.W;
+            Radius = src.Radius;
+        }
+
+        public void Pull(Vector4Circle src)
+        {
+            X = src.X;
+            Y = src.Y;
+            Z = src.Z;
+            W = src.W;
+            Radius = src.Radius;
+        }
+
+        void IUpdatable<IVector4>.Update(IVector4 src)
+        {
+            if (src is Vector4Circle value) Update(value);
+        }
+        void IMoveable<IVector4>.Pull(IVector4 src)
+        {
+            if (src is Vector4Circle value) Pull(value);
+        }
+
         public override bool Equals(object obj) => obj is Vector4Circle value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(X, Y, Z, W, Radius);
         

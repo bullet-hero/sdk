@@ -187,6 +187,24 @@ namespace BH.SDK.Models.SettingGroups.Graphics
             RenderDigitalGlitch = source.RenderDigitalGlitch;
         }
 
+        public void Update(PostProcessingGraphicsSettings src)
+        {
+            base.Update(src);
+
+            RenderBloom = src.RenderBloom;
+            RenderChroma = src.RenderChroma;
+            RenderVignette = src.RenderVignette;
+            RenderLens = src.RenderLens;
+            RenderGrain = src.RenderGrain;
+            RenderMotionBlur = src.RenderMotionBlur;
+            RenderColorCurves = src.RenderColorCurves;
+            RenderLiftGammaGain = src.RenderLiftGammaGain;
+            RenderShadowsMidtonesHighlights = src.RenderShadowsMidtonesHighlights;
+            RenderWhiteBalance = src.RenderWhiteBalance;
+            RenderAnalogGlitch = src.RenderAnalogGlitch;
+            RenderDigitalGlitch = src.RenderDigitalGlitch;
+        }
+
         public override bool Equals(object obj) => obj is PostProcessingGraphicsSettings value && Equals(value);
         public override int GetHashCode()
         {

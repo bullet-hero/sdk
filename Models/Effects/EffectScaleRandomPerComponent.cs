@@ -6,6 +6,7 @@ using BH.SDK.Models.Interfaces.Values;
 using BH.SDK.Models.Values;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
+using BH.SDK.Utils;
 using Newtonsoft.Json;
 
 // ReSharper disable NonReadonlyMemberInGetHashCode
@@ -58,6 +59,27 @@ namespace BH.SDK.Models.Effects
         public object Clone() => Copy();
         IEffectScale ICopyable<IEffectScale>.Copy() => new EffectScaleRandomPerComponent(ScaleA.Copy(), ScaleB.Copy());
         public EffectScaleRandomPerComponent Copy() => new(ScaleA.Copy(), ScaleB.Copy());
+
+        public void Update(EffectScaleRandomPerComponent src)
+        {
+            ScaleA = src.ScaleA.Copy();
+            ScaleB = src.ScaleB.Copy();
+        }
+
+        public void Pull(EffectScaleRandomPerComponent src)
+        {
+            ScaleA = ScaleA.PullFrom(src.ScaleA);
+            ScaleB = ScaleB.PullFrom(src.ScaleB);
+        }
+
+        void IUpdatable<IEffectScale>.Update(IEffectScale src)
+        {
+            if (src is EffectScaleRandomPerComponent value) Update(value);
+        }
+        void IMoveable<IEffectScale>.Pull(IEffectScale src)
+        {
+            if (src is EffectScaleRandomPerComponent value) Pull(value);
+        }
 
         public override bool Equals(object obj) => obj is EffectScaleRandomPerComponent value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(ScaleA, ScaleB);

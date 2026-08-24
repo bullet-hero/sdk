@@ -57,6 +57,24 @@ namespace BH.SDK.Models.AudioEffects
 
         private AudioParamEQ CopyImpl() => new(MixLevel, CenterFreq, OctaveRange, FrequencyGain);
 
+        public void Update(AudioParamEQ src)
+        {
+            base.Update(src);
+
+            CenterFreq = src.CenterFreq;
+            OctaveRange = src.OctaveRange;
+            FrequencyGain = src.FrequencyGain;
+        }
+
+        public void Pull(AudioParamEQ src)
+        {
+            base.Pull(src);
+
+            CenterFreq = src.CenterFreq;
+            OctaveRange = src.OctaveRange;
+            FrequencyGain = src.FrequencyGain;
+        }
+
         public override bool Equals(object obj) => obj is AudioParamEQ value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), CenterFreq, OctaveRange, FrequencyGain);
 

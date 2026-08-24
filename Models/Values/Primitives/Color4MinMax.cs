@@ -105,6 +105,39 @@ namespace BH.SDK.Models.Values
         IColor4 ICopyable<IColor4>.Copy() => new Color4MinMax(MinR, MinG, MinB, MinA, MaxR, MaxG, MaxB, MaxA);
         public Color4MinMax Copy() => new(MinR, MinG, MinB, MinA, MaxR, MaxG, MaxB, MaxA);
 
+        public void Update(Color4MinMax src)
+        {
+            MinR = src.MinR;
+            MinG = src.MinG;
+            MinB = src.MinB;
+            MinA = src.MinA;
+            MaxR = src.MaxR;
+            MaxG = src.MaxG;
+            MaxB = src.MaxB;
+            MaxA = src.MaxA;
+        }
+
+        public void Pull(Color4MinMax src)
+        {
+            MinR = src.MinR;
+            MinG = src.MinG;
+            MinB = src.MinB;
+            MinA = src.MinA;
+            MaxR = src.MaxR;
+            MaxG = src.MaxG;
+            MaxB = src.MaxB;
+            MaxA = src.MaxA;
+        }
+
+        void IUpdatable<IColor4>.Update(IColor4 src)
+        {
+            if (src is Color4MinMax value) Update(value);
+        }
+        void IMoveable<IColor4>.Pull(IColor4 src)
+        {
+            if (src is Color4MinMax value) Pull(value);
+        }
+
         public override bool Equals(object obj) => obj is Color4MinMax value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(MinR, MinG, MinB, MinA, MaxR, MaxG, MaxB, MaxA);
         

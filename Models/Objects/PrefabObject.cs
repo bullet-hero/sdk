@@ -99,6 +99,15 @@ namespace BH.SDK.Models.Objects
             Modifications = src.Modifications.CopyDictionaryManaged();
         }
 
+        public void Pull(PrefabObject src)
+        {
+            base.Pull(src);
+
+            PrefabId = src.PrefabId;
+            ObjectIds = src.ObjectIds.CopyDictionaryUnmanaged();
+            Modifications = src.Modifications.CopyDictionaryManaged();
+        }
+
         public override bool Equals(object obj) => obj is PrefabObject value && Equals(value);
         public override int GetHashCode()
         {

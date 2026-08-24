@@ -145,6 +145,34 @@ namespace BH.SDK.Models.Clipboard
             AudioTracks.CopyDictionary(), GameKeys.Copy(), CameraKeys.Copy(),
             PostProcessingKeys.Copy(), PlayerKeys.Copy());
 
+        public void Update(ClipboardData src)
+        {
+            Content = src.Content;
+            Objects = src.Objects.CopyDictionary();
+            PrefabObjects = src.PrefabObjects.CopyDictionary();
+            KeyObjects = src.KeyObjects.CopyDictionary();
+            KeyTracks = src.KeyTracks.CopyDictionary();
+            AudioTracks = src.AudioTracks.CopyDictionary();
+            GameKeys = src.GameKeys.Copy();
+            CameraKeys = src.CameraKeys.Copy();
+            PostProcessingKeys = src.PostProcessingKeys.Copy();
+            PlayerKeys = src.PlayerKeys.Copy();
+        }
+
+        public void Pull(ClipboardData src)
+        {
+            Content = src.Content;
+            Objects = src.Objects.CopyDictionary();
+            PrefabObjects = src.PrefabObjects.CopyDictionary();
+            KeyObjects = src.KeyObjects.CopyDictionary();
+            KeyTracks = src.KeyTracks.CopyDictionary();
+            AudioTracks = src.AudioTracks.CopyDictionary();
+            GameKeys.Pull(src.GameKeys);
+            CameraKeys.Pull(src.CameraKeys);
+            PostProcessingKeys.Pull(src.PostProcessingKeys);
+            PlayerKeys.Pull(src.PlayerKeys);
+        }
+
         public override bool Equals(object obj) => obj is ClipboardData value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(
             HashCode.Combine(Content, Objects.GetDictionaryHashCode(), PrefabObjects.GetDictionaryHashCode(),

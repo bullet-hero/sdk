@@ -41,6 +41,20 @@ namespace BH.SDK.Models.AudioEffects
 
         private AudioLowpass CopyImpl() => new(MixLevel, CutoffFreq);
 
+        public void Update(AudioLowpass src)
+        {
+            base.Update(src);
+
+            CutoffFreq = src.CutoffFreq;
+        }
+
+        public void Pull(AudioLowpass src)
+        {
+            base.Pull(src);
+
+            CutoffFreq = src.CutoffFreq;
+        }
+
         public override bool Equals(object obj) => obj is AudioLowpass value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), CutoffFreq);
 

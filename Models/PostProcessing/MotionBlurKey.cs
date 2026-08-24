@@ -48,6 +48,20 @@ namespace BH.SDK.Models.PostProcessing
         
         private MotionBlurKey CopyImpl() => new(Intensity, Active, Frame, Ease);
 
+        public void Update(MotionBlurKey src)
+        {
+            base.Update(src);
+
+            Intensity = src.Intensity;
+        }
+
+        public void Pull(MotionBlurKey src)
+        {
+            base.Pull(src);
+
+            Intensity = src.Intensity;
+        }
+
         public override bool Equals(object obj) => obj is MotionBlurKey value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), Intensity);
 

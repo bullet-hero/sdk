@@ -57,6 +57,29 @@ namespace BH.SDK.Models.Values
         IVector2 ICopyable<IVector2>.Copy() => new Vector2Circle(X, Y, Radius);
         public Vector2Circle Copy() => new(X, Y, Radius);
 
+        public void Update(Vector2Circle src)
+        {
+            X = src.X;
+            Y = src.Y;
+            Radius = src.Radius;
+        }
+
+        public void Pull(Vector2Circle src)
+        {
+            X = src.X;
+            Y = src.Y;
+            Radius = src.Radius;
+        }
+
+        void IUpdatable<IVector2>.Update(IVector2 src)
+        {
+            if (src is Vector2Circle value) Update(value);
+        }
+        void IMoveable<IVector2>.Pull(IVector2 src)
+        {
+            if (src is Vector2Circle value) Pull(value);
+        }
+
         public override bool Equals(object obj) => obj is Vector2Circle value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(X, Y, Radius);
         

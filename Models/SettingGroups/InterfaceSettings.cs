@@ -64,6 +64,13 @@ namespace BH.SDK.Models.SettingGroups
             StatsAlignmentY = source.StatsAlignmentY;
         }
 
+        public void Update(InterfaceSettings src)
+        {
+            StatsActive = src.StatsActive;
+            StatsAlignmentX = src.StatsAlignmentX;
+            StatsAlignmentY = src.StatsAlignmentY;
+        }
+
         public override int GetHashCode() => HashCode.Combine(StatsActive, StatsAlignmentX, StatsAlignmentY);
         public override bool Equals(object obj) => obj is InterfaceSettings value && Equals(value);
 

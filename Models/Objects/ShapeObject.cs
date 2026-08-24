@@ -124,6 +124,18 @@ namespace BH.SDK.Models.Objects
             UVs = src.UVs.CopyList();
         }
 
+        public void Pull(ShapeObject src)
+        {
+            base.Pull(src);
+
+            ShaderType = src.ShaderType;
+            ShapeId = src.ShapeId;
+            ColliderId = src.ColliderId;
+            TextureResourceId = src.TextureResourceId;
+            Colors = src.Colors.CopyList();
+            UVs = src.UVs.CopyList();
+        }
+
         public override bool Equals(object obj) => obj is ShapeObject value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(base.GetHashCode(),
             ShaderType, ShapeId, ColliderId, TextureResourceId, Colors.GetListHashCode(), UVs.GetListHashCode());

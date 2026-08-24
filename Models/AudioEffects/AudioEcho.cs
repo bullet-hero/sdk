@@ -75,6 +75,28 @@ namespace BH.SDK.Models.AudioEffects
 
         private AudioEcho CopyImpl() => new(MixLevel, Delay, Decay, MaxChannels, DryMix, WetMix);
 
+        public void Update(AudioEcho src)
+        {
+            base.Update(src);
+
+            Delay = src.Delay;
+            Decay = src.Decay;
+            MaxChannels = src.MaxChannels;
+            DryMix = src.DryMix;
+            WetMix = src.WetMix;
+        }
+
+        public void Pull(AudioEcho src)
+        {
+            base.Pull(src);
+
+            Delay = src.Delay;
+            Decay = src.Decay;
+            MaxChannels = src.MaxChannels;
+            DryMix = src.DryMix;
+            WetMix = src.WetMix;
+        }
+
         public override bool Equals(object obj) => obj is AudioEcho value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), Delay, Decay, MaxChannels, DryMix, WetMix);
 

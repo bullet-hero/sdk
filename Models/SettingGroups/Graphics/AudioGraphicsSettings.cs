@@ -102,6 +102,18 @@ namespace BH.SDK.Models.SettingGroups.Graphics
             ScrubTime = source.ScrubTime;
         }
 
+        public void Update(AudioGraphicsSettings src)
+        {
+            base.Update(src);
+
+            RenderEffects = src.RenderEffects;
+            ResyncJumpTime = src.ResyncJumpTime;
+            SyncDeadZone = src.SyncDeadZone;
+            PitchCorrection = src.PitchCorrection;
+            UseScrub = src.UseScrub;
+            ScrubTime = src.ScrubTime;
+        }
+
         public override bool Equals(object obj) => obj is AudioGraphicsSettings value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), RenderEffects,
             ResyncJumpTime, SyncDeadZone, PitchCorrection, UseScrub, ScrubTime);

@@ -48,6 +48,18 @@ namespace BH.SDK.Models.Resources
         public object Clone() => Copy();
         public ResourceKey Copy() => new(UriType, Uri);
 
+        public void Update(ResourceKey src)
+        {
+            UriType = src.UriType;
+            Uri = src.Uri;
+        }
+
+        public void Pull(ResourceKey src)
+        {
+            UriType = src.UriType;
+            Uri = src.Uri;
+        }
+
         public bool Equals(ResourceKey other)
         {
             if (other is null) return false;

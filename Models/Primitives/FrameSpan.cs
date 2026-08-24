@@ -108,6 +108,16 @@ namespace BH.SDK.Models.Primitives
         public readonly object Clone() => Copy();
         public readonly FrameSpan Copy() => this;
 
+        public void Update(FrameSpan src)
+        {
+            this = src;
+        }
+
+        public void Pull(FrameSpan src)
+        {
+            this = src;
+        }
+
         public readonly bool Equals(FrameSpan other) => _rawStart == other._rawStart && _rawDuration == other._rawDuration;
         public readonly override bool Equals(object obj) => obj is FrameSpan other && Equals(other);
         public readonly override int GetHashCode() => HashCode.Combine(_rawStart, _rawDuration);

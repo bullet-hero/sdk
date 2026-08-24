@@ -164,6 +164,42 @@ namespace BH.SDK.Models.Audio
             (AudioDistortion)Distortion.Clone(), (AudioFlange)Flange.Clone(), (AudioCompressor)Compressor.Clone(),
             (AudioNormalize)Normalize.Clone(), (AudioParamEQ)ParamEQ.Clone());
 
+        public void Update(LevelTrackEffects src)
+        {
+            Volumes = src.Volumes.CopyList();
+            StereoPans = src.StereoPans.CopyList();
+            Active = src.Active;
+            Lowpass = (AudioLowpass)src.Lowpass.Clone();
+            Highpass = (AudioHighpass)src.Highpass.Clone();
+            Echo = (AudioEcho)src.Echo.Clone();
+            Reverb = (AudioReverb)src.Reverb.Clone();
+            Chorus = (AudioChorus)src.Chorus.Clone();
+            PitchShifter = (AudioPitchShifter)src.PitchShifter.Clone();
+            Distortion = (AudioDistortion)src.Distortion.Clone();
+            Flange = (AudioFlange)src.Flange.Clone();
+            Compressor = (AudioCompressor)src.Compressor.Clone();
+            Normalize = (AudioNormalize)src.Normalize.Clone();
+            ParamEQ = (AudioParamEQ)src.ParamEQ.Clone();
+        }
+
+        public void Pull(LevelTrackEffects src)
+        {
+            Volumes = src.Volumes.CopyList();
+            StereoPans = src.StereoPans.CopyList();
+            Active = src.Active;
+            Lowpass.Pull(src.Lowpass);
+            Highpass.Pull(src.Highpass);
+            Echo.Pull(src.Echo);
+            Reverb.Pull(src.Reverb);
+            Chorus.Pull(src.Chorus);
+            PitchShifter.Pull(src.PitchShifter);
+            Distortion.Pull(src.Distortion);
+            Flange.Pull(src.Flange);
+            Compressor.Pull(src.Compressor);
+            Normalize.Pull(src.Normalize);
+            ParamEQ.Pull(src.ParamEQ);
+        }
+
         public override bool Equals(object obj) => obj is LevelTrackEffects value && Equals(value);
         public override int GetHashCode()
         {

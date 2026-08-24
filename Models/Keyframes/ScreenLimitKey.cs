@@ -4,6 +4,7 @@ using BH.SDK.Models.Interfaces;
 using BH.SDK.Models.Interfaces.Values;
 using BH.SDK.Models.Values;
 using BH.SDK.Rules.Attributes;
+using BH.SDK.Utils;
 using Newtonsoft.Json;
 
 namespace BH.SDK.Models.Keyframes
@@ -42,6 +43,20 @@ namespace BH.SDK.Models.Keyframes
         ScreenLimitKey ICopyable<ScreenLimitKey>.Copy() => CopyImpl();
         
         private ScreenLimitKey CopyImpl() => new(ScreenLimit.Copy(), Frame, Ease);
+
+        public void Update(ScreenLimitKey src)
+        {
+            base.Update(src);
+
+            ScreenLimit = src.ScreenLimit.Copy();
+        }
+
+        public void Pull(ScreenLimitKey src)
+        {
+            base.Pull(src);
+
+            ScreenLimit = ScreenLimit.PullFrom(src.ScreenLimit);
+        }
 
         public override bool Equals(object obj) => obj is ScreenLimitKey value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), ScreenLimit);

@@ -5,6 +5,7 @@ using BH.SDK.Models.Interfaces.Values;
 using BH.SDK.Models.Values;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
+using BH.SDK.Utils;
 using Newtonsoft.Json;
 
 // ReSharper disable NonReadonlyMemberInGetHashCode
@@ -50,6 +51,20 @@ namespace BH.SDK.Models.Keyframes
         Velocity ICopyable<Velocity>.Copy() => CopyImpl();
 
         private Velocity CopyImpl() => new(Force.Copy(), Frame, Ease);
+
+        public void Update(Velocity src)
+        {
+            base.Update(src);
+
+            Force = src.Force.Copy();
+        }
+
+        public void Pull(Velocity src)
+        {
+            base.Pull(src);
+
+            Force = Force.PullFrom(src.Force);
+        }
 
         public override bool Equals(object obj) => obj is Velocity value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), Force);

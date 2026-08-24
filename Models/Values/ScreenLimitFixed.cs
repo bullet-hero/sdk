@@ -43,6 +43,25 @@ namespace BH.SDK.Models.Values
         IScreenLimit ICopyable<IScreenLimit>.Copy() => new ScreenLimitFixed(Aspect.Copy());
         public ScreenLimitFixed Copy() => new(Aspect.Copy());
         
+        public void Update(ScreenLimitFixed src)
+        {
+            Aspect = src.Aspect.Copy();
+        }
+
+        public void Pull(ScreenLimitFixed src)
+        {
+            Aspect.Pull(src.Aspect);
+        }
+
+        void IUpdatable<IScreenLimit>.Update(IScreenLimit src)
+        {
+            if (src is ScreenLimitFixed value) Update(value);
+        }
+        void IMoveable<IScreenLimit>.Pull(IScreenLimit src)
+        {
+            if (src is ScreenLimitFixed value) Pull(value);
+        }
+
         public override bool Equals(object obj) => obj is ScreenLimitFixed value && Equals(value);
         public override int GetHashCode() => Aspect != null ? Aspect.GetHashCode() : 0;
 

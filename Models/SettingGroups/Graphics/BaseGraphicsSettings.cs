@@ -32,6 +32,16 @@ namespace BH.SDK.Models.SettingGroups.Graphics
         public abstract object Clone();
         public abstract BaseGraphicsSettings Copy();
 
+        public void Update(BaseGraphicsSettings src)
+        {
+            Render = src.Render;
+        }
+
+        public void Pull(BaseGraphicsSettings src)
+        {
+            Render = src.Render;
+        }
+
         public override bool Equals(object obj) => obj is BaseGraphicsSettings value && Equals(value);
         public override int GetHashCode() => Render.GetHashCode();
 

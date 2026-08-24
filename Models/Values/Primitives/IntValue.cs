@@ -41,6 +41,25 @@ namespace BH.SDK.Models.Values
         IInt ICopyable<IInt>.Copy() => new IntValue(Value);
         public IntValue Copy() => new(Value);
 
+        public void Update(IntValue src)
+        {
+            Value = src.Value;
+        }
+
+        public void Pull(IntValue src)
+        {
+            Value = src.Value;
+        }
+
+        void IUpdatable<IInt>.Update(IInt src)
+        {
+            if (src is IntValue value) Update(value);
+        }
+        void IMoveable<IInt>.Pull(IInt src)
+        {
+            if (src is IntValue value) Pull(value);
+        }
+
         public override bool Equals(object obj) => obj is IntValue value && Equals(value);
         public override int GetHashCode() => Value;
 

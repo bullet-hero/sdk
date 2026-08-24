@@ -65,6 +65,26 @@ namespace BH.SDK.Models.AudioEffects
 
         private AudioCompressor CopyImpl() => new(MixLevel, Threshold, Attack, Release, MakeUpGain);
 
+        public void Update(AudioCompressor src)
+        {
+            base.Update(src);
+
+            Threshold = src.Threshold;
+            Attack = src.Attack;
+            Release = src.Release;
+            MakeUpGain = src.MakeUpGain;
+        }
+
+        public void Pull(AudioCompressor src)
+        {
+            base.Pull(src);
+
+            Threshold = src.Threshold;
+            Attack = src.Attack;
+            Release = src.Release;
+            MakeUpGain = src.MakeUpGain;
+        }
+
         public override bool Equals(object obj) => obj is AudioCompressor value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), Threshold, Attack, Release, MakeUpGain);
 

@@ -6,6 +6,7 @@ using BH.SDK.Models.Keyframes;
 using BH.SDK.Models.Values;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
+using BH.SDK.Utils;
 using Newtonsoft.Json;
 
 // ReSharper disable NonReadonlyMemberInGetHashCode
@@ -115,6 +116,34 @@ namespace BH.SDK.Models.PostProcessing
         private ShadowsMidtonesHighlightsKey CopyImpl() => new(Shadows, ShadowsColor4.Copy(), Midtones, MidtonesColor4.Copy(),
             Highlights, HighlightsColor4.Copy(), ShadowLimits.Copy(), HighlightLimits.Copy(), Active, Frame, Ease);
         
+        public void Update(ShadowsMidtonesHighlightsKey src)
+        {
+            base.Update(src);
+
+            Shadows = src.Shadows;
+            ShadowsColor4 = src.ShadowsColor4.Copy();
+            Midtones = src.Midtones;
+            MidtonesColor4 = src.MidtonesColor4.Copy();
+            Highlights = src.Highlights;
+            HighlightsColor4 = src.HighlightsColor4.Copy();
+            ShadowLimits = src.ShadowLimits.Copy();
+            HighlightLimits = src.HighlightLimits.Copy();
+        }
+
+        public void Pull(ShadowsMidtonesHighlightsKey src)
+        {
+            base.Pull(src);
+
+            Shadows = src.Shadows;
+            ShadowsColor4 = ShadowsColor4.PullFrom(src.ShadowsColor4);
+            Midtones = src.Midtones;
+            MidtonesColor4 = MidtonesColor4.PullFrom(src.MidtonesColor4);
+            Highlights = src.Highlights;
+            HighlightsColor4 = HighlightsColor4.PullFrom(src.HighlightsColor4);
+            ShadowLimits = ShadowLimits.PullFrom(src.ShadowLimits);
+            HighlightLimits = HighlightLimits.PullFrom(src.HighlightLimits);
+        }
+
         public override bool Equals(object obj) => obj is ShadowsMidtonesHighlightsKey value && Equals(value);
         public override int GetHashCode()
         {

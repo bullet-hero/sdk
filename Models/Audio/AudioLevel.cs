@@ -44,6 +44,16 @@ namespace BH.SDK.Models.Audio
         public object Clone() => Copy();
         public AudioLevel Copy() => new(Tracks.CopyDictionary());
 
+        public void Update(AudioLevel src)
+        {
+            Tracks = src.Tracks.CopyDictionary();
+        }
+
+        public void Pull(AudioLevel src)
+        {
+            Tracks = src.Tracks.CopyDictionary();
+        }
+
         public bool Equals(AudioLevel other)
         {
             if (other is null) return false;

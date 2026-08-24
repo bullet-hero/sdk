@@ -57,6 +57,13 @@ namespace BH.SDK.Models.SettingGroups
             UI = source.UI;
         }
 
+        public void Update(AudioSettings src)
+        {
+            Volume = src.Volume;
+            Game = src.Game;
+            UI = src.UI;
+        }
+
         public override int GetHashCode() => HashCode.Combine(Volume, Game, UI);
         public override bool Equals(object obj) => obj is AudioSettings value && Equals(value);
 

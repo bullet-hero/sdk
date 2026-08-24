@@ -77,6 +77,18 @@ namespace BH.SDK.Models.Hints
         public object Clone() => Copy();
         public LevelHints Copy() => new(Limits?.Copy(), FontCharacters.CopyDictionary());
 
+        public void Update(LevelHints src)
+        {
+            Limits = src.Limits?.Copy();
+            FontCharacters = src.FontCharacters.CopyDictionary();
+        }
+
+        public void Pull(LevelHints src)
+        {
+            Limits = Limits.PullFrom(src.Limits);
+            FontCharacters = src.FontCharacters.CopyDictionary();
+        }
+
         public override bool Equals(object obj) => obj is LevelHints value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(Limits, FontCharacters.GetDictionaryHashCode());
 

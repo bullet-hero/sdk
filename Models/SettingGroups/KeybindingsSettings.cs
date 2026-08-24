@@ -87,6 +87,11 @@ namespace BH.SDK.Models.SettingGroups
             Overrides = new Dictionary<string, string>(source.Overrides);
         }
 
+        public void Update(KeybindingsSettings src)
+        {
+            Overrides = new Dictionary<string, string>(src.Overrides);
+        }
+
         public override bool Equals(object obj) => obj is KeybindingsSettings value && Equals(value);
         public override int GetHashCode() => Overrides.GetDictionaryHashCode();
 

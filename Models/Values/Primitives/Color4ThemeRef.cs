@@ -41,6 +41,25 @@ namespace BH.SDK.Models.Values
         IColor4 ICopyable<IColor4>.Copy() => new Color4ThemeRef(ThemeColorIndex);
         public Color4ThemeRef Copy() => new(ThemeColorIndex);
 
+        public void Update(Color4ThemeRef src)
+        {
+            ThemeColorIndex = src.ThemeColorIndex;
+        }
+
+        public void Pull(Color4ThemeRef src)
+        {
+            ThemeColorIndex = src.ThemeColorIndex;
+        }
+
+        void IUpdatable<IColor4>.Update(IColor4 src)
+        {
+            if (src is Color4ThemeRef value) Update(value);
+        }
+        void IMoveable<IColor4>.Pull(IColor4 src)
+        {
+            if (src is Color4ThemeRef value) Pull(value);
+        }
+
         public override bool Equals(object obj) => obj is Color4ThemeRef value && Equals(value);
         public override int GetHashCode() => ThemeColorIndex;
         

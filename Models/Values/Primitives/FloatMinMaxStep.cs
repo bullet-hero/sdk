@@ -58,6 +58,29 @@ namespace BH.SDK.Models.Values
         IFloat ICopyable<IFloat>.Copy() => new FloatMinMaxStep(Min, Max, Step);
         public FloatMinMaxStep Copy() => new(Min, Max, Step);
 
+        public void Update(FloatMinMaxStep src)
+        {
+            Min = src.Min;
+            Max = src.Max;
+            Step = src.Step;
+        }
+
+        public void Pull(FloatMinMaxStep src)
+        {
+            Min = src.Min;
+            Max = src.Max;
+            Step = src.Step;
+        }
+
+        void IUpdatable<IFloat>.Update(IFloat src)
+        {
+            if (src is FloatMinMaxStep value) Update(value);
+        }
+        void IMoveable<IFloat>.Pull(IFloat src)
+        {
+            if (src is FloatMinMaxStep value) Pull(value);
+        }
+
         public override bool Equals(object obj) => obj is FloatMinMaxStep value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(Min, Max, Step);
         

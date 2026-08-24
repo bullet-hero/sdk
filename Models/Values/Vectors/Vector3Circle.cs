@@ -64,6 +64,31 @@ namespace BH.SDK.Models.Values
         IVector3 ICopyable<IVector3>.Copy() => new Vector3Circle(X, Y, Z, Radius);
         public Vector3Circle Copy() => new(X, Y, Z, Radius);
 
+        public void Update(Vector3Circle src)
+        {
+            X = src.X;
+            Y = src.Y;
+            Z = src.Z;
+            Radius = src.Radius;
+        }
+
+        public void Pull(Vector3Circle src)
+        {
+            X = src.X;
+            Y = src.Y;
+            Z = src.Z;
+            Radius = src.Radius;
+        }
+
+        void IUpdatable<IVector3>.Update(IVector3 src)
+        {
+            if (src is Vector3Circle value) Update(value);
+        }
+        void IMoveable<IVector3>.Pull(IVector3 src)
+        {
+            if (src is Vector3Circle value) Pull(value);
+        }
+
         public override bool Equals(object obj) => obj is Vector3Circle value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(X, Y, Z, Radius);
         

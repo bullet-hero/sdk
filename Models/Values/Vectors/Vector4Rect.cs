@@ -104,6 +104,39 @@ namespace BH.SDK.Models.Values
         IVector4 ICopyable<IVector4>.Copy() => new Vector4Rect(MinX, MinY, MinZ, MinW, MaxX, MaxY, MaxZ, MaxW);
         public Vector4Rect Copy() => new(MinX, MinY, MinZ, MinW, MaxX, MaxY, MaxZ, MaxW);
 
+        public void Update(Vector4Rect src)
+        {
+            MinX = src.MinX;
+            MinY = src.MinY;
+            MinZ = src.MinZ;
+            MinW = src.MinW;
+            MaxX = src.MaxX;
+            MaxY = src.MaxY;
+            MaxZ = src.MaxZ;
+            MaxW = src.MaxW;
+        }
+
+        public void Pull(Vector4Rect src)
+        {
+            MinX = src.MinX;
+            MinY = src.MinY;
+            MinZ = src.MinZ;
+            MinW = src.MinW;
+            MaxX = src.MaxX;
+            MaxY = src.MaxY;
+            MaxZ = src.MaxZ;
+            MaxW = src.MaxW;
+        }
+
+        void IUpdatable<IVector4>.Update(IVector4 src)
+        {
+            if (src is Vector4Rect value) Update(value);
+        }
+        void IMoveable<IVector4>.Pull(IVector4 src)
+        {
+            if (src is Vector4Rect value) Pull(value);
+        }
+
         public override bool Equals(object obj) => obj is Vector4Rect value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(MinX, MinY, MinZ, MinW, MaxX, MaxY, MaxZ, MaxW);
         

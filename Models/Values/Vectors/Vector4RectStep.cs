@@ -116,6 +116,41 @@ namespace BH.SDK.Models.Values
         IVector4 ICopyable<IVector4>.Copy() => new Vector4RectStep(MinX, MinY, MinZ, MinW, MaxX, MaxY, MaxZ, MaxW, Step);
         public Vector4RectStep Copy() => new(MinX, MinY, MinZ, MinW, MaxX, MaxY, MaxZ, MaxW, Step);
 
+        public void Update(Vector4RectStep src)
+        {
+            MinX = src.MinX;
+            MinY = src.MinY;
+            MinZ = src.MinZ;
+            MinW = src.MinW;
+            MaxX = src.MaxX;
+            MaxY = src.MaxY;
+            MaxZ = src.MaxZ;
+            MaxW = src.MaxW;
+            Step = src.Step;
+        }
+
+        public void Pull(Vector4RectStep src)
+        {
+            MinX = src.MinX;
+            MinY = src.MinY;
+            MinZ = src.MinZ;
+            MinW = src.MinW;
+            MaxX = src.MaxX;
+            MaxY = src.MaxY;
+            MaxZ = src.MaxZ;
+            MaxW = src.MaxW;
+            Step = src.Step;
+        }
+
+        void IUpdatable<IVector4>.Update(IVector4 src)
+        {
+            if (src is Vector4RectStep value) Update(value);
+        }
+        void IMoveable<IVector4>.Pull(IVector4 src)
+        {
+            if (src is Vector4RectStep value) Pull(value);
+        }
+
         public override bool Equals(object obj) => obj is Vector4RectStep value && Equals(value);
         public override int GetHashCode()
         {

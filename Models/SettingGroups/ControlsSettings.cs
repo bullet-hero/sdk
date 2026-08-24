@@ -113,6 +113,16 @@ namespace BH.SDK.Models.SettingGroups
             DeviceGyro.Pull(source.DeviceGyro);
         }
 
+        public void Update(ControlsSettings src)
+        {
+            Common = src.Common.Copy();
+            Priority = (ControlDevice[])src.Priority.Clone();
+            KeyboardMouse = (KeyboardMouseControlsSettings)src.KeyboardMouse.Copy();
+            Touchscreen = (TouchscreenControlsSettings)src.Touchscreen.Copy();
+            Gamepad = (GamepadControlsSettings)src.Gamepad.Copy();
+            DeviceGyro = (DeviceGyroControlsSettings)src.DeviceGyro.Copy();
+        }
+
         public override bool Equals(object obj) => obj is ControlsSettings value && Equals(value);
         public override int GetHashCode()
         {

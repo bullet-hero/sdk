@@ -24,6 +24,23 @@ namespace BH.SDK.Models.Effects
         public EffectShapePoint Copy() => new();
 
         // ReSharper disable once BaseObjectGetHashCodeCallInGetHashCode
+        public void Update(EffectShapePoint src)
+        {
+        }
+
+        public void Pull(EffectShapePoint src)
+        {
+        }
+
+        void IUpdatable<IEffectShape>.Update(IEffectShape src)
+        {
+            if (src is EffectShapePoint value) Update(value);
+        }
+        void IMoveable<IEffectShape>.Pull(IEffectShape src)
+        {
+            if (src is EffectShapePoint value) Pull(value);
+        }
+
         public override int GetHashCode() => base.GetHashCode();
         public override bool Equals(object obj) => obj is EffectShapePoint value && Equals(value);
         

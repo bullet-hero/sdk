@@ -56,7 +56,21 @@ namespace BH.SDK.Models.Values
         }
         
         public object Clone() => Copy();
-        public CurveValue Copy() => new(KeyFrames.CopyList(), PostWrapMode, PreWrapMode);
+        public CurveValue Copy() => new(KeyFrames.CopyList(), PreWrapMode, PostWrapMode);
+
+        public void Update(CurveValue src)
+        {
+            KeyFrames = src.KeyFrames.CopyList();
+            PreWrapMode = src.PreWrapMode;
+            PostWrapMode = src.PostWrapMode;
+        }
+
+        public void Pull(CurveValue src)
+        {
+            KeyFrames = src.KeyFrames.CopyList();
+            PreWrapMode = src.PreWrapMode;
+            PostWrapMode = src.PostWrapMode;
+        }
 
         public override bool Equals(object obj) => obj is CurveValue value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(KeyFrames.GetListHashCode(), (int)PreWrapMode, (int)PostWrapMode);

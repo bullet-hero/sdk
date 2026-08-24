@@ -6,6 +6,7 @@ using BH.SDK.Models.Primitives.Resources;
 using BH.SDK.Models.Values;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
+using BH.SDK.Utils;
 using Newtonsoft.Json;
 
 // ReSharper disable NonReadonlyMemberInGetHashCode
@@ -107,15 +108,26 @@ namespace BH.SDK.Models.Effects
             Render = src.Render;
             Loop = src.Loop;
             ParticleCount = src.ParticleCount;
-            LifetimeBounds = src.LifetimeBounds;
+            LifetimeBounds = src.LifetimeBounds.Copy();
             TextureResourceId = src.TextureResourceId;
             ParticleShapeId = src.ParticleShapeId;
-            ParticlePivot = src.ParticlePivot;
+            ParticlePivot = src.ParticlePivot.Copy();
         }
 
         public object Clone() => Copy();
         public EffectObjectCore Copy() => new(Render, Loop, ParticleCount,
             LifetimeBounds.Copy(), TextureResourceId, ParticleShapeId, ParticlePivot.Copy());
+
+        public void Pull(EffectObjectCore src)
+        {
+            Render = src.Render;
+            Loop = src.Loop;
+            ParticleCount = src.ParticleCount;
+            LifetimeBounds = LifetimeBounds.PullFrom(src.LifetimeBounds);
+            TextureResourceId = src.TextureResourceId;
+            ParticleShapeId = src.ParticleShapeId;
+            ParticlePivot.Pull(src.ParticlePivot);
+        }
 
         public override bool Equals(object obj) => obj is EffectObjectCore value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(Render, Loop, ParticleCount,

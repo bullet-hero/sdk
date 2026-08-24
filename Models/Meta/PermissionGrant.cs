@@ -108,6 +108,26 @@ namespace BH.SDK.Models.Meta
         public PermissionGrant Copy() => new(Grantor.Copy(), Scope,
             GrantedAt, ExpiresAt, ProofUrl, ProofText);
 
+        public void Update(PermissionGrant src)
+        {
+            Grantor = src.Grantor.Copy();
+            Scope = src.Scope;
+            GrantedAt = src.GrantedAt;
+            ExpiresAt = src.ExpiresAt;
+            ProofUrl = src.ProofUrl;
+            ProofText = src.ProofText;
+        }
+
+        public void Pull(PermissionGrant src)
+        {
+            Grantor.Pull(src.Grantor);
+            Scope = src.Scope;
+            GrantedAt = src.GrantedAt;
+            ExpiresAt = src.ExpiresAt;
+            ProofUrl = src.ProofUrl;
+            ProofText = src.ProofText;
+        }
+
         public override bool Equals(object obj) => obj is PermissionGrant value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(Grantor, (int)Scope,
             GrantedAt, ExpiresAt, ProofUrl, ProofText);

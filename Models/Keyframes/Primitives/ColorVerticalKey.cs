@@ -6,6 +6,7 @@ using BH.SDK.Models.Interfaces.Keyframes;
 using BH.SDK.Models.Interfaces.Values;
 using BH.SDK.Models.Values;
 using BH.SDK.Rules.Attributes;
+using BH.SDK.Utils;
 using Newtonsoft.Json;
 
 // ReSharper disable NonReadonlyMemberInGetHashCode
@@ -58,6 +59,31 @@ namespace BH.SDK.Models.Keyframes
         IColor4X4Key ICopyable<IColor4X4Key>.Copy() => CopyImpl();
         
         private ColorVerticalKey CopyImpl() => new(Color4Bottom.Copy(), Color4Top.Copy(), Frame, Ease);
+
+        public void Update(ColorVerticalKey src)
+        {
+            base.Update(src);
+
+            Color4Bottom = src.Color4Bottom.Copy();
+            Color4Top = src.Color4Top.Copy();
+        }
+
+        public void Pull(ColorVerticalKey src)
+        {
+            base.Pull(src);
+
+            Color4Bottom = Color4Bottom.PullFrom(src.Color4Bottom);
+            Color4Top = Color4Top.PullFrom(src.Color4Top);
+        }
+
+        void IUpdatable<IColor4X4Key>.Update(IColor4X4Key src)
+        {
+            if (src is ColorVerticalKey value) Update(value);
+        }
+        void IMoveable<IColor4X4Key>.Pull(IColor4X4Key src)
+        {
+            if (src is ColorVerticalKey value) Pull(value);
+        }
 
         public override bool Equals(object obj) => obj is ColorVerticalKey value && Equals(value);
         public bool Equals(IColor4X4Key other) => other is ColorVerticalKey value && Equals(value);

@@ -4,6 +4,7 @@ using BH.SDK.Models.Interfaces.Values;
 using BH.SDK.Models.Values;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
+using BH.SDK.Utils;
 using Newtonsoft.Json;
 
 // ReSharper disable NonReadonlyMemberInGetHashCode
@@ -158,17 +159,32 @@ namespace BH.SDK.Models.Effects
 
         public void Update(EffectObjectForces src)
         {
-            StartGravityMin = src.StartGravityMin;
-            StartGravityMax = src.StartGravityMax;
-            StartVelocityMin = src.StartVelocityMin;
-            StartVelocityMax = src.StartVelocityMax;
-            StartAngularVelocityMin = src.StartAngularVelocityMin;
-            StartAngularVelocityMax = src.StartAngularVelocityMax;
-            LinearVelocity = src.LinearVelocity;
-            OrbitalVelocity = src.OrbitalVelocity;
-            OrbitalCenterOffset = src.OrbitalCenterOffset;
-            VelocitySpeed = src.VelocitySpeed;
-            LinearForce = src.LinearForce;
+            StartGravityMin = src.StartGravityMin.Copy();
+            StartGravityMax = src.StartGravityMax.Copy();
+            StartVelocityMin = src.StartVelocityMin.Copy();
+            StartVelocityMax = src.StartVelocityMax.Copy();
+            StartAngularVelocityMin = src.StartAngularVelocityMin.Copy();
+            StartAngularVelocityMax = src.StartAngularVelocityMax.Copy();
+            LinearVelocity = src.LinearVelocity.Copy();
+            OrbitalVelocity = src.OrbitalVelocity.Copy();
+            OrbitalCenterOffset = src.OrbitalCenterOffset.Copy();
+            VelocitySpeed = src.VelocitySpeed.Copy();
+            LinearForce = src.LinearForce.Copy();
+        }
+
+        public void Pull(EffectObjectForces src)
+        {
+            StartGravityMin = StartGravityMin.PullFrom(src.StartGravityMin);
+            StartGravityMax = StartGravityMax.PullFrom(src.StartGravityMax);
+            StartVelocityMin = StartVelocityMin.PullFrom(src.StartVelocityMin);
+            StartVelocityMax = StartVelocityMax.PullFrom(src.StartVelocityMax);
+            StartAngularVelocityMin = StartAngularVelocityMin.PullFrom(src.StartAngularVelocityMin);
+            StartAngularVelocityMax = StartAngularVelocityMax.PullFrom(src.StartAngularVelocityMax);
+            LinearVelocity = LinearVelocity.PullFrom(src.LinearVelocity);
+            OrbitalVelocity = OrbitalVelocity.PullFrom(src.OrbitalVelocity);
+            OrbitalCenterOffset = OrbitalCenterOffset.PullFrom(src.OrbitalCenterOffset);
+            VelocitySpeed = VelocitySpeed.PullFrom(src.VelocitySpeed);
+            LinearForce = LinearForce.PullFrom(src.LinearForce);
         }
 
         public override bool Equals(object obj) => obj is EffectObjectForces value && Equals(value);

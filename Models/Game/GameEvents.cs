@@ -100,6 +100,26 @@ namespace BH.SDK.Models.Game
         public GameEvents Copy() => new(Markers.CopyList(), Beats.CopyList(), Checkpoints.CopyList(),
             ScreenLimits.CopyList(), Backgrounds.CopyList(), Themes.CopyList());
 
+        public void Update(GameEvents src)
+        {
+            Markers = src.Markers.CopyList();
+            Beats = src.Beats.CopyList();
+            Checkpoints = src.Checkpoints.CopyList();
+            ScreenLimits = src.ScreenLimits.CopyList();
+            Backgrounds = src.Backgrounds.CopyList();
+            Themes = src.Themes.CopyList();
+        }
+
+        public void Pull(GameEvents src)
+        {
+            Markers = src.Markers.CopyList();
+            Beats = src.Beats.CopyList();
+            Checkpoints = src.Checkpoints.CopyList();
+            ScreenLimits = src.ScreenLimits.CopyList();
+            Backgrounds = src.Backgrounds.CopyList();
+            Themes = src.Themes.CopyList();
+        }
+
         public override bool Equals(object obj) => obj is GameEvents value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(Markers.GetListHashCode(),
             Beats.GetListHashCode(), Checkpoints.GetListHashCode(), ScreenLimits.GetListHashCode(),

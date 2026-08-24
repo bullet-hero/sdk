@@ -36,6 +36,18 @@ namespace BH.SDK.Models.Primitives
         public readonly object Clone() => Copy();
         public readonly ModificationKey Copy() => new(ObjectId, Path);
 
+        public void Update(ModificationKey src)
+        {
+            ObjectId = src.ObjectId;
+            Path = src.Path;
+        }
+
+        public void Pull(ModificationKey src)
+        {
+            ObjectId = src.ObjectId;
+            Path = src.Path;
+        }
+
         public readonly bool Equals(ModificationKey other) => ObjectId.Equals(other.ObjectId) && Path == other.Path;
         public readonly override bool Equals(object obj) => obj is ModificationKey other && Equals(other);
         public readonly override int GetHashCode() => HashCode.Combine(ObjectId, Path);

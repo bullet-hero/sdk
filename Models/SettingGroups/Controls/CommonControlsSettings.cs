@@ -84,6 +84,16 @@ namespace BH.SDK.Models.SettingGroups.Controls
             CursorReturn = source.CursorReturn;
         }
 
+        public void Update(CommonControlsSettings src)
+        {
+            Selection = src.Selection;
+            ManualDevice = src.ManualDevice;
+            CursorVisible = src.CursorVisible;
+            CursorScale = src.CursorScale;
+            CursorRecenter = src.CursorRecenter;
+            CursorReturn = src.CursorReturn;
+        }
+
         public override bool Equals(object obj) => obj is CommonControlsSettings value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(Selection, ManualDevice,
             CursorVisible, CursorScale, CursorRecenter, CursorReturn);

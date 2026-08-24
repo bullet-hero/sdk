@@ -4,6 +4,7 @@ using BH.SDK.Models.Interfaces.Values;
 using BH.SDK.Models.Values;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
+using BH.SDK.Utils;
 using Newtonsoft.Json;
 
 namespace BH.SDK.Models.Meta
@@ -47,6 +48,18 @@ namespace BH.SDK.Models.Meta
 
         public object Clone() => Copy();
         public Author Copy() => new(Name.Copy(), Url);
+
+        public void Update(Author src)
+        {
+            Name = src.Name.Copy();
+            Url = src.Url;
+        }
+
+        public void Pull(Author src)
+        {
+            Name = Name.PullFrom(src.Name);
+            Url = src.Url;
+        }
 
         public override bool Equals(object obj) => obj is Author value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(Name, Url);

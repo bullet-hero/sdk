@@ -5,6 +5,7 @@ using BH.SDK.Models.Interfaces.Values;
 using BH.SDK.Models.Keyframes;
 using BH.SDK.Models.Values;
 using BH.SDK.Rules.Attributes;
+using BH.SDK.Utils;
 using Newtonsoft.Json;
 
 // ReSharper disable NonReadonlyMemberInGetHashCode
@@ -84,6 +85,30 @@ namespace BH.SDK.Models.PostProcessing
         LiftGammaGainKey ICopyable<LiftGammaGainKey>.Copy() => CopyImpl();
         
         private LiftGammaGainKey CopyImpl() => new(Lift, LiftColor4.Copy(), Gamma, GammaColor4.Copy(), Gain, GainColor4.Copy(), Active, Frame, Ease);
+
+        public void Update(LiftGammaGainKey src)
+        {
+            base.Update(src);
+
+            Lift = src.Lift;
+            LiftColor4 = src.LiftColor4.Copy();
+            Gamma = src.Gamma;
+            GammaColor4 = src.GammaColor4.Copy();
+            Gain = src.Gain;
+            GainColor4 = src.GainColor4.Copy();
+        }
+
+        public void Pull(LiftGammaGainKey src)
+        {
+            base.Pull(src);
+
+            Lift = src.Lift;
+            LiftColor4 = LiftColor4.PullFrom(src.LiftColor4);
+            Gamma = src.Gamma;
+            GammaColor4 = GammaColor4.PullFrom(src.GammaColor4);
+            Gain = src.Gain;
+            GainColor4 = GainColor4.PullFrom(src.GainColor4);
+        }
 
         public override bool Equals(object obj) => obj is LiftGammaGainKey value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(base.GetHashCode(),

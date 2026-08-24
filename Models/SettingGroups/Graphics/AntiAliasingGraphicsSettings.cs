@@ -69,6 +69,13 @@ namespace BH.SDK.Models.SettingGroups.Graphics
             Hdr = source.Hdr;
         }
 
+        public void Update(AntiAliasingGraphicsSettings src)
+        {
+            Type = src.Type;
+            Msaa = src.Msaa;
+            Hdr = src.Hdr;
+        }
+
         public override bool Equals(object obj) => obj is AntiAliasingGraphicsSettings value && Equals(value);
         public override int GetHashCode() => HashCode.Combine((int)Type, (int)Msaa, Hdr);
 

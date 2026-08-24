@@ -5,6 +5,7 @@ using BH.SDK.Models.Interfaces.Values;
 using BH.SDK.Models.Values;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
+using BH.SDK.Utils;
 using Newtonsoft.Json;
 
 namespace BH.SDK.Models.Keyframes
@@ -40,6 +41,20 @@ namespace BH.SDK.Models.Keyframes
         LayerKey ICopyable<LayerKey>.Copy() => CopyImpl();
         
         private LayerKey CopyImpl() => new(Layer.Copy(), Frame, Ease);
+
+        public void Update(LayerKey src)
+        {
+            base.Update(src);
+
+            Layer = src.Layer.Copy();
+        }
+
+        public void Pull(LayerKey src)
+        {
+            base.Pull(src);
+
+            Layer = Layer.PullFrom(src.Layer);
+        }
 
         public override bool Equals(object obj) => obj is LayerKey value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), Layer);

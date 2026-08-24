@@ -117,6 +117,28 @@ namespace BH.SDK.Models.Resources
         public LevelResources Copy() => new(Textures.CopyDictionary(), Fonts.CopyDictionary(), Audios.CopyDictionary(),
             CompositeShapes.CopyDictionary(), Themes.CopyDictionary(), Effects.CopyDictionary(), Prefabs.CopyDictionary());
 
+        public void Update(LevelResources src)
+        {
+            Textures = src.Textures.CopyDictionary();
+            Fonts = src.Fonts.CopyDictionary();
+            Audios = src.Audios.CopyDictionary();
+            CompositeShapes = src.CompositeShapes.CopyDictionary();
+            Themes = src.Themes.CopyDictionary();
+            Effects = src.Effects.CopyDictionary();
+            Prefabs = src.Prefabs.CopyDictionary();
+        }
+
+        public void Pull(LevelResources src)
+        {
+            Textures = src.Textures.CopyDictionary();
+            Fonts = src.Fonts.CopyDictionary();
+            Audios = src.Audios.CopyDictionary();
+            CompositeShapes = src.CompositeShapes.CopyDictionary();
+            Themes = src.Themes.CopyDictionary();
+            Effects = src.Effects.CopyDictionary();
+            Prefabs = src.Prefabs.CopyDictionary();
+        }
+
         public override bool Equals(object obj) => obj is LevelResources value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(Textures.GetDictionaryHashCode(),
             Fonts.GetDictionaryHashCode(), Audios.GetDictionaryHashCode(), CompositeShapes.GetDictionaryHashCode(),

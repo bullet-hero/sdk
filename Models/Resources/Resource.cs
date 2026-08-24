@@ -46,6 +46,16 @@ namespace BH.SDK.Models.Resources
         public abstract object Clone();
         public abstract Resource Copy();
 
+        public void Update(Resource src)
+        {
+            Sources = src.Sources.CopyList();
+        }
+
+        public void Pull(Resource src)
+        {
+            Sources = src.Sources.CopyList();
+        }
+
         public bool Equals(Resource other)
         {
             if (other is null) return false;

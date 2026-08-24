@@ -6,6 +6,7 @@ using BH.SDK.Models.Interfaces.Values;
 using BH.SDK.Models.Values;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
+using BH.SDK.Utils;
 using Newtonsoft.Json;
 
 // ReSharper disable NonReadonlyMemberInGetHashCode
@@ -81,6 +82,33 @@ namespace BH.SDK.Models.Effects
         public object Clone() => Copy();
         IEffectShape ICopyable<IEffectShape>.Copy() => new EffectShapeCone(TopRadius.Copy(), BaseRadius.Copy(), Arc.Copy(), Height.Copy(), Spread.Copy());
         public EffectShapeCone Copy() => new(TopRadius.Copy(), BaseRadius.Copy(), Arc.Copy(), Height.Copy(), Spread.Copy());
+
+        public void Update(EffectShapeCone src)
+        {
+            TopRadius = src.TopRadius.Copy();
+            BaseRadius = src.BaseRadius.Copy();
+            Arc = src.Arc.Copy();
+            Height = src.Height.Copy();
+            Spread = src.Spread.Copy();
+        }
+
+        public void Pull(EffectShapeCone src)
+        {
+            TopRadius = TopRadius.PullFrom(src.TopRadius);
+            BaseRadius = BaseRadius.PullFrom(src.BaseRadius);
+            Arc = Arc.PullFrom(src.Arc);
+            Height = Height.PullFrom(src.Height);
+            Spread = Spread.PullFrom(src.Spread);
+        }
+
+        void IUpdatable<IEffectShape>.Update(IEffectShape src)
+        {
+            if (src is EffectShapeCone value) Update(value);
+        }
+        void IMoveable<IEffectShape>.Pull(IEffectShape src)
+        {
+            if (src is EffectShapeCone value) Pull(value);
+        }
 
         public override bool Equals(object obj) => obj is EffectShapeCone value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(TopRadius, BaseRadius, Arc, Height, Spread);

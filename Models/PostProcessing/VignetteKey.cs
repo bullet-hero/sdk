@@ -6,6 +6,7 @@ using BH.SDK.Models.Keyframes;
 using BH.SDK.Models.Values;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
+using BH.SDK.Utils;
 using Newtonsoft.Json;
 
 // ReSharper disable NonReadonlyMemberInGetHashCode
@@ -80,6 +81,28 @@ namespace BH.SDK.Models.PostProcessing
         
         private VignetteKey CopyImpl() => new(Color4.Copy(), Center.Copy(), Intensity, Smoothness, Rounded, Active, Frame, Ease);
         
+        public void Update(VignetteKey src)
+        {
+            base.Update(src);
+
+            Color4 = src.Color4.Copy();
+            Center = src.Center.Copy();
+            Intensity = src.Intensity;
+            Smoothness = src.Smoothness;
+            Rounded = src.Rounded;
+        }
+
+        public void Pull(VignetteKey src)
+        {
+            base.Pull(src);
+
+            Color4 = Color4.PullFrom(src.Color4);
+            Center = Center.PullFrom(src.Center);
+            Intensity = src.Intensity;
+            Smoothness = src.Smoothness;
+            Rounded = src.Rounded;
+        }
+
         public override bool Equals(object obj) => obj is VignetteKey value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(base.GetHashCode(),
             Color4, Center, Intensity, Smoothness, Rounded);

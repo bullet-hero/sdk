@@ -6,6 +6,7 @@ using BH.SDK.Models.Interfaces.Values;
 using BH.SDK.Models.Values;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
+using BH.SDK.Utils;
 using Newtonsoft.Json;
 
 // ReSharper disable NonReadonlyMemberInGetHashCode
@@ -55,6 +56,27 @@ namespace BH.SDK.Models.Effects
         public object Clone() => Copy();
         IEffectShapeSpread ICopyable<IEffectShapeSpread>.Copy() => new EffectShapeSpreadLoop(Spread.Copy(), Speed.Copy());
         public EffectShapeSpreadLoop Copy() => new(Spread.Copy(), Speed.Copy());
+
+        public void Update(EffectShapeSpreadLoop src)
+        {
+            Spread = src.Spread.Copy();
+            Speed = src.Speed.Copy();
+        }
+
+        public void Pull(EffectShapeSpreadLoop src)
+        {
+            Spread = Spread.PullFrom(src.Spread);
+            Speed = Speed.PullFrom(src.Speed);
+        }
+
+        void IUpdatable<IEffectShapeSpread>.Update(IEffectShapeSpread src)
+        {
+            if (src is EffectShapeSpreadLoop value) Update(value);
+        }
+        void IMoveable<IEffectShapeSpread>.Pull(IEffectShapeSpread src)
+        {
+            if (src is EffectShapeSpreadLoop value) Pull(value);
+        }
 
         public override bool Equals(object obj) => obj is EffectShapeSpreadLoop value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(Spread, Speed);

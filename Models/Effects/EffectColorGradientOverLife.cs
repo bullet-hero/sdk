@@ -42,6 +42,25 @@ namespace BH.SDK.Models.Effects
         IEffectColor ICopyable<IEffectColor>.Copy() => new EffectColorGradientOverLife(Gradient.Copy());
         public EffectColorGradientOverLife Copy() => new(Gradient.Copy());
 
+        public void Update(EffectColorGradientOverLife src)
+        {
+            Gradient = src.Gradient.Copy();
+        }
+
+        public void Pull(EffectColorGradientOverLife src)
+        {
+            Gradient.Pull(src.Gradient);
+        }
+
+        void IUpdatable<IEffectColor>.Update(IEffectColor src)
+        {
+            if (src is EffectColorGradientOverLife value) Update(value);
+        }
+        void IMoveable<IEffectColor>.Pull(IEffectColor src)
+        {
+            if (src is EffectColorGradientOverLife value) Pull(value);
+        }
+
         public override bool Equals(object obj) => obj is EffectColorGradientOverLife value && Equals(value);
         public override int GetHashCode() => Gradient != null ? Gradient.GetHashCode() : 0;
         

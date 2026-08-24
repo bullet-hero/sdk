@@ -89,6 +89,35 @@ namespace BH.SDK.Models.Values
         IColor3 ICopyable<IColor3>.Copy() => new Color3MinMax(MinR, MinG, MinB, MaxR, MaxG, MaxB);
         public Color3MinMax Copy() => new(MinR, MinG, MinB, MaxR, MaxG, MaxB);
 
+        public void Update(Color3MinMax src)
+        {
+            MinR = src.MinR;
+            MinG = src.MinG;
+            MinB = src.MinB;
+            MaxR = src.MaxR;
+            MaxG = src.MaxG;
+            MaxB = src.MaxB;
+        }
+
+        public void Pull(Color3MinMax src)
+        {
+            MinR = src.MinR;
+            MinG = src.MinG;
+            MinB = src.MinB;
+            MaxR = src.MaxR;
+            MaxG = src.MaxG;
+            MaxB = src.MaxB;
+        }
+
+        void IUpdatable<IColor3>.Update(IColor3 src)
+        {
+            if (src is Color3MinMax value) Update(value);
+        }
+        void IMoveable<IColor3>.Pull(IColor3 src)
+        {
+            if (src is Color3MinMax value) Pull(value);
+        }
+
         public override bool Equals(object obj) => obj is Color3MinMax value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(MinR, MinG, MinB, MaxR, MaxG, MaxB);
 

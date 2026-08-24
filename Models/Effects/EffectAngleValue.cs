@@ -6,6 +6,7 @@ using BH.SDK.Models.Interfaces.Values;
 using BH.SDK.Models.Values;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
+using BH.SDK.Utils;
 using Newtonsoft.Json;
 
 // ReSharper disable NonReadonlyMemberInGetHashCode
@@ -47,6 +48,25 @@ namespace BH.SDK.Models.Effects
         public object Clone() => Copy();
         IEffectAngle ICopyable<IEffectAngle>.Copy() => new EffectAngleValue(Angle.Copy());
         public EffectAngleValue Copy() => new(Angle.Copy());
+
+        public void Update(EffectAngleValue src)
+        {
+            Angle = src.Angle.Copy();
+        }
+
+        public void Pull(EffectAngleValue src)
+        {
+            Angle = Angle.PullFrom(src.Angle);
+        }
+
+        void IUpdatable<IEffectAngle>.Update(IEffectAngle src)
+        {
+            if (src is EffectAngleValue value) Update(value);
+        }
+        void IMoveable<IEffectAngle>.Pull(IEffectAngle src)
+        {
+            if (src is EffectAngleValue value) Pull(value);
+        }
 
         public override bool Equals(object obj) => obj is EffectAngleValue value && Equals(value);
         public override int GetHashCode() => Angle != null ? Angle.GetHashCode() : 0;

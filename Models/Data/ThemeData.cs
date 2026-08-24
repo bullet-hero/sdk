@@ -83,6 +83,20 @@ namespace BH.SDK.Models.Data
         public object Clone() => Copy();
         public ThemeData Copy() => new(ThemeId, Name, Matrix.CopyArray());
 
+        public void Update(ThemeData src)
+        {
+            ThemeId = src.ThemeId;
+            Name = src.Name;
+            Matrix = src.Matrix.CopyArray();
+        }
+
+        public void Pull(ThemeData src)
+        {
+            ThemeId = src.ThemeId;
+            Name = src.Name;
+            Matrix = src.Matrix.CopyArray();
+        }
+
         public override bool Equals(object obj) => obj is ThemeData value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(ThemeId, Name, Matrix.GetArrayHashCode());
 

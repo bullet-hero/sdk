@@ -140,6 +140,32 @@ namespace BH.SDK.Models.Audio
         public LevelTrack Copy() => new(AudioId, AudioResourceId, Span,
             OffsetTime, Speed, Volume, AudioLayer, Name, Effects.Copy());
 
+        public void Update(LevelTrack src)
+        {
+            AudioId = src.AudioId;
+            AudioResourceId = src.AudioResourceId;
+            Span = src.Span;
+            OffsetTime = src.OffsetTime;
+            Speed = src.Speed;
+            Volume = src.Volume;
+            AudioLayer = src.AudioLayer;
+            Name = src.Name;
+            Effects = src.Effects.Copy();
+        }
+
+        public void Pull(LevelTrack src)
+        {
+            AudioId = src.AudioId;
+            AudioResourceId = src.AudioResourceId;
+            Span = src.Span;
+            OffsetTime = src.OffsetTime;
+            Speed = src.Speed;
+            Volume = src.Volume;
+            AudioLayer = src.AudioLayer;
+            Name = src.Name;
+            Effects.Pull(src.Effects);
+        }
+
         public override bool Equals(object obj) => obj is LevelTrack value && Equals(value);
         // HashCode.Combine takes at most 8 values and this carries 9 - the tail folds into the
         // eighth slot rather than being dropped.

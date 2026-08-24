@@ -24,6 +24,23 @@ namespace BH.SDK.Models.Values
         public ScreenLimitNone Copy() => new();
 
         // ReSharper disable once BaseObjectGetHashCodeCallInGetHashCode
+        public void Update(ScreenLimitNone src)
+        {
+        }
+
+        public void Pull(ScreenLimitNone src)
+        {
+        }
+
+        void IUpdatable<IScreenLimit>.Update(IScreenLimit src)
+        {
+            if (src is ScreenLimitNone value) Update(value);
+        }
+        void IMoveable<IScreenLimit>.Pull(IScreenLimit src)
+        {
+            if (src is ScreenLimitNone value) Pull(value);
+        }
+
         public override int GetHashCode() => base.GetHashCode();
         public override bool Equals(object obj) => obj is ScreenLimitNone value && Equals(value);
 

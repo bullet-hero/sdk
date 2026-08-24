@@ -6,6 +6,7 @@ using BH.SDK.Models.Interfaces.Values;
 using BH.SDK.Models.Values;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
+using BH.SDK.Utils;
 using Newtonsoft.Json;
 
 // ReSharper disable NonReadonlyMemberInGetHashCode
@@ -51,6 +52,25 @@ namespace BH.SDK.Models.Effects
         IEffectColor ICopyable<IEffectColor>.Copy() => new EffectColorValue(Color4.Copy());
         public EffectColorValue Copy() => new(Color4.Copy());
         
+        public void Update(EffectColorValue src)
+        {
+            Color4 = src.Color4.Copy();
+        }
+
+        public void Pull(EffectColorValue src)
+        {
+            Color4 = Color4.PullFrom(src.Color4);
+        }
+
+        void IUpdatable<IEffectColor>.Update(IEffectColor src)
+        {
+            if (src is EffectColorValue value) Update(value);
+        }
+        void IMoveable<IEffectColor>.Pull(IEffectColor src)
+        {
+            if (src is EffectColorValue value) Pull(value);
+        }
+
         public bool Equals(IEffectColor other) => other is EffectColorValue value && Equals(value);
 
         public override bool Equals(object obj) => obj is EffectColorValue value && Equals(value);

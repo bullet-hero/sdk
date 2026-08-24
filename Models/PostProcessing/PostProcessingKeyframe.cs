@@ -55,6 +55,20 @@ namespace BH.SDK.Models.PostProcessing
         
         private PostProcessingKeyframe CopyImpl() => new(Active, Frame, Ease);
 
+        public void Update(PostProcessingKeyframe src)
+        {
+            Active = src.Active;
+            Frame = src.Frame;
+            Ease = src.Ease;
+        }
+
+        public void Pull(PostProcessingKeyframe src)
+        {
+            Active = src.Active;
+            Frame = src.Frame;
+            Ease = src.Ease;
+        }
+
         public override bool Equals(object obj) => obj is PostProcessingKeyframe value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(Active, Frame, (int)Ease);
 

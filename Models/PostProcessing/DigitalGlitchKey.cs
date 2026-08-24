@@ -44,6 +44,20 @@ namespace BH.SDK.Models.PostProcessing
         
         private DigitalGlitchKey CopyImpl() => new(Intensity, Active, Frame, Ease);
 
+        public void Update(DigitalGlitchKey src)
+        {
+            base.Update(src);
+
+            Intensity = src.Intensity;
+        }
+
+        public void Pull(DigitalGlitchKey src)
+        {
+            base.Pull(src);
+
+            Intensity = src.Intensity;
+        }
+
         public override bool Equals(object obj) => obj is DigitalGlitchKey value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), Intensity);
 

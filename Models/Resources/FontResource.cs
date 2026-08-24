@@ -45,6 +45,20 @@ namespace BH.SDK.Models.Resources
         
         private FontResource CopyImpl() => new(FontResourceId, Sources.CopyList());
 
+        public void Update(FontResource src)
+        {
+            base.Update(src);
+
+            FontResourceId = src.FontResourceId;
+        }
+
+        public void Pull(FontResource src)
+        {
+            base.Pull(src);
+
+            FontResourceId = src.FontResourceId;
+        }
+
         public override bool Equals(object obj) => obj is FontResource value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), FontResourceId);
 

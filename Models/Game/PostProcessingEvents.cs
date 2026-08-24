@@ -171,6 +171,40 @@ namespace BH.SDK.Models.Game
             LiftGammaGains.CopyList(), ShadowsMidtonesHighlightses.CopyList(), WhiteBalances.CopyList(),
             AnalogGlitches.CopyList(), DigitalGlitches.CopyList());
 
+        public void Update(PostProcessingEvents src)
+        {
+            Active = src.Active;
+            Blooms = src.Blooms.CopyList();
+            Chromatics = src.Chromatics.CopyList();
+            Vignettes = src.Vignettes.CopyList();
+            Lenses = src.Lenses.CopyList();
+            Grains = src.Grains.CopyList();
+            MotionBlurs = src.MotionBlurs.CopyList();
+            ColorCurveses = src.ColorCurveses.CopyList();
+            LiftGammaGains = src.LiftGammaGains.CopyList();
+            ShadowsMidtonesHighlightses = src.ShadowsMidtonesHighlightses.CopyList();
+            WhiteBalances = src.WhiteBalances.CopyList();
+            AnalogGlitches = src.AnalogGlitches.CopyList();
+            DigitalGlitches = src.DigitalGlitches.CopyList();
+        }
+
+        public void Pull(PostProcessingEvents src)
+        {
+            Active = src.Active;
+            Blooms = src.Blooms.CopyList();
+            Chromatics = src.Chromatics.CopyList();
+            Vignettes = src.Vignettes.CopyList();
+            Lenses = src.Lenses.CopyList();
+            Grains = src.Grains.CopyList();
+            MotionBlurs = src.MotionBlurs.CopyList();
+            ColorCurveses = src.ColorCurveses.CopyList();
+            LiftGammaGains = src.LiftGammaGains.CopyList();
+            ShadowsMidtonesHighlightses = src.ShadowsMidtonesHighlightses.CopyList();
+            WhiteBalances = src.WhiteBalances.CopyList();
+            AnalogGlitches = src.AnalogGlitches.CopyList();
+            DigitalGlitches = src.DigitalGlitches.CopyList();
+        }
+
         public override bool Equals(object obj) => obj is PostProcessingEvents value && Equals(value);
         public override int GetHashCode()
         {

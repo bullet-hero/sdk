@@ -5,6 +5,7 @@ using BH.SDK.Models.Interfaces.Values;
 using BH.SDK.Models.Values;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
+using BH.SDK.Utils;
 using Newtonsoft.Json;
 
 // ReSharper disable NonReadonlyMemberInGetHashCode
@@ -82,6 +83,26 @@ namespace BH.SDK.Models.Events
 
         public object Clone() => Copy();
         public Checkpoint Copy() => new(Name, Active, Color4.Copy(), Frame, Position.Copy(), Space);
+
+        public void Update(Checkpoint src)
+        {
+            Name = src.Name;
+            Active = src.Active;
+            Color4 = src.Color4.Copy();
+            Frame = src.Frame;
+            Position = src.Position.Copy();
+            Space = src.Space;
+        }
+
+        public void Pull(Checkpoint src)
+        {
+            Name = src.Name;
+            Active = src.Active;
+            Color4 = Color4.PullFrom(src.Color4);
+            Frame = src.Frame;
+            Position = Position.PullFrom(src.Position);
+            Space = src.Space;
+        }
 
         public override bool Equals(object obj) => obj is Checkpoint value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(Frame, Name, Active, Color4, Position, Space);

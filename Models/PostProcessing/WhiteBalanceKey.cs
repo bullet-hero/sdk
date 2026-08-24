@@ -53,6 +53,22 @@ namespace BH.SDK.Models.PostProcessing
         
         private WhiteBalanceKey CopyImpl() => new(Temperature, Tint, Active, Frame, Ease);
 
+        public void Update(WhiteBalanceKey src)
+        {
+            base.Update(src);
+
+            Temperature = src.Temperature;
+            Tint = src.Tint;
+        }
+
+        public void Pull(WhiteBalanceKey src)
+        {
+            base.Pull(src);
+
+            Temperature = src.Temperature;
+            Tint = src.Tint;
+        }
+
         public override bool Equals(object obj) => obj is WhiteBalanceKey value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), Temperature, Tint);
 

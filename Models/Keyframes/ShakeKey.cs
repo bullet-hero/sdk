@@ -74,6 +74,26 @@ namespace BH.SDK.Models.Keyframes
         
         private ShakeKey CopyImpl() => new(Intensity, Speed, IntensityX, IntensityY, Frame, Ease);
 
+        public void Update(ShakeKey src)
+        {
+            base.Update(src);
+
+            Intensity = src.Intensity;
+            Speed = src.Speed;
+            IntensityX = src.IntensityX;
+            IntensityY = src.IntensityY;
+        }
+
+        public void Pull(ShakeKey src)
+        {
+            base.Pull(src);
+
+            Intensity = src.Intensity;
+            Speed = src.Speed;
+            IntensityX = src.IntensityX;
+            IntensityY = src.IntensityY;
+        }
+
         public override bool Equals(object obj) => obj is ShakeKey value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(base.GetHashCode(),
             Intensity, Speed, IntensityX, IntensityY);

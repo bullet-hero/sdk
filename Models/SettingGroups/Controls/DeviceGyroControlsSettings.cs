@@ -136,6 +136,21 @@ namespace BH.SDK.Models.SettingGroups.Controls
             DashButtonSize = source.DashButtonSize;
         }
 
+        public void Update(DeviceGyroControlsSettings src)
+        {
+            base.Update(src);
+
+            Mode = src.Mode;
+            AxisMapping = src.AxisMapping;
+            CalibrateOnStart = src.CalibrateOnStart;
+            TiltCenterX = src.TiltCenterX;
+            TiltCenterY = src.TiltCenterY;
+            MaxTiltAngle = src.MaxTiltAngle;
+            DashSource = src.DashSource;
+            DashButtonAnchor = src.DashButtonAnchor;
+            DashButtonSize = src.DashButtonSize;
+        }
+
         public override bool Equals(object obj) => obj is DeviceGyroControlsSettings value && Equals(value);
         public override int GetHashCode()
         {

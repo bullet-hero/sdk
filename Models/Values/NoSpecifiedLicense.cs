@@ -47,6 +47,25 @@ namespace BH.SDK.Models.Values
         ILicense ICopyable<ILicense>.Copy() => Copy();
         public NoSpecifiedLicense Copy() => new(Source);
 
+        public void Update(NoSpecifiedLicense src)
+        {
+            Source = src.Source;
+        }
+
+        public void Pull(NoSpecifiedLicense src)
+        {
+            Source = src.Source;
+        }
+
+        void IUpdatable<ILicense>.Update(ILicense src)
+        {
+            if (src is NoSpecifiedLicense value) Update(value);
+        }
+        void IMoveable<ILicense>.Pull(ILicense src)
+        {
+            if (src is NoSpecifiedLicense value) Pull(value);
+        }
+
         public override int GetHashCode() => (int)Source;
         public override bool Equals(object obj) => obj is NoSpecifiedLicense value && Equals(value);
 

@@ -162,6 +162,34 @@ namespace BH.SDK.Models.Meta
             ResourceSources.CopyList(), ResourceAuthors.CopyList(),
             ResourcePermissions.CopyList(), new List<string>(ResourceHashes));
 
+        public void Update(ResourceMeta src)
+        {
+            ResourceType = src.ResourceType;
+            ResourceId = src.ResourceId;
+            ResourceTitle = src.ResourceTitle.Copy();
+            ResourceDescription = src.ResourceDescription.Copy();
+            ResourceUrl = src.ResourceUrl;
+            ResourceLicense = src.ResourceLicense.Copy();
+            ResourceSources = src.ResourceSources.CopyList();
+            ResourceAuthors = src.ResourceAuthors.CopyList();
+            ResourcePermissions = src.ResourcePermissions.CopyList();
+            ResourceHashes = new List<string>(src.ResourceHashes);
+        }
+
+        public void Pull(ResourceMeta src)
+        {
+            ResourceType = src.ResourceType;
+            ResourceId = src.ResourceId;
+            ResourceTitle = ResourceTitle.PullFrom(src.ResourceTitle);
+            ResourceDescription = ResourceDescription.PullFrom(src.ResourceDescription);
+            ResourceUrl = src.ResourceUrl;
+            ResourceLicense = ResourceLicense.PullFrom(src.ResourceLicense);
+            ResourceSources = src.ResourceSources.CopyList();
+            ResourceAuthors = src.ResourceAuthors.CopyList();
+            ResourcePermissions = src.ResourcePermissions.CopyList();
+            ResourceHashes = new List<string>(src.ResourceHashes);
+        }
+
         public override bool Equals(object obj)
         {
             if (obj is null) return false;

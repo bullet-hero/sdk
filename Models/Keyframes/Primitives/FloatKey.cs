@@ -4,6 +4,7 @@ using BH.SDK.Models.Interfaces;
 using BH.SDK.Models.Interfaces.Values;
 using BH.SDK.Models.Values;
 using BH.SDK.Rules.Attributes;
+using BH.SDK.Utils;
 using Newtonsoft.Json;
 
 // ReSharper disable NonReadonlyMemberInGetHashCode
@@ -41,6 +42,20 @@ namespace BH.SDK.Models.Keyframes
         FloatKey ICopyable<FloatKey>.Copy() => CopyImpl();
         
         private FloatKey CopyImpl() => new(Value.Copy(), Frame, Ease);
+
+        public void Update(FloatKey src)
+        {
+            base.Update(src);
+
+            Value = src.Value.Copy();
+        }
+
+        public void Pull(FloatKey src)
+        {
+            base.Pull(src);
+
+            Value = Value.PullFrom(src.Value);
+        }
 
         public override bool Equals(object obj) => obj is FloatKey value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), Value);

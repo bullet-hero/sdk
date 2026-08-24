@@ -192,6 +192,23 @@ namespace BH.SDK.Models.Objects
             Pivots = src.Pivots.CopyList();
         }
 
+        public void Pull(RectObject src)
+        {
+            ObjectId = src.ObjectId;
+            ParentObjectId = src.ParentObjectId;
+            Name = src.Name;
+            Active = src.Active;
+            Span = src.Span;
+            Layer = src.Layer;
+            Positions = src.Positions.CopyList();
+            Rotations = src.Rotations.CopyList();
+            Scales = src.Scales.CopyList();
+            Sizes = src.Sizes.CopyList();
+            AnchorsMin = src.AnchorsMin.CopyList();
+            AnchorsMax = src.AnchorsMax.CopyList();
+            Pivots = src.Pivots.CopyList();
+        }
+
         public override bool Equals(object obj) => obj is RectObject value && Equals(value);
         public override int GetHashCode()
         {

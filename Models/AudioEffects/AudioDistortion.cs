@@ -39,6 +39,20 @@ namespace BH.SDK.Models.AudioEffects
 
         private AudioDistortion CopyImpl() => new(MixLevel, Level);
 
+        public void Update(AudioDistortion src)
+        {
+            base.Update(src);
+
+            Level = src.Level;
+        }
+
+        public void Pull(AudioDistortion src)
+        {
+            base.Pull(src);
+
+            Level = src.Level;
+        }
+
         public override bool Equals(object obj) => obj is AudioDistortion value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), Level);
 

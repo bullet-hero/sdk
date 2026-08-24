@@ -58,6 +58,24 @@ namespace BH.SDK.Models.AudioEffects
 
         private AudioNormalize CopyImpl() => new(MixLevel, FadeInTime, LowestVolume, MaximumAmp);
 
+        public void Update(AudioNormalize src)
+        {
+            base.Update(src);
+
+            FadeInTime = src.FadeInTime;
+            LowestVolume = src.LowestVolume;
+            MaximumAmp = src.MaximumAmp;
+        }
+
+        public void Pull(AudioNormalize src)
+        {
+            base.Pull(src);
+
+            FadeInTime = src.FadeInTime;
+            LowestVolume = src.LowestVolume;
+            MaximumAmp = src.MaximumAmp;
+        }
+
         public override bool Equals(object obj) => obj is AudioNormalize value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), FadeInTime, LowestVolume, MaximumAmp);
 

@@ -143,6 +143,34 @@ namespace BH.SDK.Models
             LevelAuthors.CopyList(), ResourcesMeta.CopyList(),
             LevelAgeRating, LevelContentDescriptors);
 
+        public void Update(LevelMeta src)
+        {
+            LevelId = src.LevelId;
+            LevelName = src.LevelName.Copy();
+            LevelDescription = src.LevelDescription.Copy();
+            LevelLogo = src.LevelLogo.Copy();
+            LevelVersion = (Version)src.LevelVersion.Clone();
+            LevelLicense = src.LevelLicense.Copy();
+            LevelAuthors = src.LevelAuthors.CopyList();
+            ResourcesMeta = src.ResourcesMeta.CopyList();
+            LevelAgeRating = src.LevelAgeRating;
+            LevelContentDescriptors = src.LevelContentDescriptors;
+        }
+
+        public void Pull(LevelMeta src)
+        {
+            LevelId = src.LevelId;
+            LevelName = LevelName.PullFrom(src.LevelName);
+            LevelDescription = LevelDescription.PullFrom(src.LevelDescription);
+            LevelLogo.Pull(src.LevelLogo);
+            LevelVersion = (Version)src.LevelVersion.Clone();
+            LevelLicense = LevelLicense.PullFrom(src.LevelLicense);
+            LevelAuthors = src.LevelAuthors.CopyList();
+            ResourcesMeta = src.ResourcesMeta.CopyList();
+            LevelAgeRating = src.LevelAgeRating;
+            LevelContentDescriptors = src.LevelContentDescriptors;
+        }
+
         public override bool Equals(object obj) => obj is LevelMeta value && Equals(value);
         public override int GetHashCode()
         {

@@ -5,6 +5,7 @@ using BH.SDK.Models.Interfaces.Effects;
 using BH.SDK.Models.Primitives;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
+using BH.SDK.Utils;
 using BH.SDK.Versions;
 using Newtonsoft.Json;
 
@@ -134,12 +135,26 @@ namespace BH.SDK.Models.Data
             Name = src.Name;
             HasStopLocalFrame = src.HasStopLocalFrame;
             StopLocalFrame = src.StopLocalFrame;
-            Core.Update(src.Core);
-            Forces.Update(src.Forces);
+            Core = src.Core.Copy();
+            Forces = src.Forces.Copy();
             Shape = src.Shape.Copy();
             Angle = src.Angle.Copy();
             Scale = src.Scale.Copy();
             Color = src.Color.Copy();
+        }
+
+        public void Pull(EffectData src)
+        {
+            EffectId = src.EffectId;
+            Name = src.Name;
+            HasStopLocalFrame = src.HasStopLocalFrame;
+            StopLocalFrame = src.StopLocalFrame;
+            Core.Pull(src.Core);
+            Forces.Pull(src.Forces);
+            Shape = Shape.PullFrom(src.Shape);
+            Angle = Angle.PullFrom(src.Angle);
+            Scale = Scale.PullFrom(src.Scale);
+            Color = Color.PullFrom(src.Color);
         }
 
         public override bool Equals(object obj) => obj is EffectData value && Equals(value);

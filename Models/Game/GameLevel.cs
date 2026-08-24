@@ -84,6 +84,24 @@ namespace BH.SDK.Models.Game
         public GameLevel Copy() => new(Events.Copy(), CameraEvents.Copy(), PostProcessingEvents.Copy(),
             PlayerEvents.Copy(), Objects.CopyDictionary());
 
+        public void Update(GameLevel src)
+        {
+            Events = src.Events.Copy();
+            CameraEvents = src.CameraEvents.Copy();
+            PostProcessingEvents = src.PostProcessingEvents.Copy();
+            PlayerEvents = src.PlayerEvents.Copy();
+            Objects = src.Objects.CopyDictionary();
+        }
+
+        public void Pull(GameLevel src)
+        {
+            Events.Pull(src.Events);
+            CameraEvents.Pull(src.CameraEvents);
+            PostProcessingEvents.Pull(src.PostProcessingEvents);
+            PlayerEvents.Pull(src.PlayerEvents);
+            Objects.PullDictionary(src.Objects, LevelUtils.PullObject);
+        }
+
         public override bool Equals(object obj) => obj is GameLevel value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(Events, CameraEvents, PostProcessingEvents, PlayerEvents,
             Objects.GetDictionaryHashCode());

@@ -60,6 +60,13 @@ namespace BH.SDK.Models.Objects
             EffectId = src.EffectId;
         }
 
+        public void Pull(EffectObject src)
+        {
+            base.Pull(src);
+
+            EffectId = src.EffectId;
+        }
+
         public override bool Equals(object obj) => obj is EffectObject value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), EffectId);
         

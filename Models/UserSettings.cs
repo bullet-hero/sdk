@@ -121,6 +121,17 @@ namespace BH.SDK.Models
             Keybindings.Pull(source.Keybindings);
         }
 
+        public void Update(UserSettings src)
+        {
+            General = src.General.Copy();
+            Controls = src.Controls.Copy();
+            Audio = src.Audio.Copy();
+            Graphics = src.Graphics.Copy();
+            GameEditor = src.GameEditor.Copy();
+            Interface = src.Interface.Copy();
+            Keybindings = src.Keybindings.Copy();
+        }
+
         public bool Equals(UserSettings other)
         {
             if (other is null) return false;

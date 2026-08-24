@@ -72,6 +72,26 @@ namespace BH.SDK.Models.PostProcessing
         
         private AnalogGlitchKey CopyImpl() => new(ScanLineJitter, VerticalJump, HorizontalShake, ColorDrift, Active, Frame, Ease);
 
+        public void Update(AnalogGlitchKey src)
+        {
+            base.Update(src);
+
+            ScanLineJitter = src.ScanLineJitter;
+            VerticalJump = src.VerticalJump;
+            HorizontalShake = src.HorizontalShake;
+            ColorDrift = src.ColorDrift;
+        }
+
+        public void Pull(AnalogGlitchKey src)
+        {
+            base.Pull(src);
+
+            ScanLineJitter = src.ScanLineJitter;
+            VerticalJump = src.VerticalJump;
+            HorizontalShake = src.HorizontalShake;
+            ColorDrift = src.ColorDrift;
+        }
+
         public override bool Equals(object obj) => obj is AnalogGlitchKey value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(base.GetHashCode(),
             ScanLineJitter, VerticalJump, HorizontalShake, ColorDrift);

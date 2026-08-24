@@ -53,6 +53,22 @@ namespace BH.SDK.Models.PostProcessing
         
         private FilmGrainKey CopyImpl() => new(Type, Intensity, Active, Frame, Ease);
 
+        public void Update(FilmGrainKey src)
+        {
+            base.Update(src);
+
+            Type = src.Type;
+            Intensity = src.Intensity;
+        }
+
+        public void Pull(FilmGrainKey src)
+        {
+            base.Pull(src);
+
+            Type = src.Type;
+            Intensity = src.Intensity;
+        }
+
         public override bool Equals(object obj) => obj is FilmGrainKey value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), (int)Type, Intensity);
 

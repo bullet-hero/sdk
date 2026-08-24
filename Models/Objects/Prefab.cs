@@ -91,6 +91,24 @@ namespace BH.SDK.Models.Objects
         public object Clone() => Copy();
         public Prefab Copy() => new(PrefabId, Name, Objects.CopyDictionary(), ObjectIdCounter, FrameDuration);
 
+        public void Update(Prefab src)
+        {
+            PrefabId = src.PrefabId;
+            Name = src.Name;
+            Objects = src.Objects.CopyDictionary();
+            ObjectIdCounter = src.ObjectIdCounter;
+            FrameDuration = src.FrameDuration;
+        }
+
+        public void Pull(Prefab src)
+        {
+            PrefabId = src.PrefabId;
+            Name = src.Name;
+            Objects = src.Objects.CopyDictionary();
+            ObjectIdCounter = src.ObjectIdCounter;
+            FrameDuration = src.FrameDuration;
+        }
+
         public override bool Equals(object obj) => obj is Prefab value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(PrefabId, Name,
             Objects.GetDictionaryHashCode(), ObjectIdCounter, FrameDuration);

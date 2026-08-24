@@ -6,6 +6,7 @@ using BH.SDK.Models.Interfaces.Values;
 using BH.SDK.Models.Values;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
+using BH.SDK.Utils;
 using Newtonsoft.Json;
 
 // ReSharper disable NonReadonlyMemberInGetHashCode
@@ -43,6 +44,25 @@ namespace BH.SDK.Models.Effects
         IEffectShapeSpread ICopyable<IEffectShapeSpread>.Copy() => new EffectShapeSpreadRandom(Spread.Copy());
         public EffectShapeSpreadRandom Copy() => new(Spread.Copy());
         
+        public void Update(EffectShapeSpreadRandom src)
+        {
+            Spread = src.Spread.Copy();
+        }
+
+        public void Pull(EffectShapeSpreadRandom src)
+        {
+            Spread = Spread.PullFrom(src.Spread);
+        }
+
+        void IUpdatable<IEffectShapeSpread>.Update(IEffectShapeSpread src)
+        {
+            if (src is EffectShapeSpreadRandom value) Update(value);
+        }
+        void IMoveable<IEffectShapeSpread>.Pull(IEffectShapeSpread src)
+        {
+            if (src is EffectShapeSpreadRandom value) Pull(value);
+        }
+
         public bool Equals(IEffectShapeSpread other) => other is EffectShapeSpreadRandom value && Equals(value);
         public bool Equals(EffectShapeSpreadRandom other)
         {

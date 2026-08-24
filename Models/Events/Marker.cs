@@ -63,6 +63,22 @@ namespace BH.SDK.Models.Events
         public object Clone() => Copy();
         public Marker Copy() => new(Name, Description, Color4.Copy(), Frame);
 
+        public void Update(Marker src)
+        {
+            Name = src.Name;
+            Description = src.Description;
+            Color4 = src.Color4.Copy();
+            Frame = src.Frame;
+        }
+
+        public void Pull(Marker src)
+        {
+            Name = src.Name;
+            Description = src.Description;
+            Color4.Pull(src.Color4);
+            Frame = src.Frame;
+        }
+
         public override bool Equals(object obj) => obj is Marker value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(Frame, Name, Description, Color4);
 

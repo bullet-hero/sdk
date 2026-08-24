@@ -55,6 +55,22 @@ namespace BH.SDK.Models.PostProcessing
         
         private ColorCurvesKey CopyImpl() => new(HueVsHue, SatVsSat, Active, Frame, Ease);
 
+        public void Update(ColorCurvesKey src)
+        {
+            base.Update(src);
+
+            HueVsHue = src.HueVsHue;
+            SatVsSat = src.SatVsSat;
+        }
+
+        public void Pull(ColorCurvesKey src)
+        {
+            base.Pull(src);
+
+            HueVsHue = src.HueVsHue;
+            SatVsSat = src.SatVsSat;
+        }
+
         public override bool Equals(object obj) => obj is ColorCurvesKey value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), HueVsHue, SatVsSat);
 

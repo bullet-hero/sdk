@@ -3,6 +3,7 @@ using BH.SDK.Models.Interfaces;
 using BH.SDK.Models.Interfaces.Values;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
+using BH.SDK.Utils;
 using Newtonsoft.Json;
 
 // ReSharper disable NonReadonlyMemberInGetHashCode
@@ -70,6 +71,16 @@ namespace BH.SDK.Models.Values
 
         public object Clone() => Copy();
         public Alignment Copy() => new(Value.Copy());
+
+        public void Update(Alignment src)
+        {
+            Value = src.Value.Copy();
+        }
+
+        public void Pull(Alignment src)
+        {
+            Value = Value.PullFrom(src.Value);
+        }
 
         public override bool Equals(object obj) => obj is Alignment value && Equals(value);
         public override int GetHashCode() => Value != null ? Value.GetHashCode() : 0;

@@ -42,6 +42,25 @@ namespace BH.SDK.Models.Effects
         IEffectAngle ICopyable<IEffectAngle>.Copy() => new EffectAngleCurvesOverLife(Curve.Copy());
         public EffectAngleCurvesOverLife Copy() => new(Curve.Copy());
 
+        public void Update(EffectAngleCurvesOverLife src)
+        {
+            Curve = src.Curve.Copy();
+        }
+
+        public void Pull(EffectAngleCurvesOverLife src)
+        {
+            Curve.Pull(src.Curve);
+        }
+
+        void IUpdatable<IEffectAngle>.Update(IEffectAngle src)
+        {
+            if (src is EffectAngleCurvesOverLife value) Update(value);
+        }
+        void IMoveable<IEffectAngle>.Pull(IEffectAngle src)
+        {
+            if (src is EffectAngleCurvesOverLife value) Pull(value);
+        }
+
         public override bool Equals(object obj) => obj is EffectAngleCurvesOverLife value && Equals(value);
         public override int GetHashCode() => Curve != null ? Curve.GetHashCode() : 0;
         

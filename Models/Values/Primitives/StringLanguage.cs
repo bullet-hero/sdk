@@ -46,6 +46,18 @@ namespace BH.SDK.Models.Values
         public object Clone() => Copy();
         public StringLanguage Copy() => new(LanguageCode, Value);
 
+        public void Update(StringLanguage src)
+        {
+            LanguageCode = src.LanguageCode;
+            Value = src.Value;
+        }
+
+        public void Pull(StringLanguage src)
+        {
+            LanguageCode = src.LanguageCode;
+            Value = src.Value;
+        }
+
         public bool Equals(StringLanguage other)
         {
             if (other is null) return false;

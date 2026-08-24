@@ -234,6 +234,26 @@ namespace BH.SDK.Models.SettingGroups
             CopySerializeMode = source.CopySerializeMode;
         }
 
+        public void Update(GameEditorSettings src)
+        {
+            Autosave = src.Autosave;
+            AutosaveRate = src.AutosaveRate;
+            MaxAutosaveFiles = src.MaxAutosaveFiles;
+            CameraMinSize = src.CameraMinSize;
+            CameraMaxSize = src.CameraMaxSize;
+            PlayerActiveDefault = src.PlayerActiveDefault;
+            GizmosResetOnPlayer = src.GizmosResetOnPlayer;
+            MultiSelectRequiresHold = src.MultiSelectRequiresHold;
+            PreviewColliderOnSelect = src.PreviewColliderOnSelect;
+            PickInvisibleAABB = src.PickInvisibleAABB;
+            RenderInframes = src.RenderInframes;
+            GridSize = src.GridSize;
+            GridOpacity = src.GridOpacity;
+            LevelSerializeMode = src.LevelSerializeMode;
+            ResourcesSerializeMode = src.ResourcesSerializeMode;
+            CopySerializeMode = src.CopySerializeMode;
+        }
+
         public override bool Equals(object obj) => obj is GameEditorSettings value && Equals(value);
 
         // HashCode.Combine takes at most 8 values, and this class holds 16 - the tail folds into the

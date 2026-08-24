@@ -6,6 +6,7 @@ using BH.SDK.Models.Interfaces.Values;
 using BH.SDK.Models.Values;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
+using BH.SDK.Utils;
 using Newtonsoft.Json;
 
 // ReSharper disable NonReadonlyMemberInGetHashCode
@@ -55,6 +56,27 @@ namespace BH.SDK.Models.Effects
         public object Clone() => Copy();
         IEffectColor ICopyable<IEffectColor>.Copy() => new EffectColorGradientBySpeed(Gradient.Copy(), SpeedRange.Copy());
         public EffectColorGradientBySpeed Copy() => new(Gradient.Copy(), SpeedRange.Copy());
+
+        public void Update(EffectColorGradientBySpeed src)
+        {
+            Gradient = src.Gradient.Copy();
+            SpeedRange = src.SpeedRange.Copy();
+        }
+
+        public void Pull(EffectColorGradientBySpeed src)
+        {
+            Gradient.Pull(src.Gradient);
+            SpeedRange = SpeedRange.PullFrom(src.SpeedRange);
+        }
+
+        void IUpdatable<IEffectColor>.Update(IEffectColor src)
+        {
+            if (src is EffectColorGradientBySpeed value) Update(value);
+        }
+        void IMoveable<IEffectColor>.Pull(IEffectColor src)
+        {
+            if (src is EffectColorGradientBySpeed value) Pull(value);
+        }
 
         public override bool Equals(object obj) => obj is EffectColorGradientBySpeed value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(Gradient, SpeedRange);

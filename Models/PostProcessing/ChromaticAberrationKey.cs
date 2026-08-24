@@ -44,6 +44,20 @@ namespace BH.SDK.Models.PostProcessing
         
         private ChromaticAberrationKey CopyImpl() => new(Intensity, Active, Frame, Ease);
 
+        public void Update(ChromaticAberrationKey src)
+        {
+            base.Update(src);
+
+            Intensity = src.Intensity;
+        }
+
+        public void Pull(ChromaticAberrationKey src)
+        {
+            base.Pull(src);
+
+            Intensity = src.Intensity;
+        }
+
         public override bool Equals(object obj) => obj is ChromaticAberrationKey value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), Intensity);
 

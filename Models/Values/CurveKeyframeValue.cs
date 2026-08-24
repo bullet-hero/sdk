@@ -123,6 +123,30 @@ namespace BH.SDK.Models.Values
         public CurveKeyframeValue Copy() => new(Time, Value,
             WeightedMode, TangentMode, InTangent, OutTangent, InWeight, OutWeight);
 
+        public void Update(CurveKeyframeValue src)
+        {
+            Time = src.Time;
+            Value = src.Value;
+            WeightedMode = src.WeightedMode;
+            TangentMode = src.TangentMode;
+            InTangent = src.InTangent;
+            OutTangent = src.OutTangent;
+            InWeight = src.InWeight;
+            OutWeight = src.OutWeight;
+        }
+
+        public void Pull(CurveKeyframeValue src)
+        {
+            Time = src.Time;
+            Value = src.Value;
+            WeightedMode = src.WeightedMode;
+            TangentMode = src.TangentMode;
+            InTangent = src.InTangent;
+            OutTangent = src.OutTangent;
+            InWeight = src.InWeight;
+            OutWeight = src.OutWeight;
+        }
+
         public override bool Equals(object obj) => obj is CurveKeyframeValue value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(Time, Value,
             (int)WeightedMode, (int)TangentMode, InTangent, OutTangent, InWeight, OutWeight);

@@ -50,6 +50,27 @@ namespace BH.SDK.Models.Values
         IFloat ICopyable<IFloat>.Copy() => new FloatMinMax(Min, Max);
         public FloatMinMax Copy() => new(Min, Max);
 
+        public void Update(FloatMinMax src)
+        {
+            Min = src.Min;
+            Max = src.Max;
+        }
+
+        public void Pull(FloatMinMax src)
+        {
+            Min = src.Min;
+            Max = src.Max;
+        }
+
+        void IUpdatable<IFloat>.Update(IFloat src)
+        {
+            if (src is FloatMinMax value) Update(value);
+        }
+        void IMoveable<IFloat>.Pull(IFloat src)
+        {
+            if (src is FloatMinMax value) Pull(value);
+        }
+
         public override bool Equals(object obj) => obj is FloatMinMax value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(Min, Max);
         

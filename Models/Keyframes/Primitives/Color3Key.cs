@@ -4,6 +4,7 @@ using BH.SDK.Models.Interfaces;
 using BH.SDK.Models.Interfaces.Values;
 using BH.SDK.Models.Values;
 using BH.SDK.Rules.Attributes;
+using BH.SDK.Utils;
 using Newtonsoft.Json;
 
 // ReSharper disable NonReadonlyMemberInGetHashCode
@@ -42,6 +43,20 @@ namespace BH.SDK.Models.Keyframes
         Color3Key ICopyable<Color3Key>.Copy() => CopyImpl();
         
         private Color3Key CopyImpl() => new(Value.Copy(), Frame, Ease);
+
+        public void Update(Color3Key src)
+        {
+            base.Update(src);
+
+            Value = src.Value.Copy();
+        }
+
+        public void Pull(Color3Key src)
+        {
+            base.Pull(src);
+
+            Value = Value.PullFrom(src.Value);
+        }
 
         public override bool Equals(object obj) => obj is Color3Key value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), Value);

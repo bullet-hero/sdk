@@ -46,6 +46,18 @@ namespace BH.SDK.Models.Values
         public object Clone() => Copy();
         public GradientColorKeyValue Copy() => new(Color4.Copy(), Time);
 
+        public void Update(GradientColorKeyValue src)
+        {
+            Color4 = src.Color4.Copy();
+            Time = src.Time;
+        }
+
+        public void Pull(GradientColorKeyValue src)
+        {
+            Color4.Pull(src.Color4);
+            Time = src.Time;
+        }
+
         public override bool Equals(object obj) => obj is GradientColorKeyValue value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(Color4, Time);
 

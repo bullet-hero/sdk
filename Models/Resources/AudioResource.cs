@@ -45,6 +45,20 @@ namespace BH.SDK.Models.Resources
         
         private AudioResource CopyImpl() => new(AudioResourceId, Sources.CopyList());
 
+        public void Update(AudioResource src)
+        {
+            base.Update(src);
+
+            AudioResourceId = src.AudioResourceId;
+        }
+
+        public void Pull(AudioResource src)
+        {
+            base.Pull(src);
+
+            AudioResourceId = src.AudioResourceId;
+        }
+
         public override bool Equals(object obj) => obj is AudioResource value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), AudioResourceId);
 

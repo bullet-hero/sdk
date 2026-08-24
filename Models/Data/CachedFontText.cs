@@ -5,6 +5,7 @@ using BH.SDK.Models.Primitives.Resources;
 using BH.SDK.Models.Values;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
+using BH.SDK.Utils;
 using Newtonsoft.Json;
 
 // ReSharper disable NonReadonlyMemberInGetHashCode
@@ -59,6 +60,18 @@ namespace BH.SDK.Models.Data
 
         public object Clone() => Copy();
         public CachedFontText Copy() => new(FontResourceId, Characters.Copy());
+
+        public void Update(CachedFontText src)
+        {
+            FontResourceId = src.FontResourceId;
+            Characters = src.Characters.Copy();
+        }
+
+        public void Pull(CachedFontText src)
+        {
+            FontResourceId = src.FontResourceId;
+            Characters = Characters.PullFrom(src.Characters);
+        }
 
         public override bool Equals(object obj) => obj is CachedFontText value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(FontResourceId, Characters);

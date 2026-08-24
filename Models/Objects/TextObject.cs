@@ -177,6 +177,22 @@ namespace BH.SDK.Models.Objects
             VerticalAlignment = src.VerticalAlignment;
         }
 
+        public void Pull(TextObject src)
+        {
+            base.Pull(src);
+
+            Text = Text.PullFrom(src.Text);
+            FontResourceId = src.FontResourceId;
+            Colors = src.Colors.CopyList();
+            FontSizes = src.FontSizes.CopyList();
+            Fillments = src.Fillments.CopyList();
+            Appearings = src.Appearings.CopyList();
+            AppearingMask = src.AppearingMask;
+            WordWrap = src.WordWrap;
+            HorizontalAlignment = src.HorizontalAlignment;
+            VerticalAlignment = src.VerticalAlignment;
+        }
+
         public override bool Equals(object obj) => obj is TextObject value && Equals(value);
         public override int GetHashCode()
         {

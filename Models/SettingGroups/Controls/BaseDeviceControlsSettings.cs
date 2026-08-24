@@ -93,6 +93,26 @@ namespace BH.SDK.Models.SettingGroups.Controls
         public abstract object Clone();
         public abstract BaseDeviceControlsSettings Copy();
 
+        public void Update(BaseDeviceControlsSettings src)
+        {
+            Active = src.Active;
+            Sensitivity = src.Sensitivity;
+            DeadZone = src.DeadZone;
+            Smoothing = src.Smoothing;
+            InvertX = src.InvertX;
+            InvertY = src.InvertY;
+        }
+
+        public void Pull(BaseDeviceControlsSettings src)
+        {
+            Active = src.Active;
+            Sensitivity = src.Sensitivity;
+            DeadZone = src.DeadZone;
+            Smoothing = src.Smoothing;
+            InvertX = src.InvertX;
+            InvertY = src.InvertY;
+        }
+
         public override bool Equals(object obj) => obj is BaseDeviceControlsSettings value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(Active, Sensitivity,
             DeadZone, Smoothing, InvertX, InvertY);

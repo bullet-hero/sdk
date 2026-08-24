@@ -65,6 +65,27 @@ namespace BH.SDK.Models.Values
         IScreenLimit ICopyable<IScreenLimit>.Copy() => new ScreenLimitBounds(MinAspect.Copy(), MaxAspect.Copy());
         public ScreenLimitBounds Copy() => new(MinAspect.Copy(), MaxAspect.Copy());
 
+        public void Update(ScreenLimitBounds src)
+        {
+            MinAspect = src.MinAspect.Copy();
+            MaxAspect = src.MaxAspect.Copy();
+        }
+
+        public void Pull(ScreenLimitBounds src)
+        {
+            MinAspect.Pull(src.MinAspect);
+            MaxAspect.Pull(src.MaxAspect);
+        }
+
+        void IUpdatable<IScreenLimit>.Update(IScreenLimit src)
+        {
+            if (src is ScreenLimitBounds value) Update(value);
+        }
+        void IMoveable<IScreenLimit>.Pull(IScreenLimit src)
+        {
+            if (src is ScreenLimitBounds value) Pull(value);
+        }
+
         public override bool Equals(object obj) => obj is ScreenLimitBounds value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(MinAspect, MaxAspect);
 

@@ -6,6 +6,7 @@ using BH.SDK.Models.Interfaces.Values;
 using BH.SDK.Models.Values;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
+using BH.SDK.Utils;
 using Newtonsoft.Json;
 
 // ReSharper disable NonReadonlyMemberInGetHashCode
@@ -45,6 +46,25 @@ namespace BH.SDK.Models.Effects
         public EffectShapeType GetModelType() => EffectShapeType.Rectangle;
         IEffectShape ICopyable<IEffectShape>.Copy() => new EffectShapeRectangle(Size.Copy());
         public EffectShapeRectangle Copy() => new(Size.Copy());
+
+        public void Update(EffectShapeRectangle src)
+        {
+            Size = src.Size.Copy();
+        }
+
+        public void Pull(EffectShapeRectangle src)
+        {
+            Size = Size.PullFrom(src.Size);
+        }
+
+        void IUpdatable<IEffectShape>.Update(IEffectShape src)
+        {
+            if (src is EffectShapeRectangle value) Update(value);
+        }
+        void IMoveable<IEffectShape>.Pull(IEffectShape src)
+        {
+            if (src is EffectShapeRectangle value) Pull(value);
+        }
 
         public override bool Equals(object obj) => obj is EffectShapeRectangle value && Equals(value);
         public override int GetHashCode() => Size != null ? Size.GetHashCode() : 0;

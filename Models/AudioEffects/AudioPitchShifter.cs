@@ -65,6 +65,26 @@ namespace BH.SDK.Models.AudioEffects
 
         private AudioPitchShifter CopyImpl() => new(MixLevel, Pitch, FFTSize, Overlap, MaxChannels);
 
+        public void Update(AudioPitchShifter src)
+        {
+            base.Update(src);
+
+            Pitch = src.Pitch;
+            FFTSize = src.FFTSize;
+            Overlap = src.Overlap;
+            MaxChannels = src.MaxChannels;
+        }
+
+        public void Pull(AudioPitchShifter src)
+        {
+            base.Pull(src);
+
+            Pitch = src.Pitch;
+            FFTSize = src.FFTSize;
+            Overlap = src.Overlap;
+            MaxChannels = src.MaxChannels;
+        }
+
         public override bool Equals(object obj) => obj is AudioPitchShifter value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), Pitch, FFTSize, Overlap, MaxChannels);
 

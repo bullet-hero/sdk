@@ -5,6 +5,7 @@ using BH.SDK.Models.Interfaces.Values;
 using BH.SDK.Models.Values;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
+using BH.SDK.Utils;
 using Newtonsoft.Json;
 
 namespace BH.SDK.Models.Keyframes
@@ -40,6 +41,20 @@ namespace BH.SDK.Models.Keyframes
         ZoomKey ICopyable<ZoomKey>.Copy() => CopyImpl();
         
         private ZoomKey CopyImpl() => new(Zoom.Copy(), Frame, Ease);
+
+        public void Update(ZoomKey src)
+        {
+            base.Update(src);
+
+            Zoom = src.Zoom.Copy();
+        }
+
+        public void Pull(ZoomKey src)
+        {
+            base.Pull(src);
+
+            Zoom = Zoom.PullFrom(src.Zoom);
+        }
 
         public override bool Equals(object obj) => obj is ZoomKey value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), Zoom);

@@ -94,6 +94,24 @@ namespace BH.SDK.Models.Game
         public CameraEvents Copy() => new(Positions.CopyList(), Rotations.CopyList(),
             Zooms.CopyList(), Pivots.CopyList(), Shakes.CopyList());
 
+        public void Update(CameraEvents src)
+        {
+            Positions = src.Positions.CopyList();
+            Rotations = src.Rotations.CopyList();
+            Zooms = src.Zooms.CopyList();
+            Pivots = src.Pivots.CopyList();
+            Shakes = src.Shakes.CopyList();
+        }
+
+        public void Pull(CameraEvents src)
+        {
+            Positions = src.Positions.CopyList();
+            Rotations = src.Rotations.CopyList();
+            Zooms = src.Zooms.CopyList();
+            Pivots = src.Pivots.CopyList();
+            Shakes = src.Shakes.CopyList();
+        }
+
         public override bool Equals(object obj) => obj is CameraEvents value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(Positions.GetListHashCode(),
             Rotations.GetListHashCode(), Zooms.GetListHashCode(), Pivots.GetListHashCode(), Shakes.GetListHashCode());

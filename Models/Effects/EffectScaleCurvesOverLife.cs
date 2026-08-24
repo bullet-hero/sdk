@@ -50,6 +50,27 @@ namespace BH.SDK.Models.Effects
         IEffectScale ICopyable<IEffectScale>.Copy() => new EffectScaleCurvesOverLife(CurveX.Copy(), CurveY.Copy());
         public EffectScaleCurvesOverLife Copy() => new(CurveX.Copy(), CurveY.Copy());
 
+        public void Update(EffectScaleCurvesOverLife src)
+        {
+            CurveX = src.CurveX.Copy();
+            CurveY = src.CurveY.Copy();
+        }
+
+        public void Pull(EffectScaleCurvesOverLife src)
+        {
+            CurveX.Pull(src.CurveX);
+            CurveY.Pull(src.CurveY);
+        }
+
+        void IUpdatable<IEffectScale>.Update(IEffectScale src)
+        {
+            if (src is EffectScaleCurvesOverLife value) Update(value);
+        }
+        void IMoveable<IEffectScale>.Pull(IEffectScale src)
+        {
+            if (src is EffectScaleCurvesOverLife value) Pull(value);
+        }
+
         public override bool Equals(object obj) => obj is EffectScaleCurvesOverLife value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(CurveX, CurveY);
         

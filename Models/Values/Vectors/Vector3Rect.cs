@@ -86,6 +86,35 @@ namespace BH.SDK.Models.Values
         IVector3 ICopyable<IVector3>.Copy() => new Vector3Rect(MinX, MinY, MinZ, MaxX, MaxY, MaxZ);
         public Vector3Rect Copy() => new(MinX, MinY, MinZ, MaxX, MaxY, MaxZ);
 
+        public void Update(Vector3Rect src)
+        {
+            MinX = src.MinX;
+            MinY = src.MinY;
+            MinZ = src.MinZ;
+            MaxX = src.MaxX;
+            MaxY = src.MaxY;
+            MaxZ = src.MaxZ;
+        }
+
+        public void Pull(Vector3Rect src)
+        {
+            MinX = src.MinX;
+            MinY = src.MinY;
+            MinZ = src.MinZ;
+            MaxX = src.MaxX;
+            MaxY = src.MaxY;
+            MaxZ = src.MaxZ;
+        }
+
+        void IUpdatable<IVector3>.Update(IVector3 src)
+        {
+            if (src is Vector3Rect value) Update(value);
+        }
+        void IMoveable<IVector3>.Pull(IVector3 src)
+        {
+            if (src is Vector3Rect value) Pull(value);
+        }
+
         public override bool Equals(object obj) => obj is Vector3Rect value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(MinX, MinY, MinZ, MaxX, MaxY, MaxZ);
         

@@ -60,6 +60,29 @@ namespace BH.SDK.Models.Values
         IColor3 ICopyable<IColor3>.Copy() => new Color3Value(R, G, B);
         public Color3Value Copy() => new(R, G, B);
 
+        public void Update(Color3Value src)
+        {
+            R = src.R;
+            G = src.G;
+            B = src.B;
+        }
+
+        public void Pull(Color3Value src)
+        {
+            R = src.R;
+            G = src.G;
+            B = src.B;
+        }
+
+        void IUpdatable<IColor3>.Update(IColor3 src)
+        {
+            if (src is Color3Value value) Update(value);
+        }
+        void IMoveable<IColor3>.Pull(IColor3 src)
+        {
+            if (src is Color3Value value) Pull(value);
+        }
+
         public override bool Equals(object obj) => obj is Color3Value value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(R, G, B);
 

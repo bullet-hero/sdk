@@ -45,6 +45,20 @@ namespace BH.SDK.Models.Resources
         
         private TextResource CopyImpl() => new(TextResourceId, Sources.CopyList());
 
+        public void Update(TextResource src)
+        {
+            base.Update(src);
+
+            TextResourceId = src.TextResourceId;
+        }
+
+        public void Pull(TextResource src)
+        {
+            base.Pull(src);
+
+            TextResourceId = src.TextResourceId;
+        }
+
         public override bool Equals(object obj) => obj is TextResource value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), TextResourceId);
 

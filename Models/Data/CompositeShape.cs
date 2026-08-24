@@ -97,6 +97,22 @@ namespace BH.SDK.Models.Data
         public object Clone() => Copy();
         public CompositeShape Copy() => new(ShapeId, ShapeName, Vertices.CopyList(), new List<int>(Indices));
 
+        public void Update(CompositeShape src)
+        {
+            ShapeId = src.ShapeId;
+            ShapeName = src.ShapeName;
+            Vertices = src.Vertices.CopyList();
+            Indices = new List<int>(src.Indices);
+        }
+
+        public void Pull(CompositeShape src)
+        {
+            ShapeId = src.ShapeId;
+            ShapeName = src.ShapeName;
+            Vertices = src.Vertices.CopyList();
+            Indices = new List<int>(src.Indices);
+        }
+
         public override bool Equals(object obj) => obj is CompositeShape value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(ShapeId, ShapeName,
             Vertices.GetListHashCode(), Indices.GetListHashCode());

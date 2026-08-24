@@ -59,6 +59,22 @@ namespace BH.SDK.Models.Keyframes
 
         private FillmentKey CopyImpl() => new(Value, Frame, Direction, Ease);
 
+        public void Update(FillmentKey src)
+        {
+            base.Update(src);
+
+            Value = src.Value;
+            Direction = src.Direction;
+        }
+
+        public void Pull(FillmentKey src)
+        {
+            base.Pull(src);
+
+            Value = src.Value;
+            Direction = src.Direction;
+        }
+
         public override bool Equals(object obj) => obj is FillmentKey value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), Value, (int)Direction);
 

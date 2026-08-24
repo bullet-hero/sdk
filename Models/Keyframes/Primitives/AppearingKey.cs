@@ -55,6 +55,22 @@ namespace BH.SDK.Models.Keyframes
 
         private AppearingKey CopyImpl() => new(Value, Frame, Mode, Ease);
 
+        public void Update(AppearingKey src)
+        {
+            base.Update(src);
+
+            Value = src.Value;
+            Mode = src.Mode;
+        }
+
+        public void Pull(AppearingKey src)
+        {
+            base.Pull(src);
+
+            Value = src.Value;
+            Mode = src.Mode;
+        }
+
         public override bool Equals(object obj) => obj is AppearingKey value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), Value, (int)Mode);
 

@@ -6,6 +6,7 @@ using BH.SDK.Models.Interfaces;
 using BH.SDK.Models.Resources;
 using BH.SDK.Models.SettingGroups;
 using BH.SDK.Rules.Attributes;
+using BH.SDK.Utils;
 using BH.SDK.Versions;
 using Newtonsoft.Json;
 
@@ -88,6 +89,24 @@ namespace BH.SDK.Models
 
         public object Clone() => Copy();
         public Level Copy() => new(Settings.Copy(), Game.Copy(), Audio.Copy(), Resources.Copy(), Hints?.Copy());
+
+        public void Update(Level src)
+        {
+            Settings = src.Settings.Copy();
+            Game = src.Game.Copy();
+            Audio = src.Audio.Copy();
+            Resources = src.Resources.Copy();
+            Hints = src.Hints?.Copy();
+        }
+
+        public void Pull(Level src)
+        {
+            Settings.Pull(src.Settings);
+            Game.Pull(src.Game);
+            Audio.Pull(src.Audio);
+            Resources.Pull(src.Resources);
+            Hints = Hints.PullFrom(src.Hints);
+        }
 
         public override bool Equals(object obj) => obj is Level value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(Settings, Game, Audio, Resources, Hints);

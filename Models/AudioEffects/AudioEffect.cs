@@ -39,6 +39,16 @@ namespace BH.SDK.Models.AudioEffects
         
         private AudioEffect CopyImpl() => new(MixLevel);
 
+        public void Update(AudioEffect src)
+        {
+            MixLevel = src.MixLevel;
+        }
+
+        public void Pull(AudioEffect src)
+        {
+            MixLevel = src.MixLevel;
+        }
+
         public override bool Equals(object obj) => obj is AudioEffect value && Equals(value);
         public override int GetHashCode() => MixLevel.GetHashCode();
 

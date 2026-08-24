@@ -22,6 +22,23 @@ namespace BH.SDK.Models.Effects
         public EffectShapeSpreadSine Copy() => new();
 
         // ReSharper disable once BaseObjectGetHashCodeCallInGetHashCode
+        public void Update(EffectShapeSpreadSine src)
+        {
+        }
+
+        public void Pull(EffectShapeSpreadSine src)
+        {
+        }
+
+        void IUpdatable<IEffectShapeSpread>.Update(IEffectShapeSpread src)
+        {
+            if (src is EffectShapeSpreadSine value) Update(value);
+        }
+        void IMoveable<IEffectShapeSpread>.Pull(IEffectShapeSpread src)
+        {
+            if (src is EffectShapeSpreadSine value) Pull(value);
+        }
+
         public override int GetHashCode() => base.GetHashCode();
         public override bool Equals(object obj) => obj is EffectShapeSpreadSine value && Equals(value);
         

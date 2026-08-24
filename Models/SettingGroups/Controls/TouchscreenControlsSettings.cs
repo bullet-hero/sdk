@@ -183,6 +183,27 @@ namespace BH.SDK.Models.SettingGroups.Controls
             DashButtonIcon = source.DashButtonIcon;
         }
 
+        public void Update(TouchscreenControlsSettings src)
+        {
+            base.Update(src);
+
+            Mode = src.Mode;
+            FingerOffsetX = src.FingerOffsetX;
+            FingerOffsetY = src.FingerOffsetY;
+            DashOnSecondFinger = src.DashOnSecondFinger;
+            DashOnDoubleTap = src.DashOnDoubleTap;
+            DoubleTapTime = src.DoubleTapTime;
+            TapMaxTravel = src.TapMaxTravel;
+            Handedness = src.Handedness;
+            JoystickAnchor = src.JoystickAnchor;
+            JoystickSize = src.JoystickSize;
+            JoystickTravel = src.JoystickTravel;
+            JoystickDynamicOrigin = src.JoystickDynamicOrigin;
+            DashButtonAnchor = src.DashButtonAnchor;
+            DashButtonSize = src.DashButtonSize;
+            DashButtonIcon = src.DashButtonIcon;
+        }
+
         public override bool Equals(object obj) => obj is TouchscreenControlsSettings value && Equals(value);
         public override int GetHashCode()
         {

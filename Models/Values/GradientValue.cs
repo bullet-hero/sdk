@@ -70,6 +70,22 @@ namespace BH.SDK.Models.Values
         public object Clone() => Copy();
         public GradientValue Copy() => new(ColorKeys.CopyList(), AlphaKeys.CopyList(), Mode, ColorSpace);
 
+        public void Update(GradientValue src)
+        {
+            ColorKeys = src.ColorKeys.CopyList();
+            AlphaKeys = src.AlphaKeys.CopyList();
+            Mode = src.Mode;
+            ColorSpace = src.ColorSpace;
+        }
+
+        public void Pull(GradientValue src)
+        {
+            ColorKeys = src.ColorKeys.CopyList();
+            AlphaKeys = src.AlphaKeys.CopyList();
+            Mode = src.Mode;
+            ColorSpace = src.ColorSpace;
+        }
+
         public override bool Equals(object obj) => obj is GradientValue value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(ColorKeys.GetListHashCode(),
             AlphaKeys.GetListHashCode(), (int)Mode, (int)ColorSpace);

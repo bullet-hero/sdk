@@ -137,6 +137,28 @@ namespace BH.SDK.Models.Game
         public PlayerEvents Copy() => new(Velocities.CopyList(), VelocityPoints.CopyList(),
             Visibles.CopyList(), Controls.CopyList(), Collisions.CopyList(), Sizes.CopyList(), Speeds.CopyList());
 
+        public void Update(PlayerEvents src)
+        {
+            Velocities = src.Velocities.CopyList();
+            VelocityPoints = src.VelocityPoints.CopyList();
+            Visibles = src.Visibles.CopyList();
+            Controls = src.Controls.CopyList();
+            Collisions = src.Collisions.CopyList();
+            Sizes = src.Sizes.CopyList();
+            Speeds = src.Speeds.CopyList();
+        }
+
+        public void Pull(PlayerEvents src)
+        {
+            Velocities = src.Velocities.CopyList();
+            VelocityPoints = src.VelocityPoints.CopyList();
+            Visibles = src.Visibles.CopyList();
+            Controls = src.Controls.CopyList();
+            Collisions = src.Collisions.CopyList();
+            Sizes = src.Sizes.CopyList();
+            Speeds = src.Speeds.CopyList();
+        }
+
         public override bool Equals(object obj) => obj is PlayerEvents value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(Velocities.GetListHashCode(),
             VelocityPoints.GetListHashCode(), Visibles.GetListHashCode(),

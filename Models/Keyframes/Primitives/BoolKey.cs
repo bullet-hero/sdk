@@ -43,6 +43,18 @@ namespace BH.SDK.Models.Keyframes
         public object Clone() => Copy();
         public BoolKey Copy() => new(Value, Frame);
 
+        public void Update(BoolKey src)
+        {
+            Value = src.Value;
+            Frame = src.Frame;
+        }
+
+        public void Pull(BoolKey src)
+        {
+            Value = src.Value;
+            Frame = src.Frame;
+        }
+
         public override bool Equals(object obj) => obj is BoolKey value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(Frame, Value);
 

@@ -149,6 +149,46 @@ namespace BH.SDK.Models.AudioEffects
             DecayTime, DecayHFRatio, Reflections, ReflectDelay, Reverb,
             ReverbDelay, Diffusion, Density, HFReference, LFReference);
 
+        public void Update(AudioReverb src)
+        {
+            base.Update(src);
+
+            DryLevel = src.DryLevel;
+            Room = src.Room;
+            RoomHF = src.RoomHF;
+            RoomLF = src.RoomLF;
+            DecayTime = src.DecayTime;
+            DecayHFRatio = src.DecayHFRatio;
+            Reflections = src.Reflections;
+            ReflectDelay = src.ReflectDelay;
+            Reverb = src.Reverb;
+            ReverbDelay = src.ReverbDelay;
+            Diffusion = src.Diffusion;
+            Density = src.Density;
+            HFReference = src.HFReference;
+            LFReference = src.LFReference;
+        }
+
+        public void Pull(AudioReverb src)
+        {
+            base.Pull(src);
+
+            DryLevel = src.DryLevel;
+            Room = src.Room;
+            RoomHF = src.RoomHF;
+            RoomLF = src.RoomLF;
+            DecayTime = src.DecayTime;
+            DecayHFRatio = src.DecayHFRatio;
+            Reflections = src.Reflections;
+            ReflectDelay = src.ReflectDelay;
+            Reverb = src.Reverb;
+            ReverbDelay = src.ReverbDelay;
+            Diffusion = src.Diffusion;
+            Density = src.Density;
+            HFReference = src.HFReference;
+            LFReference = src.LFReference;
+        }
+
         public override bool Equals(object obj) => obj is AudioReverb value && Equals(value);
         public override int GetHashCode()
         {

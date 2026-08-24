@@ -108,6 +108,18 @@ namespace BH.SDK.Models.Objects
             return Value;
         }
 
+        public void Update(Modification src)
+        {
+            Key = src.Key.Copy();
+            Value = src.CopyValue();
+        }
+
+        public void Pull(Modification src)
+        {
+            Key = src.Key.Copy();
+            Value = src.CopyValue();
+        }
+
         public override bool Equals(object obj) => obj is Modification value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(Key, Value);
 
@@ -120,7 +132,7 @@ namespace BH.SDK.Models.Objects
             // override's Value needs element-wise comparison instead, same reasoning as CopyValue.
             if (Value is IEnumerable and not string && other.Value is IEnumerable and not string)
                 return ((IEnumerable)Value).Cast<object>().SequenceEqual(((IEnumerable)other.Value).Cast<object>());
-            var result = Value.Equals(other.Value);
+            var result = object.Equals(Value, other.Value);
             return result;
         }
     }

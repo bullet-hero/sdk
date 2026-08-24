@@ -41,6 +41,25 @@ namespace BH.SDK.Models.Values
         IFloat ICopyable<IFloat>.Copy() => new FloatValue(Value);
         public FloatValue Copy() => new(Value);
         
+        public void Update(FloatValue src)
+        {
+            Value = src.Value;
+        }
+
+        public void Pull(FloatValue src)
+        {
+            Value = src.Value;
+        }
+
+        void IUpdatable<IFloat>.Update(IFloat src)
+        {
+            if (src is FloatValue value) Update(value);
+        }
+        void IMoveable<IFloat>.Pull(IFloat src)
+        {
+            if (src is FloatValue value) Pull(value);
+        }
+
         public bool Equals(IFloat other) => other is FloatValue value && Equals(value);
         public bool Equals(FloatValue other)
         {

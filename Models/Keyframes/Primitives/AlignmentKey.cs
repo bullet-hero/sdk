@@ -5,6 +5,7 @@ using BH.SDK.Models.Interfaces.Values;
 using BH.SDK.Models.Values;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
+using BH.SDK.Utils;
 using Newtonsoft.Json;
 
 namespace BH.SDK.Models.Keyframes
@@ -40,6 +41,20 @@ namespace BH.SDK.Models.Keyframes
         AlignmentKey ICopyable<AlignmentKey>.Copy() => CopyImpl();
         
         private AlignmentKey CopyImpl() => new(Value.Copy(), Frame, Ease);
+
+        public void Update(AlignmentKey src)
+        {
+            base.Update(src);
+
+            Value = src.Value.Copy();
+        }
+
+        public void Pull(AlignmentKey src)
+        {
+            base.Pull(src);
+
+            Value = Value.PullFrom(src.Value);
+        }
 
         public override bool Equals(object obj) => obj is AlignmentKey value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(Frame, Value);

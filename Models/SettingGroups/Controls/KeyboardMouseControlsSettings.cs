@@ -126,6 +126,20 @@ namespace BH.SDK.Models.SettingGroups.Controls
             HideCursorRelative = source.HideCursorRelative;
         }
 
+        public void Update(KeyboardMouseControlsSettings src)
+        {
+            base.Update(src);
+
+            Mode = src.Mode;
+            RequireHold = src.RequireHold;
+            HoldButton = src.HoldButton;
+            DashOnDoubleClick = src.DashOnDoubleClick;
+            DoubleClickTime = src.DoubleClickTime;
+            DashKeys = src.DashKeys;
+            HideCursorAbsolute = src.HideCursorAbsolute;
+            HideCursorRelative = src.HideCursorRelative;
+        }
+
         public override bool Equals(object obj) => obj is KeyboardMouseControlsSettings value && Equals(value);
         // The last slot is a nested Combine: HashCode.Combine tops out at eight arguments.
         public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), Mode,

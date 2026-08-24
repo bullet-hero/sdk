@@ -42,6 +42,25 @@ namespace BH.SDK.Models.Values
         IColor3 ICopyable<IColor3>.Copy() => new Color3ThemeRef(ThemeColorIndex);
         public Color3ThemeRef Copy() => new(ThemeColorIndex);
 
+        public void Update(Color3ThemeRef src)
+        {
+            ThemeColorIndex = src.ThemeColorIndex;
+        }
+
+        public void Pull(Color3ThemeRef src)
+        {
+            ThemeColorIndex = src.ThemeColorIndex;
+        }
+
+        void IUpdatable<IColor3>.Update(IColor3 src)
+        {
+            if (src is Color3ThemeRef value) Update(value);
+        }
+        void IMoveable<IColor3>.Pull(IColor3 src)
+        {
+            if (src is Color3ThemeRef value) Pull(value);
+        }
+
         public override bool Equals(object obj) => obj is Color3ThemeRef value && Equals(value);
         public override int GetHashCode() => ThemeColorIndex;
 

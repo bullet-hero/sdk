@@ -30,6 +30,7 @@
         public const string EndShort = "e";
         
         public const string Type = "type";
+        public const string Kind = "kind";
         public const string Value = "value";
         public const string Data = "data";
         public const string TypeShort = "t";
@@ -633,6 +634,12 @@
         public const string AntiAliasing = "aa";
         public const string Msaa = "msaa";
         public const string Hdr = "hdr";
+
+        // Textures. The group's own key is the shared Textures one - a level's resource list and a
+        // settings group can never appear on one model, which is the reuse this file allows.
+        public const string Compression = "compress";
+        public const string Mipmaps = "mips";
+        public const string SizeLimit = Size + _ + Limit;
 
         public const string PostProcessing = Post + Processing;
         public const string RenderBloom = Render + _ + BloomShort;

@@ -102,6 +102,34 @@ namespace BH.SDK.Models.AudioEffects
 
         private AudioChorus CopyImpl() => new(MixLevel, DryMix, WetMixTap1, WetMixTap2, WetMixTap3, Delay, Rate, Depth, Feedback);
 
+        public void Update(AudioChorus src)
+        {
+            base.Update(src);
+
+            DryMix = src.DryMix;
+            WetMixTap1 = src.WetMixTap1;
+            WetMixTap2 = src.WetMixTap2;
+            WetMixTap3 = src.WetMixTap3;
+            Delay = src.Delay;
+            Rate = src.Rate;
+            Depth = src.Depth;
+            Feedback = src.Feedback;
+        }
+
+        public void Pull(AudioChorus src)
+        {
+            base.Pull(src);
+
+            DryMix = src.DryMix;
+            WetMixTap1 = src.WetMixTap1;
+            WetMixTap2 = src.WetMixTap2;
+            WetMixTap3 = src.WetMixTap3;
+            Delay = src.Delay;
+            Rate = src.Rate;
+            Depth = src.Depth;
+            Feedback = src.Feedback;
+        }
+
         public override bool Equals(object obj) => obj is AudioChorus value && Equals(value);
         public override int GetHashCode()
         {

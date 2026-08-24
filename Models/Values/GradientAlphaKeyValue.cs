@@ -44,6 +44,18 @@ namespace BH.SDK.Models.Values
         public object Clone() => Copy();
         public GradientAlphaKeyValue Copy() => new(Alpha, Time);
 
+        public void Update(GradientAlphaKeyValue src)
+        {
+            Alpha = src.Alpha;
+            Time = src.Time;
+        }
+
+        public void Pull(GradientAlphaKeyValue src)
+        {
+            Alpha = src.Alpha;
+            Time = src.Time;
+        }
+
         public override bool Equals(object obj) => obj is GradientAlphaKeyValue value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(Alpha, Time);
 

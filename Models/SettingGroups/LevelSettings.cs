@@ -82,6 +82,24 @@ namespace BH.SDK.Models.SettingGroups
             Seed = Seed,
         };
 
+        public void Update(LevelSettings src)
+        {
+            Framerate = src.Framerate;
+            FrameDuration = src.FrameDuration;
+            ObjectIdCounter = src.ObjectIdCounter;
+            AudioIdCounter = src.AudioIdCounter;
+            Seed = src.Seed;
+        }
+
+        public void Pull(LevelSettings src)
+        {
+            Framerate = src.Framerate;
+            FrameDuration = src.FrameDuration;
+            ObjectIdCounter = src.ObjectIdCounter;
+            AudioIdCounter = src.AudioIdCounter;
+            Seed = src.Seed;
+        }
+
         public override bool Equals(object obj) => obj is LevelSettings value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(Framerate, FrameDuration, ObjectIdCounter, AudioIdCounter, Seed);
 

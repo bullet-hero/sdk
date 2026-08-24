@@ -106,6 +106,17 @@ namespace BH.SDK.Models.SettingGroups.Graphics
             FrameStepBudget = source.FrameStepBudget;
         }
 
+        public void Update(EffectsGraphicsSettings src)
+        {
+            base.Update(src);
+
+            FramerateTarget = src.FramerateTarget;
+            FixedFramerate = src.FixedFramerate;
+            MaxScrubTime = src.MaxScrubTime;
+            ReplayStepBudget = src.ReplayStepBudget;
+            FrameStepBudget = src.FrameStepBudget;
+        }
+
         public override bool Equals(object obj) => obj is EffectsGraphicsSettings value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(base.GetHashCode(),
             (int)FramerateTarget, FixedFramerate, MaxScrubTime, ReplayStepBudget, FrameStepBudget);
