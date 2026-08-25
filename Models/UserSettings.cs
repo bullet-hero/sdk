@@ -15,8 +15,12 @@ namespace BH.SDK.Models
     /// next to a level and its metadata. Nothing here travels with a level: the same level must
     /// play the same way regardless of these.
     /// </summary>
+    // (2,0) because GameEditorSettings was RESTRUCTURED - sixteen flat properties became nine nested
+    // groups. Every earlier change to this file was additive and rode on Newtonsoft leaving a
+    // constructor's default in place for an absent key; moving keys is the one thing that cannot,
+    // so this is the domain's first snapshot-and-migrator pair (Versions/V1_0/).
     [RuleContainer]
-    [DataVersion(DataDomains.UserSettings, 1, 0)]
+    [DataVersion(DataDomains.UserSettings, 2, 0)]
     public class UserSettings : IModel<UserSettings>, IMoveable<UserSettings>
     {
         /// <summary> Options fitting no other group (resource loading, later language). </summary>

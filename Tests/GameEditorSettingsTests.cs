@@ -1,4 +1,5 @@
 ﻿using BH.SDK.Models;
+using BH.SDK.Models.Enums.Settings;
 using BH.SDK.Models.SettingGroups;
 using BH.SDK.Serialization;
 using BH.SDK.Serialization.Serializers;
@@ -6,14 +7,35 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests
 {
-    // The three serialize modes are what the editor WRITES with, and all three default to Json for a
-    // reason worth pinning: Json is 0, so a settings file written before they existed deserializes
-    // into the same value a fresh one is born with, and no migration was needed. The Copy/Pull/Equals
-    // boilerplate here is hand-written eleven fields over, which is the mistake this file exists for.
+    // GameEditorSettings is the one UserSettings group that has been RESTRUCTURED rather than added
+    // to - sixteen flat properties became nine nested groups, which is what took the domain to (2,0).
+    // Two kinds of assert live here as a result: the ordinary boilerplate ones every group needs
+    // (defaults, Reset, Copy/Pull, Equals seeing each field independently), and the ones that pin the
+    // NESTING itself - a Copy that shared a group instance with its source, or an Equals that only
+    // compared references, would pass every flat test ever written for this class.
 
-    /// <summary> GameEditorSettings' serialize-mode preferences: defaults, boilerplate, round trip. </summary>
+    /// <summary> GameEditorSettings' nine groups: defaults, boilerplate, isolation, round trip. </summary>
     public class GameEditorSettingsTests
     {
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.VeryEasy)]
+        public void Groups_AreNeverNull()
+        {
+            var settings = new GameEditorSettings();
+
+            Assert.NotNull(settings.Savings);
+            Assert.NotNull(settings.Camera);
+            Assert.NotNull(settings.Player);
+            Assert.NotNull(settings.Grid);
+            Assert.NotNull(settings.Selection);
+            Assert.NotNull(settings.Gizmos);
+            Assert.NotNull(settings.Timeline);
+            Assert.NotNull(settings.Interface);
+            Assert.NotNull(settings.Serialization);
+        }
+
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
@@ -22,214 +44,141 @@ namespace BH.SDK.Tests
         {
             var settings = new GameEditorSettings();
 
-            Assert.AreEqual(SerializationType.Json, settings.LevelSerializeMode);
-            Assert.AreEqual(SerializationType.Json, settings.ResourcesSerializeMode);
-            Assert.AreEqual(SerializationType.Json, settings.CopySerializeMode);
+            Assert.AreEqual(SerializationType.Json, settings.Serialization.LevelMode);
+            Assert.AreEqual(SerializationType.Json, settings.Serialization.ResourcesMode);
+            Assert.AreEqual(SerializationType.Json, settings.Serialization.CopyMode);
         }
 
+        // Reset on the root has to reach every group. It delegates rather than reassigning, so a
+        // group somebody forgot to list would keep whatever the author had left in it.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
-        [Category(Metadata.Category.VeryEasy)]
-        public void Reset_RestoresSerializeModes()
+        [Category(Metadata.Category.Easy)]
+        public void Reset_ReachesEveryGroup()
         {
-            var settings = new GameEditorSettings
-            {
-                LevelSerializeMode = SerializationType.Bson,
-                ResourcesSerializeMode = SerializationType.JsonPretty,
-                CopySerializeMode = SerializationType.Bson,
-            };
+            var settings = new GameEditorSettings();
+
+            settings.Savings.Autosave = false;
+            settings.Savings.HistoryLength = 64;
+            settings.Camera.ZoomToMouse = false;
+            settings.Player.ActiveDefault = false;
+            settings.Grid.Size = 0.25f;
+            settings.Selection.PickInvisibleAABB = true;
+            settings.Gizmos.Scale = 4f;
+            settings.Timeline.GlobalLoop = false;
+            settings.Interface.RenderInframes = true;
+            settings.Serialization.LevelMode = SerializationType.Bson;
 
             settings.Reset();
 
-            Assert.AreEqual(SerializationType.Json, settings.LevelSerializeMode);
-            Assert.AreEqual(SerializationType.Json, settings.ResourcesSerializeMode);
-            Assert.AreEqual(SerializationType.Json, settings.CopySerializeMode);
+            Assert.IsTrue(settings.Savings.Autosave);
+            Assert.AreEqual(512, settings.Savings.HistoryLength);
+            Assert.IsTrue(settings.Camera.ZoomToMouse);
+            Assert.IsTrue(settings.Player.ActiveDefault);
+            Assert.AreEqual(1f, settings.Grid.Size);
+            Assert.IsFalse(settings.Selection.PickInvisibleAABB);
+            Assert.AreEqual(1f, settings.Gizmos.Scale);
+            Assert.IsTrue(settings.Timeline.GlobalLoop);
+            Assert.IsFalse(settings.Interface.RenderInframes);
+            Assert.AreEqual(SerializationType.Json, settings.Serialization.LevelMode);
         }
 
+        // The nesting's own failure mode, and the reason this test exists at all: Copy() must build
+        // NEW group instances. Sharing them would make a copy an alias, so editing the copy would
+        // silently edit the original - and every equality assert would still pass.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.Easy)]
-        public void CopyAndPull_CarrySerializeModes()
+        public void Copy_DoesNotShareGroupInstances()
         {
-            var source = new GameEditorSettings
-            {
-                LevelSerializeMode = SerializationType.JsonPretty,
-                ResourcesSerializeMode = SerializationType.Bson,
-                CopySerializeMode = SerializationType.JsonPretty,
-            };
-
+            var source = new GameEditorSettings();
             var copy = source.Copy();
-            Assert.IsTrue(source.Equals(copy));
 
-            var pulled = new GameEditorSettings();
-            pulled.Pull(source);
-            Assert.IsTrue(source.Equals(pulled));
-            Assert.AreEqual(source.GetHashCode(), pulled.GetHashCode());
+            Assert.AreNotSame(source.Savings, copy.Savings);
+            Assert.AreNotSame(source.Camera, copy.Camera);
+            Assert.AreNotSame(source.Player, copy.Player);
+            Assert.AreNotSame(source.Grid, copy.Grid);
+            Assert.AreNotSame(source.Selection, copy.Selection);
+            Assert.AreNotSame(source.Gizmos, copy.Gizmos);
+            Assert.AreNotSame(source.Timeline, copy.Timeline);
+            Assert.AreNotSame(source.Interface, copy.Interface);
+            Assert.AreNotSame(source.Serialization, copy.Serialization);
+
+            copy.Grid.Size = 8f;
+            Assert.AreEqual(1f, source.Grid.Size);
         }
 
-        // Each mode is its own field, so a Copy/Pull that folded two of them together would still pass
-        // the test above - this is what tells them apart.
+        // Pull is the one that must NOT reassign: the device hands its sub-groups out one at a time,
+        // so whoever is holding source.Grid has to keep seeing the value that lands in it.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.Easy)]
-        public void Equals_SeesEachSerializeModeIndependently()
+        public void Pull_KeepsEveryGroupInstance()
+        {
+            var source = new GameEditorSettings();
+            source.Grid.Size = 0.5f;
+            source.Gizmos.Scale = 2f;
+
+            var target = new GameEditorSettings();
+            var heldGrid = target.Grid;
+            var heldGizmos = target.Gizmos;
+
+            target.Pull(source);
+
+            Assert.AreSame(heldGrid, target.Grid);
+            Assert.AreSame(heldGizmos, target.Gizmos);
+            Assert.AreEqual(0.5f, heldGrid.Size);
+            Assert.AreEqual(2f, heldGizmos.Scale);
+            Assert.IsTrue(source.Equals(target));
+            Assert.AreEqual(source.GetHashCode(), target.GetHashCode());
+        }
+
+        // Nine groups fold into eight hash slots, so the last two share one - and Equals has to see
+        // a change in ANY of them. A group left out of either would make two different settings
+        // compare equal.
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Easy)]
+        public void Equals_SeesEveryGroupIndependently()
         {
             var a = new GameEditorSettings();
 
-            var b = a.Copy();
-            b.LevelSerializeMode = SerializationType.Bson;
-            Assert.IsFalse(a.Equals(b));
-
-            var c = a.Copy();
-            c.ResourcesSerializeMode = SerializationType.Bson;
-            Assert.IsFalse(a.Equals(c));
-
-            var d = a.Copy();
-            d.CopySerializeMode = SerializationType.Bson;
-            Assert.IsFalse(a.Equals(d));
+            AssertDiffers(a, s => s.Savings.HistoryLength = 64);
+            AssertDiffers(a, s => s.Camera.WheelMultiplier = 0.5f);
+            AssertDiffers(a, s => s.Player.ResetGizmos = false);
+            AssertDiffers(a, s => s.Grid.Opacity = 0.9f);
+            AssertDiffers(a, s => s.Selection.LongPressDelay = 1.5f);
+            AssertDiffers(a, s => s.Gizmos.Scale = 3f);
+            AssertDiffers(a, s => s.Timeline.EdgeHandlePx = 24f);
+            AssertDiffers(a, s => s.Interface.LogValueClamps = false);
+            AssertDiffers(a, s => s.Serialization.CopyMode = SerializationType.Bson);
         }
 
-        // The editor's viewport grid: only the CELL SIZE is remembered, never whether the lines are
-        // currently drawn - that is the session's business (GridModeService), the same split the
-        // active gizmo already has.
-        [Test]
-        [Author(Metadata.Author.Vertoker)]
-        [Category(Metadata.Category.Self)]
-        [Category(Metadata.Category.VeryEasy)]
-        public void GridSize_DefaultsToOneUnit()
+        private static void AssertDiffers(GameEditorSettings source, System.Action<GameEditorSettings> edit)
         {
-            var settings = new GameEditorSettings();
-            Assert.AreEqual(1f, settings.GridSize);
-
-            settings.GridSize = 0.25f;
-            settings.Reset();
-            Assert.AreEqual(1f, settings.GridSize);
-        }
-
-        // The one preference here that defaults to OFF. The overlay it gates covers the object the
-        // author has just selected, so it is in the way far more often than it answers a question -
-        // and a default of true would also make it appear for every existing settings file, since
-        // false is what a missing JSON key deserializes to either way.
-        [Test]
-        [Author(Metadata.Author.Vertoker)]
-        [Category(Metadata.Category.Self)]
-        [Category(Metadata.Category.VeryEasy)]
-        public void PreviewColliderOnSelect_DefaultsToOff()
-        {
-            var settings = new GameEditorSettings();
-            Assert.IsFalse(settings.PreviewColliderOnSelect);
-
-            settings.PreviewColliderOnSelect = true;
-            settings.Reset();
-            Assert.IsFalse(settings.PreviewColliderOnSelect);
-        }
-
-        [Test]
-        [Author(Metadata.Author.Vertoker)]
-        [Category(Metadata.Category.Self)]
-        [Category(Metadata.Category.Easy)]
-        public void PreviewColliderOnSelect_SurvivesCopyPullAndEquality()
-        {
-            var source = new GameEditorSettings { PreviewColliderOnSelect = true };
-
-            var copy = source.Copy();
-            Assert.IsTrue(copy.PreviewColliderOnSelect);
-            Assert.IsTrue(source.Equals(copy));
-
-            var pulled = new GameEditorSettings();
-            pulled.Pull(source);
-            Assert.IsTrue(pulled.PreviewColliderOnSelect);
-            Assert.AreEqual(source.GetHashCode(), pulled.GetHashCode());
-
             var other = source.Copy();
-            other.PreviewColliderOnSelect = false;
+            edit(other);
             Assert.IsFalse(source.Equals(other));
         }
 
-        // The second preference here defaulting to OFF, and for the same kind of reason: a click
-        // lands on what the object DRAWS, so the empty padding of a slice or a ring belongs to
-        // whatever is behind it. Turning it on hands every object its whole rect back.
+        // The three preferences that default to OFF, which is the opposite call the rest of this
+        // model makes. Each covers or widens something the author has just worked on, so it is in the
+        // way more often than it answers a question.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.VeryEasy)]
-        public void PickInvisibleAABB_DefaultsToOff()
+        public void ThreeDiagnosticToggles_DefaultToOff()
         {
             var settings = new GameEditorSettings();
-            Assert.IsFalse(settings.PickInvisibleAABB);
 
-            settings.PickInvisibleAABB = true;
-            settings.Reset();
-            Assert.IsFalse(settings.PickInvisibleAABB);
-        }
-
-        [Test]
-        [Author(Metadata.Author.Vertoker)]
-        [Category(Metadata.Category.Self)]
-        [Category(Metadata.Category.Easy)]
-        public void PickInvisibleAABB_SurvivesCopyPullAndEquality()
-        {
-            var source = new GameEditorSettings { PickInvisibleAABB = true };
-
-            var copy = source.Copy();
-            Assert.IsTrue(copy.PickInvisibleAABB);
-            Assert.IsTrue(source.Equals(copy));
-
-            var pulled = new GameEditorSettings();
-            pulled.Pull(source);
-            Assert.IsTrue(pulled.PickInvisibleAABB);
-            Assert.AreEqual(source.GetHashCode(), pulled.GetHashCode());
-
-            // The two selection toggles sit next to each other in the folded hash and in Equals -
-            // one standing in for the other would pass every assert above.
-            var other = source.Copy();
-            other.PickInvisibleAABB = false;
-            Assert.IsFalse(source.Equals(other));
-        }
-
-        // Inframes are what an effect SPAWNS while it plays - rows the author can neither select nor
-        // edit - so the hierarchy leaves them out until asked. Newly added to a 1.0 domain, hence the
-        // default is what a settings.json predating the property reads back as.
-        [Test]
-        [Author(Metadata.Author.Vertoker)]
-        [Category(Metadata.Category.Self)]
-        [Category(Metadata.Category.VeryEasy)]
-        public void RenderInframes_DefaultsToOff()
-        {
-            var settings = new GameEditorSettings();
-            Assert.IsFalse(settings.RenderInframes);
-
-            settings.RenderInframes = true;
-            settings.Reset();
-            Assert.IsFalse(settings.RenderInframes);
-        }
-
-        [Test]
-        [Author(Metadata.Author.Vertoker)]
-        [Category(Metadata.Category.Self)]
-        [Category(Metadata.Category.Easy)]
-        public void RenderInframes_SurvivesCopyPullAndEquality()
-        {
-            var source = new GameEditorSettings { RenderInframes = true };
-
-            var copy = source.Copy();
-            Assert.IsTrue(copy.RenderInframes);
-            Assert.IsTrue(source.Equals(copy));
-
-            var pulled = new GameEditorSettings();
-            pulled.Pull(source);
-            Assert.IsTrue(pulled.RenderInframes);
-            Assert.AreEqual(source.GetHashCode(), pulled.GetHashCode());
-
-            // It is the sixteenth field, i.e. the one folded deepest into GetHashCode - the nesting
-            // that keeps it from being dropped is exactly what this asserts.
-            var other = source.Copy();
-            other.RenderInframes = false;
-            Assert.IsFalse(source.Equals(other));
-            Assert.AreNotEqual(source.GetHashCode(), other.GetHashCode());
+            Assert.IsFalse(settings.Selection.PreviewColliderOnSelect);
+            Assert.IsFalse(settings.Selection.PickInvisibleAABB);
+            Assert.IsFalse(settings.Interface.RenderInframes);
         }
 
         // The grid's opacity is the ONLY part of its colour anyone authors - the hue is the inverse
@@ -238,83 +187,93 @@ namespace BH.SDK.Tests
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.VeryEasy)]
-        public void GridOpacity_DefaultsToAQuarter()
+        public void Grid_DefaultsToOneUnitAtAQuarterOpacity()
         {
             var settings = new GameEditorSettings();
-            Assert.AreEqual(0.25f, settings.GridOpacity);
 
-            settings.GridOpacity = 1f;
-            settings.Reset();
-            Assert.AreEqual(0.25f, settings.GridOpacity);
+            Assert.AreEqual(1f, settings.Grid.Size);
+            Assert.AreEqual(0.25f, settings.Grid.Opacity);
         }
 
+        // Rotation is stored in RADIANS everywhere; this decides only what a field shows. Degrees is
+        // the default because it is the unit an author thinks a rotation in.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
-        [Category(Metadata.Category.Easy)]
-        public void GridSize_SurvivesCopyPullAndEquality()
+        [Category(Metadata.Category.VeryEasy)]
+        public void RotationDisplayUnit_DefaultsToDegrees()
         {
-            var source = new GameEditorSettings { GridSize = 0.5f, GridOpacity = 0.8f };
-
-            var copy = source.Copy();
-            Assert.AreEqual(0.5f, copy.GridSize);
-            Assert.AreEqual(0.8f, copy.GridOpacity);
-            Assert.IsTrue(source.Equals(copy));
-
-            var pulled = new GameEditorSettings();
-            pulled.Pull(source);
-            Assert.AreEqual(0.5f, pulled.GridSize);
-            Assert.AreEqual(0.8f, pulled.GridOpacity);
-            Assert.AreEqual(source.GetHashCode(), pulled.GetHashCode());
-
-            // Two fields, seen independently - a Copy/Pull folding them together would pass the
-            // asserts above and still lose one of them.
-            var other = source.Copy();
-            other.GridSize = 2f;
-            Assert.IsFalse(source.Equals(other));
-
-            var dimmer = source.Copy();
-            dimmer.GridOpacity = 0.1f;
-            Assert.IsFalse(source.Equals(dimmer));
+            var settings = new GameEditorSettings();
+            Assert.AreEqual(AngleDisplayUnit.Degrees, settings.Interface.RotationDisplayUnit);
         }
 
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.Normal)]
-        public void Grid_SurvivesARoundTrip()
+        public void EveryGroup_SurvivesARoundTrip()
         {
             var service = new SerializationService(new SerializationSettings());
 
             var settings = new UserSettings();
-            settings.GameEditor.GridSize = 0.125f;
-            settings.GameEditor.GridOpacity = 0.6f;
+            settings.GameEditor.Savings.HistoryLength = 96;
+            settings.GameEditor.Camera.MinSize = 0.5f;
+            settings.GameEditor.Camera.Invert = false;
+            settings.GameEditor.Camera.MoveSensitivityX = 2.5f;
+            settings.GameEditor.Player.ResetGizmos = false;
+            settings.GameEditor.Grid.Size = 0.125f;
+            settings.GameEditor.Grid.Opacity = 0.6f;
+            settings.GameEditor.Selection.LongPressDelay = 1.25f;
+            settings.GameEditor.Selection.ColliderOpacityView = 0.75f;
+            settings.GameEditor.Gizmos.Scale = 1.75f;
+            settings.GameEditor.Timeline.SnapThresholdPx = 20f;
+            settings.GameEditor.Timeline.LocalLoop = false;
+            settings.GameEditor.Interface.DirtyFieldDelay = 0.3f;
+            settings.GameEditor.Interface.RotationDisplayUnit = AngleDisplayUnit.Radians;
+            settings.GameEditor.Serialization.LevelMode = SerializationType.JsonPretty;
+
+            var restored = service.DeserializeData<UserSettings>(service.SerializeData(settings));
+            var editor = restored.GameEditor;
+
+            Assert.AreEqual(96, editor.Savings.HistoryLength);
+            Assert.AreEqual(0.5f, editor.Camera.MinSize);
+            Assert.IsFalse(editor.Camera.Invert);
+            Assert.AreEqual(2.5f, editor.Camera.MoveSensitivityX);
+            Assert.IsFalse(editor.Player.ResetGizmos);
+            Assert.AreEqual(0.125f, editor.Grid.Size);
+            Assert.AreEqual(0.6f, editor.Grid.Opacity);
+            Assert.AreEqual(1.25f, editor.Selection.LongPressDelay);
+            Assert.AreEqual(0.75f, editor.Selection.ColliderOpacityView);
+            Assert.AreEqual(1.75f, editor.Gizmos.Scale);
+            Assert.AreEqual(20f, editor.Timeline.SnapThresholdPx);
+            Assert.IsFalse(editor.Timeline.LocalLoop);
+            Assert.AreEqual(0.3f, editor.Interface.DirtyFieldDelay);
+            Assert.AreEqual(AngleDisplayUnit.Radians, editor.Interface.RotationDisplayUnit);
+            Assert.AreEqual(SerializationType.JsonPretty, editor.Serialization.LevelMode);
+        }
+
+        // The two nested "iface" keys - UserSettings.Interface and GameEditor.Interface - reuse one
+        // name across models that can never co-occur, which is what Names' own header allows. This is
+        // the assert that keeps that reuse honest: if the serializer ever confused them, one group
+        // would read the other's values back.
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Normal)]
+        public void TheTwoInterfaceGroups_DoNotCollide()
+        {
+            var service = new SerializationService(new SerializationSettings());
+
+            var settings = new UserSettings();
+            settings.Interface.StatsActive = true;
+            settings.GameEditor.Interface.RenderInframes = true;
+            settings.GameEditor.Interface.LogValueClamps = false;
 
             var restored = service.DeserializeData<UserSettings>(service.SerializeData(settings));
 
-            Assert.AreEqual(0.125f, restored.GameEditor.GridSize);
-            Assert.AreEqual(0.6f, restored.GameEditor.GridOpacity);
-        }
-
-        [Test]
-        [Author(Metadata.Author.Vertoker)]
-        [Category(Metadata.Category.Self)]
-        [Category(Metadata.Category.Normal)]
-        public void SerializeModes_SurviveARoundTrip()
-        {
-            var service = new SerializationService(new SerializationSettings());
-
-            var settings = new UserSettings();
-            settings.GameEditor.LevelSerializeMode = SerializationType.JsonPretty;
-            settings.GameEditor.ResourcesSerializeMode = SerializationType.Bson;
-            settings.GameEditor.CopySerializeMode = SerializationType.JsonPretty;
-
-            var json = service.SerializeData(settings);
-            var restored = service.DeserializeData<UserSettings>(json);
-
-            Assert.AreEqual(SerializationType.JsonPretty, restored.GameEditor.LevelSerializeMode);
-            Assert.AreEqual(SerializationType.Bson, restored.GameEditor.ResourcesSerializeMode);
-            Assert.AreEqual(SerializationType.JsonPretty, restored.GameEditor.CopySerializeMode);
+            Assert.IsTrue(restored.Interface.StatsActive);
+            Assert.IsTrue(restored.GameEditor.Interface.RenderInframes);
+            Assert.IsFalse(restored.GameEditor.Interface.LogValueClamps);
         }
     }
 }

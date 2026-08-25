@@ -720,11 +720,17 @@ namespace BH.SDK.Tests
                 },
                 GameEditor =
                 {
-                    Autosave = false,
-                    AutosaveRate = 30f,
-                    MaxAutosaveFiles = 10,
-                    CameraMinSize = 0.5f,
-                    CameraMaxSize = 50f,
+                    Savings =
+                    {
+                        Autosave = false,
+                        AutosaveRate = 30f,
+                        MaxAutosaveFiles = 10,
+                    },
+                    Camera =
+                    {
+                        MinSize = 0.5f,
+                        MaxSize = 50f,
+                    },
                 },
                 // Three shapes at once, since the map's whole surface is what a round trip can drop:
                 // a rebound shortcut, a modifiers-only one (what a held shortcut looks like), and an
@@ -781,8 +787,11 @@ namespace BH.SDK.Tests
                 },
                 GameEditor =
                 {
-                    CameraMinSize = -23f,
-                    CameraMaxSize = 23f
+                    Camera =
+                    {
+                        MinSize = -23f,
+                        MaxSize = 23f
+                    }
                 }
             };
             return settings;

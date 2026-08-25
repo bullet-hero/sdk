@@ -11,7 +11,7 @@
         // ---------------------------------------------------------------------------------------------
         // Single names
         // ---------------------------------------------------------------------------------------------
-        
+
         public const string Frame = "frame";
         public const string Time = "time";
         public const string FrameShort = "f";
@@ -28,14 +28,14 @@
         public const string Next = "next";
         public const string StartShort = "s";
         public const string EndShort = "e";
-        
+
         public const string Type = "type";
         public const string Kind = "kind";
         public const string Value = "value";
         public const string Data = "data";
         public const string TypeShort = "t";
         public const string ValueShort = "v";
-        
+
         public const string Level = "level";
         public const string Version = "version";
         public const string Meta = "meta";
@@ -73,7 +73,7 @@
         public const string Description = "desc";
         public const string Active = "active";
         public const string ActiveShort = "a";
-        
+
         public const string Bool = "bool";
         public const string Byte = "byte";
         public const string Int = "int";
@@ -81,16 +81,16 @@
         public const string Vector2 = "vec2";
         public const string Vector3 = "vec3";
         public const string Vector4 = "vec4";
-        
+
         public const string String = "string";
         public const string Strings = "strings";
         public const string Language = "lang";
-        
+
         public const string Index = "idx";
         public const string Id = "id";
         public const string Ids = "ids";
         public const string Guid = "guid";
-        
+
         public const string Position = "pos";
         public const string Rotation = "rot";
         public const string Scale = "sca";
@@ -103,7 +103,7 @@
         public const string Color = "clr";
         public const string Alpha = "alpha";
         public const string AlphaShort = "a";
-        
+
         public const string ChannelR = "r";
         public const string ChannelG = "g";
         public const string ChannelB = "b";
@@ -139,7 +139,7 @@
         public const string AlignmentTL = "TL"; // top-left
         public const string AlignmentTM = "TM"; // top-middle
         public const string AlignmentTR = "TR"; // top-right
-        
+
         public const string Speed = "speed";
         public const string Range = "range";
         public const string Core = "core";
@@ -159,14 +159,14 @@
         public const string Intensity = "intensity";
         public const string Collision = "collision";
         public const string Collisions = "collisions";
-        
+
         public const string Radius = "radius";
         public const string RadiusShort = "r";
         public const string Major = "major";
         public const string Minor = "minor";
         public const string Top = "top";
         public const string Base = "base";
-        
+
         public const string Thickness = "thickness";
         public const string Arc = "arc";
         public const string Width = "width";
@@ -174,7 +174,7 @@
         public const string WidthShort = "w";
         public const string HeightShort = "h";
         public const string Spread = "spread";
-        
+
         public const string Matrix = "matrix";
         public const string Theme = "theme";
         public const string Themes = "themes";
@@ -189,7 +189,7 @@
         public const string Background = "background";
         public const string Backgrounds = "backgrounds";
         public const string BackgroundShort = "bg";
-        
+
         public const string Object = "object";
         public const string Objects = "objects";
         public const string Instance = "instance";
@@ -197,7 +197,7 @@
         public const string Parent = "parent";
         public const string ObjectShort = "obj";
         public const string ParentShort = "p";
-        
+
         public const string BloomShort = "blm";
         public const string ChromaticShort = "chr";
         public const string VignetteShort = "vgn";
@@ -210,7 +210,7 @@
         public const string WhiteBalanceShort = "wbl";
         public const string AnalogGlitchShort = "agl";
         public const string DigitalGlitchShort = "dgl";
-        
+
         public const string Classic = "classic";
         public const string Control = "control";
         public const string Controls = "controls";
@@ -222,7 +222,7 @@
         public const string LayerShort = "l";
         public const string PivotShort = "p";
         public const string AnchorShort = "a";
-        
+
         public const string Collider = "collider";
         public const string ColliderShort = "c";
         public const string ShapeShort = "sh";
@@ -243,7 +243,7 @@
         public const string Res = "res";
         public const string UV = "uv";
         public const string Tilling = "tilling";
-        
+
         public const string Loop = "loop";
         public const string Particle = "particle";
         public const string Count = "count";
@@ -265,7 +265,7 @@
         public const string Shader = "shader";
         public const string Triangle = "triangle";
         public const string Triangles = "triangles";
-        
+
         public const string Prefab = "prefab";
         public const string Prefabs = "prefabs";
         public const string Mod = "mod";
@@ -274,7 +274,7 @@
         public const string Path = "path";
         public const string PathShort = "p";
         public const string Order = "order";
-        
+
         public const string Author = "author";
         public const string Authors = "authors";
         public const string Source = "source";
@@ -294,7 +294,7 @@
         public const string Under = "under";
         public const string Edge = "edge";
         public const string Distrib = "distrib";
-        
+
         public const string Scan = "scan";
         public const string Line = "line";
         public const string Jitter = "jitter";
@@ -325,7 +325,7 @@
         public const string Rounded = "rnd";
         public const string Temperature = "tmp";
         public const string Tint = "tnt";
-        
+
         public const string In = "in";
         public const string Out = "out";
         public const string Tangent = "tangent";
@@ -342,7 +342,7 @@
         public const string Wrap = "wrap";
         public const string Space = "space";
         public const string Aspect = "aspect";
-        
+
         public const string Seed = "seed";
         public const string Framerate = "framerate";
         public const string Fps = "fps";
@@ -359,12 +359,12 @@
         public const string Processing = "processing";
         public const string Player = "player";
         public const string Editor = "editor";
-        
+
         public const string Pitch = "pitch";
         public const string Stereo = "stereo";
         public const string Pan = "pan";
         public const string Mixer = "mixer";
-        
+
         public const string Up = "up";
         public const string Down = "down";
         public const string Pass = "pass";
@@ -379,7 +379,7 @@
         public const string Compressor = "compressor";
         public const string Normalize = "normalize";
         public const string ParamEQ = "parameq";
-        
+
         public const string Mix = "mix";
         public const string Dry = "dry";
         public const string Wet = "wet";
@@ -415,12 +415,12 @@
         public const string Attack = "attack";
         public const string Release = "release";
         public const string Make = "make";
-        
+
         public const string Autosave = "autosave";
         public const string File = "file";
         public const string Files = "files";
         public const string Logo = "Logo";
-        
+
         public const string Aggressive = "aggressive";
         public const string License = "license";
         public const string Use = "use";
@@ -523,8 +523,24 @@
         public const string Serialize = "serialize";
         public const string Copy = "copy";
 
+        public const string Savings = "savings";
+        public const string History = "history";
+        public const string Timeline = "timeline";
+        public const string Wheel = "wheel";
+        public const string Move = "move";
+        public const string Long = "long";
+        public const string Press = "press";
+        public const string Snap = "snap";
+        public const string Handle = "handle";
+        public const string View = "view";
+        public const string Dirty = "dirty";
+        public const string Field = "field";
+        public const string Clamps = "clamps";
+        public const string Log = "log";
+        public const string Unit = "unit";
+
         private const string _ = "_";
-        
+
         // ---------------------------------------------------------------------------------------------
         // Combined names
         // ---------------------------------------------------------------------------------------------
@@ -533,24 +549,42 @@
         public const string FrameDurationShort = FrameShort + _ + DurationShort;
         public const string ScreenLimit = Screen + _ + Limit;
         public const string ScreenLimits = Screen + _ + Limits;
-        
-        public const string AutosaveRate = Autosave + _ + Rate;
-        public const string MaxAutosaveFiles = Max + _ + Autosave + _ + Files;
-        public const string CameraMinSize = Camera + _ + Min + _ + Size;
-        public const string CameraMaxSize = Camera + _ + Max + _ + Size;
+
         public const string EditorSettings = Editor + _ + Settings;
-        public const string PlayerActiveDefault = Player + _ + Active + _ + Default;
-        public const string GizmosResetOnPlayer = Gizmos + _ + Reset + _ + On + _ + Player;
-        public const string LevelSerializeMode = Level + _ + Serialize + _ + Mode;
-        public const string ResourcesSerializeMode = Resources + _ + Serialize + _ + Mode;
-        public const string CopySerializeMode = Copy + _ + Serialize + _ + Mode;
-        public const string MultiSelectRequiresHold = Multi + _ + Selection + _ + Requires + _ + Hold;
-        public const string PreviewColliderOnSelect = Preview + _ + Collider + _ + On + _ + Selection;
+
+        // GameEditorSettings' own keys. Every one of them lives INSIDE one of that model's nine
+        // groups, which is what lets them stay this short - a key only has to be unique among its
+        // siblings, so the group's own name carries the qualifier the flat shape used to spell out
+        // (the old "grid_size" is "grid": { "size" } now). The flat keys these replaced are gone
+        // from here entirely and survive only as literals in GameEditorSettingsV1_0, per the
+        // Versions README: a snapshot must not track current naming.
+
+        public const string MaxFiles = Max + _ + Files;
+        public const string HistoryLength = History + _ + Length;
+        public const string MinSize = Min + _ + Size;
+        public const string MaxSize = Max + _ + Size;
+        public const string MoveSensitivityX = Move + _ + Sensitivity + _ + CoordX;
+        public const string MoveSensitivityY = Move + _ + Sensitivity + _ + CoordY;
+        public const string WheelMultiplier = Wheel + _ + Multiplier;
+        public const string ZoomToMouse = Zoom + _ + Mouse;
+        public const string ActiveDefault = Active + _ + Default;
+        public const string ResetGizmos = Reset + _ + Gizmos;
+        public const string RequiresHold = Requires + _ + Hold;
+        public const string PreviewCollider = Preview + _ + Collider;
         public const string PickInvisibleAABB = Pick + _ + Invisible + _ + AABB;
+        public const string LongPressDelay = Long + _ + Press + _ + Delay;
+        public const string LongPressThreshold = Long + _ + Press + _ + Threshold;
+        public const string ColliderOpacity = Collider + _ + Opacity;
+        public const string ColliderOpacityView = Collider + _ + Opacity + _ + View;
+        public const string SnapThreshold = Snap + _ + Threshold;
+        public const string EdgeHandle = Edge + _ + Handle;
+        public const string LoopGlobal = Loop + _ + Global;
+        public const string LoopLocal = Loop + _ + Local;
+        public const string DirtyFieldDelay = Dirty + _ + Field + _ + Delay;
+        public const string RotationUnit = Rotation + _ + Unit;
+        public const string LogClamps = Log + _ + Clamps;
         public const string RenderInframes = Render + _ + Inframes;
-        public const string GridSize = Grid + _ + Size;
-        public const string GridOpacity = Grid + _ + Opacity;
-        
+
         public const string GameEditor = Game + _ + Editor;
         public const string StatsActive = Stats + _ + Active;
         public const string StatsAlignmentX = Stats + _ + Alignment + _ + CoordX;
@@ -564,7 +598,9 @@
         public const string ScrubTime = Scrub + _ + Time;
         public const string MaxScrubTime = Max + _ + Scrub + _ + Time;
         public const string ReplayStepBudget = Replay + _ + Step + _ + Budget;
+
         public const string FrameStepBudget = Frame + _ + Step + _ + Budget;
+
         // Replaced MaxDiffTime, and the key changed with it: what it measures is no longer "how far
         // audio may drift" but "how far the playhead must JUMP to count as a discontinuity". An old
         // settings.json simply falls back to the default for it, which is the intended outcome - the
@@ -654,11 +690,11 @@
         public const string RenderWhiteBalance = Render + _ + WhiteBalanceShort;
         public const string RenderAnalogGlitch = Render + _ + AnalogGlitchShort;
         public const string RenderDigitalGlitch = Render + _ + DigitalGlitchShort;
-        
+
         public const string ThemeIndex = Theme + _ + Index;
         public const string ThemeId = Theme + _ + Id;
         public const string EffectId = Effect + _ + Id;
-        
+
         public const string CameraEvents = Camera + _ + Events;
         public const string PostProcessingEvents = Post + Processing + _ + Events;
         public const string PlayerEvents = Player + _ + Events;
@@ -677,7 +713,7 @@
         public const string PlayerKeys = Player + _ + Keys;
 
         // Instances
-        
+
         public const string LevelId = Level + _ + Id;
         public const string PrefabId = Prefab + _ + Id;
         public const string AudioId = AudioShort + Id;
@@ -686,26 +722,28 @@
         public const string AudioIdCounter = AudioShort + Id + _ + Counter;
         public const string PrevObjectId = Prev + _ + Id;
         public const string NextObjectId = Next + _ + Id;
+
         public const string ObjectIds = Ids;
+
         // Two shape references on one object, both ShapeId-typed: what is drawn and what is hit.
         // They must stay distinct keys even though the values are interchangeable.
         public const string ShapeId = ShapeShort + Id;
         public const string ColliderId = ColliderShort + Id;
         public const string ShapeName = Shape + _ + Name;
         public const string ParentObjectId = ParentShort + ObjectId;
-        
+
         public const string LocalFrame = Local + _ + Frame;
         public const string LocalFrameShort = LocalShort + FrameShort;
         public const string StopLocalFrame = Stop + _ + LocalFrame;
         public const string HasStopLocalFrame = Has + _ + StopLocalFrame;
         public const string OffsetTime = Offset + _ + Time;
         public const string AudioLayer = Audio + _ + Layer;
-        
+
         public const string EffShape = Eff + _ + Shape;
         public const string EffAngle = Eff + _ + Angle;
         public const string EffScale = Eff + _ + Scale;
         public const string EffColor = Eff + _ + Color;
-        
+
         public const string PrefabIndex = Prefab + _ + Index;
         public const string FontSize = Font + Size;
         public const string WordWrap = Word + Wrap;
@@ -719,7 +757,7 @@
         public const string AppearingMask = Appearing + _ + Mask;
         public const string OverEdge = Over + _ + Edge;
         public const string UnderEdge = Under + _ + Edge;
-        
+
         public const string ResourceType = Resource + _ + Type;
         public const string ResourceId = Resource + _ + Id;
         public const string ResourcesMeta = Resources + _ + Meta;
@@ -732,9 +770,9 @@
         public const string TextResourceId = Text + _ + Res + _ + Id;
         public const string UriType = Uri + _ + Type;
         public const string SublingIndex = Subling + _ + Index;
-        
+
         // Values
-        
+
         public const string AngleA = Angle + _ + ValueA;
         public const string AngleB = Angle + _ + ValueB;
         public const string ColorA = Color + _ + ValueA;
@@ -743,7 +781,7 @@
         public const string CurveY = Curve + _ + CoordY;
         public const string ScaleX = Scale + _ + CoordX;
         public const string ScaleY = Scale + _ + CoordY;
-        
+
         public const string ColorBottom = Color + _ + AlignmentB;
         public const string ColorTop = Color + _ + AlignmentT;
         public const string ColorLeft = Color + _ + AlignmentL;
@@ -757,7 +795,7 @@
         public const string ColorTL = Color + _ + AlignmentTL;
         public const string ColorTM = Color + _ + AlignmentTM;
         public const string ColorTR = Color + _ + AlignmentTR;
-        
+
         public const string MinR = Min + ChannelR;
         public const string MinG = Min + ChannelG;
         public const string MinB = Min + ChannelB;
@@ -766,7 +804,7 @@
         public const string MaxG = Max + ChannelG;
         public const string MaxB = Max + ChannelB;
         public const string MaxA = Max + ChannelA;
-        
+
         public const string MinX = Min + CoordX;
         public const string MinY = Min + CoordY;
         public const string MinZ = Min + CoordZ;
@@ -775,41 +813,41 @@
         public const string MaxY = Max + CoordY;
         public const string MaxZ = Max + CoordZ;
         public const string MaxW = Max + CoordW;
-        
+
         public const string Point1 = PointShort + Num1;
         public const string Point2 = PointShort + Num2;
         public const string Point3 = PointShort + Num3;
-        
+
         public const string WeightedMode = WeightShort + ModeShort;
         public const string TangentMode = TangentShort + ModeShort;
         public const string InTangent = In + _ + TangentShort;
         public const string OutTangent = Out + _ + TangentShort;
         public const string InWeight = In + _ + WeightShort;
         public const string OutWeight = Out + _ + WeightShort;
-        
+
         public const string PreWrapMode = Pre + _ + Wrap + _ + Mode;
         public const string PostWrapMode = Post + _ + Wrap + _ + Mode;
-        
+
         public const string ColorKeys = Color + _ + Keys;
         public const string AlphaKeys = Alpha + _ + Keys;
         public const string ColorSpace = Color + _ + Space;
-        
+
         public const string MinAspect = Min + _ + Aspect;
         public const string MaxAspect = Max + _ + Aspect;
-        
+
         public const string AnchorMin = Anchor + _ + Min;
         public const string AnchorMax = Anchor + _ + Max;
-        
+
         public const string LanguageStrings = Language + _ + Strings;
-        
-        
+
+
         // Effects
-        
+
         public const string ParticleCount = Particle + _ + Count;
         public const string ParticleCollider = Particle + _ + Collider;
         public const string ParticlePivot = Particle + _ + Pivot;
         public const string SpeedRange = Speed + _ + Range;
-        
+
         public const string GravityMin = Gravity + _ + Min;
         public const string GravityMax = Gravity + _ + Max;
         public const string VelocityMin = Velocity + _ + Min;
@@ -822,19 +860,19 @@
         public const string VelocitySpeed = Velocity + _ + Speed;
         public const string VelocityPoint = Velocity + _ + Point;
         public const string LinearForce = Linear + _ + Force;
-        
+
         public const string RadiusMajor = Radius + _ + Major;
         public const string RadiusMinor = Radius + _ + Minor;
         public const string TopRadius = Top + _ + Radius;
         public const string BaseRadius = Base + _ + Radius;
-        
+
         // Audio
-        
+
         public const string StereoPan = Stereo + _ + Pan;
         public const string Lowpass = Low + Pass;
         public const string Highpass = High + Pass;
         public const string PitchShifter = Pitch + Shifter;
-        
+
         public const string MixLevel = Mix + _ + Level;
         public const string DryLevel = Dry + _ + Level;
         public const string DryMix = Dry + Mix;
@@ -860,9 +898,9 @@
         public const string FadeInTime = Fade + _ + In + _ + Time;
         public const string LowestVolume = Lowest + _ + Volume;
         public const string MaximumAmp = Max + _ + Amp;
-        
+
         // Post Processing
-        
+
         public const string ScanLineJitter = Scan + _ + Line + _ + Jitter;
         public const string VerticalJump = Vertical + _ + Jump;
         public const string HorizontalShake = Horizontal + _ + Shake;
@@ -877,9 +915,9 @@
         public const string HighlightColor = Highlight + _ + Color;
         public const string ShadowLimit = Shadow + _ + Limit;
         public const string HighlightLimit = Highlight + _ + Limit;
-        
+
         // Licensing
-        
+
         public const string LicenseName = License + _ + Name;
         public const string LicenseUrl = License + _ + Url;
         public const string LicenseType = License + _ + Type;

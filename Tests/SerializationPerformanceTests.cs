@@ -15,7 +15,7 @@ namespace BH.SDK.Tests
     // one more per Prefab, so a tree per domain was a tree per prefab too.
     //
     // Both formats are measured because the choice between them is an authoring setting
-    // (GameEditorSettings.LevelSerializeMode), and "which is faster on a big level" should be a
+    // (GameEditorSettings.Serialization.LevelMode), and "which is faster on a big level" should be a
     // number somebody can read rather than an assumption.
 
     /// <summary> Guards envelope read/write cost on a level the size of a real, heavy one. </summary>

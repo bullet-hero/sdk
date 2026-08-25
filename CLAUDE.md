@@ -1,4 +1,4 @@
-# CLAUDE.md — bullet-hero-sdk
+﻿# CLAUDE.md — bullet-hero-sdk
 
 This is `bullet-hero-sdk` (root namespace `BH.SDK`), a standalone C# library defining the level/save
 file format for the game Bullet Hero. It's vendored into the main Unity project as a git submodule at
@@ -496,7 +496,7 @@ additive property whose constructor supplies a default needs no snapshot and no 
 `LevelSettings.Seed` and `GameEvents.Beats`. Its alignment pair is two free `[0,1]` floats rather than
 a nine-value enum, because it is the same convention level content is authored in (`0,0` lower-left) —
 the settings screen offers the nine presets, a hand-edited value between them is legal data.
-`GameEditorSettings.GridSize`/`GridOpacity` (the editor's viewport grid — one world unit per cell
+`GameEditorSettings.Grid.Size`/`GridOpacity` (the editor's viewport grid — one world unit per cell
 and a quarter opacity by default, floored at `ValueRules.MinGridSize` and ranged `[0,1]`) shipped the
 same way and are worth reading as the worked example of what belongs here at all: how the grid LOOKS
 is how the author works and is remembered, while whether it is currently drawn is the current view
