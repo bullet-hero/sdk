@@ -43,6 +43,7 @@ namespace BH.SDK.Tests
             "Assets/Code/GameEditor/Tests",
             "Assets/Code/Services/Shared/Tests",
             "Assets/Code/Services/GameEditor/Tests",
+            "Assets/Code/Services/Game/Tests",
             "Assets/Plugins/BulletHeroSDK/Tests",
         };
 

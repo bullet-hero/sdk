@@ -150,6 +150,11 @@ namespace BH.SDK.Tests
             AssertDiffers(a, s => s.Savings.HistoryLength = 64);
             AssertDiffers(a, s => s.Camera.WheelMultiplier = 0.5f);
             AssertDiffers(a, s => s.Player.ResetGizmos = false);
+            AssertDiffers(a, s => s.Player.BotControl = true);
+            AssertDiffers(a, s => s.Player.BotDebug = true);
+            AssertDiffers(a, s => s.Player.BotDebugGrid = false);
+            AssertDiffers(a, s => s.Player.BotDebugTarget = false);
+            AssertDiffers(a, s => s.Player.BotDebugReach = false);
             AssertDiffers(a, s => s.Grid.Opacity = 0.9f);
             AssertDiffers(a, s => s.Selection.LongPressDelay = 1.5f);
             AssertDiffers(a, s => s.Gizmos.Scale = 3f);
@@ -179,6 +184,57 @@ namespace BH.SDK.Tests
             Assert.IsFalse(settings.Selection.PreviewColliderOnSelect);
             Assert.IsFalse(settings.Selection.PickInvisibleAABB);
             Assert.IsFalse(settings.Interface.RenderInframes);
+        }
+
+        // The bot's own two defaults, and they point opposite ways on purpose. BotControl is off
+        // because a preview player that steers itself is a surprise for an author who reached for the
+        // toggle to try a jump by hand. The debug MASTER is off for the same reason, but every part
+        // of it is on: opening the master is meant to show the whole picture at once, and the parts
+        // exist to take pieces of it away again - defaulting them off would make the master do
+        // nothing at all.
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.VeryEasy)]
+        public void Bot_IsOffAndItsDebugMasterIsOff_ButEveryPartOfItIsOn()
+        {
+            var settings = new GameEditorSettings();
+
+            Assert.IsFalse(settings.Player.BotControl);
+            Assert.IsFalse(settings.Player.BotDebug);
+
+            Assert.IsTrue(settings.Player.BotDebugGrid);
+            Assert.IsTrue(settings.Player.BotDebugTarget);
+            Assert.IsTrue(settings.Player.BotDebugReach);
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Easy)]
+        public void Bot_SurvivesCopyPullAndReset()
+        {
+            var source = new GameEditorSettings();
+            source.Player.BotControl = true;
+            source.Player.BotDebug = true;
+            source.Player.BotDebugGrid = false;
+
+            var copy = source.Copy();
+            Assert.IsTrue(copy.Player.BotControl);
+            Assert.IsTrue(copy.Player.BotDebug);
+            Assert.IsFalse(copy.Player.BotDebugGrid);
+
+            var target = new GameEditorSettings();
+            var player = target.Player;
+            target.Pull(source);
+
+            Assert.AreSame(player, target.Player, "Pull keeps the instance the device handed out");
+            Assert.IsTrue(target.Player.BotControl);
+            Assert.IsFalse(target.Player.BotDebugGrid);
+
+            target.Reset();
+            Assert.IsFalse(target.Player.BotControl);
+            Assert.IsTrue(target.Player.BotDebugGrid);
         }
 
         // The grid's opacity is the ONLY part of its colour anyone authors - the hue is the inverse
@@ -221,6 +277,8 @@ namespace BH.SDK.Tests
             settings.GameEditor.Camera.Invert = false;
             settings.GameEditor.Camera.MoveSensitivityX = 2.5f;
             settings.GameEditor.Player.ResetGizmos = false;
+            settings.GameEditor.Player.BotControl = true;
+            settings.GameEditor.Player.BotDebugTarget = false;
             settings.GameEditor.Grid.Size = 0.125f;
             settings.GameEditor.Grid.Opacity = 0.6f;
             settings.GameEditor.Selection.LongPressDelay = 1.25f;
@@ -240,6 +298,8 @@ namespace BH.SDK.Tests
             Assert.IsFalse(editor.Camera.Invert);
             Assert.AreEqual(2.5f, editor.Camera.MoveSensitivityX);
             Assert.IsFalse(editor.Player.ResetGizmos);
+            Assert.IsTrue(editor.Player.BotControl);
+            Assert.IsFalse(editor.Player.BotDebugTarget);
             Assert.AreEqual(0.125f, editor.Grid.Size);
             Assert.AreEqual(0.6f, editor.Grid.Opacity);
             Assert.AreEqual(1.25f, editor.Selection.LongPressDelay);

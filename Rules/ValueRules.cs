@@ -1,4 +1,4 @@
-using BH.SDK.Utils;
+﻿using BH.SDK.Utils;
 
 namespace BH.SDK.Rules
 {
@@ -63,6 +63,13 @@ namespace BH.SDK.Rules
         // order and flicker), so it spends the band rather than sitting on a single value - 10k
         // slots at MinLayerDelta, far above any cap the overlay itself allows.
         public const int MinLayerColliders = 1400;
+
+        // The bot's own diagnostic overlays - its clearance grid, its chosen target, the reach it
+        // believes it has. Above the collider fills because the whole question the grid answers is
+        // "where would the bot rather be than in those", and below the handles like every other
+        // overlay here. It spends the band a slot at a time for the collider fills' reason: the
+        // grid is hundreds of translucent cells, and at an equal z they pick their own order.
+        public const int MinLayerBotDebug = 1450;
 
         public const int MinLayerGizmos = 1500;
 

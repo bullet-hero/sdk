@@ -521,6 +521,9 @@
         public const string Opacity = "opacity";
         public const string Reset = "reset";
         public const string Serialize = "serialize";
+        public const string Bot = "bot";
+        public const string Debug = "debug";
+        public const string Reach = "reach";
         public const string Copy = "copy";
 
         public const string Savings = "savings";
@@ -569,6 +572,10 @@
         public const string ZoomToMouse = Zoom + _ + Mouse;
         public const string ActiveDefault = Active + _ + Default;
         public const string ResetGizmos = Reset + _ + Gizmos;
+        public const string BotDebug = Bot + _ + Debug;
+        public const string BotDebugGrid = Bot + _ + Debug + _ + Grid;
+        public const string BotDebugTarget = Bot + _ + Debug + _ + Target;
+        public const string BotDebugReach = Bot + _ + Debug + _ + Reach;
         public const string RequiresHold = Requires + _ + Hold;
         public const string PreviewCollider = Preview + _ + Collider;
         public const string PickInvisibleAABB = Pick + _ + Invisible + _ + AABB;
