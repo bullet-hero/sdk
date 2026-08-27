@@ -19,6 +19,16 @@ namespace BH.SDK.Models.SettingGroups
     [RuleContainer]
     public class InterfaceSettings : IModel<InterfaceSettings>, IMoveable<InterfaceSettings>
     {
+        // FALSE BY DEFAULT, and that is the whole reason this exists: a death used to be an
+        // unconditional stop into the result window, which is four clicks of chrome between a player
+        // and the retry they already decided on. Off, a lost run rewinds itself to the last
+        // checkpoint (Services.Game's CheckpointService); on, the window is what a player who wants
+        // to read the outcome, change a setting or leave gets.
+
+        /// <summary> Whether losing a run opens the result window instead of respawning. </summary>
+        [JsonProperty(Names.OpenMenuOnLose)]
+        public bool OpenMenuOnLose { get; set; }
+
         /// <summary> Whether the statistics overlay is drawn at all. </summary>
         [JsonProperty(Names.StatsActive)]
         public bool StatsActive { get; set; }
@@ -37,28 +47,33 @@ namespace BH.SDK.Models.SettingGroups
 
         public InterfaceSettings()
         {
+            OpenMenuOnLose = false;
             StatsActive = false;
             StatsAlignmentX = 0f;
             StatsAlignmentY = 1f;
         }
-        public InterfaceSettings(bool statsActive, float statsAlignmentX, float statsAlignmentY)
+        public InterfaceSettings(bool openMenuOnLose, bool statsActive,
+            float statsAlignmentX, float statsAlignmentY)
         {
+            OpenMenuOnLose = openMenuOnLose;
             StatsActive = statsActive;
             StatsAlignmentX = statsAlignmentX;
             StatsAlignmentY = statsAlignmentY;
         }
         public void Reset()
         {
+            OpenMenuOnLose = false;
             StatsActive = false;
             StatsAlignmentX = 0f;
             StatsAlignmentY = 1f;
         }
 
         public object Clone() => Copy();
-        public InterfaceSettings Copy() => new(StatsActive, StatsAlignmentX, StatsAlignmentY);
+        public InterfaceSettings Copy() => new(OpenMenuOnLose, StatsActive, StatsAlignmentX, StatsAlignmentY);
 
         public void Pull(InterfaceSettings source)
         {
+            OpenMenuOnLose = source.OpenMenuOnLose;
             StatsActive = source.StatsActive;
             StatsAlignmentX = source.StatsAlignmentX;
             StatsAlignmentY = source.StatsAlignmentY;
@@ -66,19 +81,22 @@ namespace BH.SDK.Models.SettingGroups
 
         public void Update(InterfaceSettings src)
         {
+            OpenMenuOnLose = src.OpenMenuOnLose;
             StatsActive = src.StatsActive;
             StatsAlignmentX = src.StatsAlignmentX;
             StatsAlignmentY = src.StatsAlignmentY;
         }
 
-        public override int GetHashCode() => HashCode.Combine(StatsActive, StatsAlignmentX, StatsAlignmentY);
+        public override int GetHashCode() =>
+            HashCode.Combine(OpenMenuOnLose, StatsActive, StatsAlignmentX, StatsAlignmentY);
         public override bool Equals(object obj) => obj is InterfaceSettings value && Equals(value);
 
         public bool Equals(InterfaceSettings other)
         {
             if (other is null) return false;
             if (ReferenceEquals(this, other)) return true;
-            return StatsActive == other.StatsActive
+            return OpenMenuOnLose == other.OpenMenuOnLose
+                   && StatsActive == other.StatsActive
                    && StatsAlignmentX.Equals(other.StatsAlignmentX)
                    && StatsAlignmentY.Equals(other.StatsAlignmentY);
         }

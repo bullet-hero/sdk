@@ -541,6 +541,9 @@
         public const string Clamps = "clamps";
         public const string Log = "log";
         public const string Unit = "unit";
+        public const string Open = "open";
+        public const string Menu = "menu";
+        public const string Lose = "lose";
 
         private const string _ = "_";
 
@@ -593,6 +596,7 @@
         public const string RenderInframes = Render + _ + Inframes;
 
         public const string GameEditor = Game + _ + Editor;
+        public const string OpenMenuOnLose = Open + _ + Menu + _ + On + _ + Lose;
         public const string StatsActive = Stats + _ + Active;
         public const string StatsAlignmentX = Stats + _ + Alignment + _ + CoordX;
         public const string StatsAlignmentY = Stats + _ + Alignment + _ + CoordY;

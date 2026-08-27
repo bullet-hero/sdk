@@ -519,8 +519,11 @@ for the reason `KeyBindingMask`'s own header gives, and the consumer resolves th
 the same as an absent key ("the player never touched it"). It shipped additively like everything else
 here, so `UserSettings` stays at `(1, 0)`.
 
-`InterfaceSettings` is the newest of them (the game's own overlays — today the diagnostics readout's
-`StatsActive` + `StatsAlignmentX`/`Y`) and shipped **without bumping the `UserSettings` domain**: an
+`InterfaceSettings` is the newest of them (the game's own overlays — the diagnostics readout's
+`StatsActive` + `StatsAlignmentX`/`Y`, plus `OpenMenuOnLose`, which is a BEHAVIOUR rather than an
+overlay: off — the default — a lost run rewinds itself to the last checkpoint it reached instead of
+opening the result window, see root `CLAUDE.md`, "Checkpoints") and shipped **without bumping the
+`UserSettings` domain**: an
 additive property whose constructor supplies a default needs no snapshot and no migrator, exactly like
 `LevelSettings.Seed` and `GameEvents.Beats`. Its alignment pair is two free `[0,1]` floats rather than
 a nine-value enum, because it is the same convention level content is authored in (`0,0` lower-left) —
