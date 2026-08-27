@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Rules.Attributes;
 using Newtonsoft.Json;
@@ -15,6 +15,14 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
     // where that lives for the same reason: which of the two the author wants is how they work, not
     // what they happen to be looking at, so it is remembered rather than being session state (the
     // same split the viewport grid's size and its visibility already have).
+    //
+    // IT IS A BOOL RATHER THAN A CHOICE OF BOT, and that is a statement about this screen rather
+    // than a simplification. A bot here is a way of watching the level you are editing play itself,
+    // so the only one that fits is the one that needs no preparation and survives a scrub - the
+    // reflex bot. A baked bot has nothing to replay while the level is being changed under it.
+    // Offering the choice here would be offering an option with one correct answer, so the editor
+    // picks the bot (EditorAvatarService) and the author picks whether there is one. A RUN is where
+    // the choice belongs, and LevelPlayerInfo.Bot is where it lives.
 
     /// <summary>
     /// How the editor's preview player behaves when it is switched on.

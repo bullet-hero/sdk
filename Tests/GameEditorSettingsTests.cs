@@ -208,6 +208,21 @@ namespace BH.SDK.Tests
             Assert.IsTrue(settings.Player.BotDebugReach);
         }
 
+        // BOTKIND.NONE MUST BE ZERO, and that is a contract rather than a style rule. Nothing in
+        // UserSettings stores a BotKind - the editor's preview player is a bool above, since only the
+        // reflex bot fits that screen - so what depends on the zero is every OTHER default: a
+        // LevelPlayerInfo that was never filled in, and a launch that says nothing about a bot. Both
+        // have to read as "the player steers", and both get there through default(BotKind).
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.VeryEasy)]
+        public void BotKind_NoneIsZero()
+        {
+            Assert.AreEqual(0, (byte)BotKind.None);
+            Assert.AreEqual(BotKind.None, default(BotKind));
+        }
+
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
