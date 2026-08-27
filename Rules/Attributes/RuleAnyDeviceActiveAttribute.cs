@@ -11,7 +11,7 @@ namespace BH.SDK.Rules.Attributes
     // refuses to clear the last checkbox and settings load falls back to platform defaults, but neither
     // helps a hand-edited or foreign file - which is exactly what validation is for.
     //
-    // A class rule rather than a property one because the invariant spans seven properties: six device
+    // A class rule rather than a property one because the invariant spans five properties: four device
     // groups and the priority order the fix picks from.
 
     /// <summary>

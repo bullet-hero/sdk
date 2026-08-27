@@ -8,7 +8,7 @@ using NUnit.Framework;
 namespace BH.SDK.Tests.Rules
 {
     // The one rule here whose fixture is a real model rather than a throwaway one: the invariant is
-    // about ControlsSettings' own six device groups, and a stand-in class would prove nothing about the
+    // about ControlsSettings' own four device groups, and a stand-in class would prove nothing about the
     // type that actually ships. AssertHasIssue rather than AssertInvalid for the same reason - a real
     // aggregate may raise other issues, and this test is about this rule firing at all.
 

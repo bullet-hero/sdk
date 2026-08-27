@@ -113,6 +113,35 @@ alive so `GamePlayer`'s jobs can re-roll randomness every frame instead of freez
   (`Encode`/`TryDecode`), and `Build` producing the geometry in pure C#. The consuming project only
   bakes what this enumerates. Read its header before touching the id layout — the six rules there
   are what make a future axis free and an inserted side count harmless.
+  Finally `Controls/` (`ControlDeviceCatalog`/`ControlDeviceInfo`) — the STATIC per-device facts,
+  here rather than in the settings tree because they are not the player's to change and **must not
+  survive a file**: a saved "this device supports Relative" would still claim so after the build
+  stopped supporting it. The matrix is deliberately uniform today (all four devices do all three
+  modes, so `SupportedModes` reads `All` everywhere); the mask exists anyway, as the only place a
+  future device that genuinely cannot do one — a pedal, a wheel, a MIDI pad — could say so
+  without every consumer growing a special case.
+- **Publishing/** — **the third validation pass, and the only one that asks a question about the
+  outside world.** `RuleAnalyzer` asks whether a value is in range; `LevelGraphAnalyzer` asks whether
+  the objects agree with each other; `PublishReadinessAnalyzer` asks whether the level may be handed
+  to strangers — which nothing in the file can answer alone, only the file plus a service's policy.
+  Like the graph findings, **nothing here repairs anything**: naming a license nobody read, or
+  crediting an author nobody identified, would be the analyzer inventing the very paperwork it exists
+  to demand. The level file itself is OPTIONAL to the pass, by design — `metadata.json` carries the
+  attribution, so readiness can be graded without opening the content.
+  - `PublishProfile` is **the policy as DATA**, which is the whole design: every service a level can
+    reach (Steam Workshop, the official server, a community one, a store build's own catalogue)
+    wants a different answer to the same handful of questions, and those answers change over the
+    years while the code does not. Adding a service means writing a file; adding a store means
+    shipping a stricter one. **Which typical licenses are acceptable lives here and only here** —
+    it reads like a property of the license and is a property of the receiving service.
+  - `TrustedSourceCatalog`/`TrustedSource`/`SourceTrust` are the site list `UGC-LICENSING-POLICY.md`
+    writes out in prose, as data — the document stays the human-readable version and this is what
+    code grades against, **so the two are edited together**. A starting roster, not a fixed one:
+    every operator is expected to override it, and nothing downstream may assume an entry is
+    present. Streaming platforms are listed as `NotAllowed` rather than omitted, since an absent
+    site grades differently from a refused one.
+  - `PublishIssue`/`PublishRule`/`PublishPayload`/`PublishReadinessReport` are the finding shapes.
+
 - **Generators/** — authoring automation: a generator produces level content from a few parameters.
   Non-generic `IGenerator` root (so `GeneratorRegistry`'s reflection scan and a reflection-built
   form are possible) split into `ILevelGenerator` (builds a whole `Level`+`LevelMeta`) and

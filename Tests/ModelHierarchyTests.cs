@@ -188,7 +188,7 @@ namespace BH.SDK.Tests
         // Resource, BaseGraphicsSettings and BaseDeviceControlsSettings all declare an ABSTRACT
         // Copy() while their Update/Pull are concrete, so these are the three places where the base
         // half is only reachable through base.Update/base.Pull - a subclass that forgets the call
-        // silently stops carrying Sources / Render / the six device fields.
+        // silently stops carrying Sources / Render / the four device fields.
 
         [Test]
         [Author(Metadata.Author.Vertoker)]
