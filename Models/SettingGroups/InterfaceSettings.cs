@@ -1,4 +1,5 @@
 ﻿using System;
+using BH.SDK.Models.Enums.Settings;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Rules.Attributes;
 using Newtonsoft.Json;
@@ -45,31 +46,43 @@ namespace BH.SDK.Models.SettingGroups
         [RuleInRange(0f, 1f)]
         public float StatsAlignmentY { get; set; }
 
+        /// <summary> What the main menu draws behind its buttons. </summary>
+        [JsonProperty(Names.MenuBackground)]
+        [RuleEnumValid]
+        public MenuBackgroundKind MenuBackground { get; set; }
+
         public InterfaceSettings()
         {
             OpenMenuOnLose = false;
             StatsActive = false;
             StatsAlignmentX = 0f;
             StatsAlignmentY = 1f;
+            MenuBackground = MenuBackgroundKind.Bot;
         }
+
         public InterfaceSettings(bool openMenuOnLose, bool statsActive,
-            float statsAlignmentX, float statsAlignmentY)
+            float statsAlignmentX, float statsAlignmentY, MenuBackgroundKind menuBackground)
         {
             OpenMenuOnLose = openMenuOnLose;
             StatsActive = statsActive;
             StatsAlignmentX = statsAlignmentX;
             StatsAlignmentY = statsAlignmentY;
+            MenuBackground = menuBackground;
         }
+
         public void Reset()
         {
             OpenMenuOnLose = false;
             StatsActive = false;
             StatsAlignmentX = 0f;
             StatsAlignmentY = 1f;
+            MenuBackground = MenuBackgroundKind.Bot;
         }
 
         public object Clone() => Copy();
-        public InterfaceSettings Copy() => new(OpenMenuOnLose, StatsActive, StatsAlignmentX, StatsAlignmentY);
+
+        public InterfaceSettings Copy() =>
+            new(OpenMenuOnLose, StatsActive, StatsAlignmentX, StatsAlignmentY, MenuBackground);
 
         public void Pull(InterfaceSettings source)
         {
@@ -77,6 +90,7 @@ namespace BH.SDK.Models.SettingGroups
             StatsActive = source.StatsActive;
             StatsAlignmentX = source.StatsAlignmentX;
             StatsAlignmentY = source.StatsAlignmentY;
+            MenuBackground = source.MenuBackground;
         }
 
         public void Update(InterfaceSettings src)
@@ -85,10 +99,12 @@ namespace BH.SDK.Models.SettingGroups
             StatsActive = src.StatsActive;
             StatsAlignmentX = src.StatsAlignmentX;
             StatsAlignmentY = src.StatsAlignmentY;
+            MenuBackground = src.MenuBackground;
         }
 
         public override int GetHashCode() =>
-            HashCode.Combine(OpenMenuOnLose, StatsActive, StatsAlignmentX, StatsAlignmentY);
+            HashCode.Combine(OpenMenuOnLose, StatsActive, StatsAlignmentX, StatsAlignmentY, MenuBackground);
+
         public override bool Equals(object obj) => obj is InterfaceSettings value && Equals(value);
 
         public bool Equals(InterfaceSettings other)
@@ -98,7 +114,8 @@ namespace BH.SDK.Models.SettingGroups
             return OpenMenuOnLose == other.OpenMenuOnLose
                    && StatsActive == other.StatsActive
                    && StatsAlignmentX.Equals(other.StatsAlignmentX)
-                   && StatsAlignmentY.Equals(other.StatsAlignmentY);
+                   && StatsAlignmentY.Equals(other.StatsAlignmentY)
+                   && MenuBackground == other.MenuBackground;
         }
     }
 }

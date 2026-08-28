@@ -42,6 +42,7 @@ namespace BH.SDK.Tests
             "Assets/Code/GamePlayer/Tests",
             "Assets/Code/GameEditor/Tests",
             "Assets/Code/Services/Shared/Tests",
+            "Assets/Code/Services/Menu/Tests",
             "Assets/Code/Services/GameEditor/Tests",
             "Assets/Code/Services/Game/Tests",
             "Assets/Code/Services/Root/Tests",

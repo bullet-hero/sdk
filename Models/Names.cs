@@ -600,6 +600,7 @@
         public const string StatsActive = Stats + _ + Active;
         public const string StatsAlignmentX = Stats + _ + Alignment + _ + CoordX;
         public const string StatsAlignmentY = Stats + _ + Alignment + _ + CoordY;
+        public const string MenuBackground = Menu + _ + Background;
         public const string FramerateTarget = Framerate + _ + Target;
         public const string FixedFramerate = Fixed + _ + Framerate;
         public const string RenderEffects = Render + _ + Effects;
