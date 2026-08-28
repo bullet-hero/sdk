@@ -25,6 +25,10 @@ namespace BH.SDK.Versions
         // Services
         public const string PublishProfile = nameof(Publishing.PublishProfile);
 
+        // Statistics
+        public const string GameStatistics = nameof(Models.Statistics.GameStatistics);
+        public const string LevelStatistics = nameof(Models.Statistics.LevelStatistics);
+
         // GameLevel
         public const string GameEvents = nameof(Models.Game.GameEvents);
         public const string CameraEvents = nameof(Models.Game.CameraEvents);

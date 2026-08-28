@@ -553,6 +553,57 @@
         public const string Menu = "menu";
         public const string Lose = "lose";
 
+        // Statistics
+
+        public const string Statistics = "stats";
+        public const string Screens = "screens";
+        public const string Totals = "totals";
+        public const string Streaks = "streaks";
+        public const string Devices = "devices";
+        public const string Difficulty = "difficulty";
+        public const string Records = "records";
+        public const string Best = "best";
+        public const string Bucket = "bucket";
+        public const string Attempts = "attempts";
+        public const string Clears = "clears";
+        public const string Deaths = "deaths";
+        public const string Hits = "hits";
+        public const string Dashes = "dashes";
+        public const string Quits = "quits";
+        public const string Restarts = "restarts";
+        public const string Sessions = "sessions";
+        public const string Launches = "launches";
+        public const string Distance = "distance";
+        public const string Distinct = "distinct";
+        public const string Simulated = "simulated";
+        public const string Opens = "opens";
+        public const string Saves = "saves";
+        public const string Autosaves = "autosaves";
+        public const string Operations = "operations";
+        public const string Created = "created";
+        public const string Deleted = "deleted";
+        public const string Utc = "utc";
+        public const string First = "first";
+        public const string Last = "last";
+        public const string Real = "real";
+        public const string Left = "left";
+        public const string Edit = "edit";
+        public const string Edited = "edited";
+        public const string Played = "played";
+        public const string Cleared = "cleared";
+        public const string Loading = "loading";
+        public const string App = "app";
+        public const string Lives = "lives";
+        public const string Centi = "centi";
+        public const string Before = "before";
+        public const string Moved = "moved";
+        public const string Seconds = "seconds";
+        public const string Avatar = "avatar";
+        public const string Frames = "frames";
+        public const string Generators = "generators";
+        public const string Ran = "ran";
+        public const string Runs = "runs";
+
         private const string _ = "_";
 
         // ---------------------------------------------------------------------------------------------
@@ -982,5 +1033,59 @@
         public const string MaxResourceBytes = Max + _ + Resource + _ + Bytes;
         public const string MaxDataFileBytes = Max + _ + Data + _ + Bytes;
         public const string MaxTotalBytes = Max + _ + Total + _ + Bytes;
+
+        // Statistics
+
+        public const string FirstPlayedUtc = First + _ + Played + _ + Utc;
+        public const string LastPlayedUtc = Last + _ + Played + _ + Utc;
+        public const string FirstClearUtc = First + _ + Cleared + _ + Utc;
+        public const string LastEditedUtc = Last + _ + Edited + _ + Utc;
+        public const string TimeUtc = Time + _ + Utc;
+
+        public const string RealSeconds = Real + _ + Seconds;
+        public const string AppSeconds = App + _ + Seconds;
+        public const string EditSeconds = Edit + _ + Seconds;
+        public const string MenuSeconds = Menu + _ + Seconds;
+        public const string GameSeconds = Game + _ + Seconds;
+        public const string EditorSeconds = Editor + _ + Seconds;
+        public const string LoadingSeconds = Loading + _ + Seconds;
+
+        public const string AppLaunches = App + _ + Launches;
+        public const string CheckpointRestarts = Checkpoints + _ + Restarts;
+
+        public const string BestFrame = Best + _ + Frame;
+        public const string BestProgress = Best + _ + Progress;
+        public const string LivesLeft = Lives + _ + Left;
+        public const string SpeedCenti = Speed + _ + Centi;
+
+        public const string DeathsByBucket = Deaths + _ + Bucket;
+        public const string HitsByBucket = Hits + _ + Bucket;
+        public const string DeathsByCheckpoint = Deaths + _ + Checkpoints;
+        public const string DeathsBeforeCheckpoint = Deaths + _ + Before + _ + Checkpoints;
+        public const string BucketFrameDuration = Bucket + _ + Frame + _ + Duration;
+
+        public const string DistinctLevelsPlayed = Distinct + _ + Played;
+        public const string DistinctLevelsCleared = Distinct + _ + Cleared;
+        public const string FramesSimulated = Frames + _ + Simulated;
+
+        public const string CurrentClearStreak = Clears + _ + Streaks;
+        public const string LongestClearStreak = Max + _ + Clears + _ + Streaks;
+        public const string MostPlayedLevelId = Max + _ + Played + _ + Level;
+        public const string MostPlayedAttempts = Max + _ + Played + _ + Attempts;
+        public const string LastPlayedLevelId = Last + _ + Played + _ + Level;
+
+        public const string TotalDashes = Total + _ + Dashes;
+        public const string TotalDistanceMoved = Distance + _ + Moved;
+
+        public const string LevelsCreated = Level + _ + Created;
+        public const string LevelsDeleted = Level + _ + Deleted;
+        public const string ObjectsCreated = Objects + _ + Created;
+        public const string GeneratorsRun = Generators + _ + Ran;
+        public const string TotalResources = Total + _ + Resources;
+
+        public const string KeyboardMouseSeconds = KeyboardMouse + _ + Seconds;
+        public const string TouchscreenSeconds = Touchscreen + _ + Seconds;
+        public const string GamepadSeconds = Gamepad + _ + Seconds;
+        public const string DeviceGyroSeconds = Gyro + _ + Seconds;
     }
 }

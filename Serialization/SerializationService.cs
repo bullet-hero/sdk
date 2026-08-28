@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using BH.SDK.Models.Primitives;
+using BH.SDK.Models.Statistics;
 using BH.SDK.Serialization.Converters;
 using BH.SDK.Serialization.Converters.Base;
 using BH.SDK.Serialization.Converters.CustomTypes;
@@ -98,7 +99,15 @@ namespace BH.SDK.Serialization
                 new DictionaryPrefabsConverter(),
                 new DictionaryModificationsConverter(),
                 new DictionaryCachedFontTextsConverter(),
+                new DictionaryCheckpointDeathsConverter(),
                 new DictionaryAsPairListConverter<ObjectId, ObjectId>(),
+
+                // The pair form rather than the key-from-value one above, because BestRun carries
+                // none of the four numbers RunProfile is made of - a record is filed under the
+                // conditions it was set under, and repeating them inside the record would be a
+                // second copy with nothing keeping the two in agreement. RunProfile is also a
+                // value type with no TypeConverter, so Newtonsoft's own dictionary path throws.
+                new DictionaryAsPairListConverter<RunProfile, BestRun>(),
 
                 new PrimitiveIntConverter(),
                 new PrimitiveGuidConverter(),

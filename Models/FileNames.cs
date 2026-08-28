@@ -41,6 +41,16 @@
 
         public const string ReportsDirectory = "reports";
 
+        // A SIBLING OF levels/, LIKE backups/, AND FOR THE SAME REASON: what is in here describes the
+        // PLAYER rather than the level, so it must survive the level folder being zipped, shared,
+        // re-imported or deleted. A per-level file is named by the level's own LevelId - the one
+        // identifier a rename, a translation or a folder move cannot change, and the one LevelMeta
+        // already declares that scores and progress attach to.
+        public const string StatisticsDirectory = "stats";
+
+        /// <summary> The player's device-wide statistics, beside the per-level files. </summary>
+        public const string StatisticsFileName = "statistics.json";
+
         // A protected level is level.json.gpg, and the inner extension stays in the name on purpose:
         // it is what gpg itself does (`gpg -c level.json` writes level.json.gpg), and it answers
         // "which SerializationType is this" without a header byte or a guess. Appended, never
