@@ -63,6 +63,16 @@ namespace BH.SDK.Models.SettingGroups
         [JsonProperty(Names.Textures)]
         public TexturesGraphicsSettings Textures { get; set; }
 
+        // Additive on the same terms Textures was, and it does not bump the domain either. This one
+        // is the group that has no effect at all on mobile - a phone has one window and it is the
+        // screen - which is why it is disabled rather than hidden on the settings screen, and why
+        // nothing here resolves per platform: a desktop honours all of it and a phone honours none.
+
+        /// <summary> Window mode, window resolution and render scale. Desktop only. </summary>
+        [RuleNotNull]
+        [JsonProperty(Names.Display)]
+        public DisplayGraphicsSettings Display { get; set; }
+
         public GraphicsSettings()
         {
             FramerateTarget = FramerateTarget.ScreenHz;
@@ -72,12 +82,13 @@ namespace BH.SDK.Models.SettingGroups
             PostProcessing = new PostProcessingGraphicsSettings();
             AntiAliasing = new AntiAliasingGraphicsSettings();
             Textures = new TexturesGraphicsSettings();
+            Display = new DisplayGraphicsSettings();
         }
 
         public GraphicsSettings(FramerateTarget framerateTarget, int fixedFramerate,
             AudioGraphicsSettings audio, EffectsGraphicsSettings effects,
             PostProcessingGraphicsSettings postProcessing, AntiAliasingGraphicsSettings antiAliasing,
-            TexturesGraphicsSettings textures)
+            TexturesGraphicsSettings textures, DisplayGraphicsSettings display)
         {
             FramerateTarget = framerateTarget;
             FixedFramerate = fixedFramerate;
@@ -86,6 +97,7 @@ namespace BH.SDK.Models.SettingGroups
             PostProcessing = postProcessing;
             AntiAliasing = antiAliasing;
             Textures = textures;
+            Display = display;
         }
 
         public void Reset()
@@ -97,13 +109,14 @@ namespace BH.SDK.Models.SettingGroups
             PostProcessing.Reset();
             AntiAliasing.Reset();
             Textures.Reset();
+            Display.Reset();
         }
 
         public object Clone() => Copy();
 
         public GraphicsSettings Copy() => new(FramerateTarget, FixedFramerate, (AudioGraphicsSettings)Audio.Clone(),
             (EffectsGraphicsSettings)Effects.Clone(), (PostProcessingGraphicsSettings)PostProcessing.Clone(),
-            AntiAliasing.Copy(), Textures.Copy());
+            AntiAliasing.Copy(), Textures.Copy(), Display.Copy());
 
         public void Pull(GraphicsSettings source)
         {
@@ -114,6 +127,7 @@ namespace BH.SDK.Models.SettingGroups
             PostProcessing.Pull(source.PostProcessing);
             AntiAliasing.Pull(source.AntiAliasing);
             Textures.Pull(source.Textures);
+            Display.Pull(source.Display);
         }
 
         public void Update(GraphicsSettings src)
@@ -125,12 +139,13 @@ namespace BH.SDK.Models.SettingGroups
             PostProcessing = (PostProcessingGraphicsSettings)src.PostProcessing.Clone();
             AntiAliasing = src.AntiAliasing.Copy();
             Textures = src.Textures.Copy();
+            Display = src.Display.Copy();
         }
 
         public override bool Equals(object obj) => obj is GraphicsSettings value && Equals(value);
 
         public override int GetHashCode() => HashCode.Combine((int)FramerateTarget,
-            FixedFramerate, Audio, Effects, PostProcessing, AntiAliasing, Textures);
+            FixedFramerate, Audio, Effects, PostProcessing, AntiAliasing, Textures, Display);
 
         public bool Equals(GraphicsSettings other)
         {
@@ -142,7 +157,8 @@ namespace BH.SDK.Models.SettingGroups
                    && Effects.Equals(other.Effects)
                    && PostProcessing.Equals(other.PostProcessing)
                    && AntiAliasing.Equals(other.AntiAliasing)
-                   && Textures.Equals(other.Textures);
+                   && Textures.Equals(other.Textures)
+                   && Display.Equals(other.Display);
         }
     }
 }

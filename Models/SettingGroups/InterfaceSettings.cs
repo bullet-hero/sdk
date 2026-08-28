@@ -51,6 +51,45 @@ namespace BH.SDK.Models.SettingGroups
         [RuleEnumValid]
         public MenuBackgroundKind MenuBackground { get; set; }
 
+        // THE SHELL'S ORIENTATION, NOT THE GAME'S. A running level's own LevelSettings.Orientation
+        // outranks this for as long as it is running, so a player who finds their setting apparently
+        // ignored inside a level is seeing the level win, which is by design. Core's OrientationMath
+        // is the only place that ladder is written down.
+        //
+        // Honoured on phones only. On desktop nothing rotates, so the setting is not applied and the
+        // settings screen shows the window's MEASURED orientation there instead - the stored value
+        // below is left untouched rather than overwritten, so a value chosen on a phone survives the
+        // same account opening the game on a PC.
+
+        /// <summary> Which way round the player asked the device to hold this game. </summary>
+        [JsonProperty(Names.ScreenOrientation)]
+        [RuleEnumValid]
+        public ScreenOrientationLock ScreenOrientation { get; set; }
+
+        // WHAT IS DRAWN, NEVER WHAT IS THERE. All three hide the HUD visually and leave it exactly
+        // as functional: the pause button still takes a press where it always sat, so a player who
+        // hid it for a clean screen or for a recording has not also lost the way out of a run. That
+        // is the whole contract, and it decides the implementation on the other side - opacity, not
+        // display or visibility, since both of those stop an element being picked at all.
+        //
+        // TRUE BY DEFAULT, all three, so a settings file written before them reads back as the HUD
+        // the game already had. Like MenuBackgroundKind.Bot and ScreenOrientationLock.Horizontal,
+        // the default is the behaviour rather than the zero value - which is what makes them
+        // additive with no DataVersion bump and no migrator.
+
+        /// <summary> Whether the run progress bar is drawn. </summary>
+        [JsonProperty(Names.ShowGameProgress)]
+        public bool ShowGameProgress { get; set; }
+
+        /// <summary> Whether the pause button is drawn. It stays pressable either way. </summary>
+        [JsonProperty(Names.ShowGamePause)]
+        public bool ShowGamePause { get; set; }
+
+        /// <summary> The master switch over the other two, and over the on-screen touch controls
+        /// with them: off, the game screen draws nothing at all. </summary>
+        [JsonProperty(Names.ShowGameInterface)]
+        public bool ShowGameInterface { get; set; }
+
         public InterfaceSettings()
         {
             OpenMenuOnLose = false;
@@ -58,16 +97,30 @@ namespace BH.SDK.Models.SettingGroups
             StatsAlignmentX = 0f;
             StatsAlignmentY = 1f;
             MenuBackground = MenuBackgroundKind.Bot;
+            ScreenOrientation = ScreenOrientationLock.Horizontal;
+            ShowGameProgress = true;
+            ShowGamePause = true;
+            ShowGameInterface = true;
         }
 
+        // THE THREE HUD FLAGS ARE NOT PARAMETERS, and that is deliberate: adding one here is a
+        // source break for every caller, and LevelSettings.Seed already set the precedent of
+        // taking the object-initializer route in Copy instead. They are defaulted here as well as
+        // in the parameterless constructor, so the two agree - a value built through this one and
+        // a freshly defaulted one have to compare equal.
         public InterfaceSettings(bool openMenuOnLose, bool statsActive,
-            float statsAlignmentX, float statsAlignmentY, MenuBackgroundKind menuBackground)
+            float statsAlignmentX, float statsAlignmentY, MenuBackgroundKind menuBackground,
+            ScreenOrientationLock screenOrientation)
         {
             OpenMenuOnLose = openMenuOnLose;
             StatsActive = statsActive;
             StatsAlignmentX = statsAlignmentX;
             StatsAlignmentY = statsAlignmentY;
             MenuBackground = menuBackground;
+            ScreenOrientation = screenOrientation;
+            ShowGameProgress = true;
+            ShowGamePause = true;
+            ShowGameInterface = true;
         }
 
         public void Reset()
@@ -77,12 +130,22 @@ namespace BH.SDK.Models.SettingGroups
             StatsAlignmentX = 0f;
             StatsAlignmentY = 1f;
             MenuBackground = MenuBackgroundKind.Bot;
+            ScreenOrientation = ScreenOrientationLock.Horizontal;
+            ShowGameProgress = true;
+            ShowGamePause = true;
+            ShowGameInterface = true;
         }
 
         public object Clone() => Copy();
 
         public InterfaceSettings Copy() =>
-            new(OpenMenuOnLose, StatsActive, StatsAlignmentX, StatsAlignmentY, MenuBackground);
+            new(OpenMenuOnLose, StatsActive, StatsAlignmentX, StatsAlignmentY, MenuBackground,
+                ScreenOrientation)
+            {
+                ShowGameProgress = ShowGameProgress,
+                ShowGamePause = ShowGamePause,
+                ShowGameInterface = ShowGameInterface,
+            };
 
         public void Pull(InterfaceSettings source)
         {
@@ -91,6 +154,10 @@ namespace BH.SDK.Models.SettingGroups
             StatsAlignmentX = source.StatsAlignmentX;
             StatsAlignmentY = source.StatsAlignmentY;
             MenuBackground = source.MenuBackground;
+            ScreenOrientation = source.ScreenOrientation;
+            ShowGameProgress = source.ShowGameProgress;
+            ShowGamePause = source.ShowGamePause;
+            ShowGameInterface = source.ShowGameInterface;
         }
 
         public void Update(InterfaceSettings src)
@@ -100,10 +167,17 @@ namespace BH.SDK.Models.SettingGroups
             StatsAlignmentX = src.StatsAlignmentX;
             StatsAlignmentY = src.StatsAlignmentY;
             MenuBackground = src.MenuBackground;
+            ScreenOrientation = src.ScreenOrientation;
+            ShowGameProgress = src.ShowGameProgress;
+            ShowGamePause = src.ShowGamePause;
+            ShowGameInterface = src.ShowGameInterface;
         }
 
+        // Nested because HashCode.Combine takes eight arguments and there are nine values.
         public override int GetHashCode() =>
-            HashCode.Combine(OpenMenuOnLose, StatsActive, StatsAlignmentX, StatsAlignmentY, MenuBackground);
+            HashCode.Combine(OpenMenuOnLose, StatsActive, StatsAlignmentX, StatsAlignmentY,
+                MenuBackground, ScreenOrientation,
+                HashCode.Combine(ShowGameProgress, ShowGamePause, ShowGameInterface));
 
         public override bool Equals(object obj) => obj is InterfaceSettings value && Equals(value);
 
@@ -115,7 +189,11 @@ namespace BH.SDK.Models.SettingGroups
                    && StatsActive == other.StatsActive
                    && StatsAlignmentX.Equals(other.StatsAlignmentX)
                    && StatsAlignmentY.Equals(other.StatsAlignmentY)
-                   && MenuBackground == other.MenuBackground;
+                   && MenuBackground == other.MenuBackground
+                   && ScreenOrientation == other.ScreenOrientation
+                   && ShowGameProgress == other.ShowGameProgress
+                   && ShowGamePause == other.ShowGamePause
+                   && ShowGameInterface == other.ShowGameInterface;
         }
     }
 }

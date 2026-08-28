@@ -1,4 +1,5 @@
 ﻿using System;
+using BH.SDK.Models.Enums.Settings;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Models.Primitives;
 using BH.SDK.Rules;
@@ -53,6 +54,20 @@ namespace BH.SDK.Models.SettingGroups
         [JsonProperty(Names.Seed)]
         public int Seed { get; set; }
 
+        // Horizontal is the DEFAULT even though NotSpecified is the zero value, and that is what
+        // makes this field additive AND safe at once: every level authored before it existed reads
+        // back as Horizontal, which is how the game already played it. A NotSpecified default would
+        // have opted every existing level into a portrait screen its content was never composed for.
+        //
+        // It outranks the player's own UserSettings.Interface.ScreenOrientation for as long as this
+        // level is running, and it is honoured on phones only - nothing rotates a monitor, so on
+        // desktop a vertical level simply plays inside pillarbox bars.
+
+        /// <summary> The orientation this level is composed for. </summary>
+        [RuleEnumValid]
+        [JsonProperty(Names.Orientation)]
+        public LevelOrientation Orientation { get; set; }
+
         public ObjectId GetNextObjectId() => new(ObjectIdCounter++);
         public AudioId GetNextAudioId() => new(AudioIdCounter++);
 
@@ -63,6 +78,7 @@ namespace BH.SDK.Models.SettingGroups
             ObjectIdCounter = ObjectId.MinLevelValue;
             AudioIdCounter = AudioId.MinValue;
             Seed = LevelRules.NullSeed;
+            Orientation = LevelOrientation.Horizontal;
         }
         public LevelSettings(int framerate, int frameDuration, int objectIdCounter, int audioIdCounter)
         {
@@ -71,15 +87,18 @@ namespace BH.SDK.Models.SettingGroups
             ObjectIdCounter = objectIdCounter;
             AudioIdCounter = audioIdCounter;
             Seed = LevelRules.NullSeed;
+            Orientation = LevelOrientation.Horizontal;
         }
 
         public object Clone() => Copy();
 
-        // Seed rides an initializer rather than a fifth constructor parameter: every existing caller
-        // of this constructor authors a level without one, and 0 is exactly what they should get.
+        // Seed and Orientation ride initializers rather than further constructor parameters: every
+        // existing caller of this constructor authors a level without either, and NullSeed and
+        // Horizontal are exactly what they should get.
         public LevelSettings Copy() => new(Framerate, FrameDuration, ObjectIdCounter, AudioIdCounter)
         {
             Seed = Seed,
+            Orientation = Orientation,
         };
 
         public void Update(LevelSettings src)
@@ -89,6 +108,7 @@ namespace BH.SDK.Models.SettingGroups
             ObjectIdCounter = src.ObjectIdCounter;
             AudioIdCounter = src.AudioIdCounter;
             Seed = src.Seed;
+            Orientation = src.Orientation;
         }
 
         public void Pull(LevelSettings src)
@@ -98,10 +118,11 @@ namespace BH.SDK.Models.SettingGroups
             ObjectIdCounter = src.ObjectIdCounter;
             AudioIdCounter = src.AudioIdCounter;
             Seed = src.Seed;
+            Orientation = src.Orientation;
         }
 
         public override bool Equals(object obj) => obj is LevelSettings value && Equals(value);
-        public override int GetHashCode() => HashCode.Combine(Framerate, FrameDuration, ObjectIdCounter, AudioIdCounter, Seed);
+        public override int GetHashCode() => HashCode.Combine(Framerate, FrameDuration, ObjectIdCounter, AudioIdCounter, Seed, Orientation);
 
         public void Reset()
         {
@@ -110,6 +131,7 @@ namespace BH.SDK.Models.SettingGroups
             ObjectIdCounter = ObjectId.MinLevelValue;
             AudioIdCounter = AudioId.MinValue;
             Seed = LevelRules.NullSeed;
+            Orientation = LevelOrientation.Horizontal;
         }
 
         public bool Equals(LevelSettings other)
@@ -120,7 +142,8 @@ namespace BH.SDK.Models.SettingGroups
                           && FrameDuration.Equals(other.FrameDuration)
                           && ObjectIdCounter.Equals(other.ObjectIdCounter)
                           && AudioIdCounter.Equals(other.AudioIdCounter)
-                          && Seed.Equals(other.Seed);
+                          && Seed.Equals(other.Seed)
+                          && Orientation == other.Orientation;
             return result;
         }
     }

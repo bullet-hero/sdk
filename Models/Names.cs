@@ -46,6 +46,9 @@
         public const string Graphics = "graphics";
         public const string Interface = "iface";
         public const string Stats = "stats";
+        public const string Show = "show";
+        public const string Progress = "progress";
+        public const string Pause = "pause";
         public const string Game = "game";
         public const string UI = "ui";
         public const string Audio = "audio";
@@ -349,10 +352,15 @@
         public const string Length = "length";
         public const string LengthShort = "len";
         public const string Duration = "duration";
+        public const string Tags = "tags";
         public const string DurationShort = "dur";
         public const string Span = "span";
         public const string SpanShort = "sp";
         public const string Screen = "screen";
+        public const string Orientation = "orientation";
+        public const string Window = "window";
+        public const string Display = "display";
+        public const string Resolution = "resolution";
         public const string Event = "event";
         public const string Events = "events";
         public const string Camera = "camera";
@@ -601,6 +609,10 @@
         public const string StatsAlignmentX = Stats + _ + Alignment + _ + CoordX;
         public const string StatsAlignmentY = Stats + _ + Alignment + _ + CoordY;
         public const string MenuBackground = Menu + _ + Background;
+        public const string ScreenOrientation = Screen + _ + Orientation;
+        public const string ShowGameProgress = Show + _ + Game + _ + Progress;
+        public const string ShowGamePause = Show + _ + Game + _ + Pause;
+        public const string ShowGameInterface = Show + _ + Game + _ + Interface;
         public const string FramerateTarget = Framerate + _ + Target;
         public const string FixedFramerate = Fixed + _ + Framerate;
         public const string RenderEffects = Render + _ + Effects;
@@ -688,6 +700,12 @@
         public const string Compression = "compress";
         public const string Mipmaps = "mips";
         public const string SizeLimit = Size + _ + Limit;
+
+        // Display. Desktop-only presentation, and the group's own key is the shared Display one.
+        public const string WindowMode = Window + _ + Mode;
+        public const string ResolutionWidth = Resolution + _ + Width;
+        public const string ResolutionHeight = Resolution + _ + Height;
+        public const string RenderScale = Render + _ + Scale;
 
         public const string PostProcessing = Post + Processing;
         public const string RenderBloom = Render + _ + BloomShort;

@@ -1,4 +1,4 @@
-using BH.SDK.Models;
+﻿using BH.SDK.Models;
 using BH.SDK.Models.Enums.Settings;
 using BH.SDK.Models.SettingGroups;
 using Newtonsoft.Json;
@@ -32,7 +32,8 @@ namespace BH.SDK.Tests
         [Category(Metadata.Category.VeryEasy)]
         public void Reset_RestoresTheDefault()
         {
-            var settings = new InterfaceSettings(true, true, 0.25f, 0.75f, MenuBackgroundKind.Shapes);
+            var settings = new InterfaceSettings(true, true, 0.25f, 0.75f, MenuBackgroundKind.Shapes,
+                ScreenOrientationLock.Vertical);
 
             settings.Reset();
 
@@ -45,7 +46,8 @@ namespace BH.SDK.Tests
         [Category(Metadata.Category.VeryEasy)]
         public void CopyAndPull_CarryEveryField()
         {
-            var source = new InterfaceSettings(true, true, 0.25f, 0.75f, MenuBackgroundKind.Shapes);
+            var source = new InterfaceSettings(true, true, 0.25f, 0.75f, MenuBackgroundKind.Shapes,
+                ScreenOrientationLock.Vertical);
 
             var copy = source.Copy();
             var pulled = new InterfaceSettings();
@@ -61,8 +63,19 @@ namespace BH.SDK.Tests
         [Category(Metadata.Category.VeryEasy)]
         public void Equality_SeesTheNewField()
         {
-            Assert.AreNotEqual(new InterfaceSettings(false, false, 0f, 1f, MenuBackgroundKind.Bot),
-                new InterfaceSettings(true, false, 0f, 1f, MenuBackgroundKind.Bot));
+            Assert.AreNotEqual(
+                new InterfaceSettings(false, false, 0f, 1f, MenuBackgroundKind.Bot,
+                    ScreenOrientationLock.Horizontal),
+                new InterfaceSettings(true, false, 0f, 1f, MenuBackgroundKind.Bot,
+                    ScreenOrientationLock.Horizontal));
+
+            // The orientation alone, so a Copy or an Equals that forgot it cannot pass on the back
+            // of one of the five fields that came before.
+            Assert.AreNotEqual(
+                new InterfaceSettings(false, false, 0f, 1f, MenuBackgroundKind.Bot,
+                    ScreenOrientationLock.Horizontal),
+                new InterfaceSettings(false, false, 0f, 1f, MenuBackgroundKind.Bot,
+                    ScreenOrientationLock.Vertical));
         }
 
         [Test]
@@ -71,7 +84,8 @@ namespace BH.SDK.Tests
         [Category(Metadata.Category.Easy)]
         public void RoundTrip_KeepsEveryField()
         {
-            var source = new InterfaceSettings(true, true, 0.25f, 0.75f, MenuBackgroundKind.Shapes);
+            var source = new InterfaceSettings(true, true, 0.25f, 0.75f, MenuBackgroundKind.Shapes,
+                ScreenOrientationLock.Vertical);
 
             var json = JsonConvert.SerializeObject(source);
             var restored = JsonConvert.DeserializeObject<InterfaceSettings>(json);
@@ -104,6 +118,103 @@ namespace BH.SDK.Tests
             Assert.IsFalse(settings.Interface.OpenMenuOnLose);
         }
 
+        // The three HUD switches. Two things about them are worth a test each and neither is
+        // caught by anything already here.
+        //
+        // TRUE IS THE DEFAULT AND FALSE IS THE ZERO VALUE, so an older settings.json - which
+        // carries none of the three keys - has to read back with the HUD SHOWN. That is the same
+        // mechanism MenuBackgroundKind.Bot relies on one block down, and it is what makes all
+        // three additive with no DataVersion bump.
+        //
+        // AND THEY RIDE AN OBJECT INITIALIZER IN Copy() rather than the constructor, because a
+        // seventh parameter would break every caller. An initializer is the one shape a
+        // copy-paste silently drops, and CopyAndPull_CarryEveryField above cannot catch it: it
+        // builds its source through the constructor, which defaults all three to true, so a Copy
+        // that lost them would still compare equal.
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.VeryEasy)]
+        public void Defaults_ShowTheWholeHud()
+        {
+            var settings = new InterfaceSettings();
+
+            Assert.IsTrue(settings.ShowGameProgress);
+            Assert.IsTrue(settings.ShowGamePause);
+            Assert.IsTrue(settings.ShowGameInterface);
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.VeryEasy)]
+        public void CopyPullAndUpdate_CarryTheHudFlags()
+        {
+            var source = new InterfaceSettings
+            {
+                ShowGameProgress = false,
+                ShowGamePause = false,
+                ShowGameInterface = false,
+            };
+
+            var copy = source.Copy();
+            var pulled = new InterfaceSettings();
+            pulled.Pull(source);
+            var updated = new InterfaceSettings();
+            updated.Update(source);
+
+            Assert.AreEqual(source, copy);
+            Assert.AreEqual(source, pulled);
+            Assert.AreEqual(source, updated);
+            Assert.IsFalse(copy.ShowGameProgress);
+            Assert.IsFalse(copy.ShowGamePause);
+            Assert.IsFalse(copy.ShowGameInterface);
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.VeryEasy)]
+        public void Equality_SeesEachHudFlagOnItsOwn()
+        {
+            Assert.AreNotEqual(new InterfaceSettings(),
+                new InterfaceSettings { ShowGameProgress = false });
+            Assert.AreNotEqual(new InterfaceSettings(),
+                new InterfaceSettings { ShowGamePause = false });
+            Assert.AreNotEqual(new InterfaceSettings(),
+                new InterfaceSettings { ShowGameInterface = false });
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Easy)]
+        public void SettingsWrittenBeforeTheFlags_ReadBackWithTheHudShown()
+        {
+            var settings = JsonConvert.DeserializeObject<InterfaceSettings>(
+                "{\"stats_active\":true}");
+
+            Assert.IsTrue(settings.ShowGameProgress);
+            Assert.IsTrue(settings.ShowGamePause);
+            Assert.IsTrue(settings.ShowGameInterface);
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Easy)]
+        public void RoundTrip_KeepsTheHudFlags()
+        {
+            var source = new InterfaceSettings { ShowGamePause = false };
+
+            var json = JsonConvert.SerializeObject(source);
+            var restored = JsonConvert.DeserializeObject<InterfaceSettings>(json);
+
+            Assert.AreEqual(source, restored);
+            Assert.IsFalse(restored.ShowGamePause);
+            Assert.IsTrue(restored.ShowGameProgress);
+        }
+
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
@@ -129,6 +240,34 @@ namespace BH.SDK.Tests
                 "\"stats_alignment_x\":0.5,\"stats_alignment_y\":0.5}");
 
             Assert.AreEqual(MenuBackgroundKind.Bot, settings.MenuBackground);
+            Assert.IsTrue(settings.StatsActive);
+        }
+
+        // Horizontal is the default while Unlock is the zero value, and here that ordering is
+        // load-bearing rather than tidy: a file written before the field must not read back as
+        // Unlock, because Unlock is free rotation on screens that have no portrait layout yet. The
+        // same absent-key mechanism MenuBackground relies on is what guarantees it.
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.VeryEasy)]
+        public void Defaults_LockTheScreenHorizontally()
+        {
+            Assert.AreEqual(ScreenOrientationLock.Horizontal,
+                new InterfaceSettings().ScreenOrientation);
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Easy)]
+        public void SettingsWrittenBeforeTheField_ReadBackLockedHorizontally()
+        {
+            var settings = JsonConvert.DeserializeObject<InterfaceSettings>(
+                "{\"open_menu_on_lose\":false,\"stats_active\":true," +
+                "\"stats_alignment_x\":0.5,\"stats_alignment_y\":0.5,\"menu_background\":2}");
+
+            Assert.AreEqual(ScreenOrientationLock.Horizontal, settings.ScreenOrientation);
             Assert.IsTrue(settings.StatsActive);
         }
     }

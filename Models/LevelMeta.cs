@@ -94,6 +94,36 @@ namespace BH.SDK.Models
         [JsonProperty(Names.ContentDescriptors)]
         public ContentDescriptor LevelContentDescriptors { get; set; }
 
+        // PLAIN STRINGS, NOT IString, and that is the one decision here worth arguing. Every
+        // other piece of text on this model is localized because a player READS it; a tag is a
+        // filter token that a player MATCHES, and a translated one stops matching the moment two
+        // players run different languages. So a tag is the author's own word, shown as written.
+        //
+        // Free text rather than a closed set for the same reason ILevelSource.Id is a string:
+        // whoever authors a level knows what it is, and a shipped vocabulary would be wrong for
+        // every genre nobody thought of.
+
+        /// <summary> Author-chosen filter tokens, shown as written and never translated. </summary>
+        [RuleNotNull]
+        [JsonProperty(Names.Tags)]
+        public List<string> LevelTags { get; set; }
+
+        // DENORMALISED FROM Level.Settings, and it has to be. The browser reads metadata for
+        // every level in a folder and never opens level.json - reading a length from there would
+        // be hundreds of files parsed to draw one filter chip, which is the same cost this model
+        // already refuses for the age rating. EditorService rewrites it on every save, so it is
+        // correct for anything this game has written.
+        //
+        // ZERO MEANS UNKNOWN, not "instant": a level authored before this field existed, or
+        // written by another tool, has no length here. Every consumer must treat 0 as "do not
+        // know" and never as a value to compare - a duration filter that hid such levels would
+        // hide every level that predates the field.
+
+        /// <summary> The level's length in seconds, or 0 when unknown. </summary>
+        [RuleMinValue(0f)]
+        [JsonProperty(Names.Duration)]
+        public float LevelDuration { get; set; }
+
         public LevelMeta()
         {
             LevelId = LevelId.NewId();
@@ -106,6 +136,8 @@ namespace BH.SDK.Models
             ResourcesMeta = new List<ResourceMeta>();
             LevelAgeRating = AgeRating.Unrated;
             LevelContentDescriptors = ContentDescriptor.None;
+            LevelTags = new List<string>();
+            LevelDuration = 0f;
         }
         public LevelMeta(LevelId levelId, IString levelName, IString levelDescription, ResourceKey levelLogo,
             Version levelVersion, ILicense levelLicense, List<Author> levelAuthors, List<ResourceMeta> resourcesMeta,
@@ -122,6 +154,8 @@ namespace BH.SDK.Models
             ResourcesMeta = resourcesMeta;
             LevelAgeRating = levelAgeRating;
             LevelContentDescriptors = levelContentDescriptors;
+            LevelTags = new List<string>();
+            LevelDuration = 0f;
         }
         public void Reset()
         {
@@ -135,13 +169,19 @@ namespace BH.SDK.Models
             ResourcesMeta = new List<ResourceMeta>();
             LevelAgeRating = AgeRating.Unrated;
             LevelContentDescriptors = ContentDescriptor.None;
+            LevelTags = new List<string>();
+            LevelDuration = 0f;
         }
 
         public object Clone() => Copy();
         public LevelMeta Copy() => new(LevelId, LevelName.Copy(), LevelDescription.Copy(),
             LevelLogo.Copy(), (Version)LevelVersion.Clone(), LevelLicense.Copy(),
             LevelAuthors.CopyList(), ResourcesMeta.CopyList(),
-            LevelAgeRating, LevelContentDescriptors);
+            LevelAgeRating, LevelContentDescriptors)
+        {
+            LevelTags = new List<string>(LevelTags),
+            LevelDuration = LevelDuration,
+        };
 
         public void Update(LevelMeta src)
         {
@@ -155,6 +195,8 @@ namespace BH.SDK.Models
             ResourcesMeta = src.ResourcesMeta.CopyList();
             LevelAgeRating = src.LevelAgeRating;
             LevelContentDescriptors = src.LevelContentDescriptors;
+            LevelTags = new List<string>(src.LevelTags);
+            LevelDuration = src.LevelDuration;
         }
 
         public void Pull(LevelMeta src)
@@ -169,6 +211,8 @@ namespace BH.SDK.Models
             ResourcesMeta = src.ResourcesMeta.CopyList();
             LevelAgeRating = src.LevelAgeRating;
             LevelContentDescriptors = src.LevelContentDescriptors;
+            LevelTags = new List<string>(src.LevelTags);
+            LevelDuration = src.LevelDuration;
         }
 
         public override bool Equals(object obj) => obj is LevelMeta value && Equals(value);

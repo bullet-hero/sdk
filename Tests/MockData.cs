@@ -145,6 +145,11 @@ namespace BH.SDK.Tests
             level.Settings.ObjectIdCounter = 5;
             level.Settings.AudioIdCounter = 2;
 
+            // Non-default on purpose: every whole-Level round trip in the suite goes through this
+            // factory, and a field left at its default is a field those round trips never actually
+            // carry.
+            level.Settings.Orientation = LevelOrientation.Vertical;
+
             level.Game.Events.ScreenLimits.Add(new ScreenLimitKey(new ScreenLimitBounds(), 0));
             level.Game.Events.Backgrounds.Add(new Color3Key());
             level.Game.Events.Checkpoints.Add(new Checkpoint
