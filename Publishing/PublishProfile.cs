@@ -247,7 +247,6 @@ namespace BH.SDK.Publishing
             AllowedUriTypes = new List<ResourceUriType>
             {
                 ResourceUriType.LevelPath,
-                ResourceUriType.AddressableKey,
                 ResourceUriType.StreamingAssets,
                 ResourceUriType.DirectUrl,
             },
@@ -279,7 +278,6 @@ namespace BH.SDK.Publishing
             profile.AllowedUriTypes = new List<ResourceUriType>
             {
                 ResourceUriType.LevelPath,
-                ResourceUriType.AddressableKey,
                 ResourceUriType.StreamingAssets,
             };
             profile.RequireAttribution = true;

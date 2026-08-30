@@ -6,7 +6,10 @@
         LevelPath = 1,
         AbsolutePath = 2,
         DirectUrl = 3,
-        AddressableKey = 4, // for build-in levels
-        StreamingAssets = 5,
+        StreamingAssets = 4,
+        
+        // Addressables is not valid for levels, it has many architecture complications,
+        // mostly because Addressable != file and Addressable works with imported file (AudioClip != .mp3 file).
+        // For now to clarify - audio file = data
     }
 }

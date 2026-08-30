@@ -188,7 +188,6 @@ namespace BH.SDK.Services.Package
                         return;
 
                     case ResourceUriType.DirectUrl:
-                    case ResourceUriType.AddressableKey:
                     case ResourceUriType.StreamingAssets:
                         _report.Deferred(CodeUnreachable,
                             $"A {key.UriType} resource cannot travel inside a package and was left " +
