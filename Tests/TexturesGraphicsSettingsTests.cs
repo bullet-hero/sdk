@@ -26,6 +26,8 @@ namespace BH.SDK.Tests
             Assert.AreEqual(TextureCompressionMode.Auto, settings.Compression);
             Assert.AreEqual(TextureSizeLimit.Auto, settings.SizeLimit);
             Assert.AreEqual(TextureMipmapMode.Auto, settings.Mipmaps);
+            Assert.AreEqual(TextureFilterMode.Auto, settings.Filtering);
+            Assert.AreEqual(TextureCompressionQuality.Auto, settings.CompressionQuality);
         }
 
         [Test]
@@ -35,7 +37,8 @@ namespace BH.SDK.Tests
         public void Reset_RestoresAuto()
         {
             var settings = new TexturesGraphicsSettings(TextureCompressionMode.On,
-                TextureSizeLimit.Side1024, TextureMipmapMode.Off);
+                TextureSizeLimit.Side1024, TextureMipmapMode.Off, TextureFilterMode.Point,
+                TextureCompressionQuality.Fast);
 
             settings.Reset();
 
@@ -49,7 +52,8 @@ namespace BH.SDK.Tests
         public void CopyAndPull_CarryEveryField()
         {
             var source = new TexturesGraphicsSettings(TextureCompressionMode.Off,
-                TextureSizeLimit.Side4096, TextureMipmapMode.On);
+                TextureSizeLimit.Side4096, TextureMipmapMode.On, TextureFilterMode.Trilinear,
+                TextureCompressionQuality.High);
 
             var copy = source.Copy();
             var pulled = new TexturesGraphicsSettings();
@@ -66,7 +70,8 @@ namespace BH.SDK.Tests
         public void RoundTrip_KeepsEveryField()
         {
             var source = new TexturesGraphicsSettings(TextureCompressionMode.On,
-                TextureSizeLimit.Side2048, TextureMipmapMode.Off);
+                TextureSizeLimit.Side2048, TextureMipmapMode.Off, TextureFilterMode.Bilinear,
+                TextureCompressionQuality.Fast);
 
             var json = JsonConvert.SerializeObject(source);
             var restored = JsonConvert.DeserializeObject<TexturesGraphicsSettings>(json);
@@ -87,6 +92,25 @@ namespace BH.SDK.Tests
             Assert.AreEqual(new TexturesGraphicsSettings(), settings.Textures);
         }
 
+        // WHAT A SETTINGS FILE STORES IS THE NUMBER, so a rung may only ever be appended - renumbering
+        // this ladder silently rewrites every player's choice into a different one. It is pinned here
+        // because the temptation to tidy the members into ascending order is real and the damage is
+        // invisible: the file still loads, it just means something else.
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.VeryEasy)]
+        public void SizeLimit_MembersAreNumberedAsShipped()
+        {
+            Assert.AreEqual(0, (byte)TextureSizeLimit.Auto);
+            Assert.AreEqual(1, (byte)TextureSizeLimit.Unlimited);
+            Assert.AreEqual(2, (byte)TextureSizeLimit.Side1024);
+            Assert.AreEqual(3, (byte)TextureSizeLimit.Side2048);
+            Assert.AreEqual(4, (byte)TextureSizeLimit.Side4096);
+            Assert.AreEqual(5, (byte)TextureSizeLimit.Side512);
+            Assert.AreEqual(6, (byte)TextureSizeLimit.Side8192);
+        }
+
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
@@ -96,11 +120,20 @@ namespace BH.SDK.Tests
             var settings = new TexturesGraphicsSettings();
 
             Assert.AreNotEqual(settings, new TexturesGraphicsSettings(TextureCompressionMode.On,
-                TextureSizeLimit.Auto, TextureMipmapMode.Auto));
+                TextureSizeLimit.Auto, TextureMipmapMode.Auto, TextureFilterMode.Auto,
+                TextureCompressionQuality.Auto));
             Assert.AreNotEqual(settings, new TexturesGraphicsSettings(TextureCompressionMode.Auto,
-                TextureSizeLimit.Side1024, TextureMipmapMode.Auto));
+                TextureSizeLimit.Side1024, TextureMipmapMode.Auto, TextureFilterMode.Auto,
+                TextureCompressionQuality.Auto));
             Assert.AreNotEqual(settings, new TexturesGraphicsSettings(TextureCompressionMode.Auto,
-                TextureSizeLimit.Auto, TextureMipmapMode.On));
+                TextureSizeLimit.Auto, TextureMipmapMode.On, TextureFilterMode.Auto,
+                TextureCompressionQuality.Auto));
+            Assert.AreNotEqual(settings, new TexturesGraphicsSettings(TextureCompressionMode.Auto,
+                TextureSizeLimit.Auto, TextureMipmapMode.Auto, TextureFilterMode.Point,
+                TextureCompressionQuality.Auto));
+            Assert.AreNotEqual(settings, new TexturesGraphicsSettings(TextureCompressionMode.Auto,
+                TextureSizeLimit.Auto, TextureMipmapMode.Auto, TextureFilterMode.Auto,
+                TextureCompressionQuality.High));
         }
     }
 }

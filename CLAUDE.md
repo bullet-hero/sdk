@@ -61,6 +61,12 @@ alive so `GamePlayer`'s jobs can re-roll randomness every frame instead of freez
   `README.md` — read it first, this file only adds what it doesn't cover.
 - **Rules/** — `public const` numeric/enum clamp tables (`FrameRules`, `ValueRules`, `LevelRules`,
   `AudioRules`, `EffectRules`, `PostProcessingRules`, `ResourceRules`, `TextRules`) plus
+  **`AvatarRules`, which is the odd one out**: every other file here bounds what an author or a player
+  may set, while nothing in that one is settable at all. It is the avatar's balance — speeds, dash and
+  knockback windows, scale and hitbox — frozen as constants because it used to be serialized fields
+  with a ScriptableObject overriding them, and the two copies had drifted (the asset played
+  `dashTime` 0.15 against a field initializer of 0.2, `knockoutSpeed` 50 against 2). `AvatarRulesTests`
+  spells every value out a second time, so changing one fails there rather than in a level. Plus
   `Rules/Attributes/` (declarative `[RuleXxx]` property attributes consumed by `Validations/`).
 - **Validations/** — the rule engine, in two halves. *Declarative*: `RuleAnalyzer`/`RuleFixer`
   (+`RuleIssue`/`RulePath`) walk `[RuleContainer]`-marked object graphs and check/auto-fix every
@@ -196,19 +202,43 @@ alive so `GamePlayer`'s jobs can re-roll randomness every frame instead of freez
   entirely `#if BHSDK_ROSLYN`-gated (that define is never set inside the Unity project, so this
   compiles to an empty assembly here — it's meant for a standalone analyzer-package build of the SDK
   repo). `RuleContainerAnalyzer.cs` — see "Rules & validation" below.
-- **UnityExtensions/** — Unity-type conversion glue (`Pixel`↔`Color32`, `PixelTexture`↔`Texture2D`,
-  `IFrameable` framerate resolution reading `Screen.currentResolution`). Own asmdef, unconditionally
-  requires `UnityEngine` (unlike the core SDK).
+- **UnityExtensions/** — everything that genuinely needs Unity, in four groups. Own asmdef,
+  unconditionally requires `UnityEngine` (unlike the core SDK), plus `Unity.Mathematics` and
+  `Unity.Collections`, which is what the last three of these brought in:
+  - *Conversion glue* — `Pixel`↔`Color32`, `PixelTexture`↔`Texture2D` (`ResourceExtensions`),
+    `IFrameable` framerate resolution reading `Screen.currentResolution` (`ModelExtensions`).
+  - **`Avatars/`** — `AvatarMovement`, the avatar's whole movement mechanism as one `readonly
+    struct`, plus `TimePoint`, `AvatarStepSpeeds` and `AvatarStepResult`. **It touches no Unity
+    RUNTIME** — no `Time`, `Transform`, `Camera`, `Screen` or `UnityEngine.Random`; the clock arrives
+    as a `float` and every direction arrives resolved. It is here rather than in the core assembly
+    only because it reasons in `float2`. Its own header carries the design; the consuming project's
+    `docs/issues/MOVEMENT_HISTORY.md` is the record of why it moved.
+  - **`Transforms/`** — `Transform2D` and `RectTransform2D`, the project's 2D local-transform structs.
+    They arrived from the consumer's `BH.Shared.Transforms`, and their `ApplyTo(Transform/
+    RectTransform/Camera/TransformHandle/TransformAccess)` overloads are exactly the "Unity-type
+    conversion glue" this folder is for.
+  - **`Math2D` and `TransformDefaults`** — the bridge those two groups needed across the assembly
+    boundary. `BH.Shared.BHMath` could not be referenced (`Shared` references the SDK, never the
+    reverse), so the four rotation primitives moved down here as **non-extension statics** — a second
+    `RotateVector(this float2, …)` would be ambiguous in every file with both namespaces in scope —
+    and `BHMath` delegates to them. `TransformDefaults` is the eight transform fields of
+    `BH.Shared.defaults`, which likewise delegates; the rest of `defaults` reaches for `alignment`
+    and `color` and stays in the consumer.
 - **UnityIntegration/** — `Cat.cs`, a tiny `Debug.Log`-style logging façade (`Meow`/`MeowWarn`/
   `MeowError`/...) gated by `#if BHSDK_UNITY` per call, falling back to `Console.WriteLine`. Own
   asmdef, distinct purpose from `UnityExtensions/` (logging, not data conversion) — don't conflate
   the two folders.
-- **Tests/** — `BulletHeroSDK.Tests.asmdef`, NUnit. `MockData.cs` is the shared fixture factory and
+- **Tests/** — `BulletHeroSDK.Tests.asmdef`, NUnit. **There is a SECOND test assembly**,
+  `UnityExtensions/Tests/` (`BulletHeroSDK.UnityExtensions.Tests`), and the split is forced rather
+  than stylistic: this one is `noEngineReferences: true` and therefore cannot reference
+  `UnityExtensions` at all. It holds `AvatarMovementTests`/`AvatarMovementStateTests`,
+  `Transform2DTests`/`RectTransform2DTests`, and `Approx.cs` — a fixture helper, not a test, that
+  delegates to `BHSDKMath.Approximately` so the tolerance still lives in one place. `MockData.cs` is the shared fixture factory and
   `Metadata.cs` the author/category constants (neither is a test) — read `MockData.cs`'s header
   comment before writing new tests that need a `Level`/`Prefab`/etc. Root-level files cover
   serialization (`SerializationTests`, `SerializationTypeExtensionsTests`), modification
   (`ModificationTests`), validation (`ValidatorTests`), capacity (`LevelCapacityUtilsTests`),
-  cryptography, text formatting, `ShapeIdTests` and `ShapeGeometryUtilsTests`, plus
+  cryptography, text formatting, `ShapeIdTests`, `ShapeGeometryUtilsTests` and `AvatarRulesTests`, plus
 `Tests/Services/ShapeCatalogServiceTests` (the built-in shape library — id round trip, retired and
 future-axis ids refused, and the two geometric invariants a person cannot eyeball across five
 hundred entries: a shape and its inverse tile the sector they were cut from, and slices tile the
@@ -576,14 +606,26 @@ x2, no HDR) rather than to a zeroed pair that would read as "off". `MsaaType`'s 
 sample count, except `None = 0`, which every graphics API states as 1 — convert with
 `MsaaTypeExtensions.ToSampleCount`, never a cast.
 
-`TexturesGraphicsSettings` (`Compression`/`SizeLimit`/`Mipmaps`) is the newest of them and the one
-whose design is half outside this repo: it is the DEVICE's half of how a level's images are loaded,
-while the author's half is one field on the image itself (`TextureResource.Kind`, a `TextureKind`).
-Neither can express the other - a level has to play the same everywhere, so an author may not author
-a device's memory budget, and a player must never be asked what a picture depicts. Every field
-defaults to `Auto` and resolves per platform in the consumer (`Core`'s `TextureLoadPlanner`), which
-is what makes an older `settings.json` with no `"textures"` key correct rather than merely tolerated.
-Additive like everything else here, so `UserSettings` stays at `(1, 0)`.
+`TexturesGraphicsSettings` (`Compression`/`SizeLimit`/`Mipmaps`/`Filtering`/`CompressionQuality`) is
+the newest of them and the one whose design is half outside this repo: it is the DEVICE's half of how
+a level's images are loaded, while the author's half is three fields on the image itself
+(`TextureResource`'s `Kind`/`Alpha`/`Wrap`). Neither can express the other - a level has to play the
+same everywhere, so an author may not author a device's memory budget, and a player must never be
+asked what a picture depicts. Every field defaults to `Auto` and resolves per platform in the
+consumer (`Core`'s `TextureLoadPlanner`), which is what makes an older `settings.json` with no
+`"textures"` key correct rather than merely tolerated. Additive like everything else here, so
+`UserSettings` stays at `(1, 0)`.
+
+**`Filtering` and `CompressionQuality` were both DERIVED from the author's kind before they existed**
+and were on the wrong side of the split: the encoder's effort yields the same size in the same
+format either way, so all it trades is the player's own loading time, and filtering is how a device
+draws. Their `Auto` reproduces the old derivation, which is why neither needed a migration either.
+
+**`TextureSizeLimit`'s two newest rungs are `Side512 = 5` and `Side8192 = 6`, out of ladder order on
+purpose**: a member's number is what a settings file stores, so a rung is APPENDED and never
+renumbered - the rule `RandomTracks` states for its track ids. The consumer therefore may not present
+these through `Enum.GetValues`; `Services.Shared`'s `SettingsEnumOrders` is the explicit order, and
+`SettingsEnumOrdersTests` is what fails the day a rung is added and forgotten there.
 
 The `UserSettings` sub-groups are the reason `IMoveable<T>`'s `Pull(source)` exists at all — an
 in-place merge that keeps every sub-group instance, since the device hands them out one at a time.
@@ -669,11 +711,26 @@ resources are baked into the game/its own registries and never appear in a level
 `AudioResourceId`/`BytesResourceId`/`TextResourceId` are narrow per-category wrappers sharing this
 range, freely convertible to/from the untyped `TypedResourceId`.
 
-**`TextureResource` is the one resource carrying an authored field beyond its id, UV and sources**:
-`Kind` (`TextureKind`: `Auto`/`Photo`/`Graphic`/`PixelArt`). It is deliberately ARTISTIC - it names
-what the picture is and says nothing about formats, sizes or switches, all of which belong to the
-player's own `UserSettings.Graphics.Textures`. Additive with a zero default, so a level written
-before it reads back as `Auto` and `LevelResources` stays at `(1, 0)`.
+**`TextureResource` is the one resource carrying authored fields beyond its id, UV and sources**, and
+there are three of them - `Kind` (`TextureKind`: `Auto`/`Photo`/`Graphic`/`PixelArt`/`Gradient`),
+`Alpha` (`TextureAlpha`: `Auto`/`Opaque`) and `Wrap` (`TextureWrapKind`: `Clamp`/`Repeat`/`Mirror`).
+**Three independent axes, deliberately not one enum**: an opaque pixel-art tile that repeats is three
+answers, and folding them together makes exactly those cases unsayable. None of them is a format, a
+size or a switch - all of that belongs to the player's own `UserSettings.Graphics.Textures`.
+
+`Alpha` is the one whose motive is worth restating: `ImageHeaderReader` proves a file CANNOT be
+transparent from 33 bytes, but proving an alpha channel that EXISTS is 255 everywhere needs every
+pixel read, which the consumer refuses to pay - so the author is the only one who can say it, and
+nothing verifies the claim. It is an enum rather than a bool for the reason `ShapeObject.ShaderType`
+is one: `Cutout` is the obvious next member, and two booleans that can contradict each other is what
+this shape avoids.
+
+`Wrap` is the field that finally makes `TextureResourceUV`'s tiling half mean something - the data
+always reached the shader, and the consumer hard-coded Clamp, so a tiling UV only ever stretched one
+row of pixels.
+
+All three are additive with a zero default, so a level written before them reads back as
+`Auto`/`Auto`/`Clamp` and `LevelResources` stays at `(1, 0)`.
 
 **`FontCharacters` used to live here and no longer does** — it was never a resource, only a fact
 *about* the resources, so it moved to `Level.Hints` with the rest of the advisory data. Don't look

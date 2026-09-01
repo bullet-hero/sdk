@@ -751,6 +751,8 @@
         public const string Compression = "compress";
         public const string Mipmaps = "mips";
         public const string SizeLimit = Size + _ + Limit;
+        public const string Filter = "filter";
+        public const string Quality = "quality";
 
         // Display. Desktop-only presentation, and the group's own key is the shared Display one.
         public const string WindowMode = Window + _ + Mode;

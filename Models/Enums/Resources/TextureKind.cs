@@ -41,8 +41,19 @@ namespace BH.SDK.Models.Enums.Resources
         /// <summary>
         /// Pixel art: every pixel is authored, and blurring one is a defect rather than a
         /// trade-off. Sampled with no smoothing at all, and no device setting may compress or
-        /// mip-map it - both destroy exactly what the kind exists to state.
+        /// mip-map it - both destroy exactly what the kind exists to state. It is also the one kind
+        /// that refuses to be AVERAGED while being scaled down.
         /// </summary>
         PixelArt = 3,
+
+        /// <summary>
+        /// A smooth gradient, a glow, a soft backdrop: continuous tone whose whole content is the
+        /// transition itself. The opposite trade from a <see cref="Photo"/> despite looking like one
+        /// - block compression stores two endpoint colours per 4x4 block, which turns a gradual
+        /// ramp into visible bands, and no encoder setting fixes that because it is the format. So
+        /// no device setting may compress it. Everything else it takes: it is smoothed, scaled and
+        /// mip-mapped like any other picture.
+        /// </summary>
+        Gradient = 4,
     }
 }

@@ -47,6 +47,7 @@ namespace BH.SDK.Tests
             "Assets/Code/Services/Game/Tests",
             "Assets/Code/Services/Root/Tests",
             "Assets/Plugins/BulletHeroSDK/Tests",
+            "Assets/Plugins/BulletHeroSDK/UnityExtensions/Tests",
         };
 
         // The file that documents the trap is allowed to name it; so is this one.

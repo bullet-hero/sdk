@@ -31,20 +31,38 @@ namespace BH.SDK.Models.Resources
         [JsonProperty(Names.TextureResourceUV)]
         public Vector4Value TextureResourceUV { get; set; }
 
-        // The author's ONLY say in how this image is loaded, and it is deliberately artistic rather
-        // than technical: a level has to play the same on every device, so the author names what the
-        // picture IS and the player's own settings (UserSettings.Graphics.Textures) decide what this
-        // device does with pictures of that kind. Nothing here is a format, a size or a switch.
+        // THREE FIELDS, THREE INDEPENDENT AXES, and none of them is a format, a size or a switch.
+        // A level has to play the same on every device, so the author says what is true of the
+        // PICTURE and the player's own settings (UserSettings.Graphics.Textures) decide what this
+        // device does about it; Core's TextureLoadPlanner is the only place the two meet.
         //
-        // Additive with a zero default, so it needed no migration and LevelResources stays at (1, 0):
-        // a level written before this field existed reads back as Auto, which is what every image
-        // nobody classified means anyway.
+        // Kind names what the picture is. Alpha answers the one question about it that a device can
+        // read the file and still not know (see TextureAlpha's own header). Wrap says what lies
+        // outside its edges, which is composition rather than budget and therefore has no player
+        // half at all. They are separate because they genuinely vary independently - an opaque
+        // pixel-art tile that repeats is three answers, not one.
+        //
+        // All three are additive with a zero default, so none needed a migration and LevelResources
+        // stays at (1, 0): a level written before any of them reads back as Auto/Auto/Clamp, which
+        // is exactly the behaviour it already had.
 
         /// <summary> What this image is - a photo, a drawing, pixel art - so the device can treat it
         /// the way that kind of picture has to be treated. </summary>
         [RuleEnumValid]
         [JsonProperty(Names.Kind)]
         public TextureKind Kind { get; set; }
+
+        /// <summary> Whether this image uses the alpha channel its file carries. Nothing verifies
+        /// the claim - see <see cref="TextureAlpha"/>. </summary>
+        [RuleEnumValid]
+        [JsonProperty(Names.Alpha)]
+        public TextureAlpha Alpha { get; set; }
+
+        /// <summary> What this image does past its own edges, which is what makes
+        /// <see cref="TextureResourceUV"/>'s tiling half mean anything. </summary>
+        [RuleEnumValid]
+        [JsonProperty(Names.Wrap)]
+        public TextureWrapKind Wrap { get; set; }
 
         public override ResourceType Type => ResourceType.Texture;
 
@@ -54,27 +72,41 @@ namespace BH.SDK.Models.Resources
             TextureResourceUV = new Vector4Value(ValueRules.DefaultUvX,
                 ValueRules.DefaultUvY, ValueRules.DefaultUvZ, ValueRules.DefaultUvW);
             Kind = TextureKind.Auto;
+            Alpha = TextureAlpha.Auto;
+            Wrap = TextureWrapKind.Clamp;
         }
+
         public TextureResource(TextureResourceId textureResourceId, List<ResourceKey> sources) : base(sources)
         {
             TextureResourceId = textureResourceId;
             TextureResourceUV = new Vector4Value(ValueRules.DefaultUvX,
                 ValueRules.DefaultUvY, ValueRules.DefaultUvZ, ValueRules.DefaultUvW);
             Kind = TextureKind.Auto;
+            Alpha = TextureAlpha.Auto;
+            Wrap = TextureWrapKind.Clamp;
         }
-        public TextureResource(TextureResourceId textureResourceId, Vector4Value textureResourceUV, List<ResourceKey> sources) : base(sources)
+
+        public TextureResource(TextureResourceId textureResourceId, Vector4Value textureResourceUV,
+            List<ResourceKey> sources) : base(sources)
         {
             TextureResourceId = textureResourceId;
             TextureResourceUV = textureResourceUV;
             Kind = TextureKind.Auto;
+            Alpha = TextureAlpha.Auto;
+            Wrap = TextureWrapKind.Clamp;
         }
+
         public TextureResource(TextureResourceId textureResourceId, Vector4Value textureResourceUV,
-            TextureKind kind, List<ResourceKey> sources) : base(sources)
+            TextureKind kind, TextureAlpha alpha, TextureWrapKind wrap, List<ResourceKey> sources)
+            : base(sources)
         {
             TextureResourceId = textureResourceId;
             TextureResourceUV = textureResourceUV;
             Kind = kind;
+            Alpha = alpha;
+            Wrap = wrap;
         }
+
         public override void Reset()
         {
             base.Reset();
@@ -82,13 +114,16 @@ namespace BH.SDK.Models.Resources
             TextureResourceUV = new Vector4Value(ValueRules.DefaultUvX,
                 ValueRules.DefaultUvY, ValueRules.DefaultUvZ, ValueRules.DefaultUvW);
             Kind = TextureKind.Auto;
+            Alpha = TextureAlpha.Auto;
+            Wrap = TextureWrapKind.Clamp;
         }
-        
+
         public override object Clone() => CopyImpl();
         public override Resource Copy() => CopyImpl();
         TextureResource ICopyable<TextureResource>.Copy() => CopyImpl();
-        
-        private TextureResource CopyImpl() => new(TextureResourceId, TextureResourceUV.Copy(), Kind, Sources.CopyList());
+
+        private TextureResource CopyImpl() =>
+            new(TextureResourceId, TextureResourceUV.Copy(), Kind, Alpha, Wrap, Sources.CopyList());
 
         public void Update(TextureResource src)
         {
@@ -97,6 +132,8 @@ namespace BH.SDK.Models.Resources
             TextureResourceId = src.TextureResourceId;
             TextureResourceUV = src.TextureResourceUV.Copy();
             Kind = src.Kind;
+            Alpha = src.Alpha;
+            Wrap = src.Wrap;
         }
 
         public void Pull(TextureResource src)
@@ -106,10 +143,15 @@ namespace BH.SDK.Models.Resources
             TextureResourceId = src.TextureResourceId;
             TextureResourceUV.Pull(src.TextureResourceUV);
             Kind = src.Kind;
+            Alpha = src.Alpha;
+            Wrap = src.Wrap;
         }
 
         public override bool Equals(object obj) => obj is TextureResource value && Equals(value);
-        public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), TextureResourceId, TextureResourceUV, (int)Kind);
+
+        public override int GetHashCode() =>
+            HashCode.Combine(base.GetHashCode(), TextureResourceId, TextureResourceUV, (int)Kind,
+                (int)Alpha, (int)Wrap);
 
         public bool Equals(TextureResource other)
         {
@@ -118,7 +160,9 @@ namespace BH.SDK.Models.Resources
             var result = base.Equals(other)
                          && TextureResourceId.Equals(other.TextureResourceId)
                          && TextureResourceUV.Equals(other.TextureResourceUV)
-                         && Kind == other.Kind;
+                         && Kind == other.Kind
+                         && Alpha == other.Alpha
+                         && Wrap == other.Wrap;
             return result;
         }
     }
