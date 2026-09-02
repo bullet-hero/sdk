@@ -37,6 +37,9 @@ namespace BH.SDK.Tests
         // measured, so this fails when something structural breaks and not when a laptop throttles.
         private const double MinimumBlobSpeedup = 3d;
 
+        /// <summary> Timed passes per format in the ratio test - see MeasureRead. </summary>
+        private const int MeasurePasses = 3;
+
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
@@ -69,19 +72,36 @@ namespace BH.SDK.Tests
                 + "point of a generated codec is that it is not in the same class as reflection");
         }
 
-        /// <summary> Milliseconds for one warmed read of the same level in one format. </summary>
+        // THE MINIMUM OF SEVERAL PASSES, NEVER ONE, and this is the difference between a tripwire and
+        // a flaky test: one timed call catches whatever else the machine was doing during it, and a
+        // ratio of two single samples catches it twice. A minimum is the right statistic here because
+        // the thing being measured has a floor and no ceiling - every millisecond above the fastest
+        // run is something other than the code. It ran as one pass each and failed roughly one run in
+        // four on a busy machine, always on the ratio and never on the budgets.
+
+        /// <summary> Milliseconds for the fastest of several warmed reads of one level in one
+        /// format. </summary>
         private static double MeasureRead(Level level, SerializationType type)
         {
             var serializer = new SerializationService().GetDataSerializer(type);
             var attribute = typeof(Level).GetCustomAttribute<DataVersionAttribute>();
             var bytes = serializer.SerializeEnvelope(attribute.Domain, new EnvelopeData(attribute.Version, level));
 
+            // Untimed: the first pass pays every static constructor, JIT stub and contract in the
+            // graph, which is not what this measures.
             serializer.DeserializeEnvelope(bytes, typeof(Level));
 
-            var watch = Stopwatch.StartNew();
-            serializer.DeserializeEnvelope(bytes, typeof(Level));
-            watch.Stop();
-            return watch.Elapsed.TotalMilliseconds;
+            var best = double.MaxValue;
+            for (var pass = 0; pass < MeasurePasses; pass++)
+            {
+                var watch = Stopwatch.StartNew();
+                serializer.DeserializeEnvelope(bytes, typeof(Level));
+                watch.Stop();
+
+                if (watch.Elapsed.TotalMilliseconds < best) best = watch.Elapsed.TotalMilliseconds;
+            }
+
+            return best;
         }
 
         private static void AssertRoundTripWithinBudget(SerializationType type, double readBudgetMs)

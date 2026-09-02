@@ -1,10 +1,18 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <!--
-    The SDK's own test suite, run OUTSIDE Unity with `dotnet test`. It is the same 47 files the
-    Unity Test Runner executes from BH.SDK.Tests.asmdef - not a copy, not a subset - which is
-    the whole reason it is worth having: a red test here means the engine-free build is broken, and
-    it can be seen on a machine with no Editor installed.
+    The SDK's own test suite, run OUTSIDE Unity with `dotnet test`. It is the same files the Unity
+    Test Runner executes from BH.SDK.Tests.asmdef - not a copy, not a subset - which is the whole
+    reason it is worth having: a red test here means the engine-free build is broken, and it can be
+    seen on a machine with no Editor installed.
+
+    THE INCLUDE IS RECURSIVE, AND IT HAS TO BE. It was `*.cs` - the folder ROOT alone - so
+    Tests/Rules (49 files, one per rule attribute) and Tests/Services (7, the package and crypto
+    round trips) compiled in Unity and were silently absent here. Nothing failed: the run simply
+    reported 454 tests that passed, which is exactly the shape of a suite that has stopped covering
+    what it claims to. An asmdef governs every subfolder under it and this file must match that, so
+    a new Tests/ subfolder needs no edit here - only the two build outputs are excluded, since
+    Directory.Build.props redirects them INTO this tree as bin~/obj~.
 
     net8.0 rather than netstandard2.1, because a test project is an executable host: the framework
     is what VSTest loads it into, and it says nothing about what the LIBRARY targets. The library
@@ -33,7 +41,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="*.cs" />
+    <Compile Include="**\*.cs" Exclude="bin~\**\*.cs;obj~\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -257,6 +257,47 @@ namespace BH.SDK.Tests.Services
             Assert.AreEqual(plan.Meta, DeserializeMeta(content));
         }
 
+        // PROTECTION AND FORMAT ARE INDEPENDENT, and this is the corner where nothing checked that.
+        // A protected folder names its document by appending .gpg to the format's OWN extension, so
+        // a blob level is level.blob.gpg - and the reader's probe has to try both formats behind the
+        // encrypted name to find it. Every other protected test above runs in Json, and the blob
+        // tests are all unprotected, so this combination is the one a refactor could break silently.
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Hard)]
+        public async Task ProtectedFolder_InBlob_KeepsTheFormatInTheEncryptedName()
+        {
+            var (plan, store) = await PlanAsync();
+            var target = new MemoryContentStore("export");
+            var options = new LevelPackageOptions
+            {
+                LevelFormat = SerializationType.Blob,
+                MetaFormat = SerializationType.Blob,
+            };
+
+            await LevelPackageWriter.WriteFolderAsync(plan, store, target, Serialization,
+                options, Passphrase, CancellationToken.None);
+
+            Assert.IsTrue(await target.ExistsAsync("level.blob.gpg", CancellationToken.None));
+            Assert.IsFalse(await target.ExistsAsync("level.blob", CancellationToken.None));
+            Assert.IsFalse(await target.ExistsAsync("level.json.gpg", CancellationToken.None));
+
+            // The card stays readable in whatever format it was written in - protection is the
+            // level document's alone.
+            Assert.IsTrue(await target.ExistsAsync("metadata.blob", CancellationToken.None));
+
+            var card = await LevelPackageReader.ReadAsync(target, token: CancellationToken.None);
+            Assert.AreEqual(LevelPackageOpenResult.PassphraseRequired, card.Result);
+
+            var content = await LevelPackageReader.ReadAsync(target, Passphrase, CancellationToken.None);
+            Assert.AreEqual(LevelPackageOpenResult.Ok, content.Result);
+            Assert.IsTrue(content.LevelWasProtected);
+            Assert.AreEqual(SerializationType.Blob, content.LevelFormat);
+            Assert.AreEqual(plan.Level, Deserialize(content));
+            Assert.AreEqual(plan.Meta, DeserializeMeta(content));
+        }
+
         #endregion
 
         #region Refusals

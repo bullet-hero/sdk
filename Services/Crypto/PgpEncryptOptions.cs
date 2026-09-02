@@ -30,12 +30,12 @@ namespace BH.SDK.Services.Crypto
         public const int DefaultS2KWorkBytes = 16 * 1024 * 1024;
 
         /// <summary> The name recorded inside the message - what gpg restores the file as, and how
-        /// a package reader tells a level.json from a level.bson. </summary>
+        /// a package reader tells a level.json from a level.blob. </summary>
         public string InnerFileName { get; set; } = string.Empty;
 
-        // Zip for a level document, which is JSON and compresses several times over; Uncompressed
-        // for a .tar.gz, whose payload is already deflated and would only be made slightly larger
-        // by a second pass.
+        // Zip for a level document, which compresses several times over in either format - JSON is
+        // text, and a blob is mostly repeated little-endian numbers; Uncompressed for a .tar.gz,
+        // whose payload is already deflated and would only be made slightly larger by a second pass.
 
         /// <summary> Compression applied INSIDE the encrypted message. </summary>
         public CompressionAlgorithmTag Compression { get; set; } = CompressionAlgorithmTag.Zip;
@@ -55,7 +55,7 @@ namespace BH.SDK.Services.Crypto
         // keeps BouncyCastle's own enum out of every caller. It is still settable for anything
         // unforeseen; nothing in this project sets it.
 
-        /// <summary> Options for a level document - text, so it is compressed. </summary>
+        /// <summary> Options for a level document - Json or Blob, both worth compressing. </summary>
         public static PgpEncryptOptions ForDocument(string innerFileName) =>
             new PgpEncryptOptions
             {

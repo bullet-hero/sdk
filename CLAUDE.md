@@ -25,7 +25,7 @@ tilde):
 | Project | Target | What it builds |
 |---|---|---|
 | `BH.SDK.csproj` | netstandard2.1 | The library: everything except `Roslyn/`, `Tests/` and `UnityExtensions/`. **`UnityIntegration/` is included WHOLE** — every file there is dual by contract (`#if BHSDK_UNITY`), and this build is what enforces it; see its `README.md` |
-| `Tests/BH.SDK.Tests.csproj` | net8.0 | The same 47 fixtures the Unity Test Runner runs, under `dotnet test` — **447 passing** outside Unity |
+| `Tests/BH.SDK.Tests.csproj` | net8.0 | Every fixture the Unity Test Runner runs, under `dotnet test` — **1791 passing** outside Unity. Its `Compile` include is RECURSIVE; while it was the folder root alone, `Tests/Rules` and `Tests/Services` were silently absent and the run reported a green 454 |
 | `Roslyn/BH.SDK.Roslyn.csproj` | netstandard2.0 | The analyzers and generators — see `Roslyn/README.md` |
 | `Roslyn/Tests~/BH.SDK.Roslyn.Tests.csproj` | net8.0 | Tests for the components themselves. **Invisible to Unity by the tilde**, and has to be — the asmdef above it would otherwise swallow the fixtures |
 
@@ -38,9 +38,9 @@ second copy of every assembly here.
 ## Mental model
 
 A level on disk is **three independent files**, each its own serialization root:
-- `level.json`/`.bson` — a `Level` (`Models/Level.cs`): `Settings`/`Game`/`Audio`/`Resources`, plus
+- `level.json`/`.blob` — a `Level` (`Models/Level.cs`): `Settings`/`Game`/`Audio`/`Resources`, plus
   `Hints` — the one aggregate holding nothing authored (see `Models/Hints/` below).
-- `metadata.json`/`.bson` — a `LevelMeta` (`Models/LevelMeta.cs`): name/description/authors/license/
+- `metadata.json`/`.blob` — a `LevelMeta` (`Models/LevelMeta.cs`): name/description/authors/license/
   per-resource UGC metadata. **Not a field of `Level`** — a wholly separate aggregate, easy to
   assume otherwise since both describe "the same level."
 - `settings.json` — a `UserSettings` (device-wide player options, not per-level).
