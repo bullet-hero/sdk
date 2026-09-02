@@ -1,0 +1,71 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    The SDK compiled WITHOUT Unity - the same sources Unity builds from BulletHeroSDK.asmdef, as a
+    plain library a server or a tool can reference. That is not a side project: the SDK is
+    deliberately engine-free (`noEngineReferences: true`, and every mention of UnityEngine in the
+    core is a comment), and this file is what keeps that claim honest instead of merely stated.
+
+    netstandard2.1 and C# 9 are NOT chosen here - they are what the Unity project compiles with
+    (apiCompatibilityLevel 6 = .NET Standard 2.1). Raising either would let code in that Unity then
+    refuses, which turns this project from a check into a second dialect.
+
+    UNITYINTEGRATION/ IS INCLUDED WHOLE, and that is the difference between it and
+    UnityExtensions/. Everything in UnityIntegration is DUAL by contract - every file compiles with
+    and without an engine, `#if BHSDK_UNITY` choosing between the two - so it belongs to this
+    library exactly as much as to the Unity one, and the rule is enforced by this project failing
+    to build the moment a file breaks it. UnityExtensions/ makes no such promise: it needs
+    UnityEngine, Unity.Mathematics and Unity.Collections unconditionally. See UnityIntegration's own
+    README.md.
+
+    THREE FOLDERS ARE EXCLUDED, each for its own reason:
+      Roslyn/          - analyzers/generators; its own project, and it targets netstandard2.0
+                         against the compiler's Roslyn rather than this library's dependencies.
+      UnityExtensions/ - genuinely engine-bound, see above.
+      Tests/           - its own project, so `dotnet build` here builds no test framework in.
+
+    BHSDK_UNITY is deliberately NOT defined: it is what Player Settings define for the Unity build,
+    and the whole point of this project is to compile the branch Unity never takes.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <AssemblyName>BH.SDK</AssemblyName>
+    <RootNamespace>BH.SDK</RootNamespace>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="**\*.cs"
+             Exclude="Roslyn\**\*.cs;UnityExtensions\**\*.cs;Tests\**\*.cs;bin~\**\*.cs;obj~\**\*.cs" />
+    <!--
+      The one file of UnityIntegration/ that does NOT come along. Two assemblies in Unity means two
+      AssemblyInfo.cs, and merging them into one here would declare InternalsVisibleTo twice for the
+      same target - CS0579. The root AssemblyInfo.cs already names everyone who needs it.
+    -->
+    <Compile Remove="UnityIntegration\AssemblyInfo.cs" />
+  </ItemGroup>
+
+  <!--
+    The same three NuGet packages the Unity project installs through NuGetForUnity (Assets/
+    packages.config), at the same versions, plus Newtonsoft.Json itself - which Unity supplies as
+    the com.unity.nuget.newtonsoft-json package rather than from packages.config.
+
+    SharpZipLib MUST resolve its netstandard2.1 group; its netstandard2.0 group pulls System.Memory
+    and System.Threading.Tasks.Extensions, and the latter defines ValueTask a second time (CS0433).
+    Targeting netstandard2.1 above is what selects the right one.
+  -->
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Newtonsoft.Json.Bson" Version="1.0.3" />
+    <PackageReference Include="BouncyCastle.Cryptography" Version="2.7.0" />
+    <PackageReference Include="SharpZipLib" Version="1.4.2" />
+  </ItemGroup>
+
+</Project>

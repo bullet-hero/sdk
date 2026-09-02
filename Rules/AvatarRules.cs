@@ -51,8 +51,20 @@ namespace BH.SDK.Rules
         /// <summary> How long a dash lasts, in seconds. </summary>
         public const float DashTime = 0.15f;
 
-        /// <summary> How long after a dash before another may be taken, in seconds. </summary>
-        public const float DashCooldown = 0.25f;
+        // MEASURED FROM THE LAUNCH, NOT FROM THE LANDING, and it is LONGER THAN
+        // DashInvulnerabilityTime BY DESIGN - that difference IS the vulnerability window. Spending
+        // every dash the moment the cooldown allows buys speed at the price of control, and the
+        // 0.15 s in between is what the bargain costs: a player who never stops dashing is still
+        // exposed for three sevenths of every cycle, and no input can close that gap.
+        //
+        // IT WAS 0.25, WHICH LEFT ONLY 0.05 s. That is under one frame at 20 fps, and the collision
+        // pass is a per-frame point sample (GameAvatarService zeroes the radius while i-frames are
+        // up), so on a phone dropping frames the whole window fell BETWEEN two samples and dash
+        // spam really was free. Widening it to 0.35 makes the gap 0.15 s - wider than a frame at
+        // anything above ~7 fps - and AvatarMovement.Observe closes the case below that outright.
+
+        /// <summary> How long after a dash STARTS before another may be taken, in seconds. </summary>
+        public const float DashCooldown = 0.35f;
 
         // A dash grants i-frames, and that is a rule of the game rather than a detail: levels are
         // authored around crossing a solid obstacle by dashing through it, which speed alone could
@@ -61,6 +73,12 @@ namespace BH.SDK.Rules
         // It is its own number rather than DashTime because "how far a dash travels" and "how long you
         // are safe" are two feel decisions. Longer than the dash, as here, is a landing grace; 0 is the
         // global off switch, which a level authored against solid obstacles needs.
+        //
+        // IT MUST STAY SHORTER THAN DashCooldown, and that is the one relation between these numbers
+        // that is a game rule rather than a feel decision: the difference is the only window in which
+        // a dashing player can be hit at all. Raise it to the cooldown and dash spam becomes literal
+        // immunity. AvatarRulesTests pins the ordering; AvatarMovement.Observe makes it hold at any
+        // frame rate, since a window that exists in seconds is worth nothing if no frame samples it.
 
         /// <summary> How long a dash keeps the avatar untouchable, in seconds. 0 means never. </summary>
         public const float DashInvulnerabilityTime = 0.2f;

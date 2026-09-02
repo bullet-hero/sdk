@@ -56,8 +56,8 @@ namespace BH.SDK.Tests
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.VeryEasy)]
-        public void DashCooldown_IsAQuarterSecond()
-            => Assert.AreEqual(0.25f, AvatarRules.DashCooldown, Tolerance);
+        public void DashCooldown_IsSevenTwentieths()
+            => Assert.AreEqual(0.35f, AvatarRules.DashCooldown, Tolerance);
 
         [Test]
         [Author(Metadata.Author.Vertoker)]
@@ -153,6 +153,31 @@ namespace BH.SDK.Tests
         [Category(Metadata.Category.VeryEasy)]
         public void TheDamageTimeout_OutlastsTheKnockback()
             => Assert.Greater(AvatarRules.DamageTimeout, AvatarRules.DamageTime);
+
+        // THE ONE RELATION THAT IS A GAME RULE RATHER THAN A FEEL DECISION. The dash grants i-frames
+        // and the cooldown outlasts them, so the difference is the only window in which a player who
+        // never stops dashing can be hit at all. Equal numbers would make dash spam literal immunity,
+        // and this is the assertion that says so out loud rather than leaving it to two constants
+        // twenty lines apart.
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.VeryEasy)]
+        public void TheCooldown_OutlastsTheIFrames()
+            => Assert.Greater(AvatarRules.DashCooldown, AvatarRules.DashInvulnerabilityTime);
+
+        // AND BY ENOUGH TO BE SAMPLED. The collision pass is a per-frame point sample, so a window
+        // narrower than a frame can fall between two of them and never happen - which is exactly what
+        // 0.05 s did on a phone. AvatarMovement.ExposedSinceDash is the hard guarantee below this
+        // frame rate; the number here is what keeps that guarantee from ever being what holds the
+        // balance up. A tenth of a second is a frame at 10 fps.
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.VeryEasy)]
+        public void TheVulnerabilityWindow_IsWiderThanAFrame()
+            => Assert.GreaterOrEqual(
+                AvatarRules.DashCooldown - AvatarRules.DashInvulnerabilityTime, 0.1f);
 
         // The hitbox is smaller than what is drawn, deliberately: a bullet that visibly clips the
         // outline and does not kill reads as generous, the reverse reads as broken.

@@ -1,14 +1,11 @@
 ﻿using System;
-using UnityEngine;
 #if BHSDK_UNITY
-
-#else
-using System;
+using UnityEngine;
 #endif
 
 namespace BH.SDK
 {
-    public class Cat
+    public static class Cat
     {
         public static void Meow(object message)
         {

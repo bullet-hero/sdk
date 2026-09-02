@@ -47,6 +47,44 @@ What builds need to be created
   - Any console platforms support
   - Any chinese distribution support
 
+### Build variants
+
+Each platform-channel pair ships **two** Build Profiles, `<PLATFORM>_<CHANNEL>_Release` and
+`<PLATFORM>_<CHANNEL>_Debug`. The variant is not a third axis of the specification: it says how a
+build was *compiled*, not which build it *is*, so there is deliberately **no fourth symbol** — Unity
+already defines `DEVELOPMENT_BUILD`, and `Debug.isDebugBuild` already answers the only question
+anyone asks at runtime.
+
+A variant moves exactly two things:
+
+|  | Release | Debug |
+|---|---|---|
+| `BH_USE_BURST` | defined | not defined |
+| Development Build | off | on |
+
+- **`BH_USE_BURST` is the load-bearing half.** Every `[BurstCompile]` in the project sits behind it,
+  so a build without it runs the managed path throughout — the bot's clearance rasterizer costs
+  22 ms a tick that way against 0.6 ms Bursted. Release defines it; that is what makes a shipped
+  build a Bursted one. Debug does not, because Burst-compiled code is what a debugger and a profiler
+  cannot step into.
+- **It is not in Player Settings**, so the Editor, Play mode and the test suites all run Burst-off —
+  the configuration the game is developed and debugged in. Only a build carries it, and only through
+  its profile.
+- **Every profile also repeats the project-wide symbols** (`UNITEXT`, `BHSDK_UNITY`) alongside its
+  own three. Whether Unity appends a profile's defines to Player Settings' or replaces them is not
+  documented for Unity 6.5; carrying the full set is correct either way, and it makes a profile
+  readable on its own.
+
+The profiles are generated, never hand-written — `BuildProfileGeneratorScriptable` in
+`Assets/Settings/Build/` writes one pair per `BuildSpec` asset into `Assets/Settings/Build Profiles/`,
+and re-running it rewrites only the defines and the Development Build flag, leaving every other
+setting on a profile alone. A platform whose Editor module is not installed is skipped and named in
+the report rather than failing the run.
+
+Building **without** the three symbols is a warning on a development build and a hard failure on any
+other: a development binary built straight off a classic platform is an ordinary thing to make while
+working, a store binary compiled as another store's branch is not.
+
 Export compliance
 - The game ships encryption and every storefront asks about it. A level package can be written
   password-protected (`.tar.gz.gpg`) and a level's own document can sit encrypted on disk

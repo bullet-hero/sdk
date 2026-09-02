@@ -1,15 +1,13 @@
 {
-    "name": "BulletHeroSDK.Roslyn",
-    "rootNamespace": "BH.SDK.Roslyn",
+    "name": "BH.SDK.UnityIntegration",
+    "rootNamespace": "BH.SDK",
     "references": [],
-    "includePlatforms": [
-        "Editor"
-    ],
+    "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,
     "precompiledReferences": [],
-    "autoReferenced": false,
+    "autoReferenced": true,
     "defineConstraints": [],
     "versionDefines": [],
     "noEngineReferences": false

@@ -48,6 +48,12 @@
         // already declares that scores and progress attach to.
         public const string StatisticsDirectory = "stats";
 
+        // A DELETION CANDIDATE - nothing writes here any more, see docs/issues/ROSLYN_PLAN.md. It
+        // was a sibling of levels/, backups/ and stats/, and the one of the four that could be
+        // deleted at any moment without losing anything, since everything in it was derived from a
+        // level still on disk.
+        public const string CacheDirectory = "cache";
+
         /// <summary> The player's device-wide statistics, beside the per-level files. </summary>
         public const string StatisticsFileName = "statistics.json";
 

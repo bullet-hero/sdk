@@ -1,0 +1,60 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    The SDK's Roslyn components - analyzers and incremental source generators - built as a plain
+    netstandard2.0 assembly that references no Unity API and no BH.SDK type. This project is
+    the ONLY thing that produces the shipping artifact; Unity's own compilation of
+    BH.SDK.Roslyn.Sources.asmdef over the same .cs files exists purely so the IDE resolves and
+    error-checks them while they are edited, and its output in Library/ScriptAssemblies is never
+    used as an analyzer.
+
+    THE ARTIFACT IS NAMED BH.SDK.Roslyn AND THE ASMDEF IS NOT, which is the opposite way
+    round from every other assembly here. Unity refuses to have a plugin .dll whose FILE NAME
+    matches an .asmdef's name - "Rename the assemblies to avoid hard to diagnose issues and
+    crashes" - and compiling one folder of sources twice produces exactly that collision. The
+    shipped thing keeps the honest name; the IDE-only asmdef takes the suffix.
+
+    Unity-independent by construction, and that is the point of the two ItemGroups below: with
+    Refs/ present (Unity Editor installed them, see the consumer's Roslyn build tool) it compiles
+    against exactly the Roslyn the Unity compiler itself carries; with Refs/ absent - a server, CI,
+    or the standalone SDK repo with no Unity anywhere - it restores the same contract from NuGet.
+    Either way `dotnet build -c Release` is the whole build.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <AssemblyName>BH.SDK.Roslyn</AssemblyName>
+    <RootNamespace>BH.SDK.Roslyn</RootNamespace>
+    <IsRoslynComponent>true</IsRoslynComponent>
+    <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <!-- RS2008: analyzer release tracking. This project ships inside a game SDK, not on NuGet. -->
+    <NoWarn>$(NoWarn);RS2008</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Analyzers\**\*.cs" />
+    <Compile Include="Generators\**\*.cs" />
+  </ItemGroup>
+
+  <!-- Unity present: the exact Roslyn the Editor compiles with, installed into Refs/ by the tool. -->
+  <ItemGroup Condition="Exists('$(MSBuildProjectDirectory)\Refs\Microsoft.CodeAnalysis.CSharp.dll')">
+    <Reference Include="Microsoft.CodeAnalysis" HintPath="Refs\Microsoft.CodeAnalysis.dll" Private="false" />
+    <Reference Include="Microsoft.CodeAnalysis.CSharp" HintPath="Refs\Microsoft.CodeAnalysis.CSharp.dll" Private="false" />
+    <Reference Include="System.Collections.Immutable" HintPath="Refs\System.Collections.Immutable.dll" Private="false" />
+    <Reference Include="System.Memory" HintPath="Refs\System.Memory.dll" Private="false" />
+    <Reference Include="System.Runtime.CompilerServices.Unsafe" HintPath="Refs\System.Runtime.CompilerServices.Unsafe.dll" Private="false" />
+  </ItemGroup>
+
+  <!-- No Unity: restore the contract. Never NEWER than the compiler that will load the result. -->
+  <ItemGroup Condition="!Exists('$(MSBuildProjectDirectory)\Refs\Microsoft.CodeAnalysis.CSharp.dll')">
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.3.0"
+                      PrivateAssets="all" ExcludeAssets="runtime" />
+  </ItemGroup>
+
+</Project>

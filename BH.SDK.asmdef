@@ -1,11 +1,8 @@
 {
-    "name": "BulletHeroSDK.UnityExtensions",
+    "name": "BH.SDK",
     "rootNamespace": "BH.SDK",
     "references": [
-        "GUID:3e24c967b1310ae4bb23d22884987601",
-        "GUID:6acb6cdb79384d57a2041471718f1534",
-        "GUID:d8b63aba1907145bea998dd612889d6b",
-        "GUID:e0cd26848372d4e5c891c569017e11f1"
+        "GUID:6acb6cdb79384d57a2041471718f1534"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
@@ -15,5 +12,5 @@
     "autoReferenced": true,
     "defineConstraints": [],
     "versionDefines": [],
-    "noEngineReferences": false
+    "noEngineReferences": true
 }

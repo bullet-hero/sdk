@@ -1,0 +1,22 @@
+<Project>
+
+  <!--
+    Shared by every .csproj in this repository, and it exists for one reason: MSBuild's default bin/
+    and obj/ sit next to the project file, which inside a Unity project means inside Assets/ - and
+    Unity imports every folder under Assets/ that is not suffixed with '~'. Left alone, each build
+    would hand the Editor a second copy of every assembly here as an ordinary managed plugin. The
+    tilde is the only mechanism Unity offers for "a real folder the Editor must not look into".
+
+    It has to be a props file rather than a PropertyGroup in each project: BaseIntermediateOutputPath
+    is read while the .NET SDK's own props are imported, i.e. BEFORE a project's own PropertyGroup
+    is evaluated, so setting it there leaves obj/ exactly where it was.
+
+    Per PROJECT directory, not per repository root, so each project keeps its output beside itself.
+  -->
+
+  <PropertyGroup>
+    <BaseOutputPath>$(MSBuildProjectDirectory)\bin~\</BaseOutputPath>
+    <BaseIntermediateOutputPath>$(MSBuildProjectDirectory)\obj~\</BaseIntermediateOutputPath>
+  </PropertyGroup>
+
+</Project>

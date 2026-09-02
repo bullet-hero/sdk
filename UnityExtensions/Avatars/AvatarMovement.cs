@@ -44,11 +44,37 @@ namespace BH.SDK.Avatars
         /// <summary> Whether that dash was launched with a direction rather than from a standstill. </summary>
         public readonly bool DashHadMove;
 
+        // A WINDOW THAT EXISTS IN SECONDS IS WORTH NOTHING IF NO FRAME SAMPLES IT, and this flag is
+        // the whole of the fix. DashCooldown outlasts DashInvulnerabilityTime by 0.15 s precisely so
+        // that a player spending every dash is still exposed between them - but the collision pass is
+        // a per-frame POINT SAMPLE (the consumer zeroes the avatar radius while the i-frames are up,
+        // so an invulnerable frame skips the narrowphase entirely rather than discarding its result).
+        // On a device slow enough that one frame is longer than the gap, every sample lands inside a
+        // dash i-frame window and the exposure never happens at all. At the shipped numbers that was
+        // true below ~7 fps; before the cooldown moved to 0.35 it was true below TWENTY, which is
+        // inside what a phone does under a heavy level, and dash spam there was genuine immunity.
+        //
+        // So the gap is a COUNTED SAMPLE rather than an elapsed duration: a dash is refused until the
+        // avatar has actually been observed while touchable at least once since the last one. Below
+        // the frame rate where the timed gap fits between two frames the dash simply comes back
+        // slower, which costs the player rather than paying them - the only direction this may fail
+        // in. Above it the flag is already true long before the cooldown expires and nothing changes.
+        //
+        // EVERY CONSUMER MUST CALL Observe ONCE PER SIMULATED FRAME, and the failure mode if one
+        // forgets is fail-CLOSED: that avatar dashes once and never again. AvatarController does it
+        // inside UpdateAvatar (which covers the game, the editor preview and the menu arena at once),
+        // and the warm bot route verifier does it in StepReplay, in the same order relative to the
+        // dash decision - a verifier whose dash is swallowed where the game is not certifies routes
+        // the game will not fly.
+
+        /// <summary> Whether a touchable frame has been sampled since the last dash launched. </summary>
+        public readonly bool ExposedSinceDash;
+
         private readonly TimePoint _dashStarted;
         private readonly TimePoint _damagedAt;
 
         private AvatarMovement(float2 position, TimePoint dashStarted, float2 dashDirection,
-            bool dashHadMove, TimePoint damagedAt, float2 knockoutDirection)
+            bool dashHadMove, TimePoint damagedAt, float2 knockoutDirection, bool exposedSinceDash)
         {
             Position = position;
             _dashStarted = dashStarted;
@@ -56,11 +82,16 @@ namespace BH.SDK.Avatars
             DashHadMove = dashHadMove;
             _damagedAt = damagedAt;
             KnockoutDirection = knockoutDirection;
+            ExposedSinceDash = exposedSinceDash;
         }
+
+        // Exposed, not because a frame has been sampled but because no dash has been taken: the very
+        // first dash of a run may never wait on a window that has nothing to open it.
 
         /// <summary> An avatar standing at a point, having done nothing yet. </summary>
         public static AvatarMovement At(float2 position)
-            => new(position, TimePoint.Invalid, float2.zero, false, TimePoint.Invalid, float2.zero);
+            => new(position, TimePoint.Invalid, float2.zero, false, TimePoint.Invalid, float2.zero,
+                true);
 
         #region State
 
@@ -72,10 +103,14 @@ namespace BH.SDK.Avatars
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool InDamage(float time) => _damagedAt.IsActiveAt(time, AvatarRules.DamageTime);
 
-        /// <summary> Whether a dash asked for now would be taken rather than swallowed by the
-        /// cooldown. </summary>
+        // TWO GATES, AND THE SECOND IS NOT REDUNDANT WITH THE FIRST. The cooldown is the timed half
+        // and answers the balance; ExposedSinceDash is the sampled half and answers the frame rate.
+        // See its own note above for why a duration alone could not.
+
+        /// <summary> Whether a dash asked for now would be taken rather than swallowed. </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool CanDash(float time) => !_dashStarted.InCooldown(time, AvatarRules.DashCooldown);
+        public bool CanDash(float time)
+            => ExposedSinceDash && !_dashStarted.InCooldown(time, AvatarRules.DashCooldown);
 
         // The window is a PARAMETER while every other one is read from AvatarRules, and the reason is
         // that 0 is a real value here: it switches i-frames off entirely, which a level authored around
@@ -119,7 +154,31 @@ namespace BH.SDK.Avatars
         /// <summary> The same avatar, moved. </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public AvatarMovement Advance(float2 position)
-            => new(position, _dashStarted, DashDirection, DashHadMove, _damagedAt, KnockoutDirection);
+            => new(position, _dashStarted, DashDirection, DashHadMove, _damagedAt, KnockoutDirection,
+                ExposedSinceDash);
+
+        // ONE CALL PER SIMULATED FRAME, FROM EVERY CONSUMER - see the ExposedSinceDash note above. It
+        // asks the SAME question the consumer is about to answer when it sizes the avatar collider,
+        // at the same instant, so "this frame could have been hit" and "this frame counted as
+        // exposure" can never disagree.
+        //
+        // The window is a parameter for the reason InInvulnerability takes one: 0 means i-frames are
+        // off, and with them off every frame is exposure, so the gate collapses back to the plain
+        // cooldown rather than blocking a dash a level deliberately made unprotected.
+        //
+        // It is deliberately blind to whether the avatar is COLLIDABLE at all. A level that hides the
+        // player has zeroed the radius itself, and gating the dash on that would let authored content
+        // disarm the dash for as long as it stayed hidden. What is counted is the i-frames lapsing,
+        // which is the only thing the dash itself controls.
+
+        /// <summary> Records that this frame was sampled: if the avatar was touchable, the next dash
+        /// is released. </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public AvatarMovement Observe(float time, float window)
+            => ExposedSinceDash || InInvulnerability(time, window)
+                ? this
+                : new AvatarMovement(Position, _dashStarted, DashDirection, DashHadMove, _damagedAt,
+                    KnockoutDirection, true);
 
         // The direction is captured ONCE here rather than re-aimed per frame, and Step drives the whole
         // dash along it. See Step's own note: a re-aimed dash towards a target reverses the moment it
@@ -133,7 +192,8 @@ namespace BH.SDK.Avatars
             var hasMove = length > math.EPSILON;
 
             return new AvatarMovement(Position, new TimePoint(time),
-                hasMove ? direction / length : float2.zero, hasMove, _damagedAt, KnockoutDirection);
+                hasMove ? direction / length : float2.zero, hasMove, _damagedAt, KnockoutDirection,
+                false);
         }
 
         // A HIT IS AN EVENT WITH A DURATION, NOT A FRAME. The direction is captured once, for two
@@ -155,7 +215,8 @@ namespace BH.SDK.Avatars
             var length = math.length(direction);
 
             return new AvatarMovement(Position, _dashStarted, DashDirection, DashHadMove,
-                new TimePoint(time), length > math.EPSILON ? direction / length : float2.zero);
+                new TimePoint(time), length > math.EPSILON ? direction / length : float2.zero,
+                ExposedSinceDash);
         }
 
         #endregion

@@ -9,11 +9,28 @@ scoped to the SDK repo itself.** Prefer editing here directly over patching a ve
 Unity project's own `CLAUDE.md`s document the *consumer* side (`Core`'s "SDK model vs runtime state"
 split, `GameEditor`'s `TargetScope`/Prefab Mode).
 
-The main `BulletHeroSDK` asmdef is deliberately Unity-independent: `noEngineReferences: true`,
-depends only on Newtonsoft.Json/Newtonsoft.Json.Bson (NuGet). Everything that genuinely needs
-`UnityEngine` lives in separate, opt-in asmdefs (`UnityExtensions/`, `UnityIntegration/`) so the core
-model/serialization/rules code can be reused standalone (e.g. by external tooling, a future
+The main `BH.SDK` asmdef is deliberately Unity-independent: `noEngineReferences: true`,
+depends only on Newtonsoft.Json/Newtonsoft.Json.Bson (NuGet). Everything that touches `UnityEngine`
+lives in separate, opt-in asmdefs — `UnityIntegration/` (**dual**: every file compiles with and
+without an engine, `#if BHSDK_UNITY` choosing, so it ships in both builds) and `UnityExtensions/`
+(**engine-only**, no such branch) — so the core model/serialization/rules code can be reused
+standalone (e.g. by external tooling, a future
 companion website) without dragging Unity along.
+
+**That independence is now CHECKED rather than merely stated.** Three `.csproj` files build this
+repo with no Unity anywhere, and all three are the same sources Unity compiles — never a copy:
+
+| Project | Target | What it builds |
+|---|---|---|
+| `BH.SDK.csproj` | netstandard2.1 | The library: everything except `Roslyn/`, `Tests/` and `UnityExtensions/`. **`UnityIntegration/` is included WHOLE** — every file there is dual by contract (`#if BHSDK_UNITY`), and this build is what enforces it; see its `README.md` |
+| `Tests/BH.SDK.Tests.csproj` | net8.0 | The same 47 fixtures the Unity Test Runner runs, under `dotnet test` — **447 passing** outside Unity |
+| `Roslyn/BH.SDK.Roslyn.csproj` | netstandard2.0 | The analyzers and generators — see `Roslyn/README.md` |
+
+`netstandard2.1` and `LangVersion 9.0` are not choices: they are what the Unity project compiles
+with (`apiCompatibilityLevel: 6`). Raising either would let code in that Unity then refuses.
+`Directory.Build.props` redirects every project's output to `bin~`/`obj~`, because **Unity imports
+any folder under `Assets/` that is not suffixed with a tilde** — a plain `bin/` hands the Editor a
+second copy of every assembly here.
 
 ## Mental model
 
@@ -109,6 +126,15 @@ alive so `GamePlayer`'s jobs can re-roll randomness every frame instead of freez
   `Package/` (what a level package contains, written and read; the reader is also the future
   server's entry point, which is why every refusal is a value rather than an exception).
   **This is where the SDK started reading files**, so any header claiming it reads none is stale.
+  **`Cache/` is DEAD CODE and a deletion candidate** - nothing in the consumer constructs it any
+  more, and it is kept only so the session that builds the `.blob` format can read it first. It is
+  still worth reading for exactly that: `LevelObjectCodec` is the object tree written out BY HAND,
+  i.e. a worked example of what a generated codec has to emit and which of this model's types are
+  polymorphic; `LevelCacheKey` is a staleness rule that a format will not need; `LevelCacheCodec`
+  shows the hand-written/serializer split. The measured reason any of it exists is that Newtonsoft
+  binds members by reflection, and `Level.Copy()` shows what the same graph costs without any
+  (131 ms against 11-15 s). `docs/issues/ROSLYN_PLAN.md` in the consumer is the context for
+  replacing it; `LOADING_HISTORY.md` §10 is its record.
   Also `CryptographyService`
   (AES-256-CBC, and NOT what protects a level any more — see its own header), `ModificationService` (reflection path-based get/set, see "Modification system"
   below), `TextFormatService` (`{variable}` string templating), `FontCharacterService` (builds
@@ -198,10 +224,23 @@ alive so `GamePlayer`'s jobs can re-roll randomness every frame instead of freez
   (`RuleLevelFrame`'s upper bound is exclusive).
   Has its own `README.md`; full design in the consuming project's
   `docs/superpowers/specs/2026-08-05-sdk-generators-design.md`.
-- **Roslyn/** — a *separate* asmdef (`BulletHeroSDK.Roslyn`, Editor-only, `autoReferenced: false`),
-  entirely `#if BHSDK_ROSLYN`-gated (that define is never set inside the Unity project, so this
-  compiles to an empty assembly here — it's meant for a standalone analyzer-package build of the SDK
-  repo). `RuleContainerAnalyzer.cs` — see "Rules & validation" below.
+- **Roslyn/** — the compile-time half: analyzers and incremental source generators, **running**
+  since 2026-09-02 (they never had before: the gate `#if BHSDK_ROSLYN` was defined nowhere, and the
+  `RoslynAnalyzer` label sat on the asmdef, which Unity ignores — it honours that label on a
+  precompiled `.dll` alone). Its own `README.md` is the record; the shape in one line: the sources
+  are compiled TWICE, by `BH.SDK.Roslyn.Sources.asmdef` (Editor-only, referenced by nothing, purely
+  so the IDE resolves them) and by `BH.SDK.Roslyn.csproj`, whose output — `BH.SDK.Roslyn.dll` in
+  this folder's PARENT, i.e. the SDK root — is the only one Unity loads. **The artifact sits in the
+  SDK root rather than in `Roslyn/`** because Unity scopes an analyzer to the asmdef owning its
+  folder plus every assembly referencing it: inside `Roslyn/` it reached nothing, in the root it
+  reaches `BH.SDK` and the ~25 assemblies built on it. The asmdef takes the `.Sources` suffix
+  because Unity refuses a plugin whose file name equals an asmdef's. `Refs/` holds the Editor's own
+  Roslyn assemblies, installed rather than committed. **The build tooling ships with the SDK**, in
+  `UnityExtensions/Editor/` (`BH.SDK.UnityExtensions.Editor`, Editor-only): `RoslynLayout` (every
+  path, derived from this assembly's own asmdef location - nothing about the consuming project is
+  hardcoded), `RoslynBuilder` (Tools > Roslyn > Build Analyzer, shelling out to the `dotnet` Unity
+  ships), `RoslynCompilerReferences` and `RoslynImportSettings`. It is deliberately specialised to
+  `BH.SDK.Roslyn` rather than generic - one project, one artifact, one folder of references.
 - **UnityExtensions/** — everything that genuinely needs Unity, in four groups. Own asmdef,
   unconditionally requires `UnityEngine` (unlike the core SDK), plus `Unity.Mathematics` and
   `Unity.Collections`, which is what the last three of these brought in:
@@ -228,8 +267,8 @@ alive so `GamePlayer`'s jobs can re-roll randomness every frame instead of freez
   `MeowError`/...) gated by `#if BHSDK_UNITY` per call, falling back to `Console.WriteLine`. Own
   asmdef, distinct purpose from `UnityExtensions/` (logging, not data conversion) — don't conflate
   the two folders.
-- **Tests/** — `BulletHeroSDK.Tests.asmdef`, NUnit. **There is a SECOND test assembly**,
-  `UnityExtensions/Tests/` (`BulletHeroSDK.UnityExtensions.Tests`), and the split is forced rather
+- **Tests/** — `BH.SDK.Tests.asmdef`, NUnit. **There is a SECOND test assembly**,
+  `UnityExtensions/Tests/` (`BH.SDK.UnityExtensions.Tests`), and the split is forced rather
   than stylistic: this one is `noEngineReferences: true` and therefore cannot reference
   `UnityExtensions` at all. It holds `AvatarMovementTests`/`AvatarMovementStateTests`,
   `Transform2DTests`/`RectTransform2DTests`, and `Approx.cs` — a fixture helper, not a test, that
@@ -968,8 +1007,8 @@ value can lead nowhere. `RuleContainerAttribute` is `AttributeTargets.Class`, so
 collection of value types, since the walk only descends into items/values — is a proven dead end and
 is never fetched at all. `Tests/RuleAnalyzerPerformanceTests` pins the result.
 
-`Roslyn/RuleContainerAnalyzer.cs` (separate `BulletHeroSDK.Roslyn` asmdef, `#if BHSDK_ROSLYN`-gated,
-so inert inside the Unity project) enforces at compile time that every `[RuleContainer]` class is
+`Roslyn/Analyzers/RuleContainerAnalyzer.cs` (shipped as `BH.SDK.Roslyn.dll` in the SDK root, and
+live in the Editor since 2026-09-02) enforces at compile time that every `[RuleContainer]` class is
 non-static, non-abstract, and has a public parameterless constructor — because several `Fix*` paths
 (`RuleNotNullAttribute`, the `RuleIPrimitiveXxx` family) call `Activator.CreateInstance` on property
 *types* at runtime, and a violation here would otherwise only surface as a rare, hard-to-place
@@ -1020,7 +1059,7 @@ non-static, non-abstract, and has a public parameterless constructor — because
 
 ## Testing
 
-`Tests/` (`BulletHeroSDK.Tests.asmdef`, NUnit): `MockData.cs` is the shared fixture builder (moved out
+`Tests/` (`BH.SDK.Tests.asmdef`, NUnit): `MockData.cs` is the shared fixture builder (moved out
 of `SerializationTests` specifically so every test file can reuse it) — `CreateTestXxx`/
 `CreateValidXxx` factories deliberately touch as much field surface as possible while staying
 rule-valid; `CreateInvalidXxx` factories are deliberately minimal, each encoding exactly one rule

@@ -1,0 +1,10 @@
+# Roslyn compiler references, copied out of the installed Unity Editor rather than committed - see
+# Roslyn/BH.SDK.Roslyn.csproj and UnityExtensions/Editor/RoslynCompilerReferences.cs.
+Roslyn/Refs/
+Roslyn/Refs.meta
+
+# MSBuild output. The tilde is not decoration: Unity imports every folder under Assets/ that is not
+# suffixed with one, so a plain bin/obj would hand the Editor a second copy of every assembly here.
+bin~/
+obj~/
+*.user

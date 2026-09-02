@@ -1,12 +1,11 @@
-﻿#if BHSDK_ROSLYN
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 
-namespace BHSDK.Roslyn
+namespace BH.SDK.Roslyn
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public class RuleContainerAnalyzer : DiagnosticAnalyzer
@@ -108,4 +107,3 @@ namespace BHSDK.Roslyn
         }
     }
 }
-#endif

@@ -1,0 +1,54 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    The SDK's own test suite, run OUTSIDE Unity with `dotnet test`. It is the same 47 files the
+    Unity Test Runner executes from BH.SDK.Tests.asmdef - not a copy, not a subset - which is
+    the whole reason it is worth having: a red test here means the engine-free build is broken, and
+    it can be seen on a machine with no Editor installed.
+
+    net8.0 rather than netstandard2.1, because a test project is an executable host: the framework
+    is what VSTest loads it into, and it says nothing about what the LIBRARY targets. The library
+    under test stays netstandard2.1 through the ProjectReference.
+
+    THE UNITY-SIDE ASMDEF AND THIS FILE MUST BE KEPT IN STEP BY HAND. Unity's asmdef enumerates
+    references and constrains itself to UNITY_INCLUDE_TESTS; this file enumerates packages. Adding a
+    dependency in one and not the other produces a suite that passes in one place and does not
+    compile in the other.
+
+    UnityExtensions/Tests is deliberately absent: those cover the Unity-dependent half of the SDK
+    (RectTransform2D, AvatarMovement) and cannot run without an engine.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <AssemblyName>BH.SDK.Tests</AssemblyName>
+    <RootNamespace>BH.SDK</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BH.SDK.csproj" />
+  </ItemGroup>
+
+  <!--
+    NUnit 3, matching com.unity.ext.nunit - Unity has never shipped NUnit 4, and its [Author] /
+    [Category] attributes plus the constraint model are what every fixture here is written against.
+  -->
+  <ItemGroup>
+    <PackageReference Include="NUnit" Version="3.14.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+
+</Project>
