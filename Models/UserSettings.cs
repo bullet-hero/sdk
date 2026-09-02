@@ -1,4 +1,5 @@
 ﻿using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Models.SettingGroups;
 using BH.SDK.Models.SettingGroups.Controls;
@@ -21,7 +22,8 @@ namespace BH.SDK.Models
     // so this is the domain's first snapshot-and-migrator pair (Versions/V1_0/).
     [RuleContainer]
     [DataVersion(DataDomains.UserSettings, 2, 0)]
-    public class UserSettings : IModel<UserSettings>, IMoveable<UserSettings>
+    [GenerateModel]
+    public sealed partial class UserSettings : IModel<UserSettings>, IMoveable<UserSettings>
     {
         /// <summary> Options fitting no other group (resource loading, later language). </summary>
         [RuleNotNull]
@@ -97,61 +99,5 @@ namespace BH.SDK.Models
             Interface = interfaceSettings;
             Keybindings = keybindings;
         }
-
-        public void Reset()
-        {
-            General.Reset();
-            Controls.Reset();
-            Audio.Reset();
-            Graphics.Reset();
-            GameEditor.Reset();
-            Interface.Reset();
-            Keybindings.Reset();
-        }
-
-        public object Clone() => Copy();
-
-        public UserSettings Copy() => new(General.Copy(), Controls.Copy(),
-            Audio.Copy(), Graphics.Copy(), GameEditor.Copy(), Interface.Copy(), Keybindings.Copy());
-
-        public void Pull(UserSettings source)
-        {
-            General.Pull(source.General);
-            Controls.Pull(source.Controls);
-            Audio.Pull(source.Audio);
-            Graphics.Pull(source.Graphics);
-            GameEditor.Pull(source.GameEditor);
-            Interface.Pull(source.Interface);
-            Keybindings.Pull(source.Keybindings);
-        }
-
-        public void Update(UserSettings src)
-        {
-            General = src.General.Copy();
-            Controls = src.Controls.Copy();
-            Audio = src.Audio.Copy();
-            Graphics = src.Graphics.Copy();
-            GameEditor = src.GameEditor.Copy();
-            Interface = src.Interface.Copy();
-            Keybindings = src.Keybindings.Copy();
-        }
-
-        public bool Equals(UserSettings other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return General.Equals(other.General)
-                   && Controls.Equals(other.Controls)
-                   && Audio.Equals(other.Audio)
-                   && Graphics.Equals(other.Graphics)
-                   && GameEditor.Equals(other.GameEditor)
-                   && Interface.Equals(other.Interface)
-                   && Keybindings.Equals(other.Keybindings);
-        }
-
-        public override bool Equals(object obj) => obj is UserSettings value && Equals(value);
-
-        public override int GetHashCode() =>
-            HashCode.Combine(General, Controls, Audio, Graphics, GameEditor, Interface, Keybindings);
     }
 }

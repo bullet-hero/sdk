@@ -1,4 +1,5 @@
 using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Enums.Meta;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Rules;
@@ -15,7 +16,7 @@ namespace BH.SDK.Models.Meta
     // moderator can act on.
     //
     // Both timestamps are UTC, and the only reason nothing enforces that is that nothing can: a
-    // DateTime carries its Kind through JSON (ISO-8601 with the offset) and through BSON (a UTC
+    // DateTime carries its Kind through JSON (ISO-8601 with the offset) and through the blob (UTC
     // instant by definition), but a caller handing over a Local one still writes a moment that reads
     // differently on another machine. Whoever fills these in converts first - a permission that
     // lapses "on the 3rd" must not lapse a day early for a moderator in another timezone.
@@ -26,7 +27,8 @@ namespace BH.SDK.Models.Meta
 
     /// <summary> One rights holder's permission to use a resource, and the evidence for it. </summary>
     [RuleContainer]
-    public class PermissionGrant : IModel<PermissionGrant>
+    [GenerateModel]
+    public sealed partial class PermissionGrant : IModel<PermissionGrant>
     {
         /// <summary> Who granted it - the rights holder, not the level author. </summary>
         [RuleNotNull]
@@ -77,15 +79,6 @@ namespace BH.SDK.Models.Meta
             ProofUrl = proofUrl;
             ProofText = proofText;
         }
-        public void Reset()
-        {
-            Grantor = new Author();
-            Scope = PermissionScope.Undefined;
-            GrantedAt = new DateTime();
-            ExpiresAt = new DateTime();
-            ProofUrl = string.Empty;
-            ProofText = string.Empty;
-        }
 
         // An unset `now` is "this caller has no clock", not "the epoch". A client checking a level
         // offline still has to reach a verdict, and lapsing every dated grant because nobody passed
@@ -103,45 +96,5 @@ namespace BH.SDK.Models.Meta
         /// <summary> True when there is something a moderator can actually check. </summary>
         public bool HasProof() => !string.IsNullOrWhiteSpace(ProofUrl)
                                   || !string.IsNullOrWhiteSpace(ProofText);
-
-        public object Clone() => Copy();
-        public PermissionGrant Copy() => new(Grantor.Copy(), Scope,
-            GrantedAt, ExpiresAt, ProofUrl, ProofText);
-
-        public void Update(PermissionGrant src)
-        {
-            Grantor = src.Grantor.Copy();
-            Scope = src.Scope;
-            GrantedAt = src.GrantedAt;
-            ExpiresAt = src.ExpiresAt;
-            ProofUrl = src.ProofUrl;
-            ProofText = src.ProofText;
-        }
-
-        public void Pull(PermissionGrant src)
-        {
-            Grantor.Pull(src.Grantor);
-            Scope = src.Scope;
-            GrantedAt = src.GrantedAt;
-            ExpiresAt = src.ExpiresAt;
-            ProofUrl = src.ProofUrl;
-            ProofText = src.ProofText;
-        }
-
-        public override bool Equals(object obj) => obj is PermissionGrant value && Equals(value);
-        public override int GetHashCode() => HashCode.Combine(Grantor, (int)Scope,
-            GrantedAt, ExpiresAt, ProofUrl, ProofText);
-
-        public bool Equals(PermissionGrant other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return Grantor.Equals(other.Grantor)
-                   && Scope == other.Scope
-                   && GrantedAt == other.GrantedAt
-                   && ExpiresAt == other.ExpiresAt
-                   && ProofUrl.Equals(other.ProofUrl)
-                   && ProofText.Equals(other.ProofText);
-        }
     }
 }

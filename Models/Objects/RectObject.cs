@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Enums;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Models.Keyframes;
@@ -8,8 +9,6 @@ using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
 using BH.SDK.Utils;
 using Newtonsoft.Json;
-
-// ReSharper disable NonReadonlyMemberInGetHashCode
 
 namespace BH.SDK.Models.Objects
 {
@@ -22,7 +21,8 @@ namespace BH.SDK.Models.Objects
     /// not "data is missing".
     /// </summary>
     [RuleContainer]
-    public class RectObject : IFrameBounds, INameable, IModel<RectObject>, IUpdatable<RectObject>
+    [GenerateModel]
+    public partial class RectObject : IFrameBounds, INameable, IModel<RectObject>, IUpdatable<RectObject>
     {
         public virtual ObjectType GetModelType() => ObjectType.RectObject;
 
@@ -148,116 +148,6 @@ namespace BH.SDK.Models.Objects
             AnchorsMin = anchorsMin;
             AnchorsMax = anchorsMax;
             Pivots = pivots;
-        }
-        public virtual void Reset()
-        {
-            ObjectId = ObjectId.Null;
-            ParentObjectId = ObjectId.Null;
-            Name = string.Empty;
-            Active = true;
-            Span = new FrameSpan();
-            Layer = ValueRules.DefaultLayer;
-            
-            Positions.Clear();
-            Rotations.Clear();
-            Scales.Clear();
-            Sizes.Clear();
-            AnchorsMin.Clear();
-            AnchorsMax.Clear();
-            Pivots.Clear();
-        }
-
-        public virtual object Clone() => CopyImpl();
-        public virtual RectObject Copy() => CopyImpl();
-        
-        private RectObject CopyImpl() => new(ObjectId, ParentObjectId, Name, Active, Span, Layer,
-            Positions.CopyList(), Rotations.CopyList(), Scales.CopyList(), Sizes.CopyList(),
-            AnchorsMin.CopyList(), AnchorsMax.CopyList(), Pivots.CopyList());
-        
-        public void Update(RectObject src)
-        {
-            ObjectId = src.ObjectId;
-            ParentObjectId = src.ParentObjectId;
-            Name = src.Name;
-            Active = src.Active;
-            Span = src.Span;
-            Layer = src.Layer;
-            
-            Positions = src.Positions.CopyList();
-            Rotations = src.Rotations.CopyList();
-            Scales = src.Scales.CopyList();
-            Sizes = src.Sizes.CopyList();
-            AnchorsMin = src.AnchorsMin.CopyList();
-            AnchorsMax = src.AnchorsMax.CopyList();
-            Pivots = src.Pivots.CopyList();
-        }
-
-        public void Pull(RectObject src)
-        {
-            ObjectId = src.ObjectId;
-            ParentObjectId = src.ParentObjectId;
-            Name = src.Name;
-            Active = src.Active;
-            Span = src.Span;
-            Layer = src.Layer;
-            Positions = src.Positions.CopyList();
-            Rotations = src.Rotations.CopyList();
-            Scales = src.Scales.CopyList();
-            Sizes = src.Sizes.CopyList();
-            AnchorsMin = src.AnchorsMin.CopyList();
-            AnchorsMax = src.AnchorsMax.CopyList();
-            Pivots = src.Pivots.CopyList();
-        }
-
-        public override bool Equals(object obj) => obj is RectObject value && Equals(value);
-        public override int GetHashCode()
-        {
-            var hashCode = new HashCode();
-            
-            hashCode.Add(ObjectId);
-            hashCode.Add(ParentObjectId);
-            hashCode.Add(Name);
-            hashCode.Add(Active);
-            hashCode.Add(Span);
-            hashCode.Add(Layer);
-            
-            hashCode.Add(Positions.GetListHashCode());
-            hashCode.Add(Rotations.GetListHashCode());
-            hashCode.Add(Scales.GetListHashCode());
-            hashCode.Add(Sizes.GetListHashCode());
-            hashCode.Add(AnchorsMin.GetListHashCode());
-            hashCode.Add(AnchorsMax.GetListHashCode());
-            hashCode.Add(Pivots.GetListHashCode());
-            
-            return hashCode.ToHashCode();
-        }
-
-        public virtual bool Equals(RectObject other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            
-            var result = EqualsObject(other);
-            return result;
-        }
-        
-        protected bool EqualsObject(RectObject other)
-        {
-            var result = ObjectId.Equals(other.ObjectId)
-                         && ParentObjectId.Equals(other.ParentObjectId)
-                         && Name.Equals(other.Name)
-                         && Active == other.Active
-                         && Span.Equals(other.Span)
-                         // rect content
-                         && Positions.ListEquals(other.Positions)
-                         && Layer.Equals(other.Layer)
-                         && Rotations.ListEquals(other.Rotations)
-                         && Scales.ListEquals(other.Scales)
-                         && Sizes.ListEquals(other.Sizes)
-                         && AnchorsMin.ListEquals(other.AnchorsMin)
-                         && AnchorsMax.ListEquals(other.AnchorsMax)
-                         && Pivots.ListEquals(other.Pivots);
-            return result;
         }
     }
 }

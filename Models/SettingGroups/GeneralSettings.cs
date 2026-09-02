@@ -1,4 +1,5 @@
 ﻿using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
@@ -11,7 +12,8 @@ namespace BH.SDK.Models.SettingGroups
     /// fetched. Language is planned but not stored yet (see the TODO below).
     /// </summary>
     [RuleContainer]
-    public class GeneralSettings : IModel<GeneralSettings>, IMoveable<GeneralSettings>
+    [GenerateModel]
+    public sealed partial class GeneralSettings : IModel<GeneralSettings>, IMoveable<GeneralSettings>
     {
         /// <summary> How many resources download/load at once. Higher is faster on a good
         /// connection, worse on a phone with a weak one. </summary>
@@ -46,41 +48,6 @@ namespace BH.SDK.Models.SettingGroups
             ResourceParallelLoadCount = resourceParallelLoadCount;
             ResourceWebTimeout = resourceWebTimeout;
             Language = language;
-        }
-        public void Reset()
-        {
-            ResourceParallelLoadCount = 2;
-            ResourceWebTimeout = 5f;
-            Language = string.Empty;
-        }
-
-        public object Clone() => Copy();
-        public GeneralSettings Copy() => new(ResourceParallelLoadCount, ResourceWebTimeout, Language);
-
-        public void Pull(GeneralSettings source)
-        {
-            ResourceParallelLoadCount = source.ResourceParallelLoadCount;
-            ResourceWebTimeout = source.ResourceWebTimeout;
-            Language = source.Language;
-        }
-
-        public void Update(GeneralSettings src)
-        {
-            ResourceParallelLoadCount = src.ResourceParallelLoadCount;
-            ResourceWebTimeout = src.ResourceWebTimeout;
-            Language = src.Language;
-        }
-
-        public override bool Equals(object obj) => obj is GeneralSettings value && Equals(value);
-        public override int GetHashCode() => HashCode.Combine(ResourceParallelLoadCount, ResourceWebTimeout, Language);
-
-        public bool Equals(GeneralSettings other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return ResourceParallelLoadCount == other.ResourceParallelLoadCount
-                   && ResourceWebTimeout.Equals(other.ResourceWebTimeout)
-                   && Language == other.Language;
         }
     }
 }

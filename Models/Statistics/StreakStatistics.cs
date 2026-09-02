@@ -1,4 +1,5 @@
 using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Models.Primitives;
 using BH.SDK.Rules;
@@ -21,7 +22,8 @@ namespace BH.SDK.Models.Statistics
 
     /// <summary> The parts of a history that a running total cannot express. </summary>
     [RuleContainer]
-    public class StreakStatistics : IModel<StreakStatistics>
+    [GenerateModel]
+    public sealed partial class StreakStatistics : IModel<StreakStatistics>
     {
         /// <summary> Levels cleared in a row, right now. </summary>
         [RuleMinValue(StatisticsRules.MinCount)]
@@ -46,9 +48,7 @@ namespace BH.SDK.Models.Statistics
         [JsonProperty(Names.LastPlayedLevelId)]
         public LevelId LastPlayedLevelId { get; set; }
 
-        public StreakStatistics() => Reset();
-
-        public void Reset()
+        public StreakStatistics()
         {
             CurrentClearStreak = 0;
             LongestClearStreak = 0;
@@ -80,42 +80,5 @@ namespace BH.SDK.Models.Statistics
             CurrentClearStreak++;
             if (CurrentClearStreak > LongestClearStreak) LongestClearStreak = CurrentClearStreak;
         }
-
-        public object Clone() => Copy();
-
-        public StreakStatistics Copy()
-        {
-            var copy = new StreakStatistics();
-            copy.Update(this);
-            return copy;
-        }
-
-        public void Update(StreakStatistics src)
-        {
-            CurrentClearStreak = src.CurrentClearStreak;
-            LongestClearStreak = src.LongestClearStreak;
-            MostPlayedLevelId = src.MostPlayedLevelId;
-            MostPlayedAttempts = src.MostPlayedAttempts;
-            LastPlayedLevelId = src.LastPlayedLevelId;
-        }
-
-        public void Pull(StreakStatistics source) => Update(source);
-
-        public override bool Equals(object obj) => obj is StreakStatistics value && Equals(value);
-
-        public bool Equals(StreakStatistics other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return CurrentClearStreak == other.CurrentClearStreak
-                   && LongestClearStreak == other.LongestClearStreak
-                   && MostPlayedLevelId.Equals(other.MostPlayedLevelId)
-                   && MostPlayedAttempts == other.MostPlayedAttempts
-                   && LastPlayedLevelId.Equals(other.LastPlayedLevelId);
-        }
-
-        public override int GetHashCode() =>
-            HashCode.Combine(CurrentClearStreak, LongestClearStreak, MostPlayedLevelId,
-                MostPlayedAttempts, LastPlayedLevelId);
     }
 }

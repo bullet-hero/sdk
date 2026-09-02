@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <!--
     The SDK compiled WITHOUT Unity - the same sources Unity builds from BulletHeroSDK.asmdef, as a
@@ -39,7 +39,27 @@
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+
+    <!--
+      A Roslyn generator's output is added to the compilation, not written to Assets/ - which is
+      correct (nothing can drift from its source) and leaves nothing to read. This dumps it under
+      obj~/generated so a change to the generator can be diffed by eye. The tilde is why it is safe:
+      Unity imports every folder under Assets/ that is not suffixed with one.
+    -->
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>obj~\generated</CompilerGeneratedFilesOutputPath>
   </PropertyGroup>
+
+  <!--
+    The model generator, running on THIS build as well as on Unity's. Without it `dotnet build` here
+    compiles 203 models whose IModel bodies do not exist, so the engine-free build stops being the
+    check it is meant to be. ReferenceOutputAssembly=false: the components are a compiler plugin,
+    never a dependency of the library.
+  -->
+  <ItemGroup>
+    <ProjectReference Include="Roslyn\BH.SDK.Roslyn.csproj"
+                      OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
 
   <ItemGroup>
     <Compile Include="**\*.cs"
@@ -63,7 +83,6 @@
   -->
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="Newtonsoft.Json.Bson" Version="1.0.3" />
     <PackageReference Include="BouncyCastle.Cryptography" Version="2.7.0" />
     <PackageReference Include="SharpZipLib" Version="1.4.2" />
   </ItemGroup>

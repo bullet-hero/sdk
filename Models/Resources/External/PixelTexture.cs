@@ -35,7 +35,7 @@ namespace BH.SDK.Models.Resources
         }
 
         public object Clone() => Copy();
-        public PixelTexture Copy() => new(Width, Height, Pixels.CopyArray());
+        public PixelTexture Copy() => new(Width, Height, Pixels.CopyArrayUnmanaged());
 
         public override bool Equals(object obj) => obj is PixelTexture value && Equals(value);
         public override int GetHashCode() => HashCode.Combine(Width, Height, Pixels.GetArrayHashCode());

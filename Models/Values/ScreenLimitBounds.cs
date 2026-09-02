@@ -1,12 +1,11 @@
 ﻿using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Enums.Values;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Models.Interfaces.Values;
 using BH.SDK.Rules.Attributes;
 using BH.SDK.Utils;
 using Newtonsoft.Json;
-
-// ReSharper disable NonReadonlyMemberInGetHashCode
 
 namespace BH.SDK.Models.Values
 {
@@ -15,7 +14,8 @@ namespace BH.SDK.Models.Values
     /// Fixed: a level plays natively on anything from phone to ultrawide, letterboxed only outside.
     /// </summary>
     [RuleContainer]
-    public class ScreenLimitBounds : IScreenLimit, IModel<ScreenLimitBounds>
+    [GenerateModel]
+    public sealed partial class ScreenLimitBounds : IScreenLimit, IModel<ScreenLimitBounds>
     {
         /// <summary> Narrowest ratio still shown as-is; anything narrower is clamped to it. </summary>
         [RuleNotNull]
@@ -54,49 +54,6 @@ namespace BH.SDK.Models.Values
         {
             MinAspect = minAspect;
             MaxAspect = maxAspect;
-        }
-        public void Reset()
-        {
-            MinAspect.Reset();
-            MaxAspect.Reset();
-        }
-
-        public object Clone() => Copy();
-        IScreenLimit ICopyable<IScreenLimit>.Copy() => new ScreenLimitBounds(MinAspect.Copy(), MaxAspect.Copy());
-        public ScreenLimitBounds Copy() => new(MinAspect.Copy(), MaxAspect.Copy());
-
-        public void Update(ScreenLimitBounds src)
-        {
-            MinAspect = src.MinAspect.Copy();
-            MaxAspect = src.MaxAspect.Copy();
-        }
-
-        public void Pull(ScreenLimitBounds src)
-        {
-            MinAspect.Pull(src.MinAspect);
-            MaxAspect.Pull(src.MaxAspect);
-        }
-
-        void IUpdatable<IScreenLimit>.Update(IScreenLimit src)
-        {
-            if (src is ScreenLimitBounds value) Update(value);
-        }
-        void IMoveable<IScreenLimit>.Pull(IScreenLimit src)
-        {
-            if (src is ScreenLimitBounds value) Pull(value);
-        }
-
-        public override bool Equals(object obj) => obj is ScreenLimitBounds value && Equals(value);
-        public override int GetHashCode() => HashCode.Combine(MinAspect, MaxAspect);
-
-        public bool Equals(IScreenLimit other) => other is ScreenLimitBounds value && Equals(value);
-        public bool Equals(ScreenLimitBounds other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            var result = MinAspect.Equals(other.MinAspect)
-                         && MaxAspect.Equals(other.MaxAspect);
-            return result;
         }
     }
 }

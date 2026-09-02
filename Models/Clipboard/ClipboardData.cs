@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Audio;
 using BH.SDK.Models.Enums;
 using BH.SDK.Models.Game;
@@ -10,8 +11,6 @@ using BH.SDK.Rules.Attributes;
 using BH.SDK.Utils;
 using BH.SDK.Versions;
 using Newtonsoft.Json;
-
-// ReSharper disable NonReadonlyMemberInGetHashCode
 
 namespace BH.SDK.Models.Clipboard
 {
@@ -37,7 +36,8 @@ namespace BH.SDK.Models.Clipboard
     /// </summary>
     [RuleContainer]
     [DataVersion(DataDomains.ClipboardData, 1, 0)]
-    public class ClipboardData : IModel<ClipboardData>
+    [GenerateModel]
+    public sealed partial class ClipboardData : IModel<ClipboardData>
     {
         /// <summary> Which sections carry something - kept by the consumer alongside every write. </summary>
         [RuleEnumFlagsValid]
@@ -45,30 +45,40 @@ namespace BH.SDK.Models.Clipboard
         public ClipboardContent Content { get; set; }
 
         /// <summary> Whole objects copied from a level's own scope, subtrees included. </summary>
+        [GenerateModelKeyed(nameof(RectObject.ObjectId))]
+        [GenerateModelMerge]
         [RuleNotNull]
         [RuleDictionaryKeyMatches(nameof(RectObject.ObjectId))]
         [JsonProperty(Names.Objects)]
         public Dictionary<ObjectId, RectObject> Objects { get; set; }
 
         /// <summary> Whole objects copied from a Prefab template's own scope. </summary>
+        [GenerateModelKeyed(nameof(RectObject.ObjectId))]
+        [GenerateModelMerge]
         [RuleNotNull]
         [RuleDictionaryKeyMatches(nameof(RectObject.ObjectId))]
         [JsonProperty(Names.PrefabObjects)]
         public Dictionary<ObjectId, RectObject> PrefabObjects { get; set; }
 
         /// <summary> Objects stripped down to the copied keyframes alone - carriers, not content. </summary>
+        [GenerateModelKeyed(nameof(RectObject.ObjectId))]
+        [GenerateModelMerge]
         [RuleNotNull]
         [RuleDictionaryKeyMatches(nameof(RectObject.ObjectId))]
         [JsonProperty(Names.KeyObjects)]
         public Dictionary<ObjectId, RectObject> KeyObjects { get; set; }
 
         /// <summary> Audio tracks stripped down to the copied keyframes alone. </summary>
+        [GenerateModelKeyed(nameof(LevelTrack.AudioId))]
+        [GenerateModelMerge]
         [RuleNotNull]
         [RuleDictionaryKeyMatches(nameof(LevelTrack.AudioId))]
         [JsonProperty(Names.KeyTracks)]
         public Dictionary<AudioId, LevelTrack> KeyTracks { get; set; }
 
         /// <summary> Whole audio tracks. </summary>
+        [GenerateModelKeyed(nameof(LevelTrack.AudioId))]
+        [GenerateModelMerge]
         [RuleNotNull]
         [RuleDictionaryKeyMatches(nameof(LevelTrack.AudioId))]
         [JsonProperty(Names.AudioTracks)]
@@ -123,78 +133,6 @@ namespace BH.SDK.Models.Clipboard
             CameraKeys = cameraKeys;
             PostProcessingKeys = postProcessingKeys;
             PlayerKeys = playerKeys;
-        }
-        public void Reset()
-        {
-            Content = ClipboardContent.None;
-            Objects.Clear();
-            PrefabObjects.Clear();
-            KeyObjects.Clear();
-            KeyTracks.Clear();
-            AudioTracks.Clear();
-            GameKeys.Reset();
-            CameraKeys.Reset();
-            PostProcessingKeys.Reset();
-            PlayerKeys.Reset();
-        }
-
-        public object Clone() => Copy();
-        public ClipboardData Copy() => new(Content,
-            Objects.CopyDictionary(), PrefabObjects.CopyDictionary(),
-            KeyObjects.CopyDictionary(), KeyTracks.CopyDictionary(),
-            AudioTracks.CopyDictionary(), GameKeys.Copy(), CameraKeys.Copy(),
-            PostProcessingKeys.Copy(), PlayerKeys.Copy());
-
-        public void Update(ClipboardData src)
-        {
-            Content = src.Content;
-            Objects = src.Objects.CopyDictionary();
-            PrefabObjects = src.PrefabObjects.CopyDictionary();
-            KeyObjects = src.KeyObjects.CopyDictionary();
-            KeyTracks = src.KeyTracks.CopyDictionary();
-            AudioTracks = src.AudioTracks.CopyDictionary();
-            GameKeys = src.GameKeys.Copy();
-            CameraKeys = src.CameraKeys.Copy();
-            PostProcessingKeys = src.PostProcessingKeys.Copy();
-            PlayerKeys = src.PlayerKeys.Copy();
-        }
-
-        public void Pull(ClipboardData src)
-        {
-            Content = src.Content;
-            Objects.PullDictionary(src.Objects, LevelUtils.PullObject);
-            PrefabObjects.PullDictionary(src.PrefabObjects, LevelUtils.PullObject);
-            KeyObjects.PullDictionary(src.KeyObjects, LevelUtils.PullObject);
-            KeyTracks.PullDictionary(src.KeyTracks);
-            AudioTracks.PullDictionary(src.AudioTracks);
-            GameKeys.Pull(src.GameKeys);
-            CameraKeys.Pull(src.CameraKeys);
-            PostProcessingKeys.Pull(src.PostProcessingKeys);
-            PlayerKeys.Pull(src.PlayerKeys);
-        }
-
-        public override bool Equals(object obj) => obj is ClipboardData value && Equals(value);
-        public override int GetHashCode() => HashCode.Combine(
-            HashCode.Combine(Content, Objects.GetDictionaryHashCode(), PrefabObjects.GetDictionaryHashCode(),
-                KeyObjects.GetDictionaryHashCode(), KeyTracks.GetDictionaryHashCode(),
-                AudioTracks.GetDictionaryHashCode()),
-            GameKeys, CameraKeys, PostProcessingKeys, PlayerKeys);
-
-        public bool Equals(ClipboardData other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            var result = Content.Equals(other.Content)
-                         && Objects.DictionaryEquals(other.Objects)
-                         && PrefabObjects.DictionaryEquals(other.PrefabObjects)
-                         && KeyObjects.DictionaryEquals(other.KeyObjects)
-                         && KeyTracks.DictionaryEquals(other.KeyTracks)
-                         && AudioTracks.DictionaryEquals(other.AudioTracks)
-                         && GameKeys.Equals(other.GameKeys)
-                         && CameraKeys.Equals(other.CameraKeys)
-                         && PostProcessingKeys.Equals(other.PostProcessingKeys)
-                         && PlayerKeys.Equals(other.PlayerKeys);
-            return result;
         }
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Enums.Meta;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Models.Interfaces.Values;
@@ -19,7 +20,8 @@ namespace BH.SDK.Models.Values
     /// Custom); a resource carrying it is the one a takedown request lands on.
     /// </summary>
     [RuleContainer]
-    public class NoSpecifiedLicense : ILicense, IModel<NoSpecifiedLicense>
+    [GenerateModel]
+    public sealed partial class NoSpecifiedLicense : ILicense, IModel<NoSpecifiedLicense>
     {
         /// <summary> Which platform the work was taken from, when that is known. Undefined is the
         /// normal case - most unlicensed works come from nowhere in particular. </summary>
@@ -37,44 +39,5 @@ namespace BH.SDK.Models.Values
         }
 
         public LicenseType GetModelType() => LicenseType.NoSpecified;
-
-        public void Reset()
-        {
-            Source = NoLicenseSourceType.Undefined;
-        }
-
-        public object Clone() => Copy();
-        ILicense ICopyable<ILicense>.Copy() => Copy();
-        public NoSpecifiedLicense Copy() => new(Source);
-
-        public void Update(NoSpecifiedLicense src)
-        {
-            Source = src.Source;
-        }
-
-        public void Pull(NoSpecifiedLicense src)
-        {
-            Source = src.Source;
-        }
-
-        void IUpdatable<ILicense>.Update(ILicense src)
-        {
-            if (src is NoSpecifiedLicense value) Update(value);
-        }
-        void IMoveable<ILicense>.Pull(ILicense src)
-        {
-            if (src is NoSpecifiedLicense value) Pull(value);
-        }
-
-        public override int GetHashCode() => (int)Source;
-        public override bool Equals(object obj) => obj is NoSpecifiedLicense value && Equals(value);
-
-        public bool Equals(ILicense other) => other is NoSpecifiedLicense value && Equals(value);
-        public bool Equals(NoSpecifiedLicense other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return Source == other.Source;
-        }
     }
 }

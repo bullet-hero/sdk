@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Enums.Values;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
 using BH.SDK.Utils;
 using Newtonsoft.Json;
-
-// ReSharper disable NonReadonlyMemberInGetHashCode
 
 namespace BH.SDK.Models.Values
 {
@@ -17,7 +16,8 @@ namespace BH.SDK.Models.Values
     /// not a level frame - which is why it needs its own wrap modes instead of a FrameSpan.
     /// </summary>
     [RuleContainer]
-    public class CurveValue : IModel<CurveValue>
+    [GenerateModel]
+    public sealed partial class CurveValue : IModel<CurveValue>
     {
         /// <summary> Control points of the curve, each with its own tangents. </summary>
         [RuleNotNull, RuleCollectionNoNullItems]
@@ -47,42 +47,6 @@ namespace BH.SDK.Models.Values
             KeyFrames = keyFrames;
             PreWrapMode = preWrapMode;
             PostWrapMode = postWrapMode;
-        }
-        public void Reset()
-        {
-            KeyFrames.Clear();
-            PreWrapMode = CurveWrapMode.Default;
-            PostWrapMode = CurveWrapMode.Default;
-        }
-        
-        public object Clone() => Copy();
-        public CurveValue Copy() => new(KeyFrames.CopyList(), PreWrapMode, PostWrapMode);
-
-        public void Update(CurveValue src)
-        {
-            KeyFrames = src.KeyFrames.CopyList();
-            PreWrapMode = src.PreWrapMode;
-            PostWrapMode = src.PostWrapMode;
-        }
-
-        public void Pull(CurveValue src)
-        {
-            KeyFrames = src.KeyFrames.CopyList();
-            PreWrapMode = src.PreWrapMode;
-            PostWrapMode = src.PostWrapMode;
-        }
-
-        public override bool Equals(object obj) => obj is CurveValue value && Equals(value);
-        public override int GetHashCode() => HashCode.Combine(KeyFrames.GetListHashCode(), (int)PreWrapMode, (int)PostWrapMode);
-
-        public bool Equals(CurveValue other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            var result = KeyFrames.ListEquals(other.KeyFrames)
-                         && PreWrapMode == other.PreWrapMode
-                         && PostWrapMode == other.PostWrapMode;
-            return result;
         }
     }
 }

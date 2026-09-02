@@ -1,4 +1,5 @@
 ﻿using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Enums;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Models.Keyframes;
@@ -14,7 +15,8 @@ namespace BH.SDK.Models.PostProcessing
     /// keyframe family has - each effect can switch itself off mid-track, not just change values.
     /// </summary>
     [RuleContainer]
-    public class PostProcessingKeyframe : IKeyframe, IModel<PostProcessingKeyframe>
+    [GenerateModel]
+    public partial class PostProcessingKeyframe : IKeyframe, IModel<PostProcessingKeyframe>
     {
         /// <summary> Whether this effect runs from this frame on. Independent of - and additional to -
         /// PostProcessingEvents.Active, which gates the whole stack. </summary>
@@ -42,44 +44,6 @@ namespace BH.SDK.Models.PostProcessing
             Active = active;
             Frame = frame;
             Ease = ease;
-        }
-        public virtual void Reset()
-        {
-            Frame = Keyframe.DefaultFrame;
-            Ease = Keyframe.DefaultEase;
-            Active = PostProcessingRules.ActiveDefault;
-        }
-
-        public virtual object Clone() => CopyImpl();
-        public virtual PostProcessingKeyframe Copy() => CopyImpl();
-        
-        private PostProcessingKeyframe CopyImpl() => new(Active, Frame, Ease);
-
-        public void Update(PostProcessingKeyframe src)
-        {
-            Active = src.Active;
-            Frame = src.Frame;
-            Ease = src.Ease;
-        }
-
-        public void Pull(PostProcessingKeyframe src)
-        {
-            Active = src.Active;
-            Frame = src.Frame;
-            Ease = src.Ease;
-        }
-
-        public override bool Equals(object obj) => obj is PostProcessingKeyframe value && Equals(value);
-        public override int GetHashCode() => HashCode.Combine(Active, Frame, (int)Ease);
-
-        public bool Equals(PostProcessingKeyframe other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            var result = Active == other.Active
-                         && Frame.Equals(other.Frame)
-                         && Ease == other.Ease;
-            return result;
         }
     }
 }

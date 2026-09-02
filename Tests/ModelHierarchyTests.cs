@@ -16,6 +16,7 @@ using BH.SDK.Models.Resources;
 using BH.SDK.Models.SettingGroups.Controls;
 using BH.SDK.Models.SettingGroups.Graphics;
 using BH.SDK.Models.Values;
+using BH.SDK.Models.Generated;
 using BH.SDK.Utils;
 using NUnit.Framework;
 
@@ -538,11 +539,16 @@ namespace BH.SDK.Tests
             Assert.AreEqual(source, target);
         }
 
+        // BH.SDK.Roslyn writes this switch now, one case per [GenerateModel] subtype of
+        // RectObject, so "a new subtype was added and the switch was not" has stopped being a way
+        // to lose a subtype's fields on every pull. It is still worth a test: what the dispatcher
+        // promises - the instance survives, and the SUBCLASS half travels - is not visible from
+        // the generated text.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.Easy)]
-        public void PullObject_DispatchesEveryObjectType()
+        public void TheGeneratedDispatcher_PullsEveryObjectType()
         {
             RectObject[] objects =
             {
@@ -558,7 +564,7 @@ namespace BH.SDK.Tests
                 var target = source.Copy();
                 target.Layer = 0;
 
-                var result = LevelUtils.PullObject(target, source);
+                var result = RectObjectModelPull.PullValue(target, source);
 
                 Assert.AreSame(target, result, $"{source.GetType().Name} must keep its instance");
                 Assert.AreEqual(source, result, $"{source.GetType().Name} must be written whole");

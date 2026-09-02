@@ -1,4 +1,5 @@
 using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Enums;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Models.Values;
@@ -14,7 +15,8 @@ namespace BH.SDK.Models.Keyframes
     /// randomized UV would tear the image differently every frame.
     /// </summary>
     [RuleContainer]
-    public class UVKey : Keyframe, IModel<UVKey>
+    [GenerateModel]
+    public sealed partial class UVKey : Keyframe, IModel<UVKey>
     {
         /// <summary> Repeat count per axis; values above 1 tile the texture. </summary>
         [RuleNotNull]
@@ -37,47 +39,6 @@ namespace BH.SDK.Models.Keyframes
         {
             Tilling = tilling;
             Offset = offset;
-        }
-        public override void Reset()
-        {
-            base.Reset();
-            Tilling = new Vector2Value(ValueRules.DefaultUvX, ValueRules.DefaultUvY);
-            Offset = new Vector2Value(ValueRules.DefaultUvZ, ValueRules.DefaultUvW);
-        }
-        
-        public override object Clone() => CopyImpl();
-        public override Keyframe Copy() => CopyImpl();
-        UVKey ICopyable<UVKey>.Copy() => CopyImpl();
-        
-        private UVKey CopyImpl() => new(Tilling.Copy(), Offset.Copy(), Frame, Ease);
-
-        public void Update(UVKey src)
-        {
-            base.Update(src);
-
-            Tilling = src.Tilling.Copy();
-            Offset = src.Offset.Copy();
-        }
-
-        public void Pull(UVKey src)
-        {
-            base.Pull(src);
-
-            Tilling.Pull(src.Tilling);
-            Offset.Pull(src.Offset);
-        }
-
-        public override bool Equals(object obj) => obj is UVKey value && Equals(value);
-        public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), Tilling, Offset);
-
-        public bool Equals(UVKey other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            var result = base.Equals(other)
-                         && Tilling.Equals(other.Tilling)
-                         && Offset.Equals(other.Offset);
-            return result;
         }
     }
 }

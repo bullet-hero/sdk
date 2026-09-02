@@ -1,4 +1,5 @@
 using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Enums.Settings;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Rules.Attributes;
@@ -21,7 +22,8 @@ namespace BH.SDK.Models.SettingGroups.Graphics
     /// count it uses, and whether the target is HDR.
     /// </summary>
     [RuleContainer]
-    public class AntiAliasingGraphicsSettings : IModel<AntiAliasingGraphicsSettings>,
+    [GenerateModel]
+    public sealed partial class AntiAliasingGraphicsSettings : IModel<AntiAliasingGraphicsSettings>,
         IMoveable<AntiAliasingGraphicsSettings>
     {
         /// <summary> Which method is used. </summary>
@@ -51,41 +53,6 @@ namespace BH.SDK.Models.SettingGroups.Graphics
             Type = type;
             Msaa = msaa;
             Hdr = hdr;
-        }
-        public void Reset()
-        {
-            Type = AntiAliasingType.Msaa;
-            Msaa = MsaaType.X2;
-            Hdr = false;
-        }
-
-        public object Clone() => Copy();
-        public AntiAliasingGraphicsSettings Copy() => new(Type, Msaa, Hdr);
-
-        public void Pull(AntiAliasingGraphicsSettings source)
-        {
-            Type = source.Type;
-            Msaa = source.Msaa;
-            Hdr = source.Hdr;
-        }
-
-        public void Update(AntiAliasingGraphicsSettings src)
-        {
-            Type = src.Type;
-            Msaa = src.Msaa;
-            Hdr = src.Hdr;
-        }
-
-        public override bool Equals(object obj) => obj is AntiAliasingGraphicsSettings value && Equals(value);
-        public override int GetHashCode() => HashCode.Combine((int)Type, (int)Msaa, Hdr);
-
-        public bool Equals(AntiAliasingGraphicsSettings other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return Type == other.Type
-                   && Msaa == other.Msaa
-                   && Hdr == other.Hdr;
         }
     }
 }

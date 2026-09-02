@@ -1,4 +1,5 @@
 using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
@@ -17,7 +18,8 @@ namespace BH.SDK.Models.Statistics
 
     /// <summary> Every counter summed across every level. </summary>
     [RuleContainer]
-    public class TotalsStatistics : IModel<TotalsStatistics>
+    [GenerateModel]
+    public sealed partial class TotalsStatistics : IModel<TotalsStatistics>
     {
         [RuleMinValue(StatisticsRules.MinCount)]
         [JsonProperty(Names.Attempts)]
@@ -50,9 +52,7 @@ namespace BH.SDK.Models.Statistics
         [JsonProperty(Names.FramesSimulated)]
         public long TotalFramesSimulated { get; set; }
 
-        public TotalsStatistics() => Reset();
-
-        public void Reset()
+        public TotalsStatistics()
         {
             TotalAttempts = 0;
             TotalClears = 0;
@@ -62,46 +62,5 @@ namespace BH.SDK.Models.Statistics
             DistinctLevelsCleared = 0;
             TotalFramesSimulated = 0L;
         }
-
-        public object Clone() => Copy();
-
-        public TotalsStatistics Copy()
-        {
-            var copy = new TotalsStatistics();
-            copy.Update(this);
-            return copy;
-        }
-
-        public void Update(TotalsStatistics src)
-        {
-            TotalAttempts = src.TotalAttempts;
-            TotalClears = src.TotalClears;
-            TotalDeaths = src.TotalDeaths;
-            TotalHits = src.TotalHits;
-            DistinctLevelsPlayed = src.DistinctLevelsPlayed;
-            DistinctLevelsCleared = src.DistinctLevelsCleared;
-            TotalFramesSimulated = src.TotalFramesSimulated;
-        }
-
-        public void Pull(TotalsStatistics source) => Update(source);
-
-        public override bool Equals(object obj) => obj is TotalsStatistics value && Equals(value);
-
-        public bool Equals(TotalsStatistics other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return TotalAttempts == other.TotalAttempts
-                   && TotalClears == other.TotalClears
-                   && TotalDeaths == other.TotalDeaths
-                   && TotalHits == other.TotalHits
-                   && DistinctLevelsPlayed == other.DistinctLevelsPlayed
-                   && DistinctLevelsCleared == other.DistinctLevelsCleared
-                   && TotalFramesSimulated == other.TotalFramesSimulated;
-        }
-
-        public override int GetHashCode() =>
-            HashCode.Combine(TotalAttempts, TotalClears, TotalDeaths, TotalHits,
-                DistinctLevelsPlayed, DistinctLevelsCleared, TotalFramesSimulated);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Audio;
 using BH.SDK.Models.Game;
 using BH.SDK.Models.Hints;
@@ -12,17 +13,16 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models
 {
-    // TODO add MORE rules
-
     /// <summary>
-    /// The level itself - the root of level.json/.bson. Five independent aggregates, each its own
+    /// The level itself - the root of level.json/.blob. Five independent aggregates, each its own
     /// versioned domain: four authored, plus Hints, which is measured from them. Note what is NOT
     /// here: the level's name, authors and licensing live in a separate LevelMeta file, so listing
     /// levels never means loading them.
     /// </summary>
     [RuleContainer]
     [DataVersion(DataDomains.Level, 1, 0)]
-    public class Level : IModel<Level>
+    [GenerateModel]
+    public sealed partial class Level : IModel<Level>
     {
         /// <summary> Timeline shape and id counters - framerate, length, and the next free object
         /// and audio id. </summary>
@@ -77,50 +77,6 @@ namespace BH.SDK.Models
             Audio = audio;
             Resources = resources;
             Hints = hints;
-        }
-        public void Reset()
-        {
-            Settings.Reset();
-            Game.Reset();
-            Audio.Reset();
-            Resources.Reset();
-            Hints.Reset();
-        }
-
-        public object Clone() => Copy();
-        public Level Copy() => new(Settings.Copy(), Game.Copy(), Audio.Copy(), Resources.Copy(), Hints?.Copy());
-
-        public void Update(Level src)
-        {
-            Settings = src.Settings.Copy();
-            Game = src.Game.Copy();
-            Audio = src.Audio.Copy();
-            Resources = src.Resources.Copy();
-            Hints = src.Hints?.Copy();
-        }
-
-        public void Pull(Level src)
-        {
-            Settings.Pull(src.Settings);
-            Game.Pull(src.Game);
-            Audio.Pull(src.Audio);
-            Resources.Pull(src.Resources);
-            Hints = Hints.PullFrom(src.Hints);
-        }
-
-        public override bool Equals(object obj) => obj is Level value && Equals(value);
-        public override int GetHashCode() => HashCode.Combine(Settings, Game, Audio, Resources, Hints);
-
-        public bool Equals(Level other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            var result = Settings.Equals(other.Settings)
-                         && Game.Equals(other.Game)
-                         && Audio.Equals(other.Audio)
-                         && Resources.Equals(other.Resources)
-                         && Equals(Hints, other.Hints);
-            return result;
         }
     }
 }

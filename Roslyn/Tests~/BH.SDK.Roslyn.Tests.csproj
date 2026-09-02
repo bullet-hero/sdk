@@ -1,0 +1,64 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Tests for the Roslyn components THEMSELVES - the emission, the diagnostics, the incremental
+    caching - as opposed to Tests/BH.SDK.Tests.csproj, which tests what the generated code does once
+    it has been emitted. Both are needed and neither substitutes for the other: a generator can emit
+    something that behaves correctly on the fixtures and still re-runs on every keystroke, or refuse
+    to emit at all in a compilation that carries no model type.
+
+    THE FOLDER IS SUFFIXED WITH A TILDE, AND THAT IS LOAD-BEARING. Roslyn/ is governed by
+    BH.SDK.Roslyn.Src.asmdef, and an asmdef governs every subfolder under it until another one
+    appears - so plain Roslyn/Tests/ would compile these fixtures INTO that assembly, which declares
+    overrideReferences with five precompiled references and no NUnit. The tilde is the only
+    mechanism Unity offers for "a real folder the Editor must not look into" (the same reason
+    Directory.Build.props redirects bin/obj), and it is why this project has no .asmdef and no .meta
+    files. It is run with `dotnet test`, never by the Unity Test Runner.
+
+    net8.0 because a test project is an executable host; the components under test stay
+    netstandard2.0 through the ProjectReference.
+
+    Microsoft.CodeAnalysis.CSharp is referenced WITHOUT ExcludeAssets=runtime here, unlike in the
+    component project: this one has to actually load a compiler and run a driver. The version is
+    pinned to what the Unity 6000.5 Editor compiles with, so a component built against Refs/ is
+    hosted by the same API surface it was compiled against - never an older one.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <AssemblyName>BH.SDK.Roslyn.Tests</AssemblyName>
+    <RootNamespace>BH.SDK.Roslyn.Tests</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="*.cs" />
+    <Compile Include="Fixtures\**\*.cs" />
+  </ItemGroup>
+
+  <!--
+    Golden files are compared as text by ModelGeneratorSnapshotTests. They are copied rather than
+    embedded so a failing test can be fixed by looking at the diff on disk.
+  -->
+  <ItemGroup>
+    <None Include="Golden\**\*.txt" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BH.SDK.Roslyn.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.10.0" />
+    <PackageReference Include="NUnit" Version="3.14.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+  </ItemGroup>
+
+</Project>

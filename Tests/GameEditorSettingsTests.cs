@@ -46,7 +46,6 @@ namespace BH.SDK.Tests
 
             Assert.AreEqual(SerializationType.Json, settings.Serialization.LevelMode);
             Assert.AreEqual(SerializationType.Json, settings.Serialization.ResourcesMode);
-            Assert.AreEqual(SerializationType.Json, settings.Serialization.CopyMode);
         }
 
         // Reset on the root has to reach every group. It delegates rather than reassigning, so a
@@ -68,7 +67,7 @@ namespace BH.SDK.Tests
             settings.Gizmos.Scale = 4f;
             settings.Timeline.GlobalLoop = false;
             settings.Interface.RenderInframes = true;
-            settings.Serialization.LevelMode = SerializationType.Bson;
+            settings.Serialization.LevelMode = SerializationType.Blob;
 
             settings.Reset();
 
@@ -160,7 +159,7 @@ namespace BH.SDK.Tests
             AssertDiffers(a, s => s.Gizmos.Scale = 3f);
             AssertDiffers(a, s => s.Timeline.EdgeHandlePx = 24f);
             AssertDiffers(a, s => s.Interface.LogValueClamps = false);
-            AssertDiffers(a, s => s.Serialization.CopyMode = SerializationType.Bson);
+            AssertDiffers(a, s => s.Serialization.ResourcesMode = SerializationType.Blob);
         }
 
         private static void AssertDiffers(GameEditorSettings source, System.Action<GameEditorSettings> edit)
@@ -303,7 +302,7 @@ namespace BH.SDK.Tests
             settings.GameEditor.Timeline.LocalLoop = false;
             settings.GameEditor.Interface.DirtyFieldDelay = 0.3f;
             settings.GameEditor.Interface.RotationDisplayUnit = AngleDisplayUnit.Radians;
-            settings.GameEditor.Serialization.LevelMode = SerializationType.JsonPretty;
+            settings.GameEditor.Serialization.LevelMode = SerializationType.Blob;
 
             var restored = service.DeserializeData<UserSettings>(service.SerializeData(settings));
             var editor = restored.GameEditor;
@@ -324,7 +323,7 @@ namespace BH.SDK.Tests
             Assert.IsFalse(editor.Timeline.LocalLoop);
             Assert.AreEqual(0.3f, editor.Interface.DirtyFieldDelay);
             Assert.AreEqual(AngleDisplayUnit.Radians, editor.Interface.RotationDisplayUnit);
-            Assert.AreEqual(SerializationType.JsonPretty, editor.Serialization.LevelMode);
+            Assert.AreEqual(SerializationType.Blob, editor.Serialization.LevelMode);
         }
 
         // The two nested "iface" keys - UserSettings.Interface and GameEditor.Interface - reuse one

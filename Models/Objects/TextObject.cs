@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Enums;
 using BH.SDK.Models.Enums.Text;
 using BH.SDK.Models.Interfaces;
@@ -13,8 +14,6 @@ using BH.SDK.Rules.Attributes;
 using BH.SDK.Utils;
 using Newtonsoft.Json;
 
-// ReSharper disable NonReadonlyMemberInGetHashCode
-
 namespace BH.SDK.Models.Objects
 {
     /// <summary>
@@ -22,7 +21,8 @@ namespace BH.SDK.Models.Objects
     /// text can never kill the player, and its rect acts as the layout box rather than a hitbox.
     /// </summary>
     [RuleContainer]
-    public class TextObject : RectObject, IModel<TextObject>, IUpdatable<TextObject>
+    [GenerateModel]
+    public sealed partial class TextObject : RectObject, IModel<TextObject>, IUpdatable<TextObject>
     {
         public override ObjectType GetModelType() => ObjectType.TextObject;
 
@@ -133,127 +133,6 @@ namespace BH.SDK.Models.Objects
             WordWrap = wordWrap;
             HorizontalAlignment = horizontalAlignment;
             VerticalAlignment = verticalAlignment;
-        }
-        public override void Reset()
-        {
-            base.Reset();
-            Text = new StringValue();
-            FontResourceId = FontResourceId.Default;
-            Colors.Clear();
-            FontSizes.Clear();
-            Fillments.Clear();
-            Appearings.Clear();
-            AppearingMask = TextRules.AppearingMask_Default;
-
-            WordWrap = TextRules.WordWrap_Default;
-            HorizontalAlignment = TextRules.HorizontalAlignment_Default;
-            VerticalAlignment = TextRules.VerticalAlignment_Default;
-        }
-        
-        public override object Clone() => CopyImpl();
-        public override RectObject Copy() => CopyImpl();
-        TextObject ICopyable<TextObject>.Copy() => CopyImpl();
-        
-        private TextObject CopyImpl() => new(ObjectId, ParentObjectId, Name, Active, Span, Layer,
-            Positions.CopyList(), Rotations.CopyList(), Scales.CopyList(), Sizes.CopyList(),
-            AnchorsMin.CopyList(), AnchorsMax.CopyList(), Pivots.CopyList(), Text.Copy(), FontResourceId,
-            Colors.CopyList(), FontSizes.CopyList(), Fillments.CopyList(), Appearings.CopyList(),
-            AppearingMask, WordWrap, HorizontalAlignment, VerticalAlignment);
-
-        public void Update(TextObject src)
-        {
-            base.Update(src);
-
-            Text = src.Text.Copy();
-            FontResourceId = src.FontResourceId;
-            Colors = src.Colors.CopyList();
-            FontSizes = src.FontSizes.CopyList();
-            Fillments = src.Fillments.CopyList();
-            Appearings = src.Appearings.CopyList();
-            AppearingMask = src.AppearingMask;
-
-            WordWrap = src.WordWrap;
-            HorizontalAlignment = src.HorizontalAlignment;
-            VerticalAlignment = src.VerticalAlignment;
-        }
-
-        public void Pull(TextObject src)
-        {
-            base.Pull(src);
-
-            Text = Text.PullFrom(src.Text);
-            FontResourceId = src.FontResourceId;
-            Colors = src.Colors.CopyList();
-            FontSizes = src.FontSizes.CopyList();
-            Fillments = src.Fillments.CopyList();
-            Appearings = src.Appearings.CopyList();
-            AppearingMask = src.AppearingMask;
-            WordWrap = src.WordWrap;
-            HorizontalAlignment = src.HorizontalAlignment;
-            VerticalAlignment = src.VerticalAlignment;
-        }
-
-        public override bool Equals(object obj) => obj is TextObject value && Equals(value);
-        public override int GetHashCode()
-        {
-            var hashCode = new HashCode();
-            hashCode.Add(base.GetHashCode());
-            hashCode.Add(Text);
-            hashCode.Add(FontResourceId);
-            hashCode.Add(Colors.GetListHashCode());
-            hashCode.Add(FontSizes.GetListHashCode());
-            hashCode.Add(Fillments.GetListHashCode());
-            hashCode.Add(Appearings.GetListHashCode());
-            hashCode.Add(AppearingMask);
-            hashCode.Add(WordWrap);
-            hashCode.Add((int)HorizontalAlignment);
-            hashCode.Add((int)VerticalAlignment);
-            return hashCode.ToHashCode();
-        }
-
-        public bool Equals(TextObject other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            
-            var result = EqualsObject(other)
-                         && EqualsTextObject(other);
-            return result;
-        }
-        public override bool Equals(RectObject other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-
-            switch (other)
-            {
-                case TextObject textObject:
-                {
-                    var result = EqualsObject(textObject)
-                                 && EqualsTextObject(textObject);
-                    return result;
-                }
-                default:
-                {
-                    var result = EqualsObject(other);
-                    return result;
-                }
-            }
-        }
-        
-        private bool EqualsTextObject(TextObject other)
-        {
-            var result = Text.Equals(other.Text)
-                         && FontResourceId.Equals(other.FontResourceId)
-                         && Colors.ListEquals(other.Colors)
-                         && FontSizes.ListEquals(other.FontSizes)
-                         && Fillments.ListEquals(other.Fillments)
-                         && Appearings.ListEquals(other.Appearings)
-                         && AppearingMask == other.AppearingMask
-                         && WordWrap == other.WordWrap
-                         && HorizontalAlignment == other.HorizontalAlignment
-                         && VerticalAlignment == other.VerticalAlignment;
-            return result;
         }
     }
 }

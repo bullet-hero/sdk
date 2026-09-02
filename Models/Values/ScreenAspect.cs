@@ -1,10 +1,9 @@
 ﻿using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
 using Newtonsoft.Json;
-
-// ReSharper disable NonReadonlyMemberInGetHashCode
 
 namespace BH.SDK.Models.Values
 {
@@ -13,7 +12,8 @@ namespace BH.SDK.Models.Values
     /// keeps the author's intent readable in the file and avoids rounding drift when comparing.
     /// </summary>
     [RuleContainer]
-    public class ScreenAspect : IModel<ScreenAspect>
+    [GenerateModel]
+    public sealed partial class ScreenAspect : IModel<ScreenAspect>
     {
         /// <summary> Width part of the ratio - a proportion, not a pixel count. </summary>
         [RuleInRange(ValueRules.MinAspectWidth, ValueRules.MaxAspectWidth)]
@@ -41,38 +41,6 @@ namespace BH.SDK.Models.Values
         {
             Width = width;
             Height = height;
-        }
-        public void Reset()
-        {
-            Width = ValueRules.DefaultAspectWidth;
-            Height = ValueRules.DefaultAspectHeight;
-        }
-
-        public object Clone() => Copy();
-        public ScreenAspect Copy() => new(Width, Height);
-
-        public void Update(ScreenAspect src)
-        {
-            Width = src.Width;
-            Height = src.Height;
-        }
-
-        public void Pull(ScreenAspect src)
-        {
-            Width = src.Width;
-            Height = src.Height;
-        }
-
-        public override bool Equals(object obj) => obj is ScreenAspect value && Equals(value);
-        public override int GetHashCode() => HashCode.Combine(Width, Height);
-
-        public bool Equals(ScreenAspect other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            var result = Width.Equals(other.Width)
-                         && Height.Equals(other.Height);
-            return result;
         }
     }
 }

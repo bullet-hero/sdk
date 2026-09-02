@@ -1,4 +1,5 @@
 ﻿using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Rules.Attributes;
 using Newtonsoft.Json;
@@ -10,7 +11,8 @@ namespace BH.SDK.Models.SettingGroups
     /// LevelTrackEffects, which is authored content. Category sliders multiply with the master one.
     /// </summary>
     [RuleContainer]
-    public class AudioSettings : IModel<AudioSettings>, IMoveable<AudioSettings>
+    [GenerateModel]
+    public sealed partial class AudioSettings : IModel<AudioSettings>, IMoveable<AudioSettings>
     {
         /// <summary> Master volume, applied on top of every category below. </summary>
         [JsonProperty(Names.Volume)]
@@ -39,41 +41,6 @@ namespace BH.SDK.Models.SettingGroups
             Volume = volume;
             Game = game;
             UI = ui;
-        }
-        public void Reset()
-        {
-            Volume = 1f;
-            Game = 1f;
-            UI = 1f;
-        }
-
-        public object Clone() => Copy();
-        public AudioSettings Copy() => new(Volume, Game, UI);
-        
-        public void Pull(AudioSettings source)
-        {
-            Volume = source.Volume;
-            Game = source.Game;
-            UI = source.UI;
-        }
-
-        public void Update(AudioSettings src)
-        {
-            Volume = src.Volume;
-            Game = src.Game;
-            UI = src.UI;
-        }
-
-        public override int GetHashCode() => HashCode.Combine(Volume, Game, UI);
-        public override bool Equals(object obj) => obj is AudioSettings value && Equals(value);
-
-        public bool Equals(AudioSettings other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return Volume.Equals(other.Volume)
-                   && Game.Equals(other.Game)
-                   && UI.Equals(other.UI);
         }
     }
 }

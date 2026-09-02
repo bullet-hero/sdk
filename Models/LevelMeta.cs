@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Enums.Meta;
 using BH.SDK.Models.Enums.Resources;
 using BH.SDK.Models.Interfaces;
@@ -25,7 +26,8 @@ namespace BH.SDK.Models
     /// </summary>
     [RuleContainer]
     [DataVersion(DataDomains.LevelMeta, 1, 0)]
-    public class LevelMeta : IModel<LevelMeta>
+    [GenerateModel]
+    public sealed partial class LevelMeta : IModel<LevelMeta>
     {
         /// <summary> Stable identity of the level, surviving renames and folder moves - what scores
         /// and progress attach to. </summary>
@@ -156,97 +158,6 @@ namespace BH.SDK.Models
             LevelContentDescriptors = levelContentDescriptors;
             LevelTags = new List<string>();
             LevelDuration = 0f;
-        }
-        public void Reset()
-        {
-            LevelId = LevelId.NewId();
-            LevelName = new StringValue();
-            LevelDescription = new StringValue();
-            LevelLogo = new ResourceKey(ResourceUriType.LevelPath, FileNames.LogoFileNamePng);
-            LevelVersion = new Version(1, 0);
-            LevelLicense = new TypicalLicense(TypicalLicenseType.CC_BY_NC_4_0);
-            LevelAuthors = new List<Author>();
-            ResourcesMeta = new List<ResourceMeta>();
-            LevelAgeRating = AgeRating.Unrated;
-            LevelContentDescriptors = ContentDescriptor.None;
-            LevelTags = new List<string>();
-            LevelDuration = 0f;
-        }
-
-        public object Clone() => Copy();
-        public LevelMeta Copy() => new(LevelId, LevelName.Copy(), LevelDescription.Copy(),
-            LevelLogo.Copy(), (Version)LevelVersion.Clone(), LevelLicense.Copy(),
-            LevelAuthors.CopyList(), ResourcesMeta.CopyList(),
-            LevelAgeRating, LevelContentDescriptors)
-        {
-            LevelTags = new List<string>(LevelTags),
-            LevelDuration = LevelDuration,
-        };
-
-        public void Update(LevelMeta src)
-        {
-            LevelId = src.LevelId;
-            LevelName = src.LevelName.Copy();
-            LevelDescription = src.LevelDescription.Copy();
-            LevelLogo = src.LevelLogo.Copy();
-            LevelVersion = (Version)src.LevelVersion.Clone();
-            LevelLicense = src.LevelLicense.Copy();
-            LevelAuthors = src.LevelAuthors.CopyList();
-            ResourcesMeta = src.ResourcesMeta.CopyList();
-            LevelAgeRating = src.LevelAgeRating;
-            LevelContentDescriptors = src.LevelContentDescriptors;
-            LevelTags = new List<string>(src.LevelTags);
-            LevelDuration = src.LevelDuration;
-        }
-
-        public void Pull(LevelMeta src)
-        {
-            LevelId = src.LevelId;
-            LevelName = LevelName.PullFrom(src.LevelName);
-            LevelDescription = LevelDescription.PullFrom(src.LevelDescription);
-            LevelLogo.Pull(src.LevelLogo);
-            LevelVersion = (Version)src.LevelVersion.Clone();
-            LevelLicense = LevelLicense.PullFrom(src.LevelLicense);
-            LevelAuthors = src.LevelAuthors.CopyList();
-            ResourcesMeta = src.ResourcesMeta.CopyList();
-            LevelAgeRating = src.LevelAgeRating;
-            LevelContentDescriptors = src.LevelContentDescriptors;
-            LevelTags = new List<string>(src.LevelTags);
-            LevelDuration = src.LevelDuration;
-        }
-
-        public override bool Equals(object obj) => obj is LevelMeta value && Equals(value);
-        public override int GetHashCode()
-        {
-            var hashCode = new HashCode();
-            hashCode.Add(LevelId);
-            hashCode.Add(LevelName);
-            hashCode.Add(LevelDescription);
-            hashCode.Add(LevelLogo);
-            hashCode.Add(LevelVersion);
-            hashCode.Add(LevelLicense);
-            hashCode.Add(LevelAuthors.GetListHashCode());
-            hashCode.Add(ResourcesMeta.GetListHashCode());
-            hashCode.Add((int)LevelAgeRating);
-            hashCode.Add((int)LevelContentDescriptors);
-            return hashCode.ToHashCode();
-        }
-
-        public bool Equals(LevelMeta other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            var result = LevelId.Equals(other.LevelId)
-                         && LevelName.Equals(other.LevelName)
-                         && LevelDescription.Equals(other.LevelDescription)
-                         && LevelLogo.Equals(other.LevelLogo)
-                         && LevelVersion.Equals(other.LevelVersion)
-                         && LevelLicense.Equals(other.LevelLicense)
-                         && LevelAuthors.ListEquals(other.LevelAuthors)
-                         && ResourcesMeta.ListEquals(other.ResourcesMeta)
-                         && LevelAgeRating == other.LevelAgeRating
-                         && LevelContentDescriptors == other.LevelContentDescriptors;
-            return result;
         }
     }
 }

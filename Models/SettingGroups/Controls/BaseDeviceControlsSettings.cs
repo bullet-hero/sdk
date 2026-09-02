@@ -1,4 +1,5 @@
 using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Enums.Controls;
 using BH.SDK.Models.Enums.Controls.Modes;
 using BH.SDK.Models.Interfaces;
@@ -24,7 +25,8 @@ namespace BH.SDK.Models.SettingGroups.Controls
     /// every device has.
     /// </summary>
     [RuleContainer]
-    public abstract class BaseDeviceControlsSettings : IModel<BaseDeviceControlsSettings>
+    [GenerateModel]
+    public abstract partial class BaseDeviceControlsSettings : IModel<BaseDeviceControlsSettings>
     {
         /// <summary> Whether this device may drive the avatar at all. At least one device among the
         /// platform's permitted ones must stay active - see ControlsSettings. </summary>
@@ -79,54 +81,6 @@ namespace BH.SDK.Models.SettingGroups.Controls
             Smoothing = smoothing;
             InvertX = invertX;
             InvertY = invertY;
-        }
-        public virtual void Reset()
-        {
-            Active = true;
-            Sensitivity = ControlsRules.DefaultSensitivity;
-            DeadZone = ControlsRules.DefaultDeadZone;
-            Smoothing = ControlsRules.DefaultSmoothing;
-            InvertX = false;
-            InvertY = false;
-        }
-
-        public abstract object Clone();
-        public abstract BaseDeviceControlsSettings Copy();
-
-        public void Update(BaseDeviceControlsSettings src)
-        {
-            Active = src.Active;
-            Sensitivity = src.Sensitivity;
-            DeadZone = src.DeadZone;
-            Smoothing = src.Smoothing;
-            InvertX = src.InvertX;
-            InvertY = src.InvertY;
-        }
-
-        public void Pull(BaseDeviceControlsSettings src)
-        {
-            Active = src.Active;
-            Sensitivity = src.Sensitivity;
-            DeadZone = src.DeadZone;
-            Smoothing = src.Smoothing;
-            InvertX = src.InvertX;
-            InvertY = src.InvertY;
-        }
-
-        public override bool Equals(object obj) => obj is BaseDeviceControlsSettings value && Equals(value);
-        public override int GetHashCode() => HashCode.Combine(Active, Sensitivity,
-            DeadZone, Smoothing, InvertX, InvertY);
-
-        public bool Equals(BaseDeviceControlsSettings other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return Active == other.Active
-                   && Sensitivity.Equals(other.Sensitivity)
-                   && DeadZone.Equals(other.DeadZone)
-                   && Smoothing.Equals(other.Smoothing)
-                   && InvertX == other.InvertX
-                   && InvertY == other.InvertY;
         }
     }
 }

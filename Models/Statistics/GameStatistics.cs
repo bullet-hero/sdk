@@ -1,4 +1,5 @@
 using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Rules.Attributes;
 using BH.SDK.Versions;
@@ -22,7 +23,8 @@ namespace BH.SDK.Models.Statistics
     /// <summary> Everything one player has done, across every level and every screen. </summary>
     [RuleContainer]
     [DataVersion(DataDomains.GameStatistics, 1, 0)]
-    public class GameStatistics : IModel<GameStatistics>
+    [GenerateModel]
+    public sealed partial class GameStatistics : IModel<GameStatistics>
     {
         /// <summary> Since when, and how much. </summary>
         [RuleNotNull]
@@ -63,9 +65,7 @@ namespace BH.SDK.Models.Statistics
         // achievement id. Deliberately not scaffolded now: an empty aggregate cannot be told apart
         // from "this build has no achievements", and every reader would have to handle both anyway.
 
-        public GameStatistics() => Reset();
-
-        public void Reset()
+        public GameStatistics()
         {
             Profile = new ProfileStatistics();
             Screens = new ScreenTimeStatistics();
@@ -76,64 +76,9 @@ namespace BH.SDK.Models.Statistics
             Devices = new DeviceTimeStatistics();
         }
 
-        public object Clone() => Copy();
-
-        public GameStatistics Copy() =>
-            new()
-            {
-                Profile = Profile.Copy(),
-                Screens = Screens.Copy(),
-                Totals = Totals.Copy(),
-                Streaks = Streaks.Copy(),
-                Avatar = Avatar.Copy(),
-                Editor = Editor.Copy(),
-                Devices = Devices.Copy(),
-            };
-
-        public void Update(GameStatistics src)
-        {
-            Profile = src.Profile.Copy();
-            Screens = src.Screens.Copy();
-            Totals = src.Totals.Copy();
-            Streaks = src.Streaks.Copy();
-            Avatar = src.Avatar.Copy();
-            Editor = src.Editor.Copy();
-            Devices = src.Devices.Copy();
-        }
-
         // Every group instance is kept, unlike Update above. This is the object the whole app holds
         // a reference to and hands out one group at a time, so replacing a group here would leave
         // every holder pointing at a copy nothing writes to any more - the same contract the
         // UserSettings groups have, and the reason IMoveable exists at all.
-        public void Pull(GameStatistics source)
-        {
-            if (ReferenceEquals(this, source)) return;
-
-            Profile.Pull(source.Profile);
-            Screens.Pull(source.Screens);
-            Totals.Pull(source.Totals);
-            Streaks.Pull(source.Streaks);
-            Avatar.Pull(source.Avatar);
-            Editor.Pull(source.Editor);
-            Devices.Pull(source.Devices);
-        }
-
-        public override bool Equals(object obj) => obj is GameStatistics value && Equals(value);
-
-        public bool Equals(GameStatistics other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return Profile.Equals(other.Profile)
-                   && Screens.Equals(other.Screens)
-                   && Totals.Equals(other.Totals)
-                   && Streaks.Equals(other.Streaks)
-                   && Avatar.Equals(other.Avatar)
-                   && Editor.Equals(other.Editor)
-                   && Devices.Equals(other.Devices);
-        }
-
-        public override int GetHashCode() =>
-            HashCode.Combine(Profile, Screens, Totals, Streaks, Avatar, Editor, Devices);
     }
 }

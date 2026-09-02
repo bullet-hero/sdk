@@ -9,8 +9,9 @@
 *.asmdef                eol=lf linguist-language=json
 *.json                  eol=lf
 
-# Build products committed on purpose: the Roslyn analyzer/generator assembly in Roslyn/Dist/ is a
-# binary that changes wholesale on every build, which is exactly what LFS exists for. Nothing here
-# is ever diffed or merged.
+# Build products committed on purpose: BH.SDK.Roslyn.dll in this folder is a binary that changes
+# wholesale on every build, which is exactly what LFS exists for. It lives in the SDK root rather
+# than in Roslyn/ because Unity scopes an analyzer to the asmdef owning its folder plus every
+# assembly referencing it. Nothing here is ever diffed or merged.
 *.dll                   filter=lfs diff=lfs merge=lfs -text
 *.pdb                   filter=lfs diff=lfs merge=lfs -text

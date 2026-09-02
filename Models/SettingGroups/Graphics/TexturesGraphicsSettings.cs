@@ -1,4 +1,5 @@
 using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Enums.Settings;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Rules.Attributes;
@@ -33,7 +34,8 @@ namespace BH.SDK.Models.SettingGroups.Graphics
     /// and how hard, how large it lets them be, whether it builds mip-maps, and how it samples them.
     /// </summary>
     [RuleContainer]
-    public class TexturesGraphicsSettings : IModel<TexturesGraphicsSettings>,
+    [GenerateModel]
+    public sealed partial class TexturesGraphicsSettings : IModel<TexturesGraphicsSettings>,
         IMoveable<TexturesGraphicsSettings>
     {
         /// <summary> Whether images are packed into a GPU-compressed format. </summary>
@@ -79,52 +81,6 @@ namespace BH.SDK.Models.SettingGroups.Graphics
             Mipmaps = mipmaps;
             Filtering = filtering;
             CompressionQuality = compressionQuality;
-        }
-
-        public void Reset()
-        {
-            Compression = TextureCompressionMode.Auto;
-            SizeLimit = TextureSizeLimit.Auto;
-            Mipmaps = TextureMipmapMode.Auto;
-            Filtering = TextureFilterMode.Auto;
-            CompressionQuality = TextureCompressionQuality.Auto;
-        }
-
-        public object Clone() => Copy();
-        public TexturesGraphicsSettings Copy() =>
-            new(Compression, SizeLimit, Mipmaps, Filtering, CompressionQuality);
-
-        public void Pull(TexturesGraphicsSettings source)
-        {
-            Compression = source.Compression;
-            SizeLimit = source.SizeLimit;
-            Mipmaps = source.Mipmaps;
-            Filtering = source.Filtering;
-            CompressionQuality = source.CompressionQuality;
-        }
-
-        public void Update(TexturesGraphicsSettings src)
-        {
-            Compression = src.Compression;
-            SizeLimit = src.SizeLimit;
-            Mipmaps = src.Mipmaps;
-            Filtering = src.Filtering;
-            CompressionQuality = src.CompressionQuality;
-        }
-
-        public override bool Equals(object obj) => obj is TexturesGraphicsSettings value && Equals(value);
-        public override int GetHashCode() => HashCode.Combine((int)Compression, (int)SizeLimit, (int)Mipmaps,
-                (int)Filtering, (int)CompressionQuality);
-
-        public bool Equals(TexturesGraphicsSettings other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return Compression == other.Compression
-                   && SizeLimit == other.SizeLimit
-                   && Mipmaps == other.Mipmaps
-                   && Filtering == other.Filtering
-                   && CompressionQuality == other.CompressionQuality;
         }
     }
 }

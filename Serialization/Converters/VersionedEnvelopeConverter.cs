@@ -44,11 +44,27 @@ namespace BH.SDK.Serialization.Converters
             writer.WritePropertyName(Names.Version);
             serializer.Serialize(writer, attribute.Version);
 
-            // serialize data
+            // THE PAYLOAD IS HANDED STRAIGHT TO ITS OWN WRITER when it has one, and that is not an
+            // optimisation - it is the only way this works. Going back through the serializer for
+            // the SAME instance trips Newtonsoft's own circular-reference check: the value is
+            // already on its serialize stack, pushed by the call that reached this converter, and
+            // a second converter for it is a second push. It never fired while the inner call
+            // landed on the contract, and fired immediately once a converter answered for it.
+            //
+            // The _activeDomains dance below is still needed for the other path: a historical
+            // snapshot is deliberately NOT a generated model, so it is read and written reflectively
+            // and would otherwise re-enter this converter and wrap itself twice.
             writer.WritePropertyName(Names.Value);
-            _activeDomains.Add(attribute.Domain);
-            serializer.Serialize(writer, value);
-            _activeDomains.Remove(attribute.Domain);
+            if (value is Json.IJsonModel model)
+            {
+                model.WriteJson(writer);
+            }
+            else
+            {
+                _activeDomains.Add(attribute.Domain);
+                serializer.Serialize(writer, value);
+                _activeDomains.Remove(attribute.Domain);
+            }
 
             writer.WriteEndObject();
         }

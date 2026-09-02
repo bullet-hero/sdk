@@ -1,4 +1,5 @@
 using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Enums;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Models.Primitives;
@@ -6,8 +7,6 @@ using BH.SDK.Models.Values;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
 using Newtonsoft.Json;
-
-// ReSharper disable NonReadonlyMemberInGetHashCode
 
 namespace BH.SDK.Models.Events
 {
@@ -29,7 +28,8 @@ namespace BH.SDK.Models.Events
     /// runs and where its phase sits.
     /// </summary>
     [RuleContainer]
-    public class BeatSegment : IFrameBounds, INameable, IModel<BeatSegment>
+    [GenerateModel]
+    public sealed partial class BeatSegment : IFrameBounds, INameable, IModel<BeatSegment>
     {
         // Anchors mean "this edge follows the parent span's edge" and a segment has no parent, so
         // the flags are stripped on the way in rather than validated after the fact. FrameSpan
@@ -96,55 +96,6 @@ namespace BH.SDK.Models.Events
             BeatsPerBar = beatsPerBar;
             Name = name;
             Color4 = color4;
-        }
-        public void Reset()
-        {
-            Span = new FrameSpan();
-            Bpm = LevelRules.DefaultBpm;
-            Offset = 0f;
-            BeatsPerBar = LevelRules.DefaultBeatsPerBar;
-            Name = string.Empty;
-            Color4 = new Color4Value();
-        }
-
-        public object Clone() => Copy();
-        public BeatSegment Copy() => new(Span, Bpm, Offset, BeatsPerBar, Name, Color4.Copy());
-
-        public void Update(BeatSegment src)
-        {
-            Span = src.Span;
-            Bpm = src.Bpm;
-            Offset = src.Offset;
-            BeatsPerBar = src.BeatsPerBar;
-            Name = src.Name;
-            Color4 = src.Color4.Copy();
-        }
-
-        public void Pull(BeatSegment src)
-        {
-            Span = src.Span;
-            Bpm = src.Bpm;
-            Offset = src.Offset;
-            BeatsPerBar = src.BeatsPerBar;
-            Name = src.Name;
-            Color4.Pull(src.Color4);
-        }
-
-        public override bool Equals(object obj) => obj is BeatSegment value && Equals(value);
-        public override int GetHashCode() =>
-            HashCode.Combine(Span, Bpm, Offset, BeatsPerBar, Name, Color4);
-
-        public bool Equals(BeatSegment other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            var result = Span.Equals(other.Span)
-                         && Bpm.Equals(other.Bpm)
-                         && Offset.Equals(other.Offset)
-                         && BeatsPerBar.Equals(other.BeatsPerBar)
-                         && Name.Equals(other.Name)
-                         && Color4.Equals(other.Color4);
-            return result;
         }
     }
 }

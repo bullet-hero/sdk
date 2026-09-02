@@ -1,12 +1,11 @@
 ﻿using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Enums;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Models.Keyframes;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
 using Newtonsoft.Json;
-
-// ReSharper disable NonReadonlyMemberInGetHashCode
 
 namespace BH.SDK.Models.PostProcessing
 {
@@ -15,7 +14,8 @@ namespace BH.SDK.Models.PostProcessing
     /// of editable curves (see the TODO below), so it can shift the palette but not reshape it.
     /// </summary>
     [RuleContainer]
-    public class ColorCurvesKey : PostProcessingKeyframe, IModel<ColorCurvesKey>
+    [GenerateModel]
+    public sealed partial class ColorCurvesKey : PostProcessingKeyframe, IModel<ColorCurvesKey>
     {
         /// <summary> Global hue shift - rotates every color around the wheel by the same amount. </summary>
         [RuleInRange(PostProcessingRules.ColorCurves.HueVsHueMin,
@@ -41,47 +41,6 @@ namespace BH.SDK.Models.PostProcessing
         {
             HueVsHue = hueVsHue;
             SatVsSat = satVsSat;
-        }
-        public override void Reset()
-        {
-            base.Reset();
-            HueVsHue = 0.5f;
-            SatVsSat = 0.5f;
-        }
-        
-        public override object Clone() => CopyImpl();
-        public override PostProcessingKeyframe Copy() => CopyImpl();
-        ColorCurvesKey ICopyable<ColorCurvesKey>.Copy() => CopyImpl();
-        
-        private ColorCurvesKey CopyImpl() => new(HueVsHue, SatVsSat, Active, Frame, Ease);
-
-        public void Update(ColorCurvesKey src)
-        {
-            base.Update(src);
-
-            HueVsHue = src.HueVsHue;
-            SatVsSat = src.SatVsSat;
-        }
-
-        public void Pull(ColorCurvesKey src)
-        {
-            base.Pull(src);
-
-            HueVsHue = src.HueVsHue;
-            SatVsSat = src.SatVsSat;
-        }
-
-        public override bool Equals(object obj) => obj is ColorCurvesKey value && Equals(value);
-        public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), HueVsHue, SatVsSat);
-
-        public bool Equals(ColorCurvesKey other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            var result = base.Equals(other)
-                         && HueVsHue.Equals(other.HueVsHue)
-                         && SatVsSat.Equals(other.SatVsSat);
-            return result;
         }
     }
 }

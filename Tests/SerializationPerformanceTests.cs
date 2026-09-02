@@ -28,7 +28,14 @@ namespace BH.SDK.Tests
 
         // Wall-clock budgets, deliberately loose - regression tripwires, not benchmark assertions.
         private const double JsonReadBudgetMs = 5000d;
-        private const double BsonReadBudgetMs = 5000d;
+        private const double BlobReadBudgetMs = 5000d;
+
+        // The claim the whole binary format makes, stated as a RATIO rather than a wall clock: a
+        // number of milliseconds says as much about the machine as about the code, while "the
+        // generated codec is several times faster than binding members by reflection" is the thing
+        // that is actually true and stays true on a phone. Three is deliberately far below what is
+        // measured, so this fails when something structural breaks and not when a laptop throttles.
+        private const double MinimumBlobSpeedup = 3d;
 
         [Test]
         [Author(Metadata.Author.Vertoker)]
@@ -41,8 +48,41 @@ namespace BH.SDK.Tests
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.Extreme)]
-        public void DeserializeEnvelope_LargeLevelBson_CompletesWithinBudget()
-            => AssertRoundTripWithinBudget(SerializationType.Bson, BsonReadBudgetMs);
+        public void DeserializeEnvelope_LargeLevelBlob_CompletesWithinBudget()
+            => AssertRoundTripWithinBudget(SerializationType.Blob, BlobReadBudgetMs);
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Extreme)]
+        public void DeserializeEnvelope_Blob_IsSeveralTimesFasterThanJson()
+        {
+            var level = MockData.CreateLargeTestLevel(ObjectCount, PrefabCount, PrefabObjectCount);
+
+            var json = MeasureRead(level, SerializationType.Json);
+            var blob = MeasureRead(level, SerializationType.Blob);
+
+            TestContext.WriteLine($"json={json:F1}ms blob={blob:F1}ms speedup={json / blob:F1}x");
+
+            Assert.That(json / blob, Is.GreaterThan(MinimumBlobSpeedup),
+                $"blob read {blob:F0}ms against json {json:F0}ms - only {json / blob:F1}x, and the "
+                + "point of a generated codec is that it is not in the same class as reflection");
+        }
+
+        /// <summary> Milliseconds for one warmed read of the same level in one format. </summary>
+        private static double MeasureRead(Level level, SerializationType type)
+        {
+            var serializer = new SerializationService().GetDataSerializer(type);
+            var attribute = typeof(Level).GetCustomAttribute<DataVersionAttribute>();
+            var bytes = serializer.SerializeEnvelope(attribute.Domain, new EnvelopeData(attribute.Version, level));
+
+            serializer.DeserializeEnvelope(bytes, typeof(Level));
+
+            var watch = Stopwatch.StartNew();
+            serializer.DeserializeEnvelope(bytes, typeof(Level));
+            watch.Stop();
+            return watch.Elapsed.TotalMilliseconds;
+        }
 
         private static void AssertRoundTripWithinBudget(SerializationType type, double readBudgetMs)
         {

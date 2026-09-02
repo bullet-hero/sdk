@@ -1,4 +1,5 @@
 ﻿using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Models.SettingGroups.GameEditor;
 using BH.SDK.Rules.Attributes;
@@ -21,7 +22,8 @@ namespace BH.SDK.Models.SettingGroups
     /// the level being edited.
     /// </summary>
     [RuleContainer]
-    public class GameEditorSettings : IModel<GameEditorSettings>, IMoveable<GameEditorSettings>
+    [GenerateModel]
+    public sealed partial class GameEditorSettings : IModel<GameEditorSettings>, IMoveable<GameEditorSettings>
     {
         /// <summary> Autosave policy and how deep the operation history goes. </summary>
         [RuleNotNull]
@@ -97,71 +99,7 @@ namespace BH.SDK.Models.SettingGroups
             Serialization = serialization;
         }
 
-        public void Reset()
-        {
-            Savings.Reset();
-            Camera.Reset();
-            Player.Reset();
-            Grid.Reset();
-            Selection.Reset();
-            Gizmos.Reset();
-            Timeline.Reset();
-            Interface.Reset();
-            Serialization.Reset();
-        }
-
-        public object Clone() => Copy();
-
-        public GameEditorSettings Copy() => new(Savings.Copy(), Camera.Copy(), Player.Copy(),
-            Grid.Copy(), Selection.Copy(), Gizmos.Copy(), Timeline.Copy(), Interface.Copy(),
-            Serialization.Copy());
-
-        public void Pull(GameEditorSettings source)
-        {
-            Savings.Pull(source.Savings);
-            Camera.Pull(source.Camera);
-            Player.Pull(source.Player);
-            Grid.Pull(source.Grid);
-            Selection.Pull(source.Selection);
-            Gizmos.Pull(source.Gizmos);
-            Timeline.Pull(source.Timeline);
-            Interface.Pull(source.Interface);
-            Serialization.Pull(source.Serialization);
-        }
-
-        public void Update(GameEditorSettings src)
-        {
-            Savings = src.Savings.Copy();
-            Camera = src.Camera.Copy();
-            Player = src.Player.Copy();
-            Grid = src.Grid.Copy();
-            Selection = src.Selection.Copy();
-            Gizmos = src.Gizmos.Copy();
-            Timeline = src.Timeline.Copy();
-            Interface = src.Interface.Copy();
-            Serialization = src.Serialization.Copy();
-        }
-
-        public override bool Equals(object obj) => obj is GameEditorSettings value && Equals(value);
-
         // HashCode.Combine takes at most 8 values and this holds 9, so the tail folds into the
         // eighth slot - the same shape the flat version needed twice over for its sixteen.
-        public override int GetHashCode() => HashCode.Combine(Savings, Camera, Player, Grid,
-            Selection, Gizmos, Timeline, HashCode.Combine(Interface, Serialization));
-
-        public bool Equals(GameEditorSettings other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return Savings.Equals(other.Savings)
-                   && Camera.Equals(other.Camera)
-                   && Player.Equals(other.Player)
-                   && Grid.Equals(other.Grid)
-                   && Selection.Equals(other.Selection)
-                   && Gizmos.Equals(other.Gizmos)
-                   && Timeline.Equals(other.Timeline)
-                   && Interface.Equals(other.Interface)
-                   && Serialization.Equals(other.Serialization);
-        }
     }
 }

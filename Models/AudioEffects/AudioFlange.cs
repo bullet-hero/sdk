@@ -1,10 +1,9 @@
 ﻿using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
 using Newtonsoft.Json;
-
-// ReSharper disable NonReadonlyMemberInGetHashCode
 
 namespace BH.SDK.Models.AudioEffects
 {
@@ -13,7 +12,8 @@ namespace BH.SDK.Models.AudioEffects
     /// whoosh. Same family as AudioChorus, but one modulated copy at a shorter delay.
     /// </summary>
     [RuleContainer]
-    public class AudioFlange : AudioEffect, IModel<AudioFlange>
+    [GenerateModel]
+    public sealed partial class AudioFlange : AudioEffect, IModel<AudioFlange>
     {
         /// <summary> Level of the untouched signal. </summary>
         [RuleInRange(AudioRules.Flange.DryMix_Min, AudioRules.Flange.DryMix_Max)]
@@ -49,55 +49,6 @@ namespace BH.SDK.Models.AudioEffects
             WetMix = wetMix;
             Depth = depth;
             Rate = rate;
-        }
-        public override void Reset()
-        {
-            base.Reset();
-            DryMix = AudioRules.Flange.DryMix_Default;
-            WetMix = AudioRules.Flange.WetMix_Default;
-            Depth = AudioRules.Flange.Depth_Default;
-            Rate = AudioRules.Flange.Rate_Default;
-        }
-
-        public override object Clone() => CopyImpl();
-        public override AudioEffect Copy() => CopyImpl();
-        AudioFlange ICopyable<AudioFlange>.Copy() => CopyImpl();
-
-        private AudioFlange CopyImpl() => new(MixLevel, DryMix, WetMix, Depth, Rate);
-
-        public void Update(AudioFlange src)
-        {
-            base.Update(src);
-
-            DryMix = src.DryMix;
-            WetMix = src.WetMix;
-            Depth = src.Depth;
-            Rate = src.Rate;
-        }
-
-        public void Pull(AudioFlange src)
-        {
-            base.Pull(src);
-
-            DryMix = src.DryMix;
-            WetMix = src.WetMix;
-            Depth = src.Depth;
-            Rate = src.Rate;
-        }
-
-        public override bool Equals(object obj) => obj is AudioFlange value && Equals(value);
-        public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), DryMix, WetMix, Depth, Rate);
-
-        public bool Equals(AudioFlange other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            var result = base.Equals(other)
-                         && DryMix.Equals(other.DryMix)
-                         && WetMix.Equals(other.WetMix)
-                         && Depth.Equals(other.Depth)
-                         && Rate.Equals(other.Rate);
-            return result;
         }
     }
 }

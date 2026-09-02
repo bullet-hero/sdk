@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using BH.SDK.Models.Data;
 using BH.SDK.Models.Objects;
+using BH.SDK.Models.Values;
 using BH.SDK.Models.Primitives;
 using BH.SDK.Utils;
 using NUnit.Framework;
@@ -92,6 +94,43 @@ namespace BH.SDK.Tests
 
             Assert.DoesNotThrow(() => placement.GetHashCode());
             Assert.DoesNotThrow(() => new HashSet<PrefabObject> { placement, other }.Add(placement));
+        }
+
+        // CopyArray is constrained `where T : ICopyable<T>`, and that constraint is a PROMISE: the
+        // only reason to demand it is to call Copy() on every element. An implementation that
+        // CopyTo's instead honours it for a struct element and silently breaks it for a class one,
+        // which is not a hypothetical - ThemeData.Matrix is Color4Value[64] and Color4Value is a
+        // class, so a copied theme shared all sixty-four colours with the theme it came from and
+        // editing either edited both. Undo snapshots, autosave and prefab materialization all copy.
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.VeryEasy)]
+        public void CopyArray_OfAReferenceType_CopiesTheElementsToo()
+        {
+            var array = new[] { new Color4Value(1f, 0f, 0f, 1f), new Color4Value(0f, 1f, 0f, 1f) };
+
+            var copy = array.CopyArray();
+
+            Assert.AreNotSame(array[0], copy[0], "element 0 is the same instance");
+            Assert.AreNotSame(array[1], copy[1], "element 1 is the same instance");
+            Assert.IsTrue(array[0].Equals(copy[0]), "element 0 lost its value");
+            Assert.IsTrue(array[1].Equals(copy[1]), "element 1 lost its value");
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.VeryEasy)]
+        public void CopyingATheme_LeavesTheOriginalAlone()
+        {
+            var theme = new ThemeData();
+            theme.Matrix[0] = new Color4Value(1f, 0f, 0f, 1f);
+
+            var copy = theme.Copy();
+            copy.Matrix[0].R = 0f;
+
+            Assert.AreEqual(1f, theme.Matrix[0].R, "editing the copy edited the original");
         }
     }
 }

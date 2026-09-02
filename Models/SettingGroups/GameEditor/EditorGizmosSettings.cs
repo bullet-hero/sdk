@@ -1,4 +1,5 @@
 using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Rules.Attributes;
 using Newtonsoft.Json;
@@ -15,7 +16,8 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
     /// The editor's viewport drag handles.
     /// </summary>
     [RuleContainer]
-    public class EditorGizmosSettings : IModel<EditorGizmosSettings>, IMoveable<EditorGizmosSettings>
+    [GenerateModel]
+    public sealed partial class EditorGizmosSettings : IModel<EditorGizmosSettings>, IMoveable<EditorGizmosSettings>
     {
         // A handle keeps a roughly constant ON-SCREEN size across zoom levels, the same way Unity's
         // own move/rotate/scale gizmos do; this scales that screen size. It is a preference because
@@ -34,26 +36,9 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
         {
             Scale = scale;
         }
-        public void Reset() => ResetOwn();
         private void ResetOwn()
         {
             Scale = 1f;
-        }
-
-        public object Clone() => Copy();
-        public EditorGizmosSettings Copy() => new(Scale);
-
-        public void Pull(EditorGizmosSettings source) => Scale = source.Scale;
-        public void Update(EditorGizmosSettings src) => Scale = src.Scale;
-
-        public override int GetHashCode() => Scale.GetHashCode();
-        public override bool Equals(object obj) => obj is EditorGizmosSettings value && Equals(value);
-
-        public bool Equals(EditorGizmosSettings other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return Scale.Equals(other.Scale);
         }
     }
 }

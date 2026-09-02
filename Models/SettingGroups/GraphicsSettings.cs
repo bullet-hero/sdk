@@ -1,4 +1,5 @@
 ﻿using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Enums.Settings;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Models.SettingGroups.Graphics;
@@ -13,7 +14,8 @@ namespace BH.SDK.Models.SettingGroups
     /// PC - the level is unchanged, the player just renders less of it.
     /// </summary>
     [RuleContainer]
-    public class GraphicsSettings : IFrameable, IModel<GraphicsSettings>, IMoveable<GraphicsSettings>
+    [GenerateModel]
+    public sealed partial class GraphicsSettings : IFrameable, IModel<GraphicsSettings>, IMoveable<GraphicsSettings>
     {
         /// <summary> Where the target framerate comes from - the screen's refresh rate or the fixed
         /// value below. </summary>
@@ -98,67 +100,6 @@ namespace BH.SDK.Models.SettingGroups
             AntiAliasing = antiAliasing;
             Textures = textures;
             Display = display;
-        }
-
-        public void Reset()
-        {
-            FramerateTarget = FramerateTarget.ScreenHz;
-            FixedFramerate = 60;
-            Audio.Reset();
-            Effects.Reset();
-            PostProcessing.Reset();
-            AntiAliasing.Reset();
-            Textures.Reset();
-            Display.Reset();
-        }
-
-        public object Clone() => Copy();
-
-        public GraphicsSettings Copy() => new(FramerateTarget, FixedFramerate, (AudioGraphicsSettings)Audio.Clone(),
-            (EffectsGraphicsSettings)Effects.Clone(), (PostProcessingGraphicsSettings)PostProcessing.Clone(),
-            AntiAliasing.Copy(), Textures.Copy(), Display.Copy());
-
-        public void Pull(GraphicsSettings source)
-        {
-            FramerateTarget = source.FramerateTarget;
-            FixedFramerate = source.FixedFramerate;
-            Audio.Pull(source.Audio);
-            Effects.Pull(source.Effects);
-            PostProcessing.Pull(source.PostProcessing);
-            AntiAliasing.Pull(source.AntiAliasing);
-            Textures.Pull(source.Textures);
-            Display.Pull(source.Display);
-        }
-
-        public void Update(GraphicsSettings src)
-        {
-            FramerateTarget = src.FramerateTarget;
-            FixedFramerate = src.FixedFramerate;
-            Audio = (AudioGraphicsSettings)src.Audio.Clone();
-            Effects = (EffectsGraphicsSettings)src.Effects.Clone();
-            PostProcessing = (PostProcessingGraphicsSettings)src.PostProcessing.Clone();
-            AntiAliasing = src.AntiAliasing.Copy();
-            Textures = src.Textures.Copy();
-            Display = src.Display.Copy();
-        }
-
-        public override bool Equals(object obj) => obj is GraphicsSettings value && Equals(value);
-
-        public override int GetHashCode() => HashCode.Combine((int)FramerateTarget,
-            FixedFramerate, Audio, Effects, PostProcessing, AntiAliasing, Textures, Display);
-
-        public bool Equals(GraphicsSettings other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return FramerateTarget == other.FramerateTarget
-                   && FixedFramerate == other.FixedFramerate
-                   && Audio.Equals(other.Audio)
-                   && Effects.Equals(other.Effects)
-                   && PostProcessing.Equals(other.PostProcessing)
-                   && AntiAliasing.Equals(other.AntiAliasing)
-                   && Textures.Equals(other.Textures)
-                   && Display.Equals(other.Display);
         }
     }
 }

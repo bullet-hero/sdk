@@ -25,7 +25,62 @@ namespace BH.SDK.Utils
             (byte)(color4Value.B * ByteMaxValue),
             (byte)(color4Value.A * ByteMaxValue));
 
-        public static T[] CopyArray<T>(this T[] array) where T : ICopyable<T>
+        // RESET KEEPS THE COLLECTION INSTANCE, and that is not a detail: a reset object is the same
+        // object, so whatever holds its lists still holds them. Every hand-written Reset here
+        // cleared in place for exactly that reason. The defaults come from a freshly constructed
+        // instance, which is thrown away afterwards - so sharing its items costs nothing.
+
+        /// <summary> Empties target and refills it from defaults, keeping target's own instance. </summary>
+        public static List<T> ResetTo<T>(this List<T> target, List<T> defaults)
+        {
+            if (target is null) return defaults;
+            target.Clear();
+            if (defaults != null) target.AddRange(defaults);
+            return target;
+        }
+
+        /// <summary> The dictionary form. </summary>
+        public static Dictionary<TKey, TValue> ResetTo<TKey, TValue>(
+            this Dictionary<TKey, TValue> target, Dictionary<TKey, TValue> defaults)
+        {
+            if (target is null) return defaults;
+            target.Clear();
+            if (defaults != null)
+                foreach (var pair in defaults)
+                    target[pair.Key] = pair.Value;
+            return target;
+        }
+
+        /// <summary> The array form. An array cannot resize, so a length that does not match is
+        /// the one case where the instance has to go. </summary>
+        public static T[] ResetTo<T>(this T[] target, T[] defaults)
+        {
+            if (target is null || defaults is null || target.Length != defaults.Length) return defaults;
+            defaults.CopyTo(target, 0);
+            return target;
+        }
+
+        // TWO ARRAY COPIES, FOR THE REASON THERE ARE THREE DICTIONARY COPIES: what an element is
+        // decides whether copying the array is enough. This used to be one method constrained
+        // `where T : ICopyable<T>` that then blitted with CopyTo, which honours the constraint for a
+        // struct element and silently breaks it for a class one - ThemeData.Matrix is
+        // Color4Value[64] and Color4Value is a class, so a copied theme shared all sixty-four
+        // colours with the theme it came from, and editing either edited both. Undo snapshots,
+        // autosave and prefab materialization all copy. `class` in the constraint is what makes the
+        // wrong call a compile error instead of a shared instance.
+
+        /// <summary> Deep copy: every element is copied too. </summary>
+        public static T[] CopyArray<T>(this T[] array) where T : class, ICopyable<T>
+        {
+            var copyArray = new T[array.Length];
+            for (var i = 0; i < array.Length; i++)
+                copyArray[i] = array[i]?.Copy();
+            return copyArray;
+        }
+
+        /// <summary> Blit copy, for an element that IS its value - a pixel, an id. Millions of
+        /// elements at a time here (a 4096x4096 texture), so it must not call anything per item. </summary>
+        public static T[] CopyArrayUnmanaged<T>(this T[] array) where T : unmanaged
         {
             var copyArray = new T[array.Length];
             array.CopyTo(copyArray, 0);
@@ -90,7 +145,7 @@ namespace BH.SDK.Utils
         // pullValue is a delegate rather than a constraint because the value type may be a polymorphic
         // BASE, and target.Pull(source) through a base reference writes the base half and stops
         // (CLAUDE.md, "IModel<T> pattern"). Who dispatches to the concrete overload cannot live in a
-        // generic method - LevelUtils.PullObject is what the three object scopes pass; a concretely
+        // generic method - the generated <Base>ModelPull.PullValue is what the object scopes pass; a concretely
         // typed value like LevelTrack needs no callback and takes the overload below.
 
         /// <summary> Merges source into target key by key: keys source no longer has are dropped,

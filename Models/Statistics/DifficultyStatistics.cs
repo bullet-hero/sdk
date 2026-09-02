@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
@@ -24,7 +25,8 @@ namespace BH.SDK.Models.Statistics
 
     /// <summary> Where in a level the player loses, accumulated across every run. </summary>
     [RuleContainer]
-    public class DifficultyStatistics : IModel<DifficultyStatistics>
+    [GenerateModel]
+    public sealed partial class DifficultyStatistics : IModel<DifficultyStatistics>
     {
         /// <summary> Deaths per bucket of level progress. Always
         /// <see cref="StatisticsRules.BucketCount"/> long. </summary>
@@ -53,6 +55,8 @@ namespace BH.SDK.Models.Statistics
         public int DeathsBeforeCheckpoint { get; set; }
 
         /// <summary> Deaths per checkpoint, keyed by that checkpoint's own frame. </summary>
+        [GenerateModelKeyed(nameof(CheckpointDeaths.Frame))]
+        [GenerateModelMerge]
         [RuleNotNull, RuleCollectionMaxCount(StatisticsRules.MaxCheckpointDeaths)]
         [JsonProperty(Names.DeathsByCheckpoint)]
         public Dictionary<int, CheckpointDeaths> DeathsByCheckpoint { get; set; }
@@ -62,11 +66,6 @@ namespace BH.SDK.Models.Statistics
         public bool HasValue => BucketFrameDuration > 0;
 
         public DifficultyStatistics()
-        {
-            Reset();
-        }
-
-        public void Reset()
         {
             DeathsByBucket = new int[StatisticsRules.BucketCount];
             HitsByBucket = new int[StatisticsRules.BucketCount];
@@ -127,40 +126,9 @@ namespace BH.SDK.Models.Statistics
             DeathsByCheckpoint.Add(checkpointFrame, new CheckpointDeaths(checkpointFrame, 1));
         }
 
-        public object Clone() => Copy();
-
-        public DifficultyStatistics Copy() =>
-            new()
-            {
-                DeathsByBucket = (int[])DeathsByBucket.Clone(),
-                HitsByBucket = (int[])HitsByBucket.Clone(),
-                BucketFrameDuration = BucketFrameDuration,
-                DeathsBeforeCheckpoint = DeathsBeforeCheckpoint,
-                DeathsByCheckpoint = DeathsByCheckpoint.CopyDictionary(),
-            };
-
-        public void Update(DifficultyStatistics src)
-        {
-            DeathsByBucket = (int[])src.DeathsByBucket.Clone();
-            HitsByBucket = (int[])src.HitsByBucket.Clone();
-            BucketFrameDuration = src.BucketFrameDuration;
-            DeathsBeforeCheckpoint = src.DeathsBeforeCheckpoint;
-            DeathsByCheckpoint = src.DeathsByCheckpoint.CopyDictionary();
-        }
-
         // The arrays and the dictionary are written into rather than replaced, unlike Update above:
         // this is the aggregate a live statistics object is refreshed through, and anything holding
         // one of its entries must not lose the instance under it.
-        public void Pull(DifficultyStatistics source)
-        {
-            if (ReferenceEquals(this, source)) return;
-
-            CopyInto(source.DeathsByBucket, DeathsByBucket);
-            CopyInto(source.HitsByBucket, HitsByBucket);
-            BucketFrameDuration = source.BucketFrameDuration;
-            DeathsBeforeCheckpoint = source.DeathsBeforeCheckpoint;
-            DeathsByCheckpoint.PullDictionary(source.DeathsByCheckpoint);
-        }
 
         // A file can carry an array of the wrong length - it is a number in a text document, and
         // BucketCount is free to change between builds. Copying by the shorter of the two and
@@ -170,30 +138,6 @@ namespace BH.SDK.Models.Statistics
             var count = source.Length < target.Length ? source.Length : target.Length;
             for (var i = 0; i < count; i++) target[i] = source[i];
             for (var i = count; i < target.Length; i++) target[i] = 0;
-        }
-
-        public override bool Equals(object obj) => obj is DifficultyStatistics value && Equals(value);
-
-        public bool Equals(DifficultyStatistics other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return BucketFrameDuration == other.BucketFrameDuration
-                   && DeathsBeforeCheckpoint == other.DeathsBeforeCheckpoint
-                   && DeathsByBucket.ArrayEquals(other.DeathsByBucket)
-                   && HitsByBucket.ArrayEquals(other.HitsByBucket)
-                   && DeathsByCheckpoint.DictionaryEquals(other.DeathsByCheckpoint);
-        }
-
-        public override int GetHashCode()
-        {
-            unchecked
-            {
-                var hash = BucketFrameDuration * 31 + DeathsBeforeCheckpoint;
-                hash = hash * 31 + DeathsByBucket.GetArrayHashCode();
-                hash = hash * 31 + HitsByBucket.GetArrayHashCode();
-                return hash * 31 + DeathsByCheckpoint.GetDictionaryHashCode();
-            }
         }
     }
 }

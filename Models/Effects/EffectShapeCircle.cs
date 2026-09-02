@@ -1,4 +1,5 @@
 ﻿using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Enums.Effects;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Models.Interfaces.Effects;
@@ -9,8 +10,6 @@ using BH.SDK.Rules.Attributes;
 using BH.SDK.Utils;
 using Newtonsoft.Json;
 
-// ReSharper disable NonReadonlyMemberInGetHashCode
-
 namespace BH.SDK.Models.Effects
 {
     /// <summary>
@@ -18,7 +17,8 @@ namespace BH.SDK.Models.Effects
     /// patterns, since Arc plus Spread together decide where along the ring the next particle lands.
     /// </summary>
     [RuleContainer]
-    public class EffectShapeCircle : IEffectShape, IModel<EffectShapeCircle>
+    [GenerateModel]
+    public sealed partial class EffectShapeCircle : IEffectShape, IModel<EffectShapeCircle>
     {
         /// <summary> Distance from the center to the ring, along the horizontal axis. </summary>
         [RuleNotNull, RuleIFloatMin(EffectRules.Shape.CircleRadius_Min)]
@@ -69,61 +69,6 @@ namespace BH.SDK.Models.Effects
             Thickness = thickness;
             Arc = arc;
             Spread = spread;
-        }
-        public void Reset()
-        {
-            Radius = new FloatValue(EffectRules.Shape.CircleRadius_Default);
-            Aspect = new FloatValue(EffectRules.Shape.CircleAspect_Default);
-            Thickness = new FloatValue(EffectRules.Shape.CircleThickness_Default);
-            Arc = new FloatValue(EffectRules.Shape.Arc_Default);
-            Spread = new EffectShapeSpreadRandom();
-        }
-
-        public object Clone() => Copy();
-        IEffectShape ICopyable<IEffectShape>.Copy() => new EffectShapeCircle(Radius.Copy(), Aspect.Copy(), Thickness.Copy(), Arc.Copy(), Spread.Copy());
-        public EffectShapeCircle Copy() => new(Radius.Copy(), Aspect.Copy(), Thickness.Copy(), Arc.Copy(), Spread.Copy());
-
-        public void Update(EffectShapeCircle src)
-        {
-            Radius = src.Radius.Copy();
-            Aspect = src.Aspect.Copy();
-            Thickness = src.Thickness.Copy();
-            Arc = src.Arc.Copy();
-            Spread = src.Spread.Copy();
-        }
-
-        public void Pull(EffectShapeCircle src)
-        {
-            Radius = Radius.PullFrom(src.Radius);
-            Aspect = Aspect.PullFrom(src.Aspect);
-            Thickness = Thickness.PullFrom(src.Thickness);
-            Arc = Arc.PullFrom(src.Arc);
-            Spread = Spread.PullFrom(src.Spread);
-        }
-
-        void IUpdatable<IEffectShape>.Update(IEffectShape src)
-        {
-            if (src is EffectShapeCircle value) Update(value);
-        }
-        void IMoveable<IEffectShape>.Pull(IEffectShape src)
-        {
-            if (src is EffectShapeCircle value) Pull(value);
-        }
-
-        public override bool Equals(object obj) => obj is EffectShapeCircle value && Equals(value);
-        public override int GetHashCode() => HashCode.Combine(Radius, Aspect, Thickness, Arc, Spread);
-        
-        public bool Equals(IEffectShape other) => other is EffectShapeCircle value && Equals(value);
-        public bool Equals(EffectShapeCircle other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            var result = Radius.Equals(other.Radius)
-                         && Aspect.Equals(other.Aspect)
-                         && Thickness.Equals(other.Thickness)
-                         && Arc.Equals(other.Arc)
-                         && Spread.Equals(other.Spread);
-            return result;
         }
     }
 }

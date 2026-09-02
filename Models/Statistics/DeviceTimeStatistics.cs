@@ -1,4 +1,5 @@
 using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Enums.Controls;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Rules;
@@ -22,7 +23,8 @@ namespace BH.SDK.Models.Statistics
 
     /// <summary> Real seconds each control device spent steering the avatar. </summary>
     [RuleContainer]
-    public class DeviceTimeStatistics : IModel<DeviceTimeStatistics>
+    [GenerateModel]
+    public sealed partial class DeviceTimeStatistics : IModel<DeviceTimeStatistics>
     {
         [RuleInRange(StatisticsRules.MinSeconds, StatisticsRules.MaxSeconds)]
         [JsonProperty(Names.KeyboardMouseSeconds)]
@@ -40,9 +42,7 @@ namespace BH.SDK.Models.Statistics
         [JsonProperty(Names.DeviceGyroSeconds)]
         public double DeviceGyroSeconds { get; set; }
 
-        public DeviceTimeStatistics() => Reset();
-
-        public void Reset()
+        public DeviceTimeStatistics()
         {
             KeyboardMouseSeconds = 0.0;
             TouchscreenSeconds = 0.0;
@@ -71,39 +71,5 @@ namespace BH.SDK.Models.Statistics
             ControlDevice.DeviceGyro => DeviceGyroSeconds,
             _ => 0.0,
         };
-
-        public object Clone() => Copy();
-
-        public DeviceTimeStatistics Copy()
-        {
-            var copy = new DeviceTimeStatistics();
-            copy.Update(this);
-            return copy;
-        }
-
-        public void Update(DeviceTimeStatistics src)
-        {
-            KeyboardMouseSeconds = src.KeyboardMouseSeconds;
-            TouchscreenSeconds = src.TouchscreenSeconds;
-            GamepadSeconds = src.GamepadSeconds;
-            DeviceGyroSeconds = src.DeviceGyroSeconds;
-        }
-
-        public void Pull(DeviceTimeStatistics source) => Update(source);
-
-        public override bool Equals(object obj) => obj is DeviceTimeStatistics value && Equals(value);
-
-        public bool Equals(DeviceTimeStatistics other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return KeyboardMouseSeconds.Equals(other.KeyboardMouseSeconds)
-                   && TouchscreenSeconds.Equals(other.TouchscreenSeconds)
-                   && GamepadSeconds.Equals(other.GamepadSeconds)
-                   && DeviceGyroSeconds.Equals(other.DeviceGyroSeconds);
-        }
-
-        public override int GetHashCode() =>
-            HashCode.Combine(KeyboardMouseSeconds, TouchscreenSeconds, GamepadSeconds, DeviceGyroSeconds);
     }
 }

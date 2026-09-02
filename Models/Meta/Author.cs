@@ -1,4 +1,5 @@
 ﻿using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Models.Interfaces.Values;
 using BH.SDK.Models.Values;
@@ -15,7 +16,8 @@ namespace BH.SDK.Models.Meta
     /// by convention.
     /// </summary>
     [RuleContainer]
-    public class Author : IModel<Author>
+    [GenerateModel]
+    public sealed partial class Author : IModel<Author>
     {
         /// <summary> Display name, localizable - a handle can be spelled differently per script. </summary>
         [RuleNotNull(typeof(StringValue)), RuleIStringMax(ValueRules.MaxEditorName)]
@@ -39,38 +41,6 @@ namespace BH.SDK.Models.Meta
         {
             Name = name;
             Url = url;
-        }
-        public void Reset()
-        {
-            Name = new StringValue();
-            Url = string.Empty;
-        }
-
-        public object Clone() => Copy();
-        public Author Copy() => new(Name.Copy(), Url);
-
-        public void Update(Author src)
-        {
-            Name = src.Name.Copy();
-            Url = src.Url;
-        }
-
-        public void Pull(Author src)
-        {
-            Name = Name.PullFrom(src.Name);
-            Url = src.Url;
-        }
-
-        public override bool Equals(object obj) => obj is Author value && Equals(value);
-        public override int GetHashCode() => HashCode.Combine(Name, Url);
-
-        public bool Equals(Author other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            var result = Name.Equals(other.Name)
-                         && Url.Equals(other.Url);
-            return result;
         }
     }
 }

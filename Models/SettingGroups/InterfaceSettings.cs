@@ -1,4 +1,5 @@
 ﻿using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Enums.Settings;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Rules.Attributes;
@@ -18,7 +19,8 @@ namespace BH.SDK.Models.SettingGroups
     /// every screen can draw over itself. Nothing here travels with a level.
     /// </summary>
     [RuleContainer]
-    public class InterfaceSettings : IModel<InterfaceSettings>, IMoveable<InterfaceSettings>
+    [GenerateModel]
+    public sealed partial class InterfaceSettings : IModel<InterfaceSettings>, IMoveable<InterfaceSettings>
     {
         // FALSE BY DEFAULT, and that is the whole reason this exists: a death used to be an
         // unconditional stop into the result window, which is four clicks of chrome between a player
@@ -123,77 +125,6 @@ namespace BH.SDK.Models.SettingGroups
             ShowGameInterface = true;
         }
 
-        public void Reset()
-        {
-            OpenMenuOnLose = false;
-            StatsActive = false;
-            StatsAlignmentX = 0f;
-            StatsAlignmentY = 1f;
-            MenuBackground = MenuBackgroundKind.Bot;
-            ScreenOrientation = ScreenOrientationLock.Horizontal;
-            ShowGameProgress = true;
-            ShowGamePause = true;
-            ShowGameInterface = true;
-        }
-
-        public object Clone() => Copy();
-
-        public InterfaceSettings Copy() =>
-            new(OpenMenuOnLose, StatsActive, StatsAlignmentX, StatsAlignmentY, MenuBackground,
-                ScreenOrientation)
-            {
-                ShowGameProgress = ShowGameProgress,
-                ShowGamePause = ShowGamePause,
-                ShowGameInterface = ShowGameInterface,
-            };
-
-        public void Pull(InterfaceSettings source)
-        {
-            OpenMenuOnLose = source.OpenMenuOnLose;
-            StatsActive = source.StatsActive;
-            StatsAlignmentX = source.StatsAlignmentX;
-            StatsAlignmentY = source.StatsAlignmentY;
-            MenuBackground = source.MenuBackground;
-            ScreenOrientation = source.ScreenOrientation;
-            ShowGameProgress = source.ShowGameProgress;
-            ShowGamePause = source.ShowGamePause;
-            ShowGameInterface = source.ShowGameInterface;
-        }
-
-        public void Update(InterfaceSettings src)
-        {
-            OpenMenuOnLose = src.OpenMenuOnLose;
-            StatsActive = src.StatsActive;
-            StatsAlignmentX = src.StatsAlignmentX;
-            StatsAlignmentY = src.StatsAlignmentY;
-            MenuBackground = src.MenuBackground;
-            ScreenOrientation = src.ScreenOrientation;
-            ShowGameProgress = src.ShowGameProgress;
-            ShowGamePause = src.ShowGamePause;
-            ShowGameInterface = src.ShowGameInterface;
-        }
-
         // Nested because HashCode.Combine takes eight arguments and there are nine values.
-        public override int GetHashCode() =>
-            HashCode.Combine(OpenMenuOnLose, StatsActive, StatsAlignmentX, StatsAlignmentY,
-                MenuBackground, ScreenOrientation,
-                HashCode.Combine(ShowGameProgress, ShowGamePause, ShowGameInterface));
-
-        public override bool Equals(object obj) => obj is InterfaceSettings value && Equals(value);
-
-        public bool Equals(InterfaceSettings other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return OpenMenuOnLose == other.OpenMenuOnLose
-                   && StatsActive == other.StatsActive
-                   && StatsAlignmentX.Equals(other.StatsAlignmentX)
-                   && StatsAlignmentY.Equals(other.StatsAlignmentY)
-                   && MenuBackground == other.MenuBackground
-                   && ScreenOrientation == other.ScreenOrientation
-                   && ShowGameProgress == other.ShowGameProgress
-                   && ShowGamePause == other.ShowGamePause
-                   && ShowGameInterface == other.ShowGameInterface;
-        }
     }
 }

@@ -1,10 +1,9 @@
 ﻿using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
 using Newtonsoft.Json;
-
-// ReSharper disable NonReadonlyMemberInGetHashCode
 
 namespace BH.SDK.Models.AudioEffects
 {
@@ -13,7 +12,8 @@ namespace BH.SDK.Models.AudioEffects
     /// without clipping. Shapes dynamics; AudioNormalize targets overall level instead.
     /// </summary>
     [RuleContainer]
-    public class AudioCompressor : AudioEffect, IModel<AudioCompressor>
+    [GenerateModel]
+    public sealed partial class AudioCompressor : AudioEffect, IModel<AudioCompressor>
     {
         /// <summary> Level in dB above which compression starts acting. </summary>
         [RuleInRange(AudioRules.Compressor.Threshold_Min, AudioRules.Compressor.Threshold_Max)]
@@ -49,55 +49,6 @@ namespace BH.SDK.Models.AudioEffects
             Attack = attack;
             Release = release;
             MakeUpGain = makeUpGain;
-        }
-        public override void Reset()
-        {
-            base.Reset();
-            Threshold = AudioRules.Compressor.Threshold_Default;
-            Attack = AudioRules.Compressor.Attack_Default;
-            Release = AudioRules.Compressor.Release_Default;
-            MakeUpGain = AudioRules.Compressor.MakeUpGain_Default;
-        }
-
-        public override object Clone() => CopyImpl();
-        public override AudioEffect Copy() => CopyImpl();
-        AudioCompressor ICopyable<AudioCompressor>.Copy() => CopyImpl();
-
-        private AudioCompressor CopyImpl() => new(MixLevel, Threshold, Attack, Release, MakeUpGain);
-
-        public void Update(AudioCompressor src)
-        {
-            base.Update(src);
-
-            Threshold = src.Threshold;
-            Attack = src.Attack;
-            Release = src.Release;
-            MakeUpGain = src.MakeUpGain;
-        }
-
-        public void Pull(AudioCompressor src)
-        {
-            base.Pull(src);
-
-            Threshold = src.Threshold;
-            Attack = src.Attack;
-            Release = src.Release;
-            MakeUpGain = src.MakeUpGain;
-        }
-
-        public override bool Equals(object obj) => obj is AudioCompressor value && Equals(value);
-        public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), Threshold, Attack, Release, MakeUpGain);
-
-        public bool Equals(AudioCompressor other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            var result = base.Equals(other)
-                         && Threshold.Equals(other.Threshold)
-                         && Attack.Equals(other.Attack)
-                         && Release.Equals(other.Release)
-                         && MakeUpGain.Equals(other.MakeUpGain);
-            return result;
         }
     }
 }

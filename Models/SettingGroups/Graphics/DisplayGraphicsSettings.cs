@@ -1,4 +1,5 @@
 using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Enums.Settings;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Rules.Attributes;
@@ -33,7 +34,8 @@ namespace BH.SDK.Models.SettingGroups.Graphics
     /// actually rendered before being scaled to it. Desktop only.
     /// </summary>
     [RuleContainer]
-    public class DisplayGraphicsSettings : IModel<DisplayGraphicsSettings>,
+    [GenerateModel]
+    public sealed partial class DisplayGraphicsSettings : IModel<DisplayGraphicsSettings>,
         IMoveable<DisplayGraphicsSettings>
     {
         /// <summary> Smallest render scale offered - a quarter of the pixels. </summary>
@@ -84,47 +86,6 @@ namespace BH.SDK.Models.SettingGroups.Graphics
             ResolutionWidth = resolutionWidth;
             ResolutionHeight = resolutionHeight;
             RenderScale = renderScale;
-        }
-        public void Reset()
-        {
-            WindowMode = WindowMode.FullScreenWindow;
-            ResolutionWidth = NativeResolution;
-            ResolutionHeight = NativeResolution;
-            RenderScale = 1f;
-        }
-
-        public object Clone() => Copy();
-        public DisplayGraphicsSettings Copy() =>
-            new(WindowMode, ResolutionWidth, ResolutionHeight, RenderScale);
-
-        public void Pull(DisplayGraphicsSettings source)
-        {
-            WindowMode = source.WindowMode;
-            ResolutionWidth = source.ResolutionWidth;
-            ResolutionHeight = source.ResolutionHeight;
-            RenderScale = source.RenderScale;
-        }
-
-        public void Update(DisplayGraphicsSettings src)
-        {
-            WindowMode = src.WindowMode;
-            ResolutionWidth = src.ResolutionWidth;
-            ResolutionHeight = src.ResolutionHeight;
-            RenderScale = src.RenderScale;
-        }
-
-        public override bool Equals(object obj) => obj is DisplayGraphicsSettings value && Equals(value);
-        public override int GetHashCode() =>
-            HashCode.Combine((int)WindowMode, ResolutionWidth, ResolutionHeight, RenderScale);
-
-        public bool Equals(DisplayGraphicsSettings other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return WindowMode == other.WindowMode
-                   && ResolutionWidth == other.ResolutionWidth
-                   && ResolutionHeight == other.ResolutionHeight
-                   && RenderScale.Equals(other.RenderScale);
         }
     }
 }

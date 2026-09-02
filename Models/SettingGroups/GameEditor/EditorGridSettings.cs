@@ -1,4 +1,5 @@
 using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
@@ -22,7 +23,8 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
     /// The editor viewport's grid: how big one cell is and how loud its lines are.
     /// </summary>
     [RuleContainer]
-    public class EditorGridSettings : IModel<EditorGridSettings>, IMoveable<EditorGridSettings>
+    [GenerateModel]
+    public sealed partial class EditorGridSettings : IModel<EditorGridSettings>, IMoveable<EditorGridSettings>
     {
         /// <summary> Side of one cell of the editor's viewport grid, in world units. </summary>
         [RuleMinValue(ValueRules.MinGridSize)]
@@ -43,36 +45,10 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
             Size = size;
             Opacity = opacity;
         }
-        public void Reset() => ResetOwn();
         private void ResetOwn()
         {
             Size = 1f;
             Opacity = 0.25f;
-        }
-
-        public object Clone() => Copy();
-        public EditorGridSettings Copy() => new(Size, Opacity);
-
-        public void Pull(EditorGridSettings source)
-        {
-            Size = source.Size;
-            Opacity = source.Opacity;
-        }
-
-        public void Update(EditorGridSettings src)
-        {
-            Size = src.Size;
-            Opacity = src.Opacity;
-        }
-
-        public override int GetHashCode() => HashCode.Combine(Size, Opacity);
-        public override bool Equals(object obj) => obj is EditorGridSettings value && Equals(value);
-
-        public bool Equals(EditorGridSettings other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return Size.Equals(other.Size) && Opacity.Equals(other.Opacity);
         }
     }
 }

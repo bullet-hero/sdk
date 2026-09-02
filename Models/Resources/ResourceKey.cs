@@ -1,11 +1,10 @@
 ﻿using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Enums.Resources;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
 using Newtonsoft.Json;
-
-// ReSharper disable NonReadonlyMemberInGetHashCode
 
 namespace BH.SDK.Models.Resources
 {
@@ -14,7 +13,8 @@ namespace BH.SDK.Models.Resources
     /// a level whose download link died still loads from the file next to it.
     /// </summary>
     [RuleContainer]
-    public class ResourceKey : IModel<ResourceKey>
+    [GenerateModel]
+    public sealed partial class ResourceKey : IModel<ResourceKey>
     {
         // URI - Universal Resource Identifier, either for paths, urls or keys
 
@@ -39,36 +39,5 @@ namespace BH.SDK.Models.Resources
             UriType = uriType;
             Uri = uri;
         }
-        public void Reset()
-        {
-            UriType = ResourceUriType.Undefined;
-            Uri = string.Empty;
-        }
-
-        public object Clone() => Copy();
-        public ResourceKey Copy() => new(UriType, Uri);
-
-        public void Update(ResourceKey src)
-        {
-            UriType = src.UriType;
-            Uri = src.Uri;
-        }
-
-        public void Pull(ResourceKey src)
-        {
-            UriType = src.UriType;
-            Uri = src.Uri;
-        }
-
-        public bool Equals(ResourceKey other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            var result = UriType == other.UriType && Uri.Equals(other.Uri);
-            return result;
-        }
-
-        public override bool Equals(object obj) => obj is ResourceKey value && Equals(value);
-        public override int GetHashCode() => HashCode.Combine((int)UriType, Uri);
     }
 }

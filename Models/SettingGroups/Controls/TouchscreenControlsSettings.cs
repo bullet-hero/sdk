@@ -1,4 +1,5 @@
 using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Enums.Controls;
 using BH.SDK.Models.Enums.Controls.Modes;
 using BH.SDK.Models.Interfaces;
@@ -21,7 +22,8 @@ namespace BH.SDK.Models.SettingGroups.Controls
     /// mode.
     /// </summary>
     [RuleContainer]
-    public class TouchscreenControlsSettings : BaseDeviceControlsSettings,
+    [GenerateModel]
+    public sealed partial class TouchscreenControlsSettings : BaseDeviceControlsSettings,
         IModel<TouchscreenControlsSettings>, IMoveable<TouchscreenControlsSettings>
     {
         [RuleEnumValid(TouchscreenControlMode.Relative)]
@@ -124,12 +126,6 @@ namespace BH.SDK.Models.SettingGroups.Controls
             DashButtonSize = dashButtonSize;
             DashButtonIcon = dashButtonIcon;
         }
-        public override void Reset()
-        {
-            base.Reset();
-            ResetOwn();
-            DeadZone = ControlsRules.DefaultTouchDeadZone;
-        }
         private void ResetOwn()
         {
             Mode = TouchscreenControlMode.Relative;
@@ -147,92 +143,6 @@ namespace BH.SDK.Models.SettingGroups.Controls
             DashButtonAnchor = ScreenAnchor.BottomRight;
             DashButtonSize = ControlsRules.DefaultControlSize;
             DashButtonIcon = 0;
-        }
-
-        public override object Clone() => CopyImpl();
-        public override BaseDeviceControlsSettings Copy() => CopyImpl();
-        TouchscreenControlsSettings ICopyable<TouchscreenControlsSettings>.Copy() => CopyImpl();
-
-        private TouchscreenControlsSettings CopyImpl() => new(Active, Sensitivity, DeadZone,
-            Smoothing, InvertX, InvertY, Mode, FingerOffsetX, FingerOffsetY, DashOnSecondFinger,
-            DashOnDoubleTap, DoubleTapTime, TapMaxTravel, Handedness, JoystickAnchor, JoystickSize,
-            JoystickTravel, JoystickDynamicOrigin, DashButtonAnchor, DashButtonSize, DashButtonIcon);
-
-        public void Pull(TouchscreenControlsSettings source)
-        {
-            Active = source.Active;
-            Sensitivity = source.Sensitivity;
-            DeadZone = source.DeadZone;
-            Smoothing = source.Smoothing;
-            InvertX = source.InvertX;
-            InvertY = source.InvertY;
-            Mode = source.Mode;
-            FingerOffsetX = source.FingerOffsetX;
-            FingerOffsetY = source.FingerOffsetY;
-            DashOnSecondFinger = source.DashOnSecondFinger;
-            DashOnDoubleTap = source.DashOnDoubleTap;
-            DoubleTapTime = source.DoubleTapTime;
-            TapMaxTravel = source.TapMaxTravel;
-            Handedness = source.Handedness;
-            JoystickAnchor = source.JoystickAnchor;
-            JoystickSize = source.JoystickSize;
-            JoystickTravel = source.JoystickTravel;
-            JoystickDynamicOrigin = source.JoystickDynamicOrigin;
-            DashButtonAnchor = source.DashButtonAnchor;
-            DashButtonSize = source.DashButtonSize;
-            DashButtonIcon = source.DashButtonIcon;
-        }
-
-        public void Update(TouchscreenControlsSettings src)
-        {
-            base.Update(src);
-
-            Mode = src.Mode;
-            FingerOffsetX = src.FingerOffsetX;
-            FingerOffsetY = src.FingerOffsetY;
-            DashOnSecondFinger = src.DashOnSecondFinger;
-            DashOnDoubleTap = src.DashOnDoubleTap;
-            DoubleTapTime = src.DoubleTapTime;
-            TapMaxTravel = src.TapMaxTravel;
-            Handedness = src.Handedness;
-            JoystickAnchor = src.JoystickAnchor;
-            JoystickSize = src.JoystickSize;
-            JoystickTravel = src.JoystickTravel;
-            JoystickDynamicOrigin = src.JoystickDynamicOrigin;
-            DashButtonAnchor = src.DashButtonAnchor;
-            DashButtonSize = src.DashButtonSize;
-            DashButtonIcon = src.DashButtonIcon;
-        }
-
-        public override bool Equals(object obj) => obj is TouchscreenControlsSettings value && Equals(value);
-        public override int GetHashCode()
-        {
-            var hash = HashCode.Combine(base.GetHashCode(), Mode, FingerOffsetX, FingerOffsetY,
-                DashOnSecondFinger, DashOnDoubleTap, DoubleTapTime, TapMaxTravel);
-            return HashCode.Combine(hash, Handedness, JoystickAnchor, JoystickSize, JoystickTravel,
-                JoystickDynamicOrigin, DashButtonAnchor, DashButtonSize);
-        }
-
-        public bool Equals(TouchscreenControlsSettings other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return base.Equals(other)
-                   && Mode == other.Mode
-                   && FingerOffsetX.Equals(other.FingerOffsetX)
-                   && FingerOffsetY.Equals(other.FingerOffsetY)
-                   && DashOnSecondFinger == other.DashOnSecondFinger
-                   && DashOnDoubleTap == other.DashOnDoubleTap
-                   && DoubleTapTime.Equals(other.DoubleTapTime)
-                   && TapMaxTravel.Equals(other.TapMaxTravel)
-                   && Handedness == other.Handedness
-                   && JoystickAnchor == other.JoystickAnchor
-                   && JoystickSize.Equals(other.JoystickSize)
-                   && JoystickTravel.Equals(other.JoystickTravel)
-                   && JoystickDynamicOrigin == other.JoystickDynamicOrigin
-                   && DashButtonAnchor == other.DashButtonAnchor
-                   && DashButtonSize.Equals(other.DashButtonSize)
-                   && DashButtonIcon == other.DashButtonIcon;
         }
     }
 }

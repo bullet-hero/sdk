@@ -5,7 +5,6 @@ using BH.SDK.Models.Enums.Controls.Modes;
 using BH.SDK.Models.SettingGroups;
 using BH.SDK.Models.SettingGroups.Controls;
 using BH.SDK.Serialization;
-using BH.SDK.Serialization.Serializers;
 using BH.SDK.Services.Controls;
 using NUnit.Framework;
 
@@ -259,11 +258,11 @@ namespace BH.SDK.Tests
             var service = NewService();
             var settings = new UserSettings();
 
-            // Serialized pretty on purpose: the injection below splices on a key's indented form, so a
-            // compact document would silently match nothing and the test would pass without ever
-            // deserializing an unknown key.
-            var json = service.SerializeData(settings, SerializationType.JsonPretty);
-            var withLegacy = json.Replace("\"controls\": {", "\"controls\": {\n      \"classic_controls_type\": 1,");
+            // The splice has to match the document that is actually written, and every document this
+            // project writes is compact - the indented mode is gone. The AreNotEqual under it is what
+            // keeps that honest: a target matching nothing would pass without deserializing anything.
+            var json = service.SerializeData(settings);
+            var withLegacy = json.Replace("\"controls\":{", "\"controls\":{\"classic_controls_type\":1,");
             Assert.AreNotEqual(json, withLegacy, "Test fixture did not inject the legacy key");
 
             var restored = service.DeserializeData<UserSettings>(withLegacy);

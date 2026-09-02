@@ -1,4 +1,5 @@
 using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Enums.Controls;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Models.SettingGroups.Controls;
@@ -14,7 +15,8 @@ namespace BH.SDK.Models.SettingGroups
     /// </summary>
     [RuleContainer]
     [RuleAnyDeviceActive]
-    public class ControlsSettings : IModel<ControlsSettings>, IMoveable<ControlsSettings>
+    [GenerateModel]
+    public sealed partial class ControlsSettings : IModel<ControlsSettings>, IMoveable<ControlsSettings>
     {
         [RuleNotNull]
         [JsonProperty(Names.Common)]
@@ -62,15 +64,6 @@ namespace BH.SDK.Models.SettingGroups
             Gamepad = gamepad;
             DeviceGyro = deviceGyro;
         }
-        public void Reset()
-        {
-            Common.Reset();
-            Priority = DefaultPriority();
-            KeyboardMouse.Reset();
-            Touchscreen.Reset();
-            Gamepad.Reset();
-            DeviceGyro.Reset();
-        }
 
         /// <summary> The catalog's own order. Which order actually SHIPS per platform is the consumer's
         /// call - the format only guarantees a valid permutation. </summary>
@@ -94,56 +87,6 @@ namespace BH.SDK.Models.SettingGroups
             foreach (var device in ControlDeviceCatalog.Devices)
                 if (GetDevice(device).Active) return true;
             return false;
-        }
-
-        public object Clone() => Copy();
-        public ControlsSettings Copy() => new(Common.Copy(), (ControlDevice[])Priority.Clone(),
-            (KeyboardMouseControlsSettings)KeyboardMouse.Copy(),
-            (TouchscreenControlsSettings)Touchscreen.Copy(),
-            (GamepadControlsSettings)Gamepad.Copy(),
-            (DeviceGyroControlsSettings)DeviceGyro.Copy());
-
-        public void Pull(ControlsSettings source)
-        {
-            Common.Pull(source.Common);
-            Priority = (ControlDevice[])source.Priority.Clone();
-            KeyboardMouse.Pull(source.KeyboardMouse);
-            Touchscreen.Pull(source.Touchscreen);
-            Gamepad.Pull(source.Gamepad);
-            DeviceGyro.Pull(source.DeviceGyro);
-        }
-
-        public void Update(ControlsSettings src)
-        {
-            Common = src.Common.Copy();
-            Priority = (ControlDevice[])src.Priority.Clone();
-            KeyboardMouse = (KeyboardMouseControlsSettings)src.KeyboardMouse.Copy();
-            Touchscreen = (TouchscreenControlsSettings)src.Touchscreen.Copy();
-            Gamepad = (GamepadControlsSettings)src.Gamepad.Copy();
-            DeviceGyro = (DeviceGyroControlsSettings)src.DeviceGyro.Copy();
-        }
-
-        public override bool Equals(object obj) => obj is ControlsSettings value && Equals(value);
-        public override int GetHashCode()
-        {
-            var hash = HashCode.Combine(Common, KeyboardMouse, Touchscreen, Gamepad, DeviceGyro);
-
-            if (Priority == null) return hash;
-            foreach (var device in Priority)
-                hash = HashCode.Combine(hash, device);
-            return hash;
-        }
-
-        public bool Equals(ControlsSettings other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return Common.Equals(other.Common)
-                   && SamePriority(other.Priority)
-                   && KeyboardMouse.Equals(other.KeyboardMouse)
-                   && Touchscreen.Equals(other.Touchscreen)
-                   && Gamepad.Equals(other.Gamepad)
-                   && DeviceGyro.Equals(other.DeviceGyro);
         }
 
         private bool SamePriority(ControlDevice[] other)

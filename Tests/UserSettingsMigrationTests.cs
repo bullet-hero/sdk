@@ -44,9 +44,13 @@ namespace BH.SDK.Tests
                 RenderInframes = true,
                 GridSize = 0.5f,
                 GridOpacity = 0.8f,
-                LevelSerializeMode = SerializationType.Bson,
-                ResourcesSerializeMode = SerializationType.JsonPretty,
-                CopySerializeMode = SerializationType.Bson,
+                LevelSerializeMode = SerializationType.Blob,
+                ResourcesSerializeMode = SerializationType.Json,
+
+                // Carried by the v1.0 file and DROPPED by the migration - the clipboard is text, so
+                // the setting this fed could never mean anything. Set to something conspicuous here
+                // precisely so the assert below can say it went nowhere.
+                CopySerializeMode = SerializationType.Blob,
             },
         };
 
@@ -105,9 +109,8 @@ namespace BH.SDK.Tests
 
             Assert.IsTrue(editor.Interface.RenderInframes);
 
-            Assert.AreEqual(SerializationType.Bson, editor.Serialization.LevelMode);
-            Assert.AreEqual(SerializationType.JsonPretty, editor.Serialization.ResourcesMode);
-            Assert.AreEqual(SerializationType.Bson, editor.Serialization.CopyMode);
+            Assert.AreEqual(SerializationType.Blob, editor.Serialization.LevelMode);
+            Assert.AreEqual(SerializationType.Json, editor.Serialization.ResourcesMode);
         }
 
         // The properties the restructure ADDED have no old key to come from, so they must arrive at

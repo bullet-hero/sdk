@@ -1,4 +1,5 @@
 using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Enums.Settings;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Rules.Attributes;
@@ -16,7 +17,8 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
     /// is shown in, and how much the console is told.
     /// </summary>
     [RuleContainer]
-    public class EditorInterfaceSettings : IModel<EditorInterfaceSettings>, IMoveable<EditorInterfaceSettings>
+    [GenerateModel]
+    public sealed partial class EditorInterfaceSettings : IModel<EditorInterfaceSettings>, IMoveable<EditorInterfaceSettings>
     {
         // The debounce every inspector field commits through. Zero is a legitimate choice - it means
         // "commit on every keystroke", which is what a slow-typing author wants and what an author
@@ -67,47 +69,12 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
             LogValueClamps = logValueClamps;
             RenderInframes = renderInframes;
         }
-        public void Reset() => ResetOwn();
         private void ResetOwn()
         {
             DirtyFieldDelay = 0.05f;
             RotationDisplayUnit = AngleDisplayUnit.Degrees;
             LogValueClamps = true;
             RenderInframes = false;
-        }
-
-        public object Clone() => Copy();
-        public EditorInterfaceSettings Copy() =>
-            new(DirtyFieldDelay, RotationDisplayUnit, LogValueClamps, RenderInframes);
-
-        public void Pull(EditorInterfaceSettings source)
-        {
-            DirtyFieldDelay = source.DirtyFieldDelay;
-            RotationDisplayUnit = source.RotationDisplayUnit;
-            LogValueClamps = source.LogValueClamps;
-            RenderInframes = source.RenderInframes;
-        }
-
-        public void Update(EditorInterfaceSettings src)
-        {
-            DirtyFieldDelay = src.DirtyFieldDelay;
-            RotationDisplayUnit = src.RotationDisplayUnit;
-            LogValueClamps = src.LogValueClamps;
-            RenderInframes = src.RenderInframes;
-        }
-
-        public override int GetHashCode() =>
-            HashCode.Combine(DirtyFieldDelay, RotationDisplayUnit, LogValueClamps, RenderInframes);
-        public override bool Equals(object obj) => obj is EditorInterfaceSettings value && Equals(value);
-
-        public bool Equals(EditorInterfaceSettings other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return DirtyFieldDelay.Equals(other.DirtyFieldDelay)
-                   && RotationDisplayUnit == other.RotationDisplayUnit
-                   && LogValueClamps == other.LogValueClamps
-                   && RenderInframes == other.RenderInframes;
         }
     }
 }

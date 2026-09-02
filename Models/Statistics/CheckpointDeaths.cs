@@ -1,4 +1,5 @@
 using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
@@ -18,7 +19,8 @@ namespace BH.SDK.Models.Statistics
 
     /// <summary> How many deaths happened while one checkpoint was the last one reached. </summary>
     [RuleContainer]
-    public class CheckpointDeaths : IModel<CheckpointDeaths>
+    [GenerateModel]
+    public sealed partial class CheckpointDeaths : IModel<CheckpointDeaths>
     {
         /// <summary> Frame of the checkpoint this counts for - the dictionary's key. </summary>
         [RuleMinValue(StatisticsRules.MinCount)]
@@ -32,7 +34,8 @@ namespace BH.SDK.Models.Statistics
 
         public CheckpointDeaths()
         {
-            Reset();
+            Frame = 0;
+            Deaths = 0;
         }
 
         public CheckpointDeaths(int frame, int deaths)
@@ -40,33 +43,5 @@ namespace BH.SDK.Models.Statistics
             Frame = frame;
             Deaths = deaths;
         }
-
-        public void Reset()
-        {
-            Frame = 0;
-            Deaths = 0;
-        }
-
-        public object Clone() => Copy();
-        public CheckpointDeaths Copy() => new(Frame, Deaths);
-
-        public void Update(CheckpointDeaths src)
-        {
-            Frame = src.Frame;
-            Deaths = src.Deaths;
-        }
-
-        public void Pull(CheckpointDeaths source) => Update(source);
-
-        public override bool Equals(object obj) => obj is CheckpointDeaths value && Equals(value);
-
-        public bool Equals(CheckpointDeaths other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return Frame == other.Frame && Deaths == other.Deaths;
-        }
-
-        public override int GetHashCode() => HashCode.Combine(Frame, Deaths);
     }
 }

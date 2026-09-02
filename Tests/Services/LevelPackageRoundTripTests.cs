@@ -134,20 +134,20 @@ namespace BH.SDK.Tests.Services
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.Hard)]
-        public async Task Archive_RoundTripsInBson()
+        public async Task Archive_RoundTripsInBlob()
         {
             var (plan, store) = await PlanAsync();
             var options = new LevelPackageOptions
             {
-                LevelFormat = SerializationType.Bson,
-                MetaFormat = SerializationType.Bson,
+                LevelFormat = SerializationType.Blob,
+                MetaFormat = SerializationType.Blob,
             };
 
             var archive = await WriteArchiveAsync(plan, store, options: options);
             var content = await ReadArchiveAsync(archive);
 
             Assert.AreEqual(LevelPackageOpenResult.Ok, content.Result);
-            Assert.AreEqual(SerializationType.Bson, content.LevelFormat);
+            Assert.AreEqual(SerializationType.Blob, content.LevelFormat);
             Assert.AreEqual(plan.Level, Deserialize(content));
         }
 

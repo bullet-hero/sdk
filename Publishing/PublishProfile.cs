@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models;
 using BH.SDK.Models.Enums.Meta;
 using BH.SDK.Models.Enums.Resources;
@@ -30,7 +31,8 @@ namespace BH.SDK.Publishing
     /// <summary> One service's conditions for accepting a level. </summary>
     [RuleContainer]
     [DataVersion(DataDomains.PublishProfile, 1, 0)]
-    public class PublishProfile : IModel<PublishProfile>
+    [GenerateModel]
+    public sealed partial class PublishProfile : IModel<PublishProfile>
     {
         /// <summary> Which service this is the policy of ("ows-default", "workshop"). Reported back
         /// in every report, since the same level passes one profile and fails another. </summary>
@@ -137,25 +139,6 @@ namespace BH.SDK.Publishing
             MaxDataFileBytes = 0;
             MaxTotalBytes = 0;
             Sources = new List<TrustedSource>();
-            UnknownSourceTrust = SourceTrust.Unknown;
-        }
-        public void Reset()
-        {
-            ProfileKey = string.Empty;
-            AllowedLicenses.Clear();
-            AllowedUriTypes.Clear();
-            AllowUnknownLicense = true;
-            AllowPermissionInstead = true;
-            RequireResourceMeta = false;
-            RequireResourceUrl = false;
-            RequireAttribution = false;
-            RequireAgeRating = false;
-            RequireLevelAuthors = false;
-            RequireHashes = false;
-            MaxResourceBytes = 0;
-            MaxDataFileBytes = 0;
-            MaxTotalBytes = 0;
-            Sources.Clear();
             UnknownSourceTrust = SourceTrust.Unknown;
         }
 
@@ -287,112 +270,6 @@ namespace BH.SDK.Publishing
             profile.MaxTotalBytes = 128 * ByteSizeUtils.Megabyte;
             profile.UnknownSourceTrust = SourceTrust.RequiresResourceCheck;
             return profile;
-        }
-
-        public object Clone() => Copy();
-        public PublishProfile Copy() => new()
-        {
-            ProfileKey = ProfileKey,
-            AllowedLicenses = new List<TypicalLicenseType>(AllowedLicenses),
-            AllowedUriTypes = new List<ResourceUriType>(AllowedUriTypes),
-            AllowUnknownLicense = AllowUnknownLicense,
-            AllowPermissionInstead = AllowPermissionInstead,
-            RequireResourceMeta = RequireResourceMeta,
-            RequireResourceUrl = RequireResourceUrl,
-            RequireAttribution = RequireAttribution,
-            RequireAgeRating = RequireAgeRating,
-            RequireLevelAuthors = RequireLevelAuthors,
-            RequireHashes = RequireHashes,
-            MaxResourceBytes = MaxResourceBytes,
-            MaxDataFileBytes = MaxDataFileBytes,
-            MaxTotalBytes = MaxTotalBytes,
-            Sources = Sources.CopyList(),
-            UnknownSourceTrust = UnknownSourceTrust,
-        };
-
-        public void Update(PublishProfile src)
-        {
-            ProfileKey = src.ProfileKey;
-            AllowedLicenses = new List<TypicalLicenseType>(src.AllowedLicenses);
-            AllowedUriTypes = new List<ResourceUriType>(src.AllowedUriTypes);
-            AllowUnknownLicense = src.AllowUnknownLicense;
-            AllowPermissionInstead = src.AllowPermissionInstead;
-            RequireResourceMeta = src.RequireResourceMeta;
-            RequireResourceUrl = src.RequireResourceUrl;
-            RequireAttribution = src.RequireAttribution;
-            RequireAgeRating = src.RequireAgeRating;
-            RequireLevelAuthors = src.RequireLevelAuthors;
-            RequireHashes = src.RequireHashes;
-            MaxResourceBytes = src.MaxResourceBytes;
-            MaxDataFileBytes = src.MaxDataFileBytes;
-            MaxTotalBytes = src.MaxTotalBytes;
-            Sources = src.Sources.CopyList();
-            UnknownSourceTrust = src.UnknownSourceTrust;
-        }
-
-        public void Pull(PublishProfile src)
-        {
-            ProfileKey = src.ProfileKey;
-            AllowedLicenses = new List<TypicalLicenseType>(src.AllowedLicenses);
-            AllowedUriTypes = new List<ResourceUriType>(src.AllowedUriTypes);
-            AllowUnknownLicense = src.AllowUnknownLicense;
-            AllowPermissionInstead = src.AllowPermissionInstead;
-            RequireResourceMeta = src.RequireResourceMeta;
-            RequireResourceUrl = src.RequireResourceUrl;
-            RequireAttribution = src.RequireAttribution;
-            RequireAgeRating = src.RequireAgeRating;
-            RequireLevelAuthors = src.RequireLevelAuthors;
-            RequireHashes = src.RequireHashes;
-            MaxResourceBytes = src.MaxResourceBytes;
-            MaxDataFileBytes = src.MaxDataFileBytes;
-            MaxTotalBytes = src.MaxTotalBytes;
-            Sources = src.Sources.CopyList();
-            UnknownSourceTrust = src.UnknownSourceTrust;
-        }
-
-        public override bool Equals(object obj) => obj is PublishProfile value && Equals(value);
-        public override int GetHashCode()
-        {
-            var hashCode = new HashCode();
-            hashCode.Add(ProfileKey);
-            hashCode.Add(AllowedLicenses.GetListHashCode());
-            hashCode.Add(AllowedUriTypes.GetListHashCode());
-            hashCode.Add(AllowUnknownLicense);
-            hashCode.Add(AllowPermissionInstead);
-            hashCode.Add(RequireResourceMeta);
-            hashCode.Add(RequireResourceUrl);
-            hashCode.Add(RequireAttribution);
-            hashCode.Add(RequireAgeRating);
-            hashCode.Add(RequireLevelAuthors);
-            hashCode.Add(RequireHashes);
-            hashCode.Add(MaxResourceBytes);
-            hashCode.Add(MaxDataFileBytes);
-            hashCode.Add(MaxTotalBytes);
-            hashCode.Add(Sources.GetListHashCode());
-            hashCode.Add((int)UnknownSourceTrust);
-            return hashCode.ToHashCode();
-        }
-
-        public bool Equals(PublishProfile other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return ProfileKey.Equals(other.ProfileKey)
-                   && AllowedLicenses.ListEquals(other.AllowedLicenses)
-                   && AllowedUriTypes.ListEquals(other.AllowedUriTypes)
-                   && AllowUnknownLicense == other.AllowUnknownLicense
-                   && AllowPermissionInstead == other.AllowPermissionInstead
-                   && RequireResourceMeta == other.RequireResourceMeta
-                   && RequireResourceUrl == other.RequireResourceUrl
-                   && RequireAttribution == other.RequireAttribution
-                   && RequireAgeRating == other.RequireAgeRating
-                   && RequireLevelAuthors == other.RequireLevelAuthors
-                   && RequireHashes == other.RequireHashes
-                   && MaxResourceBytes == other.MaxResourceBytes
-                   && MaxDataFileBytes == other.MaxDataFileBytes
-                   && MaxTotalBytes == other.MaxTotalBytes
-                   && Sources.ListEquals(other.Sources)
-                   && UnknownSourceTrust == other.UnknownSourceTrust;
         }
     }
 }

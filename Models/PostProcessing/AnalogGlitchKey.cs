@@ -1,12 +1,11 @@
 ﻿using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Enums;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Models.Keyframes;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
 using Newtonsoft.Json;
-
-// ReSharper disable NonReadonlyMemberInGetHashCode
 
 namespace BH.SDK.Models.PostProcessing
 {
@@ -15,7 +14,8 @@ namespace BH.SDK.Models.PostProcessing
     /// glitch pair - DigitalGlitchKey corrupts blocks of data instead of the signal.
     /// </summary>
     [RuleContainer]
-    public class AnalogGlitchKey : PostProcessingKeyframe, IModel<AnalogGlitchKey> // HEAVY IN ANY CASE, PHONES DON'T LIKE IT
+    [GenerateModel]
+    public sealed partial class AnalogGlitchKey : PostProcessingKeyframe, IModel<AnalogGlitchKey> // HEAVY IN ANY CASE, PHONES DON'T LIKE IT
     {
         /// <summary> How much individual scanlines shift sideways. </summary>
         [RuleInRange(PostProcessingRules.AnalogGlitch.ScanLineJitterMin,
@@ -56,56 +56,6 @@ namespace BH.SDK.Models.PostProcessing
             VerticalJump = verticalJump;
             HorizontalShake = horizontalShake;
             ColorDrift = colorDrift;
-        }
-        public override void Reset()
-        {
-            base.Reset();
-            ScanLineJitter = 0.5f;
-            VerticalJump = 0f;
-            HorizontalShake = 0f;
-            ColorDrift = 0f;
-        }
-        
-        public override object Clone() => CopyImpl();
-        public override PostProcessingKeyframe Copy() => CopyImpl();
-        AnalogGlitchKey ICopyable<AnalogGlitchKey>.Copy() => CopyImpl();
-        
-        private AnalogGlitchKey CopyImpl() => new(ScanLineJitter, VerticalJump, HorizontalShake, ColorDrift, Active, Frame, Ease);
-
-        public void Update(AnalogGlitchKey src)
-        {
-            base.Update(src);
-
-            ScanLineJitter = src.ScanLineJitter;
-            VerticalJump = src.VerticalJump;
-            HorizontalShake = src.HorizontalShake;
-            ColorDrift = src.ColorDrift;
-        }
-
-        public void Pull(AnalogGlitchKey src)
-        {
-            base.Pull(src);
-
-            ScanLineJitter = src.ScanLineJitter;
-            VerticalJump = src.VerticalJump;
-            HorizontalShake = src.HorizontalShake;
-            ColorDrift = src.ColorDrift;
-        }
-
-        public override bool Equals(object obj) => obj is AnalogGlitchKey value && Equals(value);
-        public override int GetHashCode() => HashCode.Combine(base.GetHashCode(),
-            ScanLineJitter, VerticalJump, HorizontalShake, ColorDrift);
-
-        public bool Equals(AnalogGlitchKey other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            var result = base.Equals(other)
-                         && ScanLineJitter.Equals(other.ScanLineJitter)
-                         && VerticalJump.Equals(other.VerticalJump)
-                         && HorizontalShake.Equals(other.HorizontalShake)
-                         && ColorDrift.Equals(other.ColorDrift);
-            return result;
         }
     }
 }

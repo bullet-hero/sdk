@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Models.Keyframes;
 using BH.SDK.Rules;
@@ -7,8 +8,6 @@ using BH.SDK.Rules.Attributes;
 using BH.SDK.Utils;
 using BH.SDK.Versions;
 using Newtonsoft.Json;
-
-// ReSharper disable NonReadonlyMemberInGetHashCode
 
 namespace BH.SDK.Models.Game
 {
@@ -29,7 +28,8 @@ namespace BH.SDK.Models.Game
     /// </summary>
     [RuleContainer]
     [DataVersion(DataDomains.PlayerEvents, 1, 0)]
-    public class PlayerEvents : IModel<PlayerEvents>
+    [GenerateModel]
+    public sealed partial class PlayerEvents : IModel<PlayerEvents>
     {
         /// <summary> A force pushing the player in a direction. Zero, the default, leaves them
         /// alone. </summary>
@@ -44,7 +44,6 @@ namespace BH.SDK.Models.Game
         [RuleCollectionUnique(nameof(VelocityPoint.Frame))]
         [JsonProperty(Names.VelocityPoint)]
         public List<VelocityPoint> VelocityPoints { get; set; }
-
 
         /// <summary> Whether the player avatar is drawn. Hiding it does not make it safe - see
         /// Collisions. </summary>
@@ -121,62 +120,6 @@ namespace BH.SDK.Models.Game
             Collisions = collisions;
             Sizes = sizes;
             Speeds = speeds;
-        }
-        public void Reset()
-        {
-            Velocities.Clear();
-            VelocityPoints.Clear();
-            Visibles.Clear();
-            Controls.Clear();
-            Collisions.Clear();
-            Sizes.Clear();
-            Speeds.Clear();
-        }
-
-        public object Clone() => Copy();
-        public PlayerEvents Copy() => new(Velocities.CopyList(), VelocityPoints.CopyList(),
-            Visibles.CopyList(), Controls.CopyList(), Collisions.CopyList(), Sizes.CopyList(), Speeds.CopyList());
-
-        public void Update(PlayerEvents src)
-        {
-            Velocities = src.Velocities.CopyList();
-            VelocityPoints = src.VelocityPoints.CopyList();
-            Visibles = src.Visibles.CopyList();
-            Controls = src.Controls.CopyList();
-            Collisions = src.Collisions.CopyList();
-            Sizes = src.Sizes.CopyList();
-            Speeds = src.Speeds.CopyList();
-        }
-
-        public void Pull(PlayerEvents src)
-        {
-            Velocities = src.Velocities.CopyList();
-            VelocityPoints = src.VelocityPoints.CopyList();
-            Visibles = src.Visibles.CopyList();
-            Controls = src.Controls.CopyList();
-            Collisions = src.Collisions.CopyList();
-            Sizes = src.Sizes.CopyList();
-            Speeds = src.Speeds.CopyList();
-        }
-
-        public override bool Equals(object obj) => obj is PlayerEvents value && Equals(value);
-        public override int GetHashCode() => HashCode.Combine(Velocities.GetListHashCode(),
-            VelocityPoints.GetListHashCode(), Visibles.GetListHashCode(),
-            Controls.GetListHashCode(), Collisions.GetListHashCode(), Sizes.GetListHashCode(),
-            Speeds.GetListHashCode());
-
-        public bool Equals(PlayerEvents other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            var result = Velocities.ListEquals(other.Velocities)
-                         && VelocityPoints.ListEquals(other.VelocityPoints)
-                         && Visibles.ListEquals(other.Visibles)
-                         && Controls.ListEquals(other.Controls)
-                         && Collisions.ListEquals(other.Collisions)
-                         && Sizes.ListEquals(other.Sizes)
-                         && Speeds.ListEquals(other.Speeds);
-            return result;
         }
     }
 }

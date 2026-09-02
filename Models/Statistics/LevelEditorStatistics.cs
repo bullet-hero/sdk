@@ -1,4 +1,5 @@
 using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
@@ -17,7 +18,8 @@ namespace BH.SDK.Models.Statistics
 
     /// <summary> What the author did to a level, as opposed to how it was played. </summary>
     [RuleContainer]
-    public class LevelEditorStatistics : IModel<LevelEditorStatistics>
+    [GenerateModel]
+    public sealed partial class LevelEditorStatistics : IModel<LevelEditorStatistics>
     {
         /// <summary> How many times the level was opened for editing. </summary>
         [RuleMinValue(StatisticsRules.MinCount)]
@@ -55,11 +57,6 @@ namespace BH.SDK.Models.Statistics
 
         public LevelEditorStatistics()
         {
-            Reset();
-        }
-
-        public void Reset()
-        {
             EditorOpens = 0;
             TotalEditSeconds = 0.0;
             LastEditedUtc = default;
@@ -67,43 +64,5 @@ namespace BH.SDK.Models.Statistics
             Autosaves = 0;
             Operations = 0;
         }
-
-        public object Clone() => Copy();
-
-        public LevelEditorStatistics Copy()
-        {
-            var copy = new LevelEditorStatistics();
-            copy.Update(this);
-            return copy;
-        }
-
-        public void Update(LevelEditorStatistics src)
-        {
-            EditorOpens = src.EditorOpens;
-            TotalEditSeconds = src.TotalEditSeconds;
-            LastEditedUtc = src.LastEditedUtc;
-            Saves = src.Saves;
-            Autosaves = src.Autosaves;
-            Operations = src.Operations;
-        }
-
-        public void Pull(LevelEditorStatistics source) => Update(source);
-
-        public override bool Equals(object obj) => obj is LevelEditorStatistics value && Equals(value);
-
-        public bool Equals(LevelEditorStatistics other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return EditorOpens == other.EditorOpens
-                   && TotalEditSeconds.Equals(other.TotalEditSeconds)
-                   && LastEditedUtc.Equals(other.LastEditedUtc)
-                   && Saves == other.Saves
-                   && Autosaves == other.Autosaves
-                   && Operations == other.Operations;
-        }
-
-        public override int GetHashCode() =>
-            HashCode.Combine(EditorOpens, TotalEditSeconds, LastEditedUtc, Saves, Autosaves, Operations);
     }
 }

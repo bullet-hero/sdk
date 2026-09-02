@@ -1,10 +1,9 @@
 ﻿using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Enums;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Rules.Attributes;
 using Newtonsoft.Json;
-
-// ReSharper disable NonReadonlyMemberInGetHashCode
 
 namespace BH.SDK.Models.Keyframes
 {
@@ -14,7 +13,8 @@ namespace BH.SDK.Models.Keyframes
     /// but not necessarily sorted frames - sorting is the consumer's job, not the format's.
     /// </summary>
     [RuleContainer]
-    public class Keyframe : IKeyframe, IModel<Keyframe>
+    [GenerateModel]
+    public partial class Keyframe : IKeyframe, IModel<Keyframe>
     {
         public const int DefaultFrame = 0;
         public const EaseType DefaultEase = EaseType.Linear;
@@ -39,39 +39,6 @@ namespace BH.SDK.Models.Keyframes
         {
             Frame = frame;
             Ease = ease;
-        }
-        public virtual void Reset()
-        {
-            Frame = DefaultFrame;
-            Ease = DefaultEase;
-        }
-
-        public virtual object Clone() => CopyImpl();
-        public virtual Keyframe Copy() => CopyImpl();
-        
-        private Keyframe CopyImpl() => new(Frame, Ease);
-
-        public void Update(Keyframe src)
-        {
-            Frame = src.Frame;
-            Ease = src.Ease;
-        }
-
-        public void Pull(Keyframe src)
-        {
-            Frame = src.Frame;
-            Ease = src.Ease;
-        }
-
-        public override bool Equals(object obj) => obj is Keyframe value && Equals(value);
-        public override int GetHashCode() => HashCode.Combine(Frame, (int)Ease);
-
-        public bool Equals(Keyframe other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            var result = Frame.Equals(other.Frame) && Ease == other.Ease;
-            return result;
         }
     }
 }

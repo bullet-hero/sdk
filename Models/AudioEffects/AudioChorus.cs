@@ -1,10 +1,9 @@
 ﻿using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
 using Newtonsoft.Json;
-
-// ReSharper disable NonReadonlyMemberInGetHashCode
 
 namespace BH.SDK.Models.AudioEffects
 {
@@ -13,7 +12,8 @@ namespace BH.SDK.Models.AudioEffects
     /// like several. Three taps is what separates it from the single-copy AudioFlange.
     /// </summary>
     [RuleContainer]
-    public class AudioChorus : AudioEffect, IModel<AudioChorus>
+    [GenerateModel]
+    public sealed partial class AudioChorus : AudioEffect, IModel<AudioChorus>
     {
         /// <summary> Level of the untouched signal. </summary>
         [RuleInRange(AudioRules.Chorus.DryMix_Min, AudioRules.Chorus.DryMix_Max)]
@@ -82,84 +82,6 @@ namespace BH.SDK.Models.AudioEffects
             Rate = rate;
             Depth = depth;
             Feedback = feedback;
-        }
-        public override void Reset()
-        {
-            base.Reset();
-            DryMix = AudioRules.Chorus.DryMix_Default;
-            WetMixTap1 = AudioRules.Chorus.WetMixTap1_Default;
-            WetMixTap2 = AudioRules.Chorus.WetMixTap2_Default;
-            WetMixTap3 = AudioRules.Chorus.WetMixTap3_Default;
-            Delay = AudioRules.Chorus.Delay_Default;
-            Rate = AudioRules.Chorus.Rate_Default;
-            Depth = AudioRules.Chorus.Depth_Default;
-            Feedback = AudioRules.Chorus.Feedback_Default;
-        }
-
-        public override object Clone() => CopyImpl();
-        public override AudioEffect Copy() => CopyImpl();
-        AudioChorus ICopyable<AudioChorus>.Copy() => CopyImpl();
-
-        private AudioChorus CopyImpl() => new(MixLevel, DryMix, WetMixTap1, WetMixTap2, WetMixTap3, Delay, Rate, Depth, Feedback);
-
-        public void Update(AudioChorus src)
-        {
-            base.Update(src);
-
-            DryMix = src.DryMix;
-            WetMixTap1 = src.WetMixTap1;
-            WetMixTap2 = src.WetMixTap2;
-            WetMixTap3 = src.WetMixTap3;
-            Delay = src.Delay;
-            Rate = src.Rate;
-            Depth = src.Depth;
-            Feedback = src.Feedback;
-        }
-
-        public void Pull(AudioChorus src)
-        {
-            base.Pull(src);
-
-            DryMix = src.DryMix;
-            WetMixTap1 = src.WetMixTap1;
-            WetMixTap2 = src.WetMixTap2;
-            WetMixTap3 = src.WetMixTap3;
-            Delay = src.Delay;
-            Rate = src.Rate;
-            Depth = src.Depth;
-            Feedback = src.Feedback;
-        }
-
-        public override bool Equals(object obj) => obj is AudioChorus value && Equals(value);
-        public override int GetHashCode()
-        {
-            var hashCode = new HashCode();
-            hashCode.Add(base.GetHashCode());
-            hashCode.Add(DryMix);
-            hashCode.Add(WetMixTap1);
-            hashCode.Add(WetMixTap2);
-            hashCode.Add(WetMixTap3);
-            hashCode.Add(Delay);
-            hashCode.Add(Rate);
-            hashCode.Add(Depth);
-            hashCode.Add(Feedback);
-            return hashCode.ToHashCode();
-        }
-
-        public bool Equals(AudioChorus other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            var result = base.Equals(other)
-                         && DryMix.Equals(other.DryMix)
-                         && WetMixTap1.Equals(other.WetMixTap1)
-                         && WetMixTap2.Equals(other.WetMixTap2)
-                         && WetMixTap3.Equals(other.WetMixTap3)
-                         && Delay.Equals(other.Delay)
-                         && Rate.Equals(other.Rate)
-                         && Depth.Equals(other.Depth)
-                         && Feedback.Equals(other.Feedback);
-            return result;
         }
     }
 }

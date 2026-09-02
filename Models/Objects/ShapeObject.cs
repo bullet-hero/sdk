@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Enums;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Models.Interfaces.Keyframes;
@@ -11,8 +12,6 @@ using BH.SDK.Rules.Attributes;
 using BH.SDK.Utils;
 using Newtonsoft.Json;
 
-// ReSharper disable NonReadonlyMemberInGetHashCode
-
 namespace BH.SDK.Models.Objects
 {
     /// <summary>
@@ -22,7 +21,8 @@ namespace BH.SDK.Models.Objects
     /// three have to agree.
     /// </summary>
     [RuleContainer]
-    public class ShapeObject : RectObject, IModel<ShapeObject>, IUpdatable<ShapeObject>
+    [GenerateModel]
+    public sealed partial class ShapeObject : RectObject, IModel<ShapeObject>, IUpdatable<ShapeObject>
     {
         public override ObjectType GetModelType() => ObjectType.ShapeObject;
 
@@ -91,94 +91,6 @@ namespace BH.SDK.Models.Objects
             TextureResourceId = textureResourceId;
             Colors = colors;
             UVs = uvs;
-        }
-        public override void Reset()
-        {
-            base.Reset();
-            ShaderType = ShaderType.Auto;
-            ShapeId = ShapeId.Square.Fill;
-            ColliderId = ShapeId.Null;
-            TextureResourceId = TextureResourceId.Null;
-            Colors.Clear();
-            UVs.Clear();
-        }
-
-        public override object Clone() => CopyImpl();
-        public override RectObject Copy() => CopyImpl();
-        ShapeObject ICopyable<ShapeObject>.Copy() => CopyImpl();
-
-        private ShapeObject CopyImpl() => new(ObjectId, ParentObjectId, Name, Active, Span, Layer,
-            Positions.CopyList(), Rotations.CopyList(), Scales.CopyList(), Sizes.CopyList(),
-            AnchorsMin.CopyList(), AnchorsMax.CopyList(), Pivots.CopyList(),
-            ShaderType, ShapeId, ColliderId, TextureResourceId, Colors.CopyList(), UVs.CopyList());
-
-        public void Update(ShapeObject src)
-        {
-            base.Update(src);
-
-            ShaderType = src.ShaderType;
-            ShapeId = src.ShapeId;
-            ColliderId = src.ColliderId;
-            TextureResourceId = src.TextureResourceId;
-            Colors = src.Colors.CopyList();
-            UVs = src.UVs.CopyList();
-        }
-
-        public void Pull(ShapeObject src)
-        {
-            base.Pull(src);
-
-            ShaderType = src.ShaderType;
-            ShapeId = src.ShapeId;
-            ColliderId = src.ColliderId;
-            TextureResourceId = src.TextureResourceId;
-            Colors = src.Colors.CopyList();
-            UVs = src.UVs.CopyList();
-        }
-
-        public override bool Equals(object obj) => obj is ShapeObject value && Equals(value);
-        public override int GetHashCode() => HashCode.Combine(base.GetHashCode(),
-            ShaderType, ShapeId, ColliderId, TextureResourceId, Colors.GetListHashCode(), UVs.GetListHashCode());
-
-        public bool Equals(ShapeObject other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-
-            var result = EqualsObject(other)
-                         && EqualsShapeObject(other);
-            return result;
-        }
-        public override bool Equals(RectObject other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-
-            switch (other)
-            {
-                case ShapeObject shapeObject:
-                {
-                    var result = EqualsObject(shapeObject)
-                                 && EqualsShapeObject(shapeObject);
-                    return result;
-                }
-                default:
-                {
-                    var result = EqualsObject(other);
-                    return result;
-                }
-            }
-        }
-
-        private bool EqualsShapeObject(ShapeObject other)
-        {
-            var result = ShaderType == other.ShaderType
-                         && ShapeId.Equals(other.ShapeId)
-                         && ColliderId.Equals(other.ColliderId)
-                         && TextureResourceId.Equals(other.TextureResourceId)
-                         && Colors.ListEquals(other.Colors)
-                         && UVs.ListEquals(other.UVs);
-            return result;
         }
     }
 }

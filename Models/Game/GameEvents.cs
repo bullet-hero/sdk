@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Events;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Models.Interfaces.Keyframes;
@@ -11,8 +12,6 @@ using BH.SDK.Utils;
 using BH.SDK.Versions;
 using Newtonsoft.Json;
 
-// ReSharper disable NonReadonlyMemberInGetHashCode
-
 namespace BH.SDK.Models.Game
 {
     /// <summary>
@@ -22,7 +21,8 @@ namespace BH.SDK.Models.Game
     /// </summary>
     [RuleContainer]
     [DataVersion(DataDomains.GameEvents, 1, 0)]
-    public class GameEvents : IModel<GameEvents>
+    [GenerateModel]
+    public sealed partial class GameEvents : IModel<GameEvents>
     {
         /// <summary> Named timeline bookmarks for the mapper. Zero gameplay effect - the player
         /// deserializes them and ignores them. </summary>
@@ -85,57 +85,6 @@ namespace BH.SDK.Models.Game
             ScreenLimits = screenLimits;
             Backgrounds = backgrounds;
             Themes = themes;
-        }
-        public void Reset()
-        {
-            Markers.Clear();
-            Beats.Clear();
-            Checkpoints.Clear();
-            ScreenLimits.Clear();
-            Backgrounds.Clear();
-            Themes.Clear();
-        }
-
-        public object Clone() => Copy();
-        public GameEvents Copy() => new(Markers.CopyList(), Beats.CopyList(), Checkpoints.CopyList(),
-            ScreenLimits.CopyList(), Backgrounds.CopyList(), Themes.CopyList());
-
-        public void Update(GameEvents src)
-        {
-            Markers = src.Markers.CopyList();
-            Beats = src.Beats.CopyList();
-            Checkpoints = src.Checkpoints.CopyList();
-            ScreenLimits = src.ScreenLimits.CopyList();
-            Backgrounds = src.Backgrounds.CopyList();
-            Themes = src.Themes.CopyList();
-        }
-
-        public void Pull(GameEvents src)
-        {
-            Markers = src.Markers.CopyList();
-            Beats = src.Beats.CopyList();
-            Checkpoints = src.Checkpoints.CopyList();
-            ScreenLimits = src.ScreenLimits.CopyList();
-            Backgrounds = src.Backgrounds.CopyList();
-            Themes = src.Themes.CopyList();
-        }
-
-        public override bool Equals(object obj) => obj is GameEvents value && Equals(value);
-        public override int GetHashCode() => HashCode.Combine(Markers.GetListHashCode(),
-            Beats.GetListHashCode(), Checkpoints.GetListHashCode(), ScreenLimits.GetListHashCode(),
-            Backgrounds.GetListHashCode(), Themes.GetListHashCode());
-
-        public bool Equals(GameEvents other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            var result = Markers.ListEquals(other.Markers)
-                         && Beats.ListEquals(other.Beats)
-                         && Checkpoints.ListEquals(other.Checkpoints)
-                         && ScreenLimits.ListEquals(other.ScreenLimits)
-                         && Backgrounds.ListEquals(other.Backgrounds)
-                         && Themes.ListEquals(other.Themes);
-            return result;
         }
     }
 }

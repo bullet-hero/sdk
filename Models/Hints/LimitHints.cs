@@ -1,10 +1,9 @@
 using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
 using Newtonsoft.Json;
-
-// ReSharper disable NonReadonlyMemberInGetHashCode
 
 namespace BH.SDK.Models.Hints
 {
@@ -19,7 +18,8 @@ namespace BH.SDK.Models.Hints
     /// (the default) means "no hint", not "no objects".
     /// </summary>
     [RuleContainer]
-    public class LimitHints : IModel<LimitHints>
+    [GenerateModel]
+    public sealed partial class LimitHints : IModel<LimitHints>
     {
         /// <summary> Peak count of objects of every type at once - the widest of them all. </summary>
         [RuleInRange(LevelRules.MinCapacityHint, LevelRules.MaxCapacityHint)]
@@ -70,7 +70,12 @@ namespace BH.SDK.Models.Hints
 
         public LimitHints()
         {
-            Reset();
+            Instances = 0;
+            ShapesOpaque = 0;
+            ShapesTransparent = 0;
+            Effects = 0;
+            Texts = 0;
+            Tracks = 0;
         }
         public LimitHints(int instances, int shapesOpaque, int shapesTransparent,
             int effects, int texts, int tracks)
@@ -81,57 +86,6 @@ namespace BH.SDK.Models.Hints
             Effects = effects;
             Texts = texts;
             Tracks = tracks;
-        }
-
-        public object Clone() => Copy();
-        public LimitHints Copy() =>
-            new(Instances, ShapesOpaque, ShapesTransparent, Effects, Texts, Tracks);
-
-        public void Reset()
-        {
-            Instances = 0;
-            ShapesOpaque = 0;
-            ShapesTransparent = 0;
-            Effects = 0;
-            Texts = 0;
-            Tracks = 0;
-        }
-
-        public void Update(LimitHints src)
-        {
-            Instances = src.Instances;
-            ShapesOpaque = src.ShapesOpaque;
-            ShapesTransparent = src.ShapesTransparent;
-            Effects = src.Effects;
-            Texts = src.Texts;
-            Tracks = src.Tracks;
-        }
-
-        public void Pull(LimitHints src)
-        {
-            Instances = src.Instances;
-            ShapesOpaque = src.ShapesOpaque;
-            ShapesTransparent = src.ShapesTransparent;
-            Effects = src.Effects;
-            Texts = src.Texts;
-            Tracks = src.Tracks;
-        }
-
-        public override bool Equals(object obj) => obj is LimitHints value && Equals(value);
-        public override int GetHashCode() => HashCode.Combine(Instances, ShapesOpaque,
-            ShapesTransparent, Effects, Texts, Tracks);
-
-        public bool Equals(LimitHints other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            var result = Instances.Equals(other.Instances)
-                         && ShapesOpaque.Equals(other.ShapesOpaque)
-                         && ShapesTransparent.Equals(other.ShapesTransparent)
-                         && Effects.Equals(other.Effects)
-                         && Texts.Equals(other.Texts)
-                         && Tracks.Equals(other.Tracks);
-            return result;
         }
 
         public override string ToString() =>

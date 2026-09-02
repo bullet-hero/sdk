@@ -13,7 +13,7 @@ namespace BH.SDK.Generators.External
     // generator never learns that the package was protected at all.
     //
     // The format travels beside the bytes because nothing inside them says which they are: a level
-    // document is Json or Bson according to the NAME it was stored under, exactly as in a level
+    // document is Json or Blob according to the NAME it was stored under, exactly as in a level
     // folder on disk.
 
     /// <summary> A generator that builds a level out of a package the host already opened. </summary>

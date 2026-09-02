@@ -1,10 +1,10 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <!--
     The SDK's Roslyn components - analyzers and incremental source generators - built as a plain
     netstandard2.0 assembly that references no Unity API and no BH.SDK type. This project is
     the ONLY thing that produces the shipping artifact; Unity's own compilation of
-    BH.SDK.Roslyn.Sources.asmdef over the same .cs files exists purely so the IDE resolves and
+    BH.SDK.Roslyn.Src.asmdef over the same .cs files exists purely so the IDE resolves and
     error-checks them while they are edited, and its output in Library/ScriptAssemblies is never
     used as an analyzer.
 
@@ -24,7 +24,11 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>latest</LangVersion>
-    <Nullable>enable</Nullable>
+    <!--
+      Off, like every other assembly in this repository and like the Unity project itself. Turning it
+      on here alone would make this the one file set written in a dialect none of its neighbours use.
+    -->
+    <Nullable>disable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
     <AssemblyName>BH.SDK.Roslyn</AssemblyName>
     <RootNamespace>BH.SDK.Roslyn</RootNamespace>

@@ -1,4 +1,5 @@
 using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
@@ -12,7 +13,8 @@ namespace BH.SDK.Models.Statistics
 
     /// <summary> Who is playing, in the only sense a local file can answer: since when, and how much. </summary>
     [RuleContainer]
-    public class ProfileStatistics : IModel<ProfileStatistics>
+    [GenerateModel]
+    public sealed partial class ProfileStatistics : IModel<ProfileStatistics>
     {
         /// <summary> When a level was first played on this device. </summary>
         [JsonProperty(Names.FirstPlayedUtc)]
@@ -32,48 +34,12 @@ namespace BH.SDK.Models.Statistics
         [JsonProperty(Names.AppSeconds)]
         public double TotalAppSeconds { get; set; }
 
-        public ProfileStatistics() => Reset();
-
-        public void Reset()
+        public ProfileStatistics()
         {
             FirstPlayedUtc = default;
             LastPlayedUtc = default;
             AppLaunches = 0;
             TotalAppSeconds = 0.0;
         }
-
-        public object Clone() => Copy();
-
-        public ProfileStatistics Copy()
-        {
-            var copy = new ProfileStatistics();
-            copy.Update(this);
-            return copy;
-        }
-
-        public void Update(ProfileStatistics src)
-        {
-            FirstPlayedUtc = src.FirstPlayedUtc;
-            LastPlayedUtc = src.LastPlayedUtc;
-            AppLaunches = src.AppLaunches;
-            TotalAppSeconds = src.TotalAppSeconds;
-        }
-
-        public void Pull(ProfileStatistics source) => Update(source);
-
-        public override bool Equals(object obj) => obj is ProfileStatistics value && Equals(value);
-
-        public bool Equals(ProfileStatistics other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return FirstPlayedUtc.Equals(other.FirstPlayedUtc)
-                   && LastPlayedUtc.Equals(other.LastPlayedUtc)
-                   && AppLaunches == other.AppLaunches
-                   && TotalAppSeconds.Equals(other.TotalAppSeconds);
-        }
-
-        public override int GetHashCode() =>
-            HashCode.Combine(FirstPlayedUtc, LastPlayedUtc, AppLaunches, TotalAppSeconds);
     }
 }

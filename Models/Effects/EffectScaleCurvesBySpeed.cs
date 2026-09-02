@@ -1,4 +1,5 @@
 ﻿using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Enums.Effects;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Models.Interfaces.Effects;
@@ -9,8 +10,6 @@ using BH.SDK.Rules.Attributes;
 using BH.SDK.Utils;
 using Newtonsoft.Json;
 
-// ReSharper disable NonReadonlyMemberInGetHashCode
-
 namespace BH.SDK.Models.Effects
 {
     /// <summary>
@@ -18,7 +17,8 @@ namespace BH.SDK.Models.Effects
     /// look without any per-particle scripting.
     /// </summary>
     [RuleContainer]
-    public class EffectScaleCurvesBySpeed : IEffectScale, IModel<EffectScaleCurvesBySpeed>
+    [GenerateModel]
+    public sealed partial class EffectScaleCurvesBySpeed : IEffectScale, IModel<EffectScaleCurvesBySpeed>
     {
         /// <summary> Width over normalized speed. </summary>
         [RuleNotNull]
@@ -51,55 +51,6 @@ namespace BH.SDK.Models.Effects
             CurveX = curveX;
             CurveY = curveY;
             SpeedRange = speedRange;
-        }
-        public void Reset()
-        {
-            CurveX = EffectRules.GetCurve_Default();
-            CurveY = EffectRules.GetCurve_Default();
-            SpeedRange = new Vector2Value(
-                EffectRules.Scale.BySpeedRange_X_Default,
-                EffectRules.Scale.BySpeedRange_Y_Default);
-        }
-
-        public object Clone() => Copy();
-        IEffectScale ICopyable<IEffectScale>.Copy() => new EffectScaleCurvesBySpeed(CurveX.Copy(), CurveY.Copy(), SpeedRange.Copy());
-        public EffectScaleCurvesBySpeed Copy() => new(CurveX.Copy(), CurveY.Copy(), SpeedRange.Copy());
-
-        public void Update(EffectScaleCurvesBySpeed src)
-        {
-            CurveX = src.CurveX.Copy();
-            CurveY = src.CurveY.Copy();
-            SpeedRange = src.SpeedRange.Copy();
-        }
-
-        public void Pull(EffectScaleCurvesBySpeed src)
-        {
-            CurveX.Pull(src.CurveX);
-            CurveY.Pull(src.CurveY);
-            SpeedRange = SpeedRange.PullFrom(src.SpeedRange);
-        }
-
-        void IUpdatable<IEffectScale>.Update(IEffectScale src)
-        {
-            if (src is EffectScaleCurvesBySpeed value) Update(value);
-        }
-        void IMoveable<IEffectScale>.Pull(IEffectScale src)
-        {
-            if (src is EffectScaleCurvesBySpeed value) Pull(value);
-        }
-
-        public override bool Equals(object obj) => obj is EffectScaleCurvesBySpeed value && Equals(value);
-        public override int GetHashCode() => HashCode.Combine(CurveX, CurveY, SpeedRange);
-        
-        public bool Equals(IEffectScale other) => other is EffectScaleCurvesBySpeed value && Equals(value);
-        public bool Equals(EffectScaleCurvesBySpeed other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            var result = CurveX.Equals(other.CurveX)
-                         && CurveY.Equals(other.CurveY)
-                         && SpeedRange.Equals(other.SpeedRange);
-            return result;
         }
     }
 }

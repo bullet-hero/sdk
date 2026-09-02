@@ -1,4 +1,5 @@
 using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Enums;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Models.Interfaces.Values;
@@ -14,7 +15,8 @@ namespace BH.SDK.Models.Keyframes
     /// for a cinematic section and pinning it back for the next pattern.
     /// </summary>
     [RuleContainer]
-    public class ScreenLimitKey : Keyframe, IModel<ScreenLimitKey>
+    [GenerateModel]
+    public sealed partial class ScreenLimitKey : Keyframe, IModel<ScreenLimitKey>
     {
         // Same default-fix target as GameEvents.ScreenLimit (the single-value predecessor this
         // keyframe track replaces) - mappers choose limitations for the screen themselves.
@@ -31,42 +33,6 @@ namespace BH.SDK.Models.Keyframes
         public ScreenLimitKey(IScreenLimit screenLimit, int frame, EaseType ease = DefaultEase) : base(frame, ease)
         {
             ScreenLimit = screenLimit;
-        }
-        public override void Reset()
-        {
-            base.Reset();
-            ScreenLimit = new ScreenLimitNone();
-        }
-        
-        public override object Clone() => CopyImpl();
-        public override Keyframe Copy() => CopyImpl();
-        ScreenLimitKey ICopyable<ScreenLimitKey>.Copy() => CopyImpl();
-        
-        private ScreenLimitKey CopyImpl() => new(ScreenLimit.Copy(), Frame, Ease);
-
-        public void Update(ScreenLimitKey src)
-        {
-            base.Update(src);
-
-            ScreenLimit = src.ScreenLimit.Copy();
-        }
-
-        public void Pull(ScreenLimitKey src)
-        {
-            base.Pull(src);
-
-            ScreenLimit = ScreenLimit.PullFrom(src.ScreenLimit);
-        }
-
-        public override bool Equals(object obj) => obj is ScreenLimitKey value && Equals(value);
-        public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), ScreenLimit);
-
-        public bool Equals(ScreenLimitKey other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            var result = base.Equals(other) && ScreenLimit.Equals(other.ScreenLimit);
-            return result;
         }
     }
 }

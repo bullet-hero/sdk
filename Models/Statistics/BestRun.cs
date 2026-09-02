@@ -1,4 +1,5 @@
 using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
@@ -19,7 +20,8 @@ namespace BH.SDK.Models.Statistics
 
     /// <summary> The best run recorded under one <see cref="RunProfile"/>. </summary>
     [RuleContainer]
-    public class BestRun : IModel<BestRun>
+    [GenerateModel]
+    public sealed partial class BestRun : IModel<BestRun>
     {
         /// <summary> How far the run got, 0 to 1. </summary>
         [RuleInRange(0f, 1f)]
@@ -65,7 +67,14 @@ namespace BH.SDK.Models.Statistics
         // Activator.CreateInstance.
         public BestRun()
         {
-            Reset();
+            Progress = 0f;
+            Frame = 0;
+            Hits = 0;
+            Dashes = 0;
+            LivesLeft = 0;
+            Seed = 0;
+            LevelVersion = new Version(1, 0);
+            TimeUtc = default;
         }
 
         public BestRun(float progress, int frame, int hits, int dashes, int livesLeft,
@@ -81,57 +90,8 @@ namespace BH.SDK.Models.Statistics
             TimeUtc = timeUtc;
         }
 
-        public void Reset()
-        {
-            Progress = 0f;
-            Frame = 0;
-            Hits = 0;
-            Dashes = 0;
-            LivesLeft = 0;
-            Seed = 0;
-            LevelVersion = new Version(1, 0);
-            TimeUtc = default;
-        }
-
-        public object Clone() => Copy();
-
-        public BestRun Copy() =>
-            new(Progress, Frame, Hits, Dashes, LivesLeft, Seed, LevelVersion, TimeUtc);
-
-        public void Update(BestRun src)
-        {
-            Progress = src.Progress;
-            Frame = src.Frame;
-            Hits = src.Hits;
-            Dashes = src.Dashes;
-            LivesLeft = src.LivesLeft;
-            Seed = src.Seed;
-            LevelVersion = src.LevelVersion;
-            TimeUtc = src.TimeUtc;
-        }
-
         // No nested model of its own, so Pull and Update coincide - the contract agreeing rather
         // than duplication to collapse. Version is immutable, so sharing the instance is safe on
         // both paths.
-        public void Pull(BestRun source) => Update(source);
-
-        public override bool Equals(object obj) => obj is BestRun value && Equals(value);
-
-        public bool Equals(BestRun other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return Progress.Equals(other.Progress)
-                   && Frame == other.Frame
-                   && Hits == other.Hits
-                   && Dashes == other.Dashes
-                   && LivesLeft == other.LivesLeft
-                   && Seed == other.Seed
-                   && Equals(LevelVersion, other.LevelVersion)
-                   && TimeUtc.Equals(other.TimeUtc);
-        }
-
-        public override int GetHashCode() =>
-            HashCode.Combine(Progress, Frame, Hits, Dashes, LivesLeft, Seed, LevelVersion, TimeUtc);
     }
 }

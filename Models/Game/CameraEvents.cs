@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Models.Keyframes;
 using BH.SDK.Rules;
@@ -7,8 +8,6 @@ using BH.SDK.Rules.Attributes;
 using BH.SDK.Utils;
 using BH.SDK.Versions;
 using Newtonsoft.Json;
-
-// ReSharper disable NonReadonlyMemberInGetHashCode
 
 namespace BH.SDK.Models.Game
 {
@@ -19,7 +18,8 @@ namespace BH.SDK.Models.Game
     /// </summary>
     [RuleContainer]
     [DataVersion(DataDomains.CameraEvents, 1, 0)]
-    public class CameraEvents : IModel<CameraEvents>
+    [GenerateModel]
+    public sealed partial class CameraEvents : IModel<CameraEvents>
     {
         // Camera - is a unique form of default RectObject. It cut some data, here's all
         // Positions - unchanged
@@ -80,52 +80,6 @@ namespace BH.SDK.Models.Game
             Zooms = zooms;
             Pivots = pivots;
             Shakes = shakes;
-        }
-        public void Reset()
-        {
-            Positions.Clear();
-            Rotations.Clear();
-            Zooms.Clear();
-            Pivots.Clear();
-            Shakes.Clear();
-        }
-
-        public object Clone() => Copy();
-        public CameraEvents Copy() => new(Positions.CopyList(), Rotations.CopyList(),
-            Zooms.CopyList(), Pivots.CopyList(), Shakes.CopyList());
-
-        public void Update(CameraEvents src)
-        {
-            Positions = src.Positions.CopyList();
-            Rotations = src.Rotations.CopyList();
-            Zooms = src.Zooms.CopyList();
-            Pivots = src.Pivots.CopyList();
-            Shakes = src.Shakes.CopyList();
-        }
-
-        public void Pull(CameraEvents src)
-        {
-            Positions = src.Positions.CopyList();
-            Rotations = src.Rotations.CopyList();
-            Zooms = src.Zooms.CopyList();
-            Pivots = src.Pivots.CopyList();
-            Shakes = src.Shakes.CopyList();
-        }
-
-        public override bool Equals(object obj) => obj is CameraEvents value && Equals(value);
-        public override int GetHashCode() => HashCode.Combine(Positions.GetListHashCode(),
-            Rotations.GetListHashCode(), Zooms.GetListHashCode(), Pivots.GetListHashCode(), Shakes.GetListHashCode());
-
-        public bool Equals(CameraEvents other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            var result = Positions.ListEquals(other.Positions)
-                         && Rotations.ListEquals(other.Rotations)
-                         && Zooms.ListEquals(other.Zooms)
-                         && Pivots.ListEquals(other.Pivots)
-                         && Shakes.ListEquals(other.Shakes);
-            return result;
         }
     }
 }

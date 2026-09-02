@@ -27,7 +27,12 @@ namespace BH.SDK.Models.Objects
     /// which is what lets a placement diverge from its template without breaking the link.
     /// </summary>
     [RuleContainer]
-    public class Modification : IModel<Modification>
+    // ONE OF THE THREE MODELS THE GENERATOR DOES NOT COVER, and the reason is Value. Copying it is
+    // not an assignment (a whole-track override stores a List<TKeyframe>, which would alias) and
+    // comparing it is not object.Equals (a List has no value equality), so both bodies below are
+    // real decisions rather than boilerplate. FrameSpan and ModificationKey are the other two, for
+    // the different reason that a struct has no constructor body to read defaults from.
+    public sealed class Modification : IModel<Modification>, Serialization.Blob.IBinaryModel, Serialization.Json.IJsonModel
     {
         // WHICH object (inner/template ObjectId) and WHICH field (Path) this override applies to -
         // see ModificationKey's own doc comment. Also PrefabObject.Modifications' dictionary key.
@@ -135,5 +140,84 @@ namespace BH.SDK.Models.Objects
             var result = object.Equals(Value, other.Value);
             return result;
         }
+
+        #region Blob
+
+        // THE ONE MEMBER IN THIS FORMAT WITH NO TYPE, so it is the one the generator refuses and
+        // this is the hand-written answer. Value is written as JSON TEXT rather than as a tagged
+        // union of the five scalars it usually holds, and that is not laziness - it is what makes
+        // the two formats agree. A whole-track override stores a List<TKeyframe> here, whose
+        // elements are polymorphic values that only this project's converters know how to write;
+        // and reading a .json back always yields a JToken for anything that is not a scalar. Text
+        // produced by the same serializer, parsed by the same rules, lands on exactly what a .json
+        // round trip lands on - including the long/double widening the setter above applies.
+        //
+        // It costs a few bytes on a member a level carries a handful of. Anything cleverer would be
+        // a second definition of what Value means.
+
+        private static readonly Serialization.SerializationService JsonForValue = new();
+
+        public void Write(ref Serialization.Blob.BlobWriter writer)
+        {
+            Serialization.Blob.BlobPrimitives.Write(ref writer, Key);
+
+            using var text = new System.IO.StringWriter(System.Globalization.CultureInfo.InvariantCulture);
+            JsonForValue.Serializer.Serialize(text, Value);
+            writer.WriteString(text.ToString());
+        }
+
+        public void Read(ref Serialization.Blob.BlobReader reader)
+        {
+            Key = Serialization.Blob.BlobPrimitives.ReadModificationKey(ref reader);
+
+            var text = reader.ReadString();
+            if (text is null)
+            {
+                Value = null;
+                return;
+            }
+
+            using var json = new JsonTextReader(new System.IO.StringReader(text));
+            Value = JsonForValue.Serializer.Deserialize(json);
+        }
+
+        #endregion
+
+        #region Json
+
+        // The same reason the blob half is hand-written: Value has no type, so nothing mechanical
+        // can encode it. It goes through the very serializer the rest of the format uses, which is
+        // what makes it identical to what the reflective path wrote - including the JToken a
+        // non-scalar comes back as.
+
+        public void WriteJson(JsonWriter writer)
+        {
+            writer.WriteStartObject();
+            writer.WritePropertyName(Names.Key);
+            Serialization.Json.JsonPrimitives.Write(writer, Key);
+            writer.WritePropertyName(Names.ValueShort);
+            JsonForValue.Serializer.Serialize(writer, Value);
+            writer.WriteEndObject();
+        }
+
+        public void ReadJson(JsonReader reader)
+            => Serialization.Json.JsonModels.ReadObject(reader, this);
+
+        public bool ReadJsonMember(JsonReader reader, string name)
+        {
+            switch (name)
+            {
+                case Names.Key:
+                    Key = Serialization.Json.JsonPrimitives.ReadModificationKey(reader);
+                    return true;
+                case Names.ValueShort:
+                    Value = JsonForValue.Serializer.Deserialize(reader);
+                    return true;
+            }
+
+            return false;
+        }
+
+        #endregion
     }
 }

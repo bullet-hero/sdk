@@ -15,29 +15,26 @@ namespace BH.SDK.Tests
 {
     public class SerializationTests
     {
-        // JsonPretty must differ from Json in whitespace ONLY - it is the same document, and a level
-        // saved either way has to read back identical. The mode reaches the writer per call now, so
-        // this also pins that one SerializeData can't leak its formatting into the next.
+        // THERE IS ONLY ONE SHAPE OF JSON HERE. A second mode used to write the same document
+        // indented, and this test pinned that the two differed in whitespace alone; what it pins now
+        // is that the survivor is the compact one, on every call, with nothing to leak between them.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.Extreme)]
-        public void TestLevelSerializationJsonPretty()
+        public void TestLevelSerializationIsAlwaysCompact()
         {
             var serializationService = new SerializationService(new SerializationSettings());
             var level = MockData.CreateTestLevel();
 
-            var pretty = serializationService.SerializeData(level, SerializationType.JsonPretty);
-            var compact = serializationService.SerializeData(level, SerializationType.Json);
+            var first = serializationService.SerializeData(level);
+            var second = serializationService.SerializeData(level);
 
-            Assert.IsTrue(pretty.Contains("\n"), "Pretty output carries no line breaks");
-            Assert.IsFalse(compact.Contains("\n"), "Compact output carries line breaks");
-            Assert.Greater(pretty.Length, compact.Length);
+            Assert.IsFalse(first.Contains("\n"), "Compact output carries line breaks");
+            Assert.AreEqual(first, second);
 
-            var fromPretty = serializationService.DeserializeData<Level>(pretty);
-            var fromCompact = serializationService.DeserializeData<Level>(compact);
-            Assert.IsTrue(level.Equals(fromPretty));
-            Assert.IsTrue(level.Equals(fromCompact));
+            var restored = serializationService.DeserializeData<Level>(first);
+            Assert.IsTrue(level.Equals(restored));
         }
 
         [Test]
@@ -102,11 +99,12 @@ namespace BH.SDK.Tests
         // IDataSerializer (VERSION-UPDATE.md, "Format-agnosticism") is generic per [DataVersion]
         // domain, not per concrete type - exercised here against two unrelated domains (Level and
         // Theme) to prove it isn't hardcoded to either one. Parametrized over SerializationType so
-        // both the JSON and BSON implementations run through the same assertions - they share all
-        // envelope logic via BaseNewtonsoftDataSerializer and differ only in the raw reader/writer
-        // over the byte stream.
+        // both implementations run through the same assertions - and unlike the JSON/BSON pair this
+        // replaced, these two share NOTHING below the interface: one binds members by reflection
+        // through Newtonsoft, the other is generated code on the models themselves. That is what
+        // makes running the same assertions twice worth the seconds it costs.
         [TestCase(SerializationType.Json)]
-        [TestCase(SerializationType.Bson)]
+        [TestCase(SerializationType.Blob)]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.Hard)]
@@ -118,21 +116,24 @@ namespace BH.SDK.Tests
 
             var level = MockData.CreateTestLevel();
             var levelAttribute = level.GetType().GetCustomAttribute<DataVersionAttribute>();
-            var levelBytes = dataSerializer.SerializeEnvelope(levelAttribute.Domain, new EnvelopeData(levelAttribute.Version, level));
+            var levelBytes = dataSerializer.SerializeEnvelope(levelAttribute.Domain,
+                new EnvelopeData(levelAttribute.Version, level));
             var levelEnvelope = dataSerializer.DeserializeEnvelope(levelBytes, typeof(Level));
             Assert.AreEqual(levelAttribute.Version, levelEnvelope.Version);
             Assert.IsTrue(level.Equals(levelEnvelope.GetPayload<Level>()));
 
             var theme = MockData.CreateTestTheme();
             var themeAttribute = theme.GetType().GetCustomAttribute<DataVersionAttribute>();
-            var themeBytes = dataSerializer.SerializeEnvelope(themeAttribute.Domain, new EnvelopeData(themeAttribute.Version, theme));
+            var themeBytes = dataSerializer.SerializeEnvelope(themeAttribute.Domain,
+                new EnvelopeData(themeAttribute.Version, theme));
             var themeEnvelope = dataSerializer.DeserializeEnvelope(themeBytes, typeof(ThemeData));
             Assert.AreEqual(themeAttribute.Version, themeEnvelope.Version);
             Assert.IsTrue(theme.Equals(themeEnvelope.GetPayload<ThemeData>()));
 
             var shape = MockData.CreateTestCompositeShape();
             var shapeAttribute = shape.GetType().GetCustomAttribute<DataVersionAttribute>();
-            var shapeBytes = dataSerializer.SerializeEnvelope(shapeAttribute.Domain, new EnvelopeData(shapeAttribute.Version, shape));
+            var shapeBytes = dataSerializer.SerializeEnvelope(shapeAttribute.Domain,
+                new EnvelopeData(shapeAttribute.Version, shape));
             var shapeEnvelope = dataSerializer.DeserializeEnvelope(shapeBytes, typeof(CompositeShape));
             Assert.AreEqual(shapeAttribute.Version, shapeEnvelope.Version);
             Assert.IsTrue(shape.Equals(shapeEnvelope.GetPayload<CompositeShape>()));

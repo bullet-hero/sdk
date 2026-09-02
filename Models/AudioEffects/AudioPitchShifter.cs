@@ -1,10 +1,9 @@
 ﻿using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
 using Newtonsoft.Json;
-
-// ReSharper disable NonReadonlyMemberInGetHashCode
 
 namespace BH.SDK.Models.AudioEffects
 {
@@ -13,7 +12,8 @@ namespace BH.SDK.Models.AudioEffects
     /// locked to the song and cannot be resampled.
     /// </summary>
     [RuleContainer]
-    public class AudioPitchShifter : AudioEffect, IModel<AudioPitchShifter>
+    [GenerateModel]
+    public sealed partial class AudioPitchShifter : AudioEffect, IModel<AudioPitchShifter>
     {
         /// <summary> Pitch multiplier; 1 is unchanged, 2 an octave up. </summary>
         [RuleInRange(AudioRules.PitchShifter.Pitch_Min, AudioRules.PitchShifter.Pitch_Max)]
@@ -49,55 +49,6 @@ namespace BH.SDK.Models.AudioEffects
             FFTSize = fftSize;
             Overlap = overlap;
             MaxChannels = maxChannels;
-        }
-        public override void Reset()
-        {
-            base.Reset();
-            Pitch = AudioRules.PitchShifter.Pitch_Default;
-            FFTSize = AudioRules.PitchShifter.FFTSize_Default;
-            Overlap = AudioRules.PitchShifter.Overlap_Default;
-            MaxChannels = AudioRules.PitchShifter.MaxChannels_Default;
-        }
-
-        public override object Clone() => CopyImpl();
-        public override AudioEffect Copy() => CopyImpl();
-        AudioPitchShifter ICopyable<AudioPitchShifter>.Copy() => CopyImpl();
-
-        private AudioPitchShifter CopyImpl() => new(MixLevel, Pitch, FFTSize, Overlap, MaxChannels);
-
-        public void Update(AudioPitchShifter src)
-        {
-            base.Update(src);
-
-            Pitch = src.Pitch;
-            FFTSize = src.FFTSize;
-            Overlap = src.Overlap;
-            MaxChannels = src.MaxChannels;
-        }
-
-        public void Pull(AudioPitchShifter src)
-        {
-            base.Pull(src);
-
-            Pitch = src.Pitch;
-            FFTSize = src.FFTSize;
-            Overlap = src.Overlap;
-            MaxChannels = src.MaxChannels;
-        }
-
-        public override bool Equals(object obj) => obj is AudioPitchShifter value && Equals(value);
-        public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), Pitch, FFTSize, Overlap, MaxChannels);
-
-        public bool Equals(AudioPitchShifter other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            var result = base.Equals(other)
-                         && Pitch.Equals(other.Pitch)
-                         && FFTSize.Equals(other.FFTSize)
-                         && Overlap.Equals(other.Overlap)
-                         && MaxChannels.Equals(other.MaxChannels);
-            return result;
         }
     }
 }

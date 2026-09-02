@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Models.Primitives;
 using BH.SDK.Models.Values;
@@ -28,7 +29,8 @@ namespace BH.SDK.Models.Data
     [RuleContainer]
     [RuleShapeGeometry]
     [DataVersion(DataDomains.CompositeShape, 1, 0)]
-    public class CompositeShape : IModel<CompositeShape>, IShapeGeometry
+    [GenerateModel]
+    public sealed partial class CompositeShape : IModel<CompositeShape>, IShapeGeometry
     {
         /// <summary> Identity of this shape - either a built-in id or a level-defined one. </summary>
         [RuleIPrimitiveGuidNotNull]
@@ -84,48 +86,6 @@ namespace BH.SDK.Models.Data
             ShapeName = shapeName;
             Vertices = vertices;
             Indices = indices;
-        }
-
-        public void Reset()
-        {
-            ShapeId = ShapeId.Null;
-            ShapeName = string.Empty;
-            Vertices.Clear();
-            Indices.Clear();
-        }
-
-        public object Clone() => Copy();
-        public CompositeShape Copy() => new(ShapeId, ShapeName, Vertices.CopyList(), new List<int>(Indices));
-
-        public void Update(CompositeShape src)
-        {
-            ShapeId = src.ShapeId;
-            ShapeName = src.ShapeName;
-            Vertices = src.Vertices.CopyList();
-            Indices = new List<int>(src.Indices);
-        }
-
-        public void Pull(CompositeShape src)
-        {
-            ShapeId = src.ShapeId;
-            ShapeName = src.ShapeName;
-            Vertices = src.Vertices.CopyList();
-            Indices = new List<int>(src.Indices);
-        }
-
-        public override bool Equals(object obj) => obj is CompositeShape value && Equals(value);
-        public override int GetHashCode() => HashCode.Combine(ShapeId, ShapeName,
-            Vertices.GetListHashCode(), Indices.GetListHashCode());
-
-        public bool Equals(CompositeShape other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            var result = ShapeId.Equals(other.ShapeId)
-                         && ShapeName.Equals(other.ShapeName)
-                         && Vertices.ListEquals(other.Vertices)
-                         && Indices.ListEquals(other.Indices);
-            return result;
         }
     }
 }

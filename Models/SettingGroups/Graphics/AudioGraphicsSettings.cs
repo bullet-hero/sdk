@@ -1,4 +1,5 @@
 using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
@@ -10,7 +11,8 @@ namespace BH.SDK.Models.SettingGroups.Graphics
     /// Audio playback options that cost performance: whether DSP effects run, and how hard the
     /// engine works to keep audio locked to the level timeline. Inherited Render mutes audio entirely.
     /// </summary>
-    public class AudioGraphicsSettings : BaseGraphicsSettings,
+    [GenerateModel]
+    public sealed partial class AudioGraphicsSettings : BaseGraphicsSettings,
         IModel<AudioGraphicsSettings>, IMoveable<AudioGraphicsSettings>
     {
         /// <summary> Whether a track's DSP chain is processed. Off saves CPU on weak devices, at the
@@ -71,64 +73,6 @@ namespace BH.SDK.Models.SettingGroups.Graphics
             PitchCorrection = pitchCorrection;
             UseScrub = useScrub;
             ScrubTime = scrubTime;
-        }
-        public override void Reset()
-        {
-            base.Reset();
-            Render = true;
-            RenderEffects = true;
-            ResyncJumpTime = AudioRules.ResyncJumpTimeDefault;
-            SyncDeadZone = AudioRules.SyncDeadZoneDefault;
-            PitchCorrection = AudioRules.PitchCorrectionDefault;
-            UseScrub = true;
-            ScrubTime = 0.1f;
-        }
-
-        public override object Clone() => CopyImpl();
-        public override BaseGraphicsSettings Copy() => CopyImpl();
-        AudioGraphicsSettings ICopyable<AudioGraphicsSettings>.Copy() => CopyImpl();
-
-        private AudioGraphicsSettings CopyImpl() => new(Render, RenderEffects, ResyncJumpTime,
-            SyncDeadZone, PitchCorrection, UseScrub, ScrubTime);
-
-        public void Pull(AudioGraphicsSettings source)
-        {
-            Render = source.Render;
-            RenderEffects = source.RenderEffects;
-            ResyncJumpTime = source.ResyncJumpTime;
-            SyncDeadZone = source.SyncDeadZone;
-            PitchCorrection = source.PitchCorrection;
-            UseScrub = source.UseScrub;
-            ScrubTime = source.ScrubTime;
-        }
-
-        public void Update(AudioGraphicsSettings src)
-        {
-            base.Update(src);
-
-            RenderEffects = src.RenderEffects;
-            ResyncJumpTime = src.ResyncJumpTime;
-            SyncDeadZone = src.SyncDeadZone;
-            PitchCorrection = src.PitchCorrection;
-            UseScrub = src.UseScrub;
-            ScrubTime = src.ScrubTime;
-        }
-
-        public override bool Equals(object obj) => obj is AudioGraphicsSettings value && Equals(value);
-        public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), RenderEffects,
-            ResyncJumpTime, SyncDeadZone, PitchCorrection, UseScrub, ScrubTime);
-
-        public bool Equals(AudioGraphicsSettings other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return base.Equals(other)
-                   && RenderEffects == other.RenderEffects
-                   && ResyncJumpTime.Equals(other.ResyncJumpTime)
-                   && SyncDeadZone.Equals(other.SyncDeadZone)
-                   && PitchCorrection.Equals(other.PitchCorrection)
-                   && UseScrub == other.UseScrub
-                   && ScrubTime.Equals(other.ScrubTime);
         }
     }
 }

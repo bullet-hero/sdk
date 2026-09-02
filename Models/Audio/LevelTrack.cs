@@ -1,12 +1,11 @@
 ﻿using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Models.Primitives;
 using BH.SDK.Models.Primitives.Resources;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
 using Newtonsoft.Json;
-
-// ReSharper disable NonReadonlyMemberInGetHashCode
 
 namespace BH.SDK.Models.Audio
 {
@@ -16,7 +15,8 @@ namespace BH.SDK.Models.Audio
     /// Stored in AudioLevel.Tracks; several tracks may overlap, separated by AudioLayer.
     /// </summary>
     [RuleContainer]
-    public class LevelTrack : IFrameBounds, INameable, IModel<LevelTrack>
+    [GenerateModel]
+    public sealed partial class LevelTrack : IFrameBounds, INameable, IModel<LevelTrack>
     {
         // Same logic as RectObject.ObjectId, but only for audio and much simpler
         // 0 - undefined
@@ -123,70 +123,8 @@ namespace BH.SDK.Models.Audio
             Name = name;
             Effects = effects;
         }
-        public void Reset()
-        {
-            AudioId = AudioId.Null;
-            AudioResourceId = AudioResourceId.Null;
-            Span = new FrameSpan();
-            OffsetTime = AudioRules.OffsetTimeDefault;
-            Speed = AudioRules.SpeedDefault;
-            Volume = AudioRules.VolumeDefault;
-            AudioLayer = AudioRules.MinAudioLayer;
-            Name = string.Empty;
-            Effects.Reset();
-        }
 
-        public object Clone() => Copy();
-        public LevelTrack Copy() => new(AudioId, AudioResourceId, Span,
-            OffsetTime, Speed, Volume, AudioLayer, Name, Effects.Copy());
-
-        public void Update(LevelTrack src)
-        {
-            AudioId = src.AudioId;
-            AudioResourceId = src.AudioResourceId;
-            Span = src.Span;
-            OffsetTime = src.OffsetTime;
-            Speed = src.Speed;
-            Volume = src.Volume;
-            AudioLayer = src.AudioLayer;
-            Name = src.Name;
-            Effects = src.Effects.Copy();
-        }
-
-        public void Pull(LevelTrack src)
-        {
-            AudioId = src.AudioId;
-            AudioResourceId = src.AudioResourceId;
-            Span = src.Span;
-            OffsetTime = src.OffsetTime;
-            Speed = src.Speed;
-            Volume = src.Volume;
-            AudioLayer = src.AudioLayer;
-            Name = src.Name;
-            Effects.Pull(src.Effects);
-        }
-
-        public override bool Equals(object obj) => obj is LevelTrack value && Equals(value);
         // HashCode.Combine takes at most 8 values and this carries 9 - the tail folds into the
         // eighth slot rather than being dropped.
-        public override int GetHashCode() => HashCode.Combine(AudioId,
-            Span, OffsetTime, Speed, AudioResourceId, AudioLayer, Name,
-            HashCode.Combine(Volume, Effects));
-
-        public bool Equals(LevelTrack other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            var result = AudioId.Equals(other.AudioId)
-                         && Span.Equals(other.Span)
-                         && OffsetTime.Equals(other.OffsetTime)
-                         && Speed.Equals(other.Speed)
-                         && Volume.Equals(other.Volume)
-                         && AudioResourceId.Equals(other.AudioResourceId)
-                         && AudioLayer.Equals(other.AudioLayer)
-                         && Name.Equals(other.Name)
-                         && Effects.Equals(other.Effects);
-            return result;
-        }
     }
 }

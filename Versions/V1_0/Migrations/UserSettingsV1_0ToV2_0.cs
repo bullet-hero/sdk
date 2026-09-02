@@ -57,7 +57,10 @@ namespace BH.SDK.Versions.V1_0.Migrations
 
             to.Serialization.LevelMode = from.LevelSerializeMode;
             to.Serialization.ResourcesMode = from.ResourcesSerializeMode;
-            to.Serialization.CopyMode = from.CopySerializeMode;
+
+            // CopySerializeMode is DROPPED rather than carried over: the clipboard is text, so the
+            // setting it fed could never mean anything. The snapshot keeps the property because a
+            // v1.0 file on disk still has the key - a snapshot records what WAS written.
         }
     }
 }

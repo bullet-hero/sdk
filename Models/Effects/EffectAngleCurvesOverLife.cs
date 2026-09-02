@@ -1,4 +1,5 @@
 ﻿using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Enums.Effects;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Models.Interfaces.Effects;
@@ -7,8 +8,6 @@ using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
 using Newtonsoft.Json;
 
-// ReSharper disable NonReadonlyMemberInGetHashCode
-
 namespace BH.SDK.Models.Effects
 {
     /// <summary>
@@ -16,7 +15,8 @@ namespace BH.SDK.Models.Effects
     /// as it fades is made of.
     /// </summary>
     [RuleContainer]
-    public class EffectAngleCurvesOverLife : IEffectAngle, IModel<EffectAngleCurvesOverLife>
+    [GenerateModel]
+    public sealed partial class EffectAngleCurvesOverLife : IEffectAngle, IModel<EffectAngleCurvesOverLife>
     {
         /// <summary> Angle over normalized lifetime (0 = spawn, 1 = death). </summary>
         [RuleNotNull]
@@ -32,45 +32,6 @@ namespace BH.SDK.Models.Effects
         public EffectAngleCurvesOverLife(CurveValue curve)
         {
             Curve = curve;
-        }
-        public void Reset()
-        {
-            Curve = EffectRules.GetCurve_Default();
-        }
-
-        public object Clone() => Copy();
-        IEffectAngle ICopyable<IEffectAngle>.Copy() => new EffectAngleCurvesOverLife(Curve.Copy());
-        public EffectAngleCurvesOverLife Copy() => new(Curve.Copy());
-
-        public void Update(EffectAngleCurvesOverLife src)
-        {
-            Curve = src.Curve.Copy();
-        }
-
-        public void Pull(EffectAngleCurvesOverLife src)
-        {
-            Curve.Pull(src.Curve);
-        }
-
-        void IUpdatable<IEffectAngle>.Update(IEffectAngle src)
-        {
-            if (src is EffectAngleCurvesOverLife value) Update(value);
-        }
-        void IMoveable<IEffectAngle>.Pull(IEffectAngle src)
-        {
-            if (src is EffectAngleCurvesOverLife value) Pull(value);
-        }
-
-        public override bool Equals(object obj) => obj is EffectAngleCurvesOverLife value && Equals(value);
-        public override int GetHashCode() => Curve != null ? Curve.GetHashCode() : 0;
-        
-        public bool Equals(IEffectAngle other) => other is EffectAngleCurvesOverLife value && Equals(value);
-        public bool Equals(EffectAngleCurvesOverLife other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            var result = Curve.Equals(other.Curve);
-            return result;
         }
     }
 }

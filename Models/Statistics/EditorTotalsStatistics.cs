@@ -1,4 +1,5 @@
 using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
@@ -20,7 +21,8 @@ namespace BH.SDK.Models.Statistics
 
     /// <summary> What has been authored on this device, summed across every level. </summary>
     [RuleContainer]
-    public class EditorTotalsStatistics : IModel<EditorTotalsStatistics>
+    [GenerateModel]
+    public sealed partial class EditorTotalsStatistics : IModel<EditorTotalsStatistics>
     {
         [RuleMinValue(StatisticsRules.MinCount)]
         [JsonProperty(Names.LevelsCreated)]
@@ -49,9 +51,7 @@ namespace BH.SDK.Models.Statistics
         [JsonProperty(Names.TotalResources)]
         public int TotalResources { get; set; }
 
-        public EditorTotalsStatistics() => Reset();
-
-        public void Reset()
+        public EditorTotalsStatistics()
         {
             LevelsCreated = 0;
             LevelsDeleted = 0;
@@ -60,44 +60,5 @@ namespace BH.SDK.Models.Statistics
             GeneratorsRun = 0;
             TotalResources = 0;
         }
-
-        public object Clone() => Copy();
-
-        public EditorTotalsStatistics Copy()
-        {
-            var copy = new EditorTotalsStatistics();
-            copy.Update(this);
-            return copy;
-        }
-
-        public void Update(EditorTotalsStatistics src)
-        {
-            LevelsCreated = src.LevelsCreated;
-            LevelsDeleted = src.LevelsDeleted;
-            ObjectsCreated = src.ObjectsCreated;
-            OperationsExecuted = src.OperationsExecuted;
-            GeneratorsRun = src.GeneratorsRun;
-            TotalResources = src.TotalResources;
-        }
-
-        public void Pull(EditorTotalsStatistics source) => Update(source);
-
-        public override bool Equals(object obj) => obj is EditorTotalsStatistics value && Equals(value);
-
-        public bool Equals(EditorTotalsStatistics other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return LevelsCreated == other.LevelsCreated
-                   && LevelsDeleted == other.LevelsDeleted
-                   && ObjectsCreated == other.ObjectsCreated
-                   && OperationsExecuted == other.OperationsExecuted
-                   && GeneratorsRun == other.GeneratorsRun
-                   && TotalResources == other.TotalResources;
-        }
-
-        public override int GetHashCode() =>
-            HashCode.Combine(LevelsCreated, LevelsDeleted, ObjectsCreated, OperationsExecuted,
-                GeneratorsRun, TotalResources);
     }
 }

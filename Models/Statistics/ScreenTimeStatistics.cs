@@ -1,4 +1,5 @@
 using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
@@ -20,7 +21,8 @@ namespace BH.SDK.Models.Statistics
 
     /// <summary> Real seconds spent on each kind of screen. </summary>
     [RuleContainer]
-    public class ScreenTimeStatistics : IModel<ScreenTimeStatistics>
+    [GenerateModel]
+    public sealed partial class ScreenTimeStatistics : IModel<ScreenTimeStatistics>
     {
         /// <summary> Time in the menu, its own background arena included. </summary>
         [RuleInRange(StatisticsRules.MinSeconds, StatisticsRules.MaxSeconds)]
@@ -64,48 +66,12 @@ namespace BH.SDK.Models.Statistics
             _ => 0.0,
         };
 
-        public ScreenTimeStatistics() => Reset();
-
-        public void Reset()
+        public ScreenTimeStatistics()
         {
             MenuSeconds = 0.0;
             GameSeconds = 0.0;
             EditorSeconds = 0.0;
             LoadingSeconds = 0.0;
         }
-
-        public object Clone() => Copy();
-
-        public ScreenTimeStatistics Copy()
-        {
-            var copy = new ScreenTimeStatistics();
-            copy.Update(this);
-            return copy;
-        }
-
-        public void Update(ScreenTimeStatistics src)
-        {
-            MenuSeconds = src.MenuSeconds;
-            GameSeconds = src.GameSeconds;
-            EditorSeconds = src.EditorSeconds;
-            LoadingSeconds = src.LoadingSeconds;
-        }
-
-        public void Pull(ScreenTimeStatistics source) => Update(source);
-
-        public override bool Equals(object obj) => obj is ScreenTimeStatistics value && Equals(value);
-
-        public bool Equals(ScreenTimeStatistics other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return MenuSeconds.Equals(other.MenuSeconds)
-                   && GameSeconds.Equals(other.GameSeconds)
-                   && EditorSeconds.Equals(other.EditorSeconds)
-                   && LoadingSeconds.Equals(other.LoadingSeconds);
-        }
-
-        public override int GetHashCode() =>
-            HashCode.Combine(MenuSeconds, GameSeconds, EditorSeconds, LoadingSeconds);
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Rules.Attributes;
 using BH.SDK.Serialization.Serializers;
@@ -7,17 +8,23 @@ using Newtonsoft.Json;
 namespace BH.SDK.Models.SettingGroups.GameEditor
 {
     // Which wire format the editor WRITES with, split by what is being written rather than kept as
-    // one switch: a level is the thing an author hands to somebody else, a library resource is
-    // reused across levels, and a clipboard payload leaves the process entirely - three different
-    // trade-offs between size and being readable by hand. None of the three describes how anything
-    // is READ, which is always resolved from the file itself (PathUtils.FindDataFile), so changing
-    // one of these can never make existing content unreadable.
+    // one switch: a level is the thing an author hands to somebody else, while a library resource is
+    // reused across levels - two different trade-offs between speed and being readable by hand.
+    // Neither describes how anything is READ, which is always resolved from the file itself
+    // (PathUtils.FindDataFile), so changing one of these can never make existing content unreadable.
+    //
+    // THERE WAS A THIRD, FOR THE CLIPBOARD, AND IT COULD NOT MEAN ANYTHING. A clipboard payload is
+    // TEXT - it leaves the process through the operating system's own buffer - so the binary format
+    // has no form to take there, and once the indented JSON mode was retired the only remaining
+    // choice was between JSON and JSON. It was removed rather than left as a dropdown that changes
+    // nothing; `copy` is retired as a key and never reissued.
 
     /// <summary>
     /// Which wire format the editor writes each kind of file with.
     /// </summary>
     [RuleContainer]
-    public class EditorSerializationSettings : IModel<EditorSerializationSettings>,
+    [GenerateModel]
+    public sealed partial class EditorSerializationSettings : IModel<EditorSerializationSettings>,
         IMoveable<EditorSerializationSettings>
     {
         /// <summary> Format new levels are created with - level.* and metadata.* alike. </summary>
@@ -30,57 +37,19 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
         [JsonProperty(Names.Resources)]
         public SerializationType ResourcesMode { get; set; }
 
-        /// <summary> Format a copied selection is serialized with for the clipboard. </summary>
-        [RuleEnumValid]
-        [JsonProperty(Names.Copy)]
-        public SerializationType CopyMode { get; set; }
-
         public EditorSerializationSettings()
         {
             ResetOwn();
         }
-        public EditorSerializationSettings(SerializationType levelMode,
-            SerializationType resourcesMode, SerializationType copyMode)
+        public EditorSerializationSettings(SerializationType levelMode, SerializationType resourcesMode)
         {
             LevelMode = levelMode;
             ResourcesMode = resourcesMode;
-            CopyMode = copyMode;
         }
-        public void Reset() => ResetOwn();
         private void ResetOwn()
         {
             LevelMode = SerializationType.Json;
             ResourcesMode = SerializationType.Json;
-            CopyMode = SerializationType.Json;
-        }
-
-        public object Clone() => Copy();
-        public EditorSerializationSettings Copy() => new(LevelMode, ResourcesMode, CopyMode);
-
-        public void Pull(EditorSerializationSettings source)
-        {
-            LevelMode = source.LevelMode;
-            ResourcesMode = source.ResourcesMode;
-            CopyMode = source.CopyMode;
-        }
-
-        public void Update(EditorSerializationSettings src)
-        {
-            LevelMode = src.LevelMode;
-            ResourcesMode = src.ResourcesMode;
-            CopyMode = src.CopyMode;
-        }
-
-        public override int GetHashCode() => HashCode.Combine(LevelMode, ResourcesMode, CopyMode);
-        public override bool Equals(object obj) => obj is EditorSerializationSettings value && Equals(value);
-
-        public bool Equals(EditorSerializationSettings other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return LevelMode == other.LevelMode
-                   && ResourcesMode == other.ResourcesMode
-                   && CopyMode == other.CopyMode;
         }
     }
 }

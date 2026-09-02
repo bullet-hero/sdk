@@ -1,12 +1,11 @@
 using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Enums;
 using BH.SDK.Models.Enums.Text;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
 using Newtonsoft.Json;
-
-// ReSharper disable NonReadonlyMemberInGetHashCode
 
 namespace BH.SDK.Models.Keyframes
 {
@@ -19,7 +18,8 @@ namespace BH.SDK.Models.Keyframes
     /// How much of a text object hides behind its appearing mask at one frame, and in what order.
     /// </summary>
     [RuleContainer]
-    public class AppearingKey : Keyframe, IModel<AppearingKey>
+    [GenerateModel]
+    public sealed partial class AppearingKey : Keyframe, IModel<AppearingKey>
     {
         /// <summary> Fraction of the characters hidden at this frame. </summary>
         [RuleInRange(TextRules.MinAppearing, TextRules.MaxAppearing)]
@@ -41,45 +41,6 @@ namespace BH.SDK.Models.Keyframes
         {
             Value = value;
             Mode = mode;
-        }
-        public override void Reset()
-        {
-            base.Reset();
-            Value = TextRules.Appearing_Fallback;
-            Mode = TextRules.AppearingMode_Default;
-        }
-
-        public override object Clone() => CopyImpl();
-        public override Keyframe Copy() => CopyImpl();
-        AppearingKey ICopyable<AppearingKey>.Copy() => CopyImpl();
-
-        private AppearingKey CopyImpl() => new(Value, Frame, Mode, Ease);
-
-        public void Update(AppearingKey src)
-        {
-            base.Update(src);
-
-            Value = src.Value;
-            Mode = src.Mode;
-        }
-
-        public void Pull(AppearingKey src)
-        {
-            base.Pull(src);
-
-            Value = src.Value;
-            Mode = src.Mode;
-        }
-
-        public override bool Equals(object obj) => obj is AppearingKey value && Equals(value);
-        public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), Value, (int)Mode);
-
-        public bool Equals(AppearingKey other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            var result = base.Equals(other) && Value.Equals(other.Value) && Mode == other.Mode;
-            return result;
         }
     }
 }

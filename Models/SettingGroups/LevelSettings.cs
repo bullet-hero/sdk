@@ -1,4 +1,5 @@
 ﻿using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Enums.Settings;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Models.Primitives;
@@ -6,8 +7,6 @@ using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
 using BH.SDK.Versions;
 using Newtonsoft.Json;
-
-// ReSharper disable NonReadonlyMemberInGetHashCode
 
 namespace BH.SDK.Models.SettingGroups
 {
@@ -18,7 +17,8 @@ namespace BH.SDK.Models.SettingGroups
     /// </summary>
     [RuleContainer]
     [DataVersion(DataDomains.LevelSettings, 1, 0)]
-    public class LevelSettings : IObjectIdCounter, IFrameDuration, IModel<LevelSettings>
+    [GenerateModel]
+    public sealed partial class LevelSettings : IObjectIdCounter, IFrameDuration, IModel<LevelSettings>
     {
         /// <summary> Frames per second the level is authored in - fixes what one frame means, and so
         /// what every keyframe's Frame refers to. Not a rendering framerate. </summary>
@@ -90,61 +90,8 @@ namespace BH.SDK.Models.SettingGroups
             Orientation = LevelOrientation.Horizontal;
         }
 
-        public object Clone() => Copy();
-
         // Seed and Orientation ride initializers rather than further constructor parameters: every
         // existing caller of this constructor authors a level without either, and NullSeed and
         // Horizontal are exactly what they should get.
-        public LevelSettings Copy() => new(Framerate, FrameDuration, ObjectIdCounter, AudioIdCounter)
-        {
-            Seed = Seed,
-            Orientation = Orientation,
-        };
-
-        public void Update(LevelSettings src)
-        {
-            Framerate = src.Framerate;
-            FrameDuration = src.FrameDuration;
-            ObjectIdCounter = src.ObjectIdCounter;
-            AudioIdCounter = src.AudioIdCounter;
-            Seed = src.Seed;
-            Orientation = src.Orientation;
-        }
-
-        public void Pull(LevelSettings src)
-        {
-            Framerate = src.Framerate;
-            FrameDuration = src.FrameDuration;
-            ObjectIdCounter = src.ObjectIdCounter;
-            AudioIdCounter = src.AudioIdCounter;
-            Seed = src.Seed;
-            Orientation = src.Orientation;
-        }
-
-        public override bool Equals(object obj) => obj is LevelSettings value && Equals(value);
-        public override int GetHashCode() => HashCode.Combine(Framerate, FrameDuration, ObjectIdCounter, AudioIdCounter, Seed, Orientation);
-
-        public void Reset()
-        {
-            Framerate = 60;
-            FrameDuration = Framerate * 10;
-            ObjectIdCounter = ObjectId.MinLevelValue;
-            AudioIdCounter = AudioId.MinValue;
-            Seed = LevelRules.NullSeed;
-            Orientation = LevelOrientation.Horizontal;
-        }
-
-        public bool Equals(LevelSettings other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            var result = Framerate.Equals(other.Framerate)
-                          && FrameDuration.Equals(other.FrameDuration)
-                          && ObjectIdCounter.Equals(other.ObjectIdCounter)
-                          && AudioIdCounter.Equals(other.AudioIdCounter)
-                          && Seed.Equals(other.Seed)
-                          && Orientation == other.Orientation;
-            return result;
-        }
     }
 }

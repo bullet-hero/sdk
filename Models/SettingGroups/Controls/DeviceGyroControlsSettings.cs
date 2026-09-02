@@ -1,4 +1,5 @@
 using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Enums.Controls;
 using BH.SDK.Models.Enums.Controls.Modes;
 using BH.SDK.Models.Interfaces;
@@ -20,7 +21,8 @@ namespace BH.SDK.Models.SettingGroups.Controls
     /// The phone/tablet's own motion sensor: tilt as direction by default.
     /// </summary>
     [RuleContainer]
-    public class DeviceGyroControlsSettings : BaseDeviceControlsSettings,
+    [GenerateModel]
+    public sealed partial class DeviceGyroControlsSettings : BaseDeviceControlsSettings,
         IModel<DeviceGyroControlsSettings>, IMoveable<DeviceGyroControlsSettings>
     {
         [RuleEnumValid(DeviceGyroControlMode.Direction)]
@@ -86,11 +88,6 @@ namespace BH.SDK.Models.SettingGroups.Controls
             DashButtonAnchor = dashButtonAnchor;
             DashButtonSize = dashButtonSize;
         }
-        public override void Reset()
-        {
-            base.Reset();
-            ResetOwn();
-        }
         private void ResetOwn()
         {
             // Both overwrite what BaseDeviceControlsSettings.Reset just wrote: a tilt is neither a stick
@@ -107,72 +104,6 @@ namespace BH.SDK.Models.SettingGroups.Controls
             DashSource = GyroDashSource.AnyScreenTap;
             DashButtonAnchor = ScreenAnchor.BottomRight;
             DashButtonSize = ControlsRules.DefaultControlSize;
-        }
-
-        public override object Clone() => CopyImpl();
-        public override BaseDeviceControlsSettings Copy() => CopyImpl();
-        DeviceGyroControlsSettings ICopyable<DeviceGyroControlsSettings>.Copy() => CopyImpl();
-
-        private DeviceGyroControlsSettings CopyImpl() => new(Active, Sensitivity, DeadZone,
-            Smoothing, InvertX, InvertY, Mode, AxisMapping, CalibrateOnStart, TiltCenterX, TiltCenterY,
-            MaxTiltAngle, DashSource, DashButtonAnchor, DashButtonSize);
-
-        public void Pull(DeviceGyroControlsSettings source)
-        {
-            Active = source.Active;
-            Sensitivity = source.Sensitivity;
-            DeadZone = source.DeadZone;
-            Smoothing = source.Smoothing;
-            InvertX = source.InvertX;
-            InvertY = source.InvertY;
-            Mode = source.Mode;
-            AxisMapping = source.AxisMapping;
-            CalibrateOnStart = source.CalibrateOnStart;
-            TiltCenterX = source.TiltCenterX;
-            TiltCenterY = source.TiltCenterY;
-            MaxTiltAngle = source.MaxTiltAngle;
-            DashSource = source.DashSource;
-            DashButtonAnchor = source.DashButtonAnchor;
-            DashButtonSize = source.DashButtonSize;
-        }
-
-        public void Update(DeviceGyroControlsSettings src)
-        {
-            base.Update(src);
-
-            Mode = src.Mode;
-            AxisMapping = src.AxisMapping;
-            CalibrateOnStart = src.CalibrateOnStart;
-            TiltCenterX = src.TiltCenterX;
-            TiltCenterY = src.TiltCenterY;
-            MaxTiltAngle = src.MaxTiltAngle;
-            DashSource = src.DashSource;
-            DashButtonAnchor = src.DashButtonAnchor;
-            DashButtonSize = src.DashButtonSize;
-        }
-
-        public override bool Equals(object obj) => obj is DeviceGyroControlsSettings value && Equals(value);
-        public override int GetHashCode()
-        {
-            var hash = HashCode.Combine(base.GetHashCode(), Mode, AxisMapping, CalibrateOnStart,
-                TiltCenterX, TiltCenterY, MaxTiltAngle);
-            return HashCode.Combine(hash, DashSource, DashButtonAnchor, DashButtonSize);
-        }
-
-        public bool Equals(DeviceGyroControlsSettings other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return base.Equals(other)
-                   && Mode == other.Mode
-                   && AxisMapping == other.AxisMapping
-                   && CalibrateOnStart == other.CalibrateOnStart
-                   && TiltCenterX.Equals(other.TiltCenterX)
-                   && TiltCenterY.Equals(other.TiltCenterY)
-                   && MaxTiltAngle.Equals(other.MaxTiltAngle)
-                   && DashSource == other.DashSource
-                   && DashButtonAnchor == other.DashButtonAnchor
-                   && DashButtonSize.Equals(other.DashButtonSize);
         }
     }
 }

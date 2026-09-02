@@ -9,7 +9,7 @@ namespace BH.SDK.Services.Package
         public static LevelPackageOptions Default { get; } = new LevelPackageOptions();
 
         // Defaulting to the level's OWN formats is the host's job, not this class's: a level saved
-        // as Bson should export as Bson, and only the host knows which it is (LevelMetaInfo). What
+        // as Blob should export as Blob, and only the host knows which it is (LevelMetaInfo). What
         // this class supplies when asked nothing is the format a level is created in.
 
         /// <summary> Format the level document is written in. </summary>

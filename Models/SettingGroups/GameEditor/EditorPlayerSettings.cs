@@ -1,4 +1,5 @@
 ﻿using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Rules.Attributes;
 using Newtonsoft.Json;
@@ -28,7 +29,8 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
     /// How the editor's preview player behaves when it is switched on.
     /// </summary>
     [RuleContainer]
-    public class EditorPlayerSettings : IModel<EditorPlayerSettings>, IMoveable<EditorPlayerSettings>
+    [GenerateModel]
+    public sealed partial class EditorPlayerSettings : IModel<EditorPlayerSettings>, IMoveable<EditorPlayerSettings>
     {
         /// <summary> Whether the editor's preview player starts switched on. </summary>
         [JsonProperty(Names.ActiveDefault)]
@@ -81,8 +83,6 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
             BotDebugReach = botDebugReach;
         }
 
-        public void Reset() => ResetOwn();
-
         private void ResetOwn()
         {
             ActiveDefault = true;
@@ -92,50 +92,6 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
             BotDebugGrid = true;
             BotDebugTarget = true;
             BotDebugReach = true;
-        }
-
-        public object Clone() => Copy();
-
-        public EditorPlayerSettings Copy() => new(ActiveDefault, ResetGizmos, BotControl, BotDebug,
-            BotDebugGrid, BotDebugTarget, BotDebugReach);
-
-        public void Pull(EditorPlayerSettings source)
-        {
-            ActiveDefault = source.ActiveDefault;
-            ResetGizmos = source.ResetGizmos;
-            BotControl = source.BotControl;
-            BotDebug = source.BotDebug;
-            BotDebugGrid = source.BotDebugGrid;
-            BotDebugTarget = source.BotDebugTarget;
-            BotDebugReach = source.BotDebugReach;
-        }
-
-        public void Update(EditorPlayerSettings src)
-        {
-            ActiveDefault = src.ActiveDefault;
-            ResetGizmos = src.ResetGizmos;
-            BotControl = src.BotControl;
-            BotDebug = src.BotDebug;
-            BotDebugGrid = src.BotDebugGrid;
-            BotDebugTarget = src.BotDebugTarget;
-            BotDebugReach = src.BotDebugReach;
-        }
-
-        public override int GetHashCode() => HashCode.Combine(ActiveDefault, ResetGizmos, BotControl,
-            BotDebug, BotDebugGrid, BotDebugTarget, BotDebugReach);
-
-        public override bool Equals(object obj) => obj is EditorPlayerSettings value && Equals(value);
-
-        public bool Equals(EditorPlayerSettings other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return ActiveDefault == other.ActiveDefault && ResetGizmos == other.ResetGizmos
-                                                        && BotControl == other.BotControl
-                                                        && BotDebug == other.BotDebug
-                                                        && BotDebugGrid == other.BotDebugGrid
-                                                        && BotDebugTarget == other.BotDebugTarget
-                                                        && BotDebugReach == other.BotDebugReach;
         }
     }
 }

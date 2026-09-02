@@ -1,10 +1,9 @@
 ﻿using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
 using Newtonsoft.Json;
-
-// ReSharper disable NonReadonlyMemberInGetHashCode
 
 namespace BH.SDK.Models.AudioEffects
 {
@@ -13,7 +12,8 @@ namespace BH.SDK.Models.AudioEffects
     /// its many fields describe a room, where AudioEcho only describes a repeat.
     /// </summary>
     [RuleContainer]
-    public class AudioReverb : AudioEffect, IModel<AudioReverb>
+    [GenerateModel]
+    public sealed partial class AudioReverb : AudioEffect, IModel<AudioReverb>
     {
         /// <summary> Level of the untouched signal in the output. </summary>
         [RuleInRange(AudioRules.Reverb.DryLevel_Min, AudioRules.Reverb.DryLevel_Max)]
@@ -121,116 +121,6 @@ namespace BH.SDK.Models.AudioEffects
             Density = density;
             HFReference = hfReference;
             LFReference = lfReference;
-        }
-        public override void Reset()
-        {
-            base.Reset();
-            DryLevel = AudioRules.Reverb.DryLevel_Default;
-            Room = AudioRules.Reverb.Room_Default;
-            RoomHF = AudioRules.Reverb.RoomHF_Default;
-            RoomLF = AudioRules.Reverb.RoomLF_Default;
-            DecayTime = AudioRules.Reverb.DecayTime_Default;
-            DecayHFRatio = AudioRules.Reverb.DecayHFRatio_Default;
-            Reflections = AudioRules.Reverb.Reflections_Default;
-            ReflectDelay = AudioRules.Reverb.ReflectDelay_Default;
-            Reverb = AudioRules.Reverb.Reverb_Default;
-            ReverbDelay = AudioRules.Reverb.ReverbDelay_Default;
-            Diffusion = AudioRules.Reverb.Diffusion_Default;
-            Density = AudioRules.Reverb.Density_Default;
-            HFReference = AudioRules.Reverb.HFReference_Default;
-            LFReference = AudioRules.Reverb.LFReference_Default; 
-        }
-
-        public override object Clone() => CopyImpl();
-        public override AudioEffect Copy() => CopyImpl();
-        AudioReverb ICopyable<AudioReverb>.Copy() => CopyImpl();
-
-        private AudioReverb CopyImpl() => new(MixLevel, DryLevel, Room, RoomHF, RoomLF,
-            DecayTime, DecayHFRatio, Reflections, ReflectDelay, Reverb,
-            ReverbDelay, Diffusion, Density, HFReference, LFReference);
-
-        public void Update(AudioReverb src)
-        {
-            base.Update(src);
-
-            DryLevel = src.DryLevel;
-            Room = src.Room;
-            RoomHF = src.RoomHF;
-            RoomLF = src.RoomLF;
-            DecayTime = src.DecayTime;
-            DecayHFRatio = src.DecayHFRatio;
-            Reflections = src.Reflections;
-            ReflectDelay = src.ReflectDelay;
-            Reverb = src.Reverb;
-            ReverbDelay = src.ReverbDelay;
-            Diffusion = src.Diffusion;
-            Density = src.Density;
-            HFReference = src.HFReference;
-            LFReference = src.LFReference;
-        }
-
-        public void Pull(AudioReverb src)
-        {
-            base.Pull(src);
-
-            DryLevel = src.DryLevel;
-            Room = src.Room;
-            RoomHF = src.RoomHF;
-            RoomLF = src.RoomLF;
-            DecayTime = src.DecayTime;
-            DecayHFRatio = src.DecayHFRatio;
-            Reflections = src.Reflections;
-            ReflectDelay = src.ReflectDelay;
-            Reverb = src.Reverb;
-            ReverbDelay = src.ReverbDelay;
-            Diffusion = src.Diffusion;
-            Density = src.Density;
-            HFReference = src.HFReference;
-            LFReference = src.LFReference;
-        }
-
-        public override bool Equals(object obj) => obj is AudioReverb value && Equals(value);
-        public override int GetHashCode()
-        {
-            var hashCode = new HashCode();
-            hashCode.Add(base.GetHashCode());
-            hashCode.Add(DryLevel);
-            hashCode.Add(Room);
-            hashCode.Add(RoomHF);
-            hashCode.Add(RoomLF);
-            hashCode.Add(DecayTime);
-            hashCode.Add(DecayHFRatio);
-            hashCode.Add(Reflections);
-            hashCode.Add(ReflectDelay);
-            hashCode.Add(Reverb);
-            hashCode.Add(ReverbDelay);
-            hashCode.Add(Diffusion);
-            hashCode.Add(Density);
-            hashCode.Add(HFReference);
-            hashCode.Add(LFReference);
-            return hashCode.ToHashCode();
-        }
-
-        public bool Equals(AudioReverb other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            var result = base.Equals(other)
-                         && DryLevel.Equals(other.DryLevel)
-                         && Room.Equals(other.Room)
-                         && RoomHF.Equals(other.RoomHF)
-                         && RoomLF.Equals(other.RoomLF)
-                         && DecayTime.Equals(other.DecayTime)
-                         && DecayHFRatio.Equals(other.DecayHFRatio)
-                         && Reflections.Equals(other.Reflections)
-                         && ReflectDelay.Equals(other.ReflectDelay)
-                         && Reverb.Equals(other.Reverb)
-                         && ReverbDelay.Equals(other.ReverbDelay)
-                         && Diffusion.Equals(other.Diffusion)
-                         && Density.Equals(other.Density)
-                         && HFReference.Equals(other.HFReference)
-                         && LFReference.Equals(other.LFReference);
-            return result;
         }
     }
 }

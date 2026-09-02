@@ -10,7 +10,7 @@
 
         public const string SettingsFileName = "settings.json";
 
-        // No fixed extension - level.json/level.bson and metadata.json/metadata.bson are chosen
+        // No fixed extension - level.json/level.blob and metadata.json/metadata.blob are chosen
         // per-level at creation time and resolved by which extension is present on disk at load
         // time (see PathUtils.FindDataFile), not stored as a field in Level/LevelMeta itself.
         public const string LevelFileBaseName = "level";
@@ -47,12 +47,6 @@
         // identifier a rename, a translation or a folder move cannot change, and the one LevelMeta
         // already declares that scores and progress attach to.
         public const string StatisticsDirectory = "stats";
-
-        // A DELETION CANDIDATE - nothing writes here any more, see docs/issues/ROSLYN_PLAN.md. It
-        // was a sibling of levels/, backups/ and stats/, and the one of the four that could be
-        // deleted at any moment without losing anything, since everything in it was derived from a
-        // level still on disk.
-        public const string CacheDirectory = "cache";
 
         /// <summary> The player's device-wide statistics, beside the per-level files. </summary>
         public const string StatisticsFileName = "statistics.json";

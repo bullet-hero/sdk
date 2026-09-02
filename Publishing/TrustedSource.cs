@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models;
 using BH.SDK.Models.Enums.Meta;
 using BH.SDK.Models.Interfaces;
@@ -21,7 +22,8 @@ namespace BH.SDK.Publishing
 
     /// <summary> One known resource site and how far it can be taken at its word. </summary>
     [RuleContainer]
-    public class TrustedSource : IModel<TrustedSource>
+    [GenerateModel]
+    public sealed partial class TrustedSource : IModel<TrustedSource>
     {
         /// <summary> Stable identifier of the entry, for referring to it from outside the file. </summary>
         [RuleNotNull, RuleStringMax(ValueRules.MaxEditorName)]
@@ -83,16 +85,6 @@ namespace BH.SDK.Publishing
             Licenses = licenses;
             Note = note;
         }
-        public void Reset()
-        {
-            Key = string.Empty;
-            Title = string.Empty;
-            Url = string.Empty;
-            Domains.Clear();
-            Trust = SourceTrust.Unknown;
-            Licenses.Clear();
-            Note = string.Empty;
-        }
 
         /// <summary> True when the given host is this site or a subdomain of it. </summary>
         public bool CoversHost(string host)
@@ -127,59 +119,6 @@ namespace BH.SDK.Publishing
 
             var host = uri.Host.ToLowerInvariant();
             return host.StartsWith("www.", StringComparison.Ordinal) ? host.Substring(4) : host;
-        }
-
-        public object Clone() => Copy();
-        public TrustedSource Copy() => new(Key, Title, Url, new List<string>(Domains),
-            Trust, new List<TypicalLicenseType>(Licenses), Note);
-
-        public void Update(TrustedSource src)
-        {
-            Key = src.Key;
-            Title = src.Title;
-            Url = src.Url;
-            Domains = new List<string>(src.Domains);
-            Trust = src.Trust;
-            Licenses = new List<TypicalLicenseType>(src.Licenses);
-            Note = src.Note;
-        }
-
-        public void Pull(TrustedSource src)
-        {
-            Key = src.Key;
-            Title = src.Title;
-            Url = src.Url;
-            Domains = new List<string>(src.Domains);
-            Trust = src.Trust;
-            Licenses = new List<TypicalLicenseType>(src.Licenses);
-            Note = src.Note;
-        }
-
-        public override bool Equals(object obj) => obj is TrustedSource value && Equals(value);
-        public override int GetHashCode()
-        {
-            var hashCode = new HashCode();
-            hashCode.Add(Key);
-            hashCode.Add(Title);
-            hashCode.Add(Url);
-            hashCode.Add(Domains.GetListHashCode());
-            hashCode.Add((int)Trust);
-            hashCode.Add(Licenses.GetListHashCode());
-            hashCode.Add(Note);
-            return hashCode.ToHashCode();
-        }
-
-        public bool Equals(TrustedSource other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return Key.Equals(other.Key)
-                   && Title.Equals(other.Title)
-                   && Url.Equals(other.Url)
-                   && Domains.ListEquals(other.Domains)
-                   && Trust == other.Trust
-                   && Licenses.ListEquals(other.Licenses)
-                   && Note.Equals(other.Note);
         }
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Rules.Attributes;
 using Newtonsoft.Json;
@@ -15,7 +16,8 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
     /// operation history.
     /// </summary>
     [RuleContainer]
-    public class EditorSavingsSettings : IModel<EditorSavingsSettings>, IMoveable<EditorSavingsSettings>
+    [GenerateModel]
+    public sealed partial class EditorSavingsSettings : IModel<EditorSavingsSettings>, IMoveable<EditorSavingsSettings>
     {
         /// <summary> Whether the editor saves on its own. </summary>
         [JsonProperty(Names.Autosave)]
@@ -52,46 +54,12 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
             MaxAutosaveFiles = maxAutosaveFiles;
             HistoryLength = historyLength;
         }
-        public void Reset() => ResetOwn();
         private void ResetOwn()
         {
             Autosave = true;
             AutosaveRate = 60f;
             MaxAutosaveFiles = 25;
             HistoryLength = 512;
-        }
-
-        public object Clone() => Copy();
-        public EditorSavingsSettings Copy() => new(Autosave, AutosaveRate, MaxAutosaveFiles, HistoryLength);
-
-        public void Pull(EditorSavingsSettings source)
-        {
-            Autosave = source.Autosave;
-            AutosaveRate = source.AutosaveRate;
-            MaxAutosaveFiles = source.MaxAutosaveFiles;
-            HistoryLength = source.HistoryLength;
-        }
-
-        public void Update(EditorSavingsSettings src)
-        {
-            Autosave = src.Autosave;
-            AutosaveRate = src.AutosaveRate;
-            MaxAutosaveFiles = src.MaxAutosaveFiles;
-            HistoryLength = src.HistoryLength;
-        }
-
-        public override int GetHashCode() =>
-            HashCode.Combine(Autosave, AutosaveRate, MaxAutosaveFiles, HistoryLength);
-        public override bool Equals(object obj) => obj is EditorSavingsSettings value && Equals(value);
-
-        public bool Equals(EditorSavingsSettings other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return Autosave == other.Autosave
-                   && AutosaveRate.Equals(other.AutosaveRate)
-                   && MaxAutosaveFiles == other.MaxAutosaveFiles
-                   && HistoryLength == other.HistoryLength;
         }
     }
 }

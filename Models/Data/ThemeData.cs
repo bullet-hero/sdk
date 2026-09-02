@@ -1,4 +1,5 @@
 ﻿using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Models.Primitives;
 using BH.SDK.Models.Values;
@@ -7,8 +8,6 @@ using BH.SDK.Rules.Attributes;
 using BH.SDK.Utils;
 using BH.SDK.Versions;
 using Newtonsoft.Json;
-
-// ReSharper disable NonReadonlyMemberInGetHashCode
 
 namespace BH.SDK.Models.Data
 {
@@ -19,7 +18,8 @@ namespace BH.SDK.Models.Data
     /// </summary>
     [RuleContainer]
     [DataVersion(DataDomains.ThemeData, 1, 0)]
-    public class ThemeData : IModel<ThemeData>
+    [GenerateModel]
+    public sealed partial class ThemeData : IModel<ThemeData>
     {
         /// <summary> Identity of this palette, what ThemeKeyframe selects. </summary>
         [RuleIPrimitiveGuidNotNull]
@@ -72,42 +72,6 @@ namespace BH.SDK.Models.Data
             ThemeId = themeId;
             Name = name;
             Matrix = matrix;
-        }
-        public void Reset()
-        {
-            ThemeId = ThemeId.Null;
-            Name = string.Empty;
-            Array.Fill(Matrix, Color4Value.white);
-        }
-
-        public object Clone() => Copy();
-        public ThemeData Copy() => new(ThemeId, Name, Matrix.CopyArray());
-
-        public void Update(ThemeData src)
-        {
-            ThemeId = src.ThemeId;
-            Name = src.Name;
-            Matrix = src.Matrix.CopyArray();
-        }
-
-        public void Pull(ThemeData src)
-        {
-            ThemeId = src.ThemeId;
-            Name = src.Name;
-            Matrix = src.Matrix.CopyArray();
-        }
-
-        public override bool Equals(object obj) => obj is ThemeData value && Equals(value);
-        public override int GetHashCode() => HashCode.Combine(ThemeId, Name, Matrix.GetArrayHashCode());
-
-        public bool Equals(ThemeData other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            var result = ThemeId.Equals(other.ThemeId)
-                         && Name.Equals(other.Name)
-                         && Matrix.ArrayEquals(other.Matrix);
-            return result;
         }
     }
 }

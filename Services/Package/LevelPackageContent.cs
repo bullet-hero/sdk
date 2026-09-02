@@ -35,7 +35,7 @@ namespace BH.SDK.Services.Package
     // while a server writes them into a column having never constructed one.
     //
     // The formats travel beside the bytes because nothing inside them says which they are - a level
-    // document is Json or Bson according to the NAME it was stored under, which is the same
+    // document is Json or Blob according to the NAME it was stored under, which is the same
     // convention a level folder on disk uses.
 
     /// <summary> Everything a level package held. </summary>

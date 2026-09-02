@@ -1,4 +1,5 @@
 ﻿using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Effects;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Models.Interfaces.Effects;
@@ -9,8 +10,6 @@ using BH.SDK.Utils;
 using BH.SDK.Versions;
 using Newtonsoft.Json;
 
-// ReSharper disable NonReadonlyMemberInGetHashCode
-
 namespace BH.SDK.Models.Data
 {
     /// <summary>
@@ -20,7 +19,8 @@ namespace BH.SDK.Models.Data
     /// </summary>
     [RuleContainer]
     [DataVersion(DataDomains.EffectData, 1, 0)]
-    public class EffectData : IModel<EffectData>, IUpdatable<EffectData>
+    [GenerateModel]
+    public sealed partial class EffectData : IModel<EffectData>, IUpdatable<EffectData>
     {
         /// <summary> Identity of this effect resource and the key EffectObject.EffectId points at. </summary>
         [RuleIPrimitiveGuidNotNull]
@@ -108,94 +108,6 @@ namespace BH.SDK.Models.Data
             Angle = angle;
             Scale = scale;
             Color = color;
-        }
-        public void Reset()
-        {
-            EffectId = EffectId.Null;
-            Name = string.Empty;
-            HasStopLocalFrame = EffectRules.HasStopLocalFrame_Default;
-            StopLocalFrame = EffectRules.StopLocalFrame_Default;
-            Core.Reset();
-            Forces.Reset();
-            Shape = new EffectShapePoint();
-            Angle = new EffectAngleValue();
-            Scale = new EffectScaleValue();
-            Color = new EffectColorValue();
-        }
-
-        public object Clone() => CopyImpl();
-        public EffectData Copy() => CopyImpl();
-        
-        private EffectData CopyImpl() => new(EffectId, Name, HasStopLocalFrame, StopLocalFrame, Core.Copy(),
-            Forces.Copy(), Shape.Copy(), Angle.Copy(), Scale.Copy(), Color.Copy());
-        
-        public void Update(EffectData src)
-        {
-            EffectId = src.EffectId;
-            Name = src.Name;
-            HasStopLocalFrame = src.HasStopLocalFrame;
-            StopLocalFrame = src.StopLocalFrame;
-            Core = src.Core.Copy();
-            Forces = src.Forces.Copy();
-            Shape = src.Shape.Copy();
-            Angle = src.Angle.Copy();
-            Scale = src.Scale.Copy();
-            Color = src.Color.Copy();
-        }
-
-        public void Pull(EffectData src)
-        {
-            EffectId = src.EffectId;
-            Name = src.Name;
-            HasStopLocalFrame = src.HasStopLocalFrame;
-            StopLocalFrame = src.StopLocalFrame;
-            Core.Pull(src.Core);
-            Forces.Pull(src.Forces);
-            Shape = Shape.PullFrom(src.Shape);
-            Angle = Angle.PullFrom(src.Angle);
-            Scale = Scale.PullFrom(src.Scale);
-            Color = Color.PullFrom(src.Color);
-        }
-
-        public override bool Equals(object obj) => obj is EffectData value && Equals(value);
-        public override int GetHashCode()
-        {
-            var hashCode = new HashCode();
-            hashCode.Add(EffectId);
-            hashCode.Add(Name);
-            hashCode.Add(HasStopLocalFrame);
-            hashCode.Add(StopLocalFrame);
-            hashCode.Add(Core);
-            hashCode.Add(Forces);
-            hashCode.Add(Shape);
-            hashCode.Add(Angle);
-            hashCode.Add(Scale);
-            hashCode.Add(Color);
-            return hashCode.ToHashCode();
-        }
-        
-        public bool Equals(EffectData other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            
-            var result = EqualsEffectData(other);
-            return result;
-        }
-        
-        private bool EqualsEffectData(EffectData other)
-        {
-            var result = EffectId.Equals(other.EffectId)
-                         && Name.Equals(other.Name)
-                         && HasStopLocalFrame == other.HasStopLocalFrame
-                         && StopLocalFrame.Equals(other.StopLocalFrame)
-                         && Core.Equals(other.Core)
-                         && Forces.Equals(other.Forces)
-                         && Shape.Equals(other.Shape)
-                         && Angle.Equals(other.Angle)
-                         && Scale.Equals(other.Scale)
-                         && Color.Equals(other.Color);
-            return result;
         }
     }
 }

@@ -17,7 +17,7 @@ namespace BH.SDK.Serialization.Converters.CustomTypes
             JsonSerializer serializer)
         {
             // JsonDataSerializer writes a Guid as a plain string token (reader.Value surfaces as
-            // string); BsonDataSerializer writes it as BSON's native UUID binary subtype (reader.Value
+            // string); a binary format can hand back an already-boxed Guid (reader.Value
             // surfaces as an already-boxed Guid) - see BaseNewtonsoftDataSerializer's doc comment on
             // why the same converter chain has to work for both. WriteJson below only ever needs the
             // Guid overload since IPrimitiveGuid.Value already hands back a Guid.

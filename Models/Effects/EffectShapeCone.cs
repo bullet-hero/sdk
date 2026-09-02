@@ -1,4 +1,5 @@
 ﻿using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Enums.Effects;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Models.Interfaces.Effects;
@@ -9,8 +10,6 @@ using BH.SDK.Rules.Attributes;
 using BH.SDK.Utils;
 using Newtonsoft.Json;
 
-// ReSharper disable NonReadonlyMemberInGetHashCode
-
 namespace BH.SDK.Models.Effects
 {
     /// <summary>
@@ -18,7 +17,8 @@ namespace BH.SDK.Models.Effects
     /// where a circle would be omnidirectional.
     /// </summary>
     [RuleContainer]
-    public class EffectShapeCone : IEffectShape, IModel<EffectShapeCone>
+    [GenerateModel]
+    public sealed partial class EffectShapeCone : IEffectShape, IModel<EffectShapeCone>
     {
         /// <summary> Radius at the far end. Larger than BaseRadius flares out, smaller funnels in. </summary>
         [RuleNotNull, RuleIFloatMin(EffectRules.Shape.ConeTopRadius_Min)]
@@ -69,61 +69,6 @@ namespace BH.SDK.Models.Effects
             Arc = arc;
             Height = height;
             Spread = spread;
-        }
-        public void Reset()
-        {
-            TopRadius = new FloatValue(EffectRules.Shape.ConeTopRadius_Default);
-            BaseRadius = new FloatValue(EffectRules.Shape.ConeBaseRadius_Default);
-            Arc = new FloatValue(EffectRules.Shape.Arc_Default);
-            Height = new FloatValue(EffectRules.Shape.ConeHeight_Default);
-            Spread = new EffectShapeSpreadRandom();
-        }
-
-        public object Clone() => Copy();
-        IEffectShape ICopyable<IEffectShape>.Copy() => new EffectShapeCone(TopRadius.Copy(), BaseRadius.Copy(), Arc.Copy(), Height.Copy(), Spread.Copy());
-        public EffectShapeCone Copy() => new(TopRadius.Copy(), BaseRadius.Copy(), Arc.Copy(), Height.Copy(), Spread.Copy());
-
-        public void Update(EffectShapeCone src)
-        {
-            TopRadius = src.TopRadius.Copy();
-            BaseRadius = src.BaseRadius.Copy();
-            Arc = src.Arc.Copy();
-            Height = src.Height.Copy();
-            Spread = src.Spread.Copy();
-        }
-
-        public void Pull(EffectShapeCone src)
-        {
-            TopRadius = TopRadius.PullFrom(src.TopRadius);
-            BaseRadius = BaseRadius.PullFrom(src.BaseRadius);
-            Arc = Arc.PullFrom(src.Arc);
-            Height = Height.PullFrom(src.Height);
-            Spread = Spread.PullFrom(src.Spread);
-        }
-
-        void IUpdatable<IEffectShape>.Update(IEffectShape src)
-        {
-            if (src is EffectShapeCone value) Update(value);
-        }
-        void IMoveable<IEffectShape>.Pull(IEffectShape src)
-        {
-            if (src is EffectShapeCone value) Pull(value);
-        }
-
-        public override bool Equals(object obj) => obj is EffectShapeCone value && Equals(value);
-        public override int GetHashCode() => HashCode.Combine(TopRadius, BaseRadius, Arc, Height, Spread);
-        
-        public bool Equals(IEffectShape other) => other is EffectShapeCone value && Equals(value);
-        public bool Equals(EffectShapeCone other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            var result = TopRadius.Equals(other.TopRadius)
-                         && BaseRadius.Equals(other.BaseRadius)
-                         && Arc.Equals(other.Arc)
-                         && Height.Equals(other.Height)
-                         && Spread.Equals(other.Spread);
-            return result;
         }
     }
 }

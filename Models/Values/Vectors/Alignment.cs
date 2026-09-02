@@ -1,12 +1,11 @@
 ﻿using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Models.Interfaces.Values;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
 using BH.SDK.Utils;
 using Newtonsoft.Json;
-
-// ReSharper disable NonReadonlyMemberInGetHashCode
 
 namespace BH.SDK.Models.Values
 {
@@ -16,7 +15,8 @@ namespace BH.SDK.Models.Values
     /// and the centroid offsets that make regular polygons rotate around their real center).
     /// </summary>
     [RuleContainer]
-    public class Alignment : IModel<Alignment>
+    [GenerateModel]
+    public sealed partial class Alignment : IModel<Alignment>
     {
         /// <summary> The point itself: (0,0) = left-bottom, (1,1) = right-top. Still polymorphic, so
         /// an alignment can legitimately be randomized like any other vector. </summary>
@@ -63,34 +63,6 @@ namespace BH.SDK.Models.Values
         public Alignment(IVector2 value)
         {
             Value = value;
-        }
-        public void Reset()
-        {
-            Value = DefaultValue;
-        }
-
-        public object Clone() => Copy();
-        public Alignment Copy() => new(Value.Copy());
-
-        public void Update(Alignment src)
-        {
-            Value = src.Value.Copy();
-        }
-
-        public void Pull(Alignment src)
-        {
-            Value = Value.PullFrom(src.Value);
-        }
-
-        public override bool Equals(object obj) => obj is Alignment value && Equals(value);
-        public override int GetHashCode() => Value != null ? Value.GetHashCode() : 0;
-
-        public bool Equals(Alignment other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            var result = Value.Equals(other.Value);
-            return result;
         }
     }
 }

@@ -13,7 +13,7 @@ namespace BH.SDK.Serialization.Converters.CustomTypes
     // them. So this writes the two LOGICAL numbers, sign-flipped when that edge is anchored.
     //
     // The duration carries no offset because it cannot be zero (FrameDuration >= 1 by invariant),
-    // so its sign is free. The start CAN be zero, and -0 does not exist in JSON or BSON, so an
+    // so its sign is free. The start CAN be zero, and -0 does not exist in JSON, so an
     // anchored start is written as -(start + 1) - the one off-by-one in the format, confined to the
     // negative branch so an ordinary unanchored span still reads as its own plain frame number.
     //

@@ -1,12 +1,11 @@
 ﻿using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Enums;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Models.Keyframes;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
 using Newtonsoft.Json;
-
-// ReSharper disable NonReadonlyMemberInGetHashCode
 
 namespace BH.SDK.Models.PostProcessing
 {
@@ -15,7 +14,8 @@ namespace BH.SDK.Models.PostProcessing
     /// leaves relative colors intact - unlike LiftGammaGain, which regrades tonal ranges separately.
     /// </summary>
     [RuleContainer]
-    public class WhiteBalanceKey : PostProcessingKeyframe, IModel<WhiteBalanceKey>
+    [GenerateModel]
+    public sealed partial class WhiteBalanceKey : PostProcessingKeyframe, IModel<WhiteBalanceKey>
     {
         /// <summary> Blue-to-orange axis: negative cools the image, positive warms it. </summary>
         [RuleInRange(PostProcessingRules.WhiteBalance.TemperatureMin,
@@ -39,47 +39,6 @@ namespace BH.SDK.Models.PostProcessing
         {
             Temperature = temperature;
             Tint = tint;
-        }
-        public override void Reset()
-        {
-            base.Reset();
-            Temperature = 0f;
-            Tint = 0f;
-        }
-        
-        public override object Clone() => CopyImpl();
-        public override PostProcessingKeyframe Copy() => CopyImpl();
-        WhiteBalanceKey ICopyable<WhiteBalanceKey>.Copy() => CopyImpl();
-        
-        private WhiteBalanceKey CopyImpl() => new(Temperature, Tint, Active, Frame, Ease);
-
-        public void Update(WhiteBalanceKey src)
-        {
-            base.Update(src);
-
-            Temperature = src.Temperature;
-            Tint = src.Tint;
-        }
-
-        public void Pull(WhiteBalanceKey src)
-        {
-            base.Pull(src);
-
-            Temperature = src.Temperature;
-            Tint = src.Tint;
-        }
-
-        public override bool Equals(object obj) => obj is WhiteBalanceKey value && Equals(value);
-        public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), Temperature, Tint);
-
-        public bool Equals(WhiteBalanceKey other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            var result = base.Equals(other)
-                         && Temperature.Equals(other.Temperature)
-                         && Tint.Equals(other.Tint);
-            return result;
         }
     }
 }

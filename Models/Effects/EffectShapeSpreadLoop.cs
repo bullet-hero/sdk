@@ -1,4 +1,5 @@
 ﻿using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Enums.Effects;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Models.Interfaces.Effects;
@@ -9,8 +10,6 @@ using BH.SDK.Rules.Attributes;
 using BH.SDK.Utils;
 using Newtonsoft.Json;
 
-// ReSharper disable NonReadonlyMemberInGetHashCode
-
 namespace BH.SDK.Models.Effects
 {
     /// <summary>
@@ -18,7 +17,8 @@ namespace BH.SDK.Models.Effects
     /// emitter that always turns the same way.
     /// </summary>
     [RuleContainer]
-    public class EffectShapeSpreadLoop : IEffectShapeSpread, IModel<EffectShapeSpreadLoop>
+    [GenerateModel]
+    public sealed partial class EffectShapeSpreadLoop : IEffectShapeSpread, IModel<EffectShapeSpreadLoop>
     {
         /// <summary> Portion of the shape the walk covers before wrapping. </summary>
         [RuleNotNull]
@@ -46,49 +46,6 @@ namespace BH.SDK.Models.Effects
         {
             Spread = spread;
             Speed = speed;
-        }
-        public void Reset()
-        {
-            Spread = new FloatValue(EffectRules.ShapeSpread.Spread_Default);
-            Speed = new FloatValue(EffectRules.ShapeSpread.Speed_Default);
-        }
-
-        public object Clone() => Copy();
-        IEffectShapeSpread ICopyable<IEffectShapeSpread>.Copy() => new EffectShapeSpreadLoop(Spread.Copy(), Speed.Copy());
-        public EffectShapeSpreadLoop Copy() => new(Spread.Copy(), Speed.Copy());
-
-        public void Update(EffectShapeSpreadLoop src)
-        {
-            Spread = src.Spread.Copy();
-            Speed = src.Speed.Copy();
-        }
-
-        public void Pull(EffectShapeSpreadLoop src)
-        {
-            Spread = Spread.PullFrom(src.Spread);
-            Speed = Speed.PullFrom(src.Speed);
-        }
-
-        void IUpdatable<IEffectShapeSpread>.Update(IEffectShapeSpread src)
-        {
-            if (src is EffectShapeSpreadLoop value) Update(value);
-        }
-        void IMoveable<IEffectShapeSpread>.Pull(IEffectShapeSpread src)
-        {
-            if (src is EffectShapeSpreadLoop value) Pull(value);
-        }
-
-        public override bool Equals(object obj) => obj is EffectShapeSpreadLoop value && Equals(value);
-        public override int GetHashCode() => HashCode.Combine(Spread, Speed);
-        
-        public bool Equals(IEffectShapeSpread other) => other is EffectShapeSpreadLoop value && Equals(value);
-        public bool Equals(EffectShapeSpreadLoop other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            var result = Spread.Equals(other.Spread)
-                         && Speed.Equals(other.Speed);
-            return result;
         }
     }
 }

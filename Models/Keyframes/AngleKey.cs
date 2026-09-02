@@ -1,4 +1,5 @@
 ﻿using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Enums;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Models.Interfaces.Values;
@@ -8,8 +9,6 @@ using BH.SDK.Rules.Attributes;
 using BH.SDK.Utils;
 using Newtonsoft.Json;
 
-// ReSharper disable NonReadonlyMemberInGetHashCode
-
 namespace BH.SDK.Models.Keyframes
 {
     /// <summary>
@@ -18,7 +17,8 @@ namespace BH.SDK.Models.Keyframes
     /// is therefore stated in whole turns (ValueRules.MaxRotationTurns), not in one revolution.
     /// </summary>
     [RuleContainer]
-    public class AngleKey : Keyframe, IModel<AngleKey>
+    [GenerateModel]
+    public sealed partial class AngleKey : Keyframe, IModel<AngleKey>
     {
         /// <summary> Target rotation in RADIANS at this frame, around the object's pivot - degrees
         /// exist only at the consumer's inspector boundary. </summary>
@@ -34,42 +34,6 @@ namespace BH.SDK.Models.Keyframes
         public AngleKey(IFloat value, int frame, EaseType ease = DefaultEase) : base(frame, ease)
         {
             Angle = value;
-        }
-        public override void Reset()
-        {
-            base.Reset();
-            Angle = new FloatValue();
-        }
-        
-        public override object Clone() => CopyImpl();
-        public override Keyframe Copy() => CopyImpl();
-        AngleKey ICopyable<AngleKey>.Copy() => CopyImpl();
-        
-        private AngleKey CopyImpl() => new(Angle.Copy(), Frame, Ease);
-
-        public void Update(AngleKey src)
-        {
-            base.Update(src);
-
-            Angle = src.Angle.Copy();
-        }
-
-        public void Pull(AngleKey src)
-        {
-            base.Pull(src);
-
-            Angle = Angle.PullFrom(src.Angle);
-        }
-
-        public override bool Equals(object obj) => obj is AngleKey value && Equals(value);
-        public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), Angle);
-
-        public bool Equals(AngleKey other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            var result = base.Equals(other) && Angle.Equals(other.Angle);
-            return result;
         }
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Enums.Controls;
 using BH.SDK.Models.Enums.Controls.Modes;
 using BH.SDK.Models.Interfaces;
@@ -18,7 +19,8 @@ namespace BH.SDK.Models.SettingGroups.Controls
     /// and which buttons dash.
     /// </summary>
     [RuleContainer]
-    public class GamepadControlsSettings : BaseDeviceControlsSettings,
+    [GenerateModel]
+    public sealed partial class GamepadControlsSettings : BaseDeviceControlsSettings,
         IModel<GamepadControlsSettings>, IMoveable<GamepadControlsSettings>
     {
         [RuleEnumValid(GamepadControlMode.Direction)]
@@ -58,11 +60,6 @@ namespace BH.SDK.Models.SettingGroups.Controls
             ResponseCurve = responseCurve;
             DashButtons = dashButtons;
         }
-        public override void Reset()
-        {
-            base.Reset();
-            ResetOwn();
-        }
         private void ResetOwn()
         {
             Mode = GamepadControlMode.Direction;
@@ -74,52 +71,6 @@ namespace BH.SDK.Models.SettingGroups.Controls
             // and 1.0 of a camera per second reads as sluggish next to a mouse.
             Sensitivity = ControlsRules.DefaultGamepadSensitivity;
             DashButtons = GamepadButtonMask.South | GamepadButtonMask.RightShoulder;
-        }
-
-        public override object Clone() => CopyImpl();
-        public override BaseDeviceControlsSettings Copy() => CopyImpl();
-        GamepadControlsSettings ICopyable<GamepadControlsSettings>.Copy() => CopyImpl();
-
-        private GamepadControlsSettings CopyImpl() => new(Active, Sensitivity, DeadZone,
-            Smoothing, InvertX, InvertY, Mode, MotionStick, ResponseCurve, DashButtons);
-
-        public void Pull(GamepadControlsSettings source)
-        {
-            Active = source.Active;
-            Sensitivity = source.Sensitivity;
-            DeadZone = source.DeadZone;
-            Smoothing = source.Smoothing;
-            InvertX = source.InvertX;
-            InvertY = source.InvertY;
-            Mode = source.Mode;
-            MotionStick = source.MotionStick;
-            ResponseCurve = source.ResponseCurve;
-            DashButtons = source.DashButtons;
-        }
-
-        public void Update(GamepadControlsSettings src)
-        {
-            base.Update(src);
-
-            Mode = src.Mode;
-            MotionStick = src.MotionStick;
-            ResponseCurve = src.ResponseCurve;
-            DashButtons = src.DashButtons;
-        }
-
-        public override bool Equals(object obj) => obj is GamepadControlsSettings value && Equals(value);
-        public override int GetHashCode()
-            => HashCode.Combine(base.GetHashCode(), Mode, MotionStick, ResponseCurve, DashButtons);
-
-        public bool Equals(GamepadControlsSettings other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return base.Equals(other)
-                   && Mode == other.Mode
-                   && MotionStick == other.MotionStick
-                   && ResponseCurve.Equals(other.ResponseCurve)
-                   && DashButtons == other.DashButtons;
         }
     }
 }

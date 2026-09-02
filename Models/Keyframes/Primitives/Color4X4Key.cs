@@ -1,4 +1,5 @@
 ﻿using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Enums;
 using BH.SDK.Models.Enums.Keyframes;
 using BH.SDK.Models.Interfaces;
@@ -9,8 +10,6 @@ using BH.SDK.Rules.Attributes;
 using BH.SDK.Utils;
 using Newtonsoft.Json;
 
-// ReSharper disable NonReadonlyMemberInGetHashCode
-
 namespace BH.SDK.Models.Keyframes
 {
     /// <summary>
@@ -19,7 +18,8 @@ namespace BH.SDK.Models.Keyframes
     /// (flat, horizontal, vertical) don't have to store four colors that are mostly equal.
     /// </summary>
     [RuleContainer]
-    public class Color4X4Key : Keyframe, IColor4X4Key, IModel<Color4X4Key>
+    [GenerateModel]
+    public sealed partial class Color4X4Key : Keyframe, IColor4X4Key, IModel<Color4X4Key>
     {
         /// <summary> Bottom-left corner color. </summary>
         [RuleNotNull(typeof(Color4Value))]
@@ -63,67 +63,7 @@ namespace BH.SDK.Models.Keyframes
             Color4TL = color4TL;
             Color4TR = color4TR;
         }
-        public override void Reset()
-        {
-            base.Reset();
-            Color4BL = Color4Value.white;
-            Color4BR = Color4Value.white;
-            Color4TL = Color4Value.white;
-            Color4TR = Color4Value.white;
-        }
         
         public Color4X4KeyType GetModelType() => Color4X4KeyType.BariCentrical;
-        
-        public override object Clone() => CopyImpl();
-        public override Keyframe Copy() => CopyImpl();
-        Color4X4Key ICopyable<Color4X4Key>.Copy() => CopyImpl();
-        IColor4X4Key ICopyable<IColor4X4Key>.Copy() => CopyImpl();
-        
-        private Color4X4Key CopyImpl() => new(Color4BL.Copy(), Color4BR.Copy(), Color4TL.Copy(), Color4TR.Copy(), Frame, Ease);
-        
-        public void Update(Color4X4Key src)
-        {
-            base.Update(src);
-
-            Color4BL = src.Color4BL.Copy();
-            Color4BR = src.Color4BR.Copy();
-            Color4TL = src.Color4TL.Copy();
-            Color4TR = src.Color4TR.Copy();
-        }
-
-        public void Pull(Color4X4Key src)
-        {
-            base.Pull(src);
-
-            Color4BL = Color4BL.PullFrom(src.Color4BL);
-            Color4BR = Color4BR.PullFrom(src.Color4BR);
-            Color4TL = Color4TL.PullFrom(src.Color4TL);
-            Color4TR = Color4TR.PullFrom(src.Color4TR);
-        }
-
-        void IUpdatable<IColor4X4Key>.Update(IColor4X4Key src)
-        {
-            if (src is Color4X4Key value) Update(value);
-        }
-        void IMoveable<IColor4X4Key>.Pull(IColor4X4Key src)
-        {
-            if (src is Color4X4Key value) Pull(value);
-        }
-
-        public override bool Equals(object obj) => obj is Color4X4Key value && Equals(value);
-        public bool Equals(IColor4X4Key other) => other is Color4X4Key value && Equals(value);
-        public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), Color4BL, Color4BR, Color4TL, Color4TR);
-
-        public bool Equals(Color4X4Key other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            var result = base.Equals(other)
-                         && Color4BL.Equals(other.Color4BL)
-                         && Color4BR.Equals(other.Color4BR)
-                         && Color4TL.Equals(other.Color4TL)
-                         && Color4TR.Equals(other.Color4TR);
-            return result;
-        }
     }
 }

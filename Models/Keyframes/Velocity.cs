@@ -1,4 +1,5 @@
 using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Enums;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Models.Interfaces.Values;
@@ -7,8 +8,6 @@ using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
 using BH.SDK.Utils;
 using Newtonsoft.Json;
-
-// ReSharper disable NonReadonlyMemberInGetHashCode
 
 namespace BH.SDK.Models.Keyframes
 {
@@ -25,7 +24,8 @@ namespace BH.SDK.Models.Keyframes
     /// format carries it, the player does not read it.
     /// </summary>
     [RuleContainer]
-    public class Velocity : Keyframe, IModel<Velocity>
+    [GenerateModel]
+    public sealed partial class Velocity : Keyframe, IModel<Velocity>
     {
         /// <summary> How hard and which way the player is pushed. Zero leaves them alone. </summary>
         [RuleNotNull(typeof(Vector2Value)), RuleIVector2InRange(ValueRules.MinFloatValue, ValueRules.MaxFloatValue)]
@@ -39,43 +39,6 @@ namespace BH.SDK.Models.Keyframes
         public Velocity(IVector2 force, int frame, EaseType ease = DefaultEase) : base(frame, ease)
         {
             Force = force;
-        }
-        public override void Reset()
-        {
-            base.Reset();
-            Force = new Vector2Value();
-        }
-
-        public override object Clone() => CopyImpl();
-        public override Keyframe Copy() => CopyImpl();
-        Velocity ICopyable<Velocity>.Copy() => CopyImpl();
-
-        private Velocity CopyImpl() => new(Force.Copy(), Frame, Ease);
-
-        public void Update(Velocity src)
-        {
-            base.Update(src);
-
-            Force = src.Force.Copy();
-        }
-
-        public void Pull(Velocity src)
-        {
-            base.Pull(src);
-
-            Force = Force.PullFrom(src.Force);
-        }
-
-        public override bool Equals(object obj) => obj is Velocity value && Equals(value);
-        public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), Force);
-
-        public bool Equals(Velocity other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            var result = base.Equals(other)
-                         && Force.Equals(other.Force);
-            return result;
         }
     }
 }

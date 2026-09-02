@@ -1,4 +1,5 @@
 ﻿using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Enums.Effects;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Models.Interfaces.Effects;
@@ -9,8 +10,6 @@ using BH.SDK.Rules.Attributes;
 using BH.SDK.Utils;
 using Newtonsoft.Json;
 
-// ReSharper disable NonReadonlyMemberInGetHashCode
-
 namespace BH.SDK.Models.Effects
 {
     /// <summary>
@@ -18,7 +17,8 @@ namespace BH.SDK.Models.Effects
     /// debris reads differently from settling debris.
     /// </summary>
     [RuleContainer]
-    public class EffectColorGradientBySpeed : IEffectColor, IModel<EffectColorGradientBySpeed>
+    [GenerateModel]
+    public sealed partial class EffectColorGradientBySpeed : IEffectColor, IModel<EffectColorGradientBySpeed>
     {
         /// <summary> Ramp sampled at normalized speed. </summary>
         [RuleNotNull]
@@ -44,51 +44,6 @@ namespace BH.SDK.Models.Effects
         {
             Gradient = gradient;
             SpeedRange = speedRange;
-        }
-        public void Reset()
-        {
-            Gradient = EffectRules.GetGradient_Default();
-            SpeedRange = new Vector2Value(
-                EffectRules.Color.BySpeedRange_X_Default,
-                EffectRules.Color.BySpeedRange_Y_Default);
-        }
-
-        public object Clone() => Copy();
-        IEffectColor ICopyable<IEffectColor>.Copy() => new EffectColorGradientBySpeed(Gradient.Copy(), SpeedRange.Copy());
-        public EffectColorGradientBySpeed Copy() => new(Gradient.Copy(), SpeedRange.Copy());
-
-        public void Update(EffectColorGradientBySpeed src)
-        {
-            Gradient = src.Gradient.Copy();
-            SpeedRange = src.SpeedRange.Copy();
-        }
-
-        public void Pull(EffectColorGradientBySpeed src)
-        {
-            Gradient.Pull(src.Gradient);
-            SpeedRange = SpeedRange.PullFrom(src.SpeedRange);
-        }
-
-        void IUpdatable<IEffectColor>.Update(IEffectColor src)
-        {
-            if (src is EffectColorGradientBySpeed value) Update(value);
-        }
-        void IMoveable<IEffectColor>.Pull(IEffectColor src)
-        {
-            if (src is EffectColorGradientBySpeed value) Pull(value);
-        }
-
-        public override bool Equals(object obj) => obj is EffectColorGradientBySpeed value && Equals(value);
-        public override int GetHashCode() => HashCode.Combine(Gradient, SpeedRange);
-        
-        public bool Equals(IEffectColor other) => other is EffectColorGradientBySpeed value && Equals(value);
-        public bool Equals(EffectColorGradientBySpeed other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            var result = Gradient.Equals(other.Gradient)
-                         && SpeedRange.Equals(other.SpeedRange);
-            return result;
         }
     }
 }

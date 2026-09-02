@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
@@ -26,7 +27,8 @@ namespace BH.SDK.Models.SettingGroups
     /// shortcut id to binding string, holding only what differs.
     /// </summary>
     [RuleContainer]
-    public class KeybindingsSettings : IModel<KeybindingsSettings>, IMoveable<KeybindingsSettings>
+    [GenerateModel]
+    public sealed partial class KeybindingsSettings : IModel<KeybindingsSettings>, IMoveable<KeybindingsSettings>
     {
         /// <summary> Shortcut id to its binding, where an empty value means the player unbound it -
         /// which is not the same as being absent, and must not fall back to the default. </summary>
@@ -42,11 +44,6 @@ namespace BH.SDK.Models.SettingGroups
         public KeybindingsSettings(Dictionary<string, string> overrides)
         {
             Overrides = overrides;
-        }
-
-        public void Reset()
-        {
-            Overrides.Clear();
         }
 
         // Whether an id is overridden at all is the question every consumer asks, and it is not
@@ -75,31 +72,8 @@ namespace BH.SDK.Models.SettingGroups
         public bool ClearOverride(string shortcutId)
             => shortcutId != null && Overrides.Remove(shortcutId);
 
-        public object Clone() => Copy();
-
         // A shallow dictionary copy IS a deep one here - both halves are strings, which are
         // immutable. ModelUtils' three CopyDictionary overloads all refuse this pair anyway: string
         // is neither unmanaged nor ICopyable<string>.
-        public KeybindingsSettings Copy() => new(new Dictionary<string, string>(Overrides));
-
-        public void Pull(KeybindingsSettings source)
-        {
-            Overrides = new Dictionary<string, string>(source.Overrides);
-        }
-
-        public void Update(KeybindingsSettings src)
-        {
-            Overrides = new Dictionary<string, string>(src.Overrides);
-        }
-
-        public override bool Equals(object obj) => obj is KeybindingsSettings value && Equals(value);
-        public override int GetHashCode() => Overrides.GetDictionaryHashCode();
-
-        public bool Equals(KeybindingsSettings other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return Overrides.DictionaryEquals(other.Overrides);
-        }
     }
 }

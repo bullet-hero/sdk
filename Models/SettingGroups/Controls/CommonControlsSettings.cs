@@ -1,4 +1,5 @@
 using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Enums.Controls;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Rules;
@@ -12,7 +13,8 @@ namespace BH.SDK.Models.SettingGroups.Controls
     /// cursor looks.
     /// </summary>
     [RuleContainer]
-    public class CommonControlsSettings : IModel<CommonControlsSettings>, IMoveable<CommonControlsSettings>
+    [GenerateModel]
+    public sealed partial class CommonControlsSettings : IModel<CommonControlsSettings>, IMoveable<CommonControlsSettings>
     {
         /// <summary> Auto lets the game follow the most recently used device; Manual pins one. </summary>
         [RuleEnumValid(DeviceSelection.Auto)]
@@ -48,7 +50,12 @@ namespace BH.SDK.Models.SettingGroups.Controls
 
         public CommonControlsSettings()
         {
-            Reset();
+            Selection = DeviceSelection.Auto;
+            ManualDevice = ControlDevice.KeyboardMouse;
+            CursorVisible = true;
+            CursorScale = ControlsRules.DefaultCursorScale;
+            CursorRecenter = true;
+            CursorReturn = false;
         }
         public CommonControlsSettings(DeviceSelection selection, ControlDevice manualDevice,
             bool cursorVisible, float cursorScale, bool cursorRecenter, bool cursorReturn)
@@ -59,55 +66,6 @@ namespace BH.SDK.Models.SettingGroups.Controls
             CursorScale = cursorScale;
             CursorRecenter = cursorRecenter;
             CursorReturn = cursorReturn;
-        }
-        public void Reset()
-        {
-            Selection = DeviceSelection.Auto;
-            ManualDevice = ControlDevice.KeyboardMouse;
-            CursorVisible = true;
-            CursorScale = ControlsRules.DefaultCursorScale;
-            CursorRecenter = true;
-            CursorReturn = false;
-        }
-
-        public object Clone() => Copy();
-        public CommonControlsSettings Copy() => new(Selection, ManualDevice,
-            CursorVisible, CursorScale, CursorRecenter, CursorReturn);
-
-        public void Pull(CommonControlsSettings source)
-        {
-            Selection = source.Selection;
-            ManualDevice = source.ManualDevice;
-            CursorVisible = source.CursorVisible;
-            CursorScale = source.CursorScale;
-            CursorRecenter = source.CursorRecenter;
-            CursorReturn = source.CursorReturn;
-        }
-
-        public void Update(CommonControlsSettings src)
-        {
-            Selection = src.Selection;
-            ManualDevice = src.ManualDevice;
-            CursorVisible = src.CursorVisible;
-            CursorScale = src.CursorScale;
-            CursorRecenter = src.CursorRecenter;
-            CursorReturn = src.CursorReturn;
-        }
-
-        public override bool Equals(object obj) => obj is CommonControlsSettings value && Equals(value);
-        public override int GetHashCode() => HashCode.Combine(Selection, ManualDevice,
-            CursorVisible, CursorScale, CursorRecenter, CursorReturn);
-
-        public bool Equals(CommonControlsSettings other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return Selection == other.Selection
-                   && ManualDevice == other.ManualDevice
-                   && CursorVisible == other.CursorVisible
-                   && CursorScale.Equals(other.CursorScale)
-                   && CursorRecenter == other.CursorRecenter
-                   && CursorReturn == other.CursorReturn;
         }
     }
 }

@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Enums.Values;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
 using BH.SDK.Utils;
 using Newtonsoft.Json;
-
-// ReSharper disable NonReadonlyMemberInGetHashCode
 
 namespace BH.SDK.Models.Values
 {
@@ -16,7 +15,8 @@ namespace BH.SDK.Models.Values
     /// life or speed. RGB and alpha are two independent tracks, so a fade can outlive a hue shift.
     /// </summary>
     [RuleContainer]
-    public class GradientValue : IModel<GradientValue>
+    [GenerateModel]
+    public sealed partial class GradientValue : IModel<GradientValue>
     {
         /// <summary> RGB stops along the ramp. </summary>
         [RuleNotNull, RuleCollectionNoNullItems]
@@ -58,47 +58,6 @@ namespace BH.SDK.Models.Values
             AlphaKeys = alphaKeys;
             Mode = mode;
             ColorSpace = colorSpace;
-        }
-        public void Reset()
-        {
-            ColorKeys.Clear();
-            AlphaKeys.Clear();
-            Mode = GradientInterpolationMode.PerceptualBlend;
-            ColorSpace = GradientColorSpace.Linear;
-        }
-
-        public object Clone() => Copy();
-        public GradientValue Copy() => new(ColorKeys.CopyList(), AlphaKeys.CopyList(), Mode, ColorSpace);
-
-        public void Update(GradientValue src)
-        {
-            ColorKeys = src.ColorKeys.CopyList();
-            AlphaKeys = src.AlphaKeys.CopyList();
-            Mode = src.Mode;
-            ColorSpace = src.ColorSpace;
-        }
-
-        public void Pull(GradientValue src)
-        {
-            ColorKeys = src.ColorKeys.CopyList();
-            AlphaKeys = src.AlphaKeys.CopyList();
-            Mode = src.Mode;
-            ColorSpace = src.ColorSpace;
-        }
-
-        public override bool Equals(object obj) => obj is GradientValue value && Equals(value);
-        public override int GetHashCode() => HashCode.Combine(ColorKeys.GetListHashCode(),
-            AlphaKeys.GetListHashCode(), (int)Mode, (int)ColorSpace);
-
-        public bool Equals(GradientValue other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            var result = ColorKeys.ListEquals(other.ColorKeys)
-                         && AlphaKeys.ListEquals(other.AlphaKeys)
-                         && Mode == other.Mode
-                         && ColorSpace == other.ColorSpace;
-            return result;
         }
     }
 }

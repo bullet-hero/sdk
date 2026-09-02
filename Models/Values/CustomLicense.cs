@@ -1,4 +1,5 @@
 ﻿using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Enums.Meta;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Models.Interfaces.Values;
@@ -14,7 +15,8 @@ namespace BH.SDK.Models.Values
     /// The escape hatch of the ILicense family (NoSpecified / Typical / Custom).
     /// </summary>
     [RuleContainer]
-    public class CustomLicense : ILicense, IModel<CustomLicense>
+    [GenerateModel]
+    public sealed partial class CustomLicense : ILicense, IModel<CustomLicense>
     {
         /// <summary> Display name of the license ("My Studio EULA v2"). </summary>
         [RuleNotNull, RuleStringMax(ValueRules.MaxLicenseName)]
@@ -92,99 +94,7 @@ namespace BH.SDK.Models.Values
             RequiresSourceDisclosure = requiresSourceDisclosure;
             RequiresSameLicense = requiresSameLicense;
         }
-        public void Reset()
-        {
-            LicenseName = string.Empty;
-            LicenseUrl = string.Empty;
-            LicenseText = string.Empty;
-            Aggressive = false;
-            AllowsDistribution = false;
-            AllowsModification = false;
-            AllowsCommercialUse = false;
-            RequiresAttribution = false;
-            RequiresSourceDisclosure = false;
-            RequiresSameLicense = false;
-        }
         
         public LicenseType GetModelType() => LicenseType.Custom;
-
-        public object Clone() => Copy();
-        ILicense ICopyable<ILicense>.Copy() => Copy();
-        public CustomLicense Copy() => new(LicenseName, LicenseUrl, LicenseText,
-            Aggressive, AllowsDistribution, AllowsModification, AllowsCommercialUse,
-            RequiresAttribution, RequiresSourceDisclosure, RequiresSameLicense);
-
-
-
-        public void Update(CustomLicense src)
-        {
-            LicenseName = src.LicenseName;
-            LicenseUrl = src.LicenseUrl;
-            LicenseText = src.LicenseText;
-            Aggressive = src.Aggressive;
-            AllowsDistribution = src.AllowsDistribution;
-            AllowsModification = src.AllowsModification;
-            AllowsCommercialUse = src.AllowsCommercialUse;
-            RequiresAttribution = src.RequiresAttribution;
-            RequiresSourceDisclosure = src.RequiresSourceDisclosure;
-            RequiresSameLicense = src.RequiresSameLicense;
-        }
-
-        public void Pull(CustomLicense src)
-        {
-            LicenseName = src.LicenseName;
-            LicenseUrl = src.LicenseUrl;
-            LicenseText = src.LicenseText;
-            Aggressive = src.Aggressive;
-            AllowsDistribution = src.AllowsDistribution;
-            AllowsModification = src.AllowsModification;
-            AllowsCommercialUse = src.AllowsCommercialUse;
-            RequiresAttribution = src.RequiresAttribution;
-            RequiresSourceDisclosure = src.RequiresSourceDisclosure;
-            RequiresSameLicense = src.RequiresSameLicense;
-        }
-
-        void IUpdatable<ILicense>.Update(ILicense src)
-        {
-            if (src is CustomLicense value) Update(value);
-        }
-        void IMoveable<ILicense>.Pull(ILicense src)
-        {
-            if (src is CustomLicense value) Pull(value);
-        }
-
-        public override bool Equals(object obj) => obj is CustomLicense value && Equals(value);
-        public override int GetHashCode()
-        {
-            var hashCode = new HashCode();
-            hashCode.Add(LicenseName);
-            hashCode.Add(LicenseUrl);
-            hashCode.Add(LicenseText);
-            hashCode.Add(Aggressive);
-            hashCode.Add(AllowsDistribution);
-            hashCode.Add(AllowsModification);
-            hashCode.Add(AllowsCommercialUse);
-            hashCode.Add(RequiresAttribution);
-            hashCode.Add(RequiresSourceDisclosure);
-            hashCode.Add(RequiresSameLicense);
-            return hashCode.ToHashCode();
-        }
-        
-        public bool Equals(ILicense other) => other is CustomLicense value && Equals(value);
-        public bool Equals(CustomLicense other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return LicenseName.Equals(other.LicenseName)
-                   && LicenseUrl.Equals(other.LicenseUrl)
-                   && LicenseText.Equals(other.LicenseText)
-                   && Aggressive == other.Aggressive
-                   && AllowsDistribution == other.AllowsDistribution
-                   && AllowsModification == other.AllowsModification
-                   && AllowsCommercialUse == other.AllowsCommercialUse
-                   && RequiresAttribution == other.RequiresAttribution
-                   && RequiresSourceDisclosure == other.RequiresSourceDisclosure
-                   && RequiresSameLicense == other.RequiresSameLicense;
-        }
     }
 }

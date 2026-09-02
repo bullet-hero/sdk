@@ -1,12 +1,11 @@
 ﻿using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Enums.Values;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Models.Interfaces.Values;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
 using Newtonsoft.Json;
-
-// ReSharper disable NonReadonlyMemberInGetHashCode
 
 namespace BH.SDK.Models.Values
 {
@@ -19,7 +18,8 @@ namespace BH.SDK.Models.Values
     [RulePropertyOrder(nameof(Vector4RectStep.MinY), nameof(Vector4RectStep.MaxY))]
     [RulePropertyOrder(nameof(Vector4RectStep.MinZ), nameof(Vector4RectStep.MaxZ))]
     [RulePropertyOrder(nameof(Vector4RectStep.MinW), nameof(Vector4RectStep.MaxW))]
-    public class Vector4RectStep : IVector4, IModel<Vector4RectStep>
+    [GenerateModel]
+    public sealed partial class Vector4RectStep : IVector4, IModel<Vector4RectStep>
     {
         /// <summary> Lower bound of the first component, and its grid origin. </summary>
         [RuleInRange(ValueRules.MinFloatValue, ValueRules.MaxFloatValue)]
@@ -95,93 +95,7 @@ namespace BH.SDK.Models.Values
             
             Step = step;
         }
-        public void Reset()
-        {
-            MinX = ValueRules.FloatZero;
-            MinY = ValueRules.FloatZero;
-            MinZ = ValueRules.FloatZero;
-            MinW = ValueRules.FloatZero;
-            
-            MaxX = ValueRules.FloatOne;
-            MaxY = ValueRules.FloatOne;
-            MaxZ = ValueRules.FloatOne;
-            MaxW = ValueRules.FloatOne;
-            
-            Step = ValueRules.FloatOne;
-        }
 
         public VectorType GetModelType() => VectorType.RandomRectStep;
-
-        public object Clone() => Copy();
-        IVector4 ICopyable<IVector4>.Copy() => new Vector4RectStep(MinX, MinY, MinZ, MinW, MaxX, MaxY, MaxZ, MaxW, Step);
-        public Vector4RectStep Copy() => new(MinX, MinY, MinZ, MinW, MaxX, MaxY, MaxZ, MaxW, Step);
-
-        public void Update(Vector4RectStep src)
-        {
-            MinX = src.MinX;
-            MinY = src.MinY;
-            MinZ = src.MinZ;
-            MinW = src.MinW;
-            MaxX = src.MaxX;
-            MaxY = src.MaxY;
-            MaxZ = src.MaxZ;
-            MaxW = src.MaxW;
-            Step = src.Step;
-        }
-
-        public void Pull(Vector4RectStep src)
-        {
-            MinX = src.MinX;
-            MinY = src.MinY;
-            MinZ = src.MinZ;
-            MinW = src.MinW;
-            MaxX = src.MaxX;
-            MaxY = src.MaxY;
-            MaxZ = src.MaxZ;
-            MaxW = src.MaxW;
-            Step = src.Step;
-        }
-
-        void IUpdatable<IVector4>.Update(IVector4 src)
-        {
-            if (src is Vector4RectStep value) Update(value);
-        }
-        void IMoveable<IVector4>.Pull(IVector4 src)
-        {
-            if (src is Vector4RectStep value) Pull(value);
-        }
-
-        public override bool Equals(object obj) => obj is Vector4RectStep value && Equals(value);
-        public override int GetHashCode()
-        {
-            var hashCode = new HashCode();
-            hashCode.Add(MinX);
-            hashCode.Add(MinY);
-            hashCode.Add(MinZ);
-            hashCode.Add(MinW);
-            hashCode.Add(MaxX);
-            hashCode.Add(MaxY);
-            hashCode.Add(MaxZ);
-            hashCode.Add(MaxW);
-            hashCode.Add(Step);
-            return hashCode.ToHashCode();
-        }
-        
-        public bool Equals(IVector4 other) => other is Vector4RectStep value && Equals(value);
-        public bool Equals(Vector4RectStep other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            var result = MinX.Equals(other.MinX)
-                         && MinY.Equals(other.MinY)
-                         && MinZ.Equals(other.MinZ)
-                         && MinW.Equals(other.MinW)
-                         && MaxX.Equals(other.MaxX)
-                         && MaxY.Equals(other.MaxY)
-                         && MaxZ.Equals(other.MaxZ)
-                         && MaxW.Equals(other.MaxW)
-                         && Step.Equals(other.Step);
-            return result;
-        }
     }
 }

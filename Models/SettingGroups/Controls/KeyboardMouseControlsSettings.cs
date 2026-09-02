@@ -1,4 +1,5 @@
 using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Enums.Controls;
 using BH.SDK.Models.Enums.Controls.Modes;
 using BH.SDK.Models.Interfaces;
@@ -12,7 +13,8 @@ namespace BH.SDK.Models.SettingGroups.Controls
     /// Keyboard and mouse: the PC default, following the mouse cursor while a button is held.
     /// </summary>
     [RuleContainer]
-    public class KeyboardMouseControlsSettings : BaseDeviceControlsSettings,
+    [GenerateModel]
+    public sealed partial class KeyboardMouseControlsSettings : BaseDeviceControlsSettings,
         IModel<KeyboardMouseControlsSettings>, IMoveable<KeyboardMouseControlsSettings>
     {
         [RuleEnumValid(KeyboardMouseControlMode.Absolute)]
@@ -83,11 +85,6 @@ namespace BH.SDK.Models.SettingGroups.Controls
             HideCursorAbsolute = hideCursorAbsolute;
             HideCursorRelative = hideCursorRelative;
         }
-        public override void Reset()
-        {
-            base.Reset();
-            ResetOwn();
-        }
         private void ResetOwn()
         {
             Mode = KeyboardMouseControlMode.Absolute;
@@ -100,65 +97,6 @@ namespace BH.SDK.Models.SettingGroups.Controls
             HideCursorRelative = false;
         }
 
-        public override object Clone() => CopyImpl();
-        public override BaseDeviceControlsSettings Copy() => CopyImpl();
-        KeyboardMouseControlsSettings ICopyable<KeyboardMouseControlsSettings>.Copy() => CopyImpl();
-
-        private KeyboardMouseControlsSettings CopyImpl() => new(Active, Sensitivity, DeadZone,
-            Smoothing, InvertX, InvertY, Mode, RequireHold, HoldButton, DashOnDoubleClick,
-            DoubleClickTime, DashKeys, HideCursorAbsolute, HideCursorRelative);
-
-        public void Pull(KeyboardMouseControlsSettings source)
-        {
-            Active = source.Active;
-            Sensitivity = source.Sensitivity;
-            DeadZone = source.DeadZone;
-            Smoothing = source.Smoothing;
-            InvertX = source.InvertX;
-            InvertY = source.InvertY;
-            Mode = source.Mode;
-            RequireHold = source.RequireHold;
-            HoldButton = source.HoldButton;
-            DashOnDoubleClick = source.DashOnDoubleClick;
-            DoubleClickTime = source.DoubleClickTime;
-            DashKeys = source.DashKeys;
-            HideCursorAbsolute = source.HideCursorAbsolute;
-            HideCursorRelative = source.HideCursorRelative;
-        }
-
-        public void Update(KeyboardMouseControlsSettings src)
-        {
-            base.Update(src);
-
-            Mode = src.Mode;
-            RequireHold = src.RequireHold;
-            HoldButton = src.HoldButton;
-            DashOnDoubleClick = src.DashOnDoubleClick;
-            DoubleClickTime = src.DoubleClickTime;
-            DashKeys = src.DashKeys;
-            HideCursorAbsolute = src.HideCursorAbsolute;
-            HideCursorRelative = src.HideCursorRelative;
-        }
-
-        public override bool Equals(object obj) => obj is KeyboardMouseControlsSettings value && Equals(value);
         // The last slot is a nested Combine: HashCode.Combine tops out at eight arguments.
-        public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), Mode,
-            RequireHold, HoldButton, DashOnDoubleClick, DoubleClickTime, DashKeys,
-            HashCode.Combine(HideCursorAbsolute, HideCursorRelative));
-
-        public bool Equals(KeyboardMouseControlsSettings other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return base.Equals(other)
-                   && Mode == other.Mode
-                   && RequireHold == other.RequireHold
-                   && HoldButton == other.HoldButton
-                   && DashOnDoubleClick == other.DashOnDoubleClick
-                   && DoubleClickTime.Equals(other.DoubleClickTime)
-                   && DashKeys == other.DashKeys
-                   && HideCursorAbsolute == other.HideCursorAbsolute
-                   && HideCursorRelative == other.HideCursorRelative;
-        }
     }
 }

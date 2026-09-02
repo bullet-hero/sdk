@@ -170,7 +170,7 @@ namespace BH.SDK.Services.Package
         private static async Task<DocumentLocation> LocateAsync(IContentStore store, string baseName,
             CancellationToken token)
         {
-            foreach (var format in new[] { SerializationType.Json, SerializationType.Bson })
+            foreach (var format in new[] { SerializationType.Json, SerializationType.Blob })
             {
                 var plain = baseName + format.ToFileExtension();
                 if (await store.ExistsAsync(plain, token))

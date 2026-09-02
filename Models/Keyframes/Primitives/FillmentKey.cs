@@ -1,12 +1,11 @@
 using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Enums;
 using BH.SDK.Models.Enums.Text;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
 using Newtonsoft.Json;
-
-// ReSharper disable NonReadonlyMemberInGetHashCode
 
 namespace BH.SDK.Models.Keyframes
 {
@@ -23,7 +22,8 @@ namespace BH.SDK.Models.Keyframes
     /// How much of a text object is written at one frame, and from which end.
     /// </summary>
     [RuleContainer]
-    public class FillmentKey : Keyframe, IModel<FillmentKey>
+    [GenerateModel]
+    public sealed partial class FillmentKey : Keyframe, IModel<FillmentKey>
     {
         /// <summary> Fraction of the text written at this frame. </summary>
         [RuleInRange(TextRules.MinFillment, TextRules.MaxFillment)]
@@ -45,45 +45,6 @@ namespace BH.SDK.Models.Keyframes
         {
             Value = value;
             Direction = direction;
-        }
-        public override void Reset()
-        {
-            base.Reset();
-            Value = TextRules.Fillment_Fallback;
-            Direction = TextRules.FillDirection_Default;
-        }
-
-        public override object Clone() => CopyImpl();
-        public override Keyframe Copy() => CopyImpl();
-        FillmentKey ICopyable<FillmentKey>.Copy() => CopyImpl();
-
-        private FillmentKey CopyImpl() => new(Value, Frame, Direction, Ease);
-
-        public void Update(FillmentKey src)
-        {
-            base.Update(src);
-
-            Value = src.Value;
-            Direction = src.Direction;
-        }
-
-        public void Pull(FillmentKey src)
-        {
-            base.Pull(src);
-
-            Value = src.Value;
-            Direction = src.Direction;
-        }
-
-        public override bool Equals(object obj) => obj is FillmentKey value && Equals(value);
-        public override int GetHashCode() => HashCode.Combine(base.GetHashCode(), Value, (int)Direction);
-
-        public bool Equals(FillmentKey other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            var result = base.Equals(other) && Value.Equals(other.Value) && Direction == other.Direction;
-            return result;
         }
     }
 }

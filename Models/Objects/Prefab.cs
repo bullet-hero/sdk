@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Models.Primitives;
 using BH.SDK.Rules;
@@ -7,8 +8,6 @@ using BH.SDK.Rules.Attributes;
 using BH.SDK.Utils;
 using BH.SDK.Versions;
 using Newtonsoft.Json;
-
-// ReSharper disable NonReadonlyMemberInGetHashCode
 
 namespace BH.SDK.Models.Objects
 {
@@ -19,7 +18,8 @@ namespace BH.SDK.Models.Objects
     /// </summary>
     [RuleContainer]
     [DataVersion(DataDomains.Prefab, 1, 0)]
-    public class Prefab : IFrameScope, IObjectIdCounter, IModel<Prefab>
+    [GenerateModel]
+    public sealed partial class Prefab : IFrameScope, IObjectIdCounter, IModel<Prefab>
     {
         /// <summary> Identity of this template and the key of Level.Resources.Prefabs. </summary>
         [RuleIPrimitiveGuidNotNull]
@@ -47,6 +47,8 @@ namespace BH.SDK.Models.Objects
         /// <summary> The template's own contents, keyed by ids local to this template - the same
         /// dictionary shape a level uses, which is why every editor operation works unchanged
         /// inside Prefab Mode. </summary>
+        [GenerateModelKeyed(nameof(RectObject.ObjectId))]
+        [GenerateModelMerge]
         [RuleNotNull, RuleCollectionMaxCount(PrefabRules.MaxObjects)]
         [RuleDictionaryKeyMatches(nameof(RectObject.ObjectId))]
         [JsonProperty(Names.Objects)]
@@ -78,51 +80,6 @@ namespace BH.SDK.Models.Objects
             Objects = objects;
             ObjectIdCounter = objectIdCounter;
             FrameDuration = frameDuration;
-        }
-        public void Reset()
-        {
-            PrefabId = PrefabId.Null;
-            Name = string.Empty;
-            Objects.Clear();
-            ObjectIdCounter = ObjectId.MinLevelValue;
-            FrameDuration = PrefabRules.DefaultFrameDuration;
-        }
-
-        public object Clone() => Copy();
-        public Prefab Copy() => new(PrefabId, Name, Objects.CopyDictionary(), ObjectIdCounter, FrameDuration);
-
-        public void Update(Prefab src)
-        {
-            PrefabId = src.PrefabId;
-            Name = src.Name;
-            Objects = src.Objects.CopyDictionary();
-            ObjectIdCounter = src.ObjectIdCounter;
-            FrameDuration = src.FrameDuration;
-        }
-
-        public void Pull(Prefab src)
-        {
-            PrefabId = src.PrefabId;
-            Name = src.Name;
-            Objects.PullDictionary(src.Objects, LevelUtils.PullObject);
-            ObjectIdCounter = src.ObjectIdCounter;
-            FrameDuration = src.FrameDuration;
-        }
-
-        public override bool Equals(object obj) => obj is Prefab value && Equals(value);
-        public override int GetHashCode() => HashCode.Combine(PrefabId, Name,
-            Objects.GetDictionaryHashCode(), ObjectIdCounter, FrameDuration);
-
-        public bool Equals(Prefab other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            var result = PrefabId.Equals(other.PrefabId)
-                         && Name.Equals(other.Name)
-                         && Objects.DictionaryEquals(other.Objects)
-                         && ObjectIdCounter.Equals(other.ObjectIdCounter)
-                         && FrameDuration.Equals(other.FrameDuration);
-            return result;
         }
     }
 }

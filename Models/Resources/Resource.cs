@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Enums.Resources;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Rules.Attributes;
 using BH.SDK.Utils;
 using Newtonsoft.Json;
-
-// ReSharper disable NonReadonlyMemberInGetHashCode
 
 namespace BH.SDK.Models.Resources
 {
@@ -16,7 +15,8 @@ namespace BH.SDK.Models.Resources
     /// rather than one huge blob.
     /// </summary>
     [RuleContainer]
-    public abstract class Resource : IModel<Resource>
+    [GenerateModel]
+    public abstract partial class Resource : IModel<Resource>
     {
         public const int MaxSourcesCount = 4;
 
@@ -38,34 +38,5 @@ namespace BH.SDK.Models.Resources
         {
             Sources = sources;
         }
-        public virtual void Reset()
-        {
-            Sources.Clear();
-        }
-
-        public abstract object Clone();
-        public abstract Resource Copy();
-
-        public void Update(Resource src)
-        {
-            Sources = src.Sources.CopyList();
-        }
-
-        public void Pull(Resource src)
-        {
-            Sources = src.Sources.CopyList();
-        }
-
-        public bool Equals(Resource other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            var result = Sources.ListEquals(other.Sources)
-                         && Type == other.Type;
-            return result;
-        }
-
-        public override bool Equals(object obj) => obj is Resource value && Equals(value);
-        public override int GetHashCode() => HashCode.Combine(Sources.GetListHashCode(), (int)Type);
     }
 }

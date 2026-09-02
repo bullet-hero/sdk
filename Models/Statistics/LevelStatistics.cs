@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Models.Interfaces.Values;
 using BH.SDK.Models.Primitives;
@@ -35,7 +36,8 @@ namespace BH.SDK.Models.Statistics
     /// <summary> Everything one player has done with one level. </summary>
     [RuleContainer]
     [DataVersion(DataDomains.LevelStatistics, 1, 0)]
-    public class LevelStatistics : IModel<LevelStatistics>
+    [GenerateModel]
+    public sealed partial class LevelStatistics : IModel<LevelStatistics>
     {
         #region Identity and time
 
@@ -150,6 +152,7 @@ namespace BH.SDK.Models.Statistics
         // would be meaningless in exactly the cases a player cares about.
 
         /// <summary> The best run under each set of launch conditions. </summary>
+        [GenerateModelMerge]
         [RuleNotNull, RuleCollectionMaxCount(StatisticsRules.MaxRecordProfiles)]
         [JsonProperty(Names.Records)]
         public Dictionary<RunProfile, BestRun> Records { get; set; }
@@ -175,16 +178,6 @@ namespace BH.SDK.Models.Statistics
 
         public LevelStatistics()
         {
-            Reset();
-        }
-
-        public LevelStatistics(LevelId levelId) : this()
-        {
-            LevelId = levelId;
-        }
-
-        public void Reset()
-        {
             LevelId = LevelId.Null;
             LevelName = new StringValue(string.Empty);
             LevelVersion = new Version(1, 0);
@@ -208,6 +201,11 @@ namespace BH.SDK.Models.Statistics
             Records = new Dictionary<RunProfile, BestRun>();
             Difficulty = new DifficultyStatistics();
             Editor = new LevelEditorStatistics();
+        }
+
+        public LevelStatistics(LevelId levelId) : this()
+        {
+            LevelId = levelId;
         }
 
         // Oldest first, by the record's own timestamp: a cap reached by a player who keeps nudging
@@ -244,136 +242,11 @@ namespace BH.SDK.Models.Statistics
         public BestRun GetRecord(in RunProfile profile)
             => Records.TryGetValue(profile, out var run) ? run : null;
 
-        public object Clone() => Copy();
-
-        public LevelStatistics Copy()
-        {
-            var copy = new LevelStatistics(LevelId)
-            {
-                LevelName = LevelName.Copy(),
-                LevelVersion = (Version)LevelVersion.Clone(),
-                FirstPlayedUtc = FirstPlayedUtc,
-                LastPlayedUtc = LastPlayedUtc,
-                TotalRealSeconds = TotalRealSeconds,
-                SessionCount = SessionCount,
-
-                Attempts = Attempts,
-                Clears = Clears,
-                Deaths = Deaths,
-                Hits = Hits,
-                Dashes = Dashes,
-                CheckpointRestarts = CheckpointRestarts,
-                Quits = Quits,
-
-                BestFrame = BestFrame,
-                BestProgress = BestProgress,
-                FirstClearUtc = FirstClearUtc,
-
-                Records = Records.CopyDictionary(),
-                Difficulty = Difficulty.Copy(),
-                Editor = Editor.Copy(),
-            };
-            return copy;
-        }
-
-        public void Update(LevelStatistics src)
-        {
-            LevelId = src.LevelId;
-            LevelName = src.LevelName.Copy();
-            LevelVersion = (Version)src.LevelVersion.Clone();
-            FirstPlayedUtc = src.FirstPlayedUtc;
-            LastPlayedUtc = src.LastPlayedUtc;
-            TotalRealSeconds = src.TotalRealSeconds;
-            SessionCount = src.SessionCount;
-
-            Attempts = src.Attempts;
-            Clears = src.Clears;
-            Deaths = src.Deaths;
-            Hits = src.Hits;
-            Dashes = src.Dashes;
-            CheckpointRestarts = src.CheckpointRestarts;
-            Quits = src.Quits;
-
-            BestFrame = src.BestFrame;
-            BestProgress = src.BestProgress;
-            FirstClearUtc = src.FirstClearUtc;
-
-            Records = src.Records.CopyDictionary();
-            Difficulty = src.Difficulty.Copy();
-            Editor = src.Editor.Copy();
-        }
-
         // Nested instances are kept, unlike Update above: a view bound to Difficulty or Editor must
         // survive this file being refreshed from disk. Records is merged key by key for the same
         // reason - the level screen holds the record of the profile it is showing.
-        public void Pull(LevelStatistics source)
-        {
-            if (ReferenceEquals(this, source)) return;
-
-            LevelId = source.LevelId;
-            LevelName = LevelName.PullFrom(source.LevelName);
-            LevelVersion = (Version)source.LevelVersion.Clone();
-            FirstPlayedUtc = source.FirstPlayedUtc;
-            LastPlayedUtc = source.LastPlayedUtc;
-            TotalRealSeconds = source.TotalRealSeconds;
-            SessionCount = source.SessionCount;
-
-            Attempts = source.Attempts;
-            Clears = source.Clears;
-            Deaths = source.Deaths;
-            Hits = source.Hits;
-            Dashes = source.Dashes;
-            CheckpointRestarts = source.CheckpointRestarts;
-            Quits = source.Quits;
-
-            BestFrame = source.BestFrame;
-            BestProgress = source.BestProgress;
-            FirstClearUtc = source.FirstClearUtc;
-
-            Records.PullDictionary(source.Records);
-            Difficulty.Pull(source.Difficulty);
-            Editor.Pull(source.Editor);
-        }
-
-        public override bool Equals(object obj) => obj is LevelStatistics value && Equals(value);
-
-        public bool Equals(LevelStatistics other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return LevelId.Equals(other.LevelId)
-                   && Equals(LevelName, other.LevelName)
-                   && Equals(LevelVersion, other.LevelVersion)
-                   && FirstPlayedUtc.Equals(other.FirstPlayedUtc)
-                   && LastPlayedUtc.Equals(other.LastPlayedUtc)
-                   && TotalRealSeconds.Equals(other.TotalRealSeconds)
-                   && SessionCount == other.SessionCount
-                   && Attempts == other.Attempts
-                   && Clears == other.Clears
-                   && Deaths == other.Deaths
-                   && Hits == other.Hits
-                   && Dashes == other.Dashes
-                   && CheckpointRestarts == other.CheckpointRestarts
-                   && Quits == other.Quits
-                   && BestFrame == other.BestFrame
-                   && BestProgress.Equals(other.BestProgress)
-                   && FirstClearUtc.Equals(other.FirstClearUtc)
-                   && Records.DictionaryEquals(other.Records)
-                   && Difficulty.Equals(other.Difficulty)
-                   && Editor.Equals(other.Editor);
-        }
 
         // Nested, because HashCode.Combine takes eight arguments and this has far more than eight
         // values - the same shape InterfaceSettings uses for the same reason.
-        public override int GetHashCode() =>
-            HashCode.Combine(
-                LevelId,
-                HashCode.Combine(FirstPlayedUtc, LastPlayedUtc, TotalRealSeconds, SessionCount),
-                HashCode.Combine(Attempts, Clears, Deaths, Hits),
-                HashCode.Combine(Dashes, CheckpointRestarts, Quits),
-                HashCode.Combine(BestFrame, BestProgress, FirstClearUtc),
-                Records.GetDictionaryHashCode(),
-                Difficulty.GetHashCode(),
-                Editor.GetHashCode());
     }
 }

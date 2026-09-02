@@ -1,4 +1,5 @@
 using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Models.Interfaces.Values;
 using BH.SDK.Models.Primitives.Resources;
@@ -7,8 +8,6 @@ using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
 using BH.SDK.Utils;
 using Newtonsoft.Json;
-
-// ReSharper disable NonReadonlyMemberInGetHashCode
 
 namespace BH.SDK.Models.Data
 {
@@ -23,7 +22,8 @@ namespace BH.SDK.Models.Data
     /// as an advisory glyph-atlas warm-up hint.
     /// </summary>
     [RuleContainer]
-    public class CachedFontText : IModel<CachedFontText>
+    [GenerateModel]
+    public sealed partial class CachedFontText : IModel<CachedFontText>
     {
         /// <summary> Which typeface this set belongs to. Unlike the other resource dictionaries this
         /// spans the whole id range, game-defined ids included - the bundled font needs warming as
@@ -51,38 +51,6 @@ namespace BH.SDK.Models.Data
         {
             FontResourceId = fontResourceId;
             Characters = characters;
-        }
-        public void Reset()
-        {
-            FontResourceId = FontResourceId.Default;
-            Characters = new StringValue();
-        }
-
-        public object Clone() => Copy();
-        public CachedFontText Copy() => new(FontResourceId, Characters.Copy());
-
-        public void Update(CachedFontText src)
-        {
-            FontResourceId = src.FontResourceId;
-            Characters = src.Characters.Copy();
-        }
-
-        public void Pull(CachedFontText src)
-        {
-            FontResourceId = src.FontResourceId;
-            Characters = Characters.PullFrom(src.Characters);
-        }
-
-        public override bool Equals(object obj) => obj is CachedFontText value && Equals(value);
-        public override int GetHashCode() => HashCode.Combine(FontResourceId, Characters);
-
-        public bool Equals(CachedFontText other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            var result = FontResourceId.Equals(other.FontResourceId)
-                         && Characters.Equals(other.Characters);
-            return result;
         }
     }
 }

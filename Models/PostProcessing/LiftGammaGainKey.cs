@@ -1,4 +1,5 @@
 ﻿using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Enums;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Models.Interfaces.Values;
@@ -8,8 +9,6 @@ using BH.SDK.Rules.Attributes;
 using BH.SDK.Utils;
 using Newtonsoft.Json;
 
-// ReSharper disable NonReadonlyMemberInGetHashCode
-
 namespace BH.SDK.Models.PostProcessing
 {
     /// <summary>
@@ -18,7 +17,8 @@ namespace BH.SDK.Models.PostProcessing
     /// ShadowsMidtonesHighlightsKey, which grades by perceptual bands instead.
     /// </summary>
     [RuleContainer]
-    public class LiftGammaGainKey : PostProcessingKeyframe, IModel<LiftGammaGainKey>
+    [GenerateModel]
+    public sealed partial class LiftGammaGainKey : PostProcessingKeyframe, IModel<LiftGammaGainKey>
     {
         /// <summary> Whether the lift (dark end) correction is applied. </summary>
         [JsonProperty(Names.Lift)]
@@ -68,64 +68,6 @@ namespace BH.SDK.Models.PostProcessing
             GammaColor4 = gammaColor4;
             Gain = gain;
             GainColor4 = gainColor4;
-        }
-        public override void Reset()
-        {
-            base.Reset();
-            Lift = false;
-            LiftColor4 = Color4Value.white;
-            Gamma = false;
-            GammaColor4 = Color4Value.white;
-            Gain = false;
-            GainColor4 = Color4Value.white;
-        }
-
-        public override object Clone() => CopyImpl();
-        public override PostProcessingKeyframe Copy() => CopyImpl();
-        LiftGammaGainKey ICopyable<LiftGammaGainKey>.Copy() => CopyImpl();
-        
-        private LiftGammaGainKey CopyImpl() => new(Lift, LiftColor4.Copy(), Gamma, GammaColor4.Copy(), Gain, GainColor4.Copy(), Active, Frame, Ease);
-
-        public void Update(LiftGammaGainKey src)
-        {
-            base.Update(src);
-
-            Lift = src.Lift;
-            LiftColor4 = src.LiftColor4.Copy();
-            Gamma = src.Gamma;
-            GammaColor4 = src.GammaColor4.Copy();
-            Gain = src.Gain;
-            GainColor4 = src.GainColor4.Copy();
-        }
-
-        public void Pull(LiftGammaGainKey src)
-        {
-            base.Pull(src);
-
-            Lift = src.Lift;
-            LiftColor4 = LiftColor4.PullFrom(src.LiftColor4);
-            Gamma = src.Gamma;
-            GammaColor4 = GammaColor4.PullFrom(src.GammaColor4);
-            Gain = src.Gain;
-            GainColor4 = GainColor4.PullFrom(src.GainColor4);
-        }
-
-        public override bool Equals(object obj) => obj is LiftGammaGainKey value && Equals(value);
-        public override int GetHashCode() => HashCode.Combine(base.GetHashCode(),
-            Lift, LiftColor4, Gamma, GammaColor4, Gain, GainColor4);
-
-        public bool Equals(LiftGammaGainKey other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            var result = base.Equals(other)
-                         && Lift == other.Lift
-                         && LiftColor4.Equals(other.LiftColor4)
-                         && Gamma == other.Gamma
-                         && GammaColor4.Equals(other.GammaColor4)
-                         && Gain == other.Gain
-                         && GainColor4.Equals(other.GainColor4);
-            return result;
         }
     }
 }

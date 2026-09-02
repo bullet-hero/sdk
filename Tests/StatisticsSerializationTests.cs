@@ -146,13 +146,13 @@ namespace BH.SDK.Tests
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.Hard)]
-        public void LevelStatistics_RoundTripsThroughBson()
+        public void LevelStatistics_RoundTripsThroughBlob()
         {
             var service = Service();
             var source = SampleLevel();
 
-            var bytes = service.SerializeEnvelope(source, SerializationType.Bson);
-            var result = service.DeserializeEnvelope<LevelStatistics>(bytes, SerializationType.Bson);
+            var bytes = service.SerializeEnvelope(source, SerializationType.Blob);
+            var result = service.DeserializeEnvelope<LevelStatistics>(bytes, SerializationType.Blob);
 
             Assert.AreEqual(source, result);
         }

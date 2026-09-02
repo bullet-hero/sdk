@@ -1,4 +1,5 @@
 using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Rules.Attributes;
 using Newtonsoft.Json;
@@ -10,7 +11,8 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
     /// itself.
     /// </summary>
     [RuleContainer]
-    public class EditorSelectionSettings : IModel<EditorSelectionSettings>, IMoveable<EditorSelectionSettings>
+    [GenerateModel]
+    public sealed partial class EditorSelectionSettings : IModel<EditorSelectionSettings>, IMoveable<EditorSelectionSettings>
     {
         // Whether multi-selection is a MODIFIER or a MODE is a real preference, not a constant: on a
         // desktop the modifier is the familiar answer and an ordinary click should still replace the
@@ -92,7 +94,6 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
             ColliderOpacityView = colliderOpacityView;
             PickInvisibleAABB = pickInvisibleAABB;
         }
-        public void Reset() => ResetOwn();
         private void ResetOwn()
         {
             MultiRequiresHold = true;
@@ -102,51 +103,6 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
             ColliderOpacitySelection = 0.5f;
             ColliderOpacityView = 0.25f;
             PickInvisibleAABB = false;
-        }
-
-        public object Clone() => Copy();
-        public EditorSelectionSettings Copy() => new(MultiRequiresHold, LongPressDelay,
-            LongPressMoveThreshold, PreviewColliderOnSelect, ColliderOpacitySelection,
-            ColliderOpacityView, PickInvisibleAABB);
-
-        public void Pull(EditorSelectionSettings source)
-        {
-            MultiRequiresHold = source.MultiRequiresHold;
-            LongPressDelay = source.LongPressDelay;
-            LongPressMoveThreshold = source.LongPressMoveThreshold;
-            PreviewColliderOnSelect = source.PreviewColliderOnSelect;
-            ColliderOpacitySelection = source.ColliderOpacitySelection;
-            ColliderOpacityView = source.ColliderOpacityView;
-            PickInvisibleAABB = source.PickInvisibleAABB;
-        }
-
-        public void Update(EditorSelectionSettings src)
-        {
-            MultiRequiresHold = src.MultiRequiresHold;
-            LongPressDelay = src.LongPressDelay;
-            LongPressMoveThreshold = src.LongPressMoveThreshold;
-            PreviewColliderOnSelect = src.PreviewColliderOnSelect;
-            ColliderOpacitySelection = src.ColliderOpacitySelection;
-            ColliderOpacityView = src.ColliderOpacityView;
-            PickInvisibleAABB = src.PickInvisibleAABB;
-        }
-
-        public override int GetHashCode() => HashCode.Combine(MultiRequiresHold, LongPressDelay,
-            LongPressMoveThreshold, PreviewColliderOnSelect, ColliderOpacitySelection,
-            ColliderOpacityView, PickInvisibleAABB);
-        public override bool Equals(object obj) => obj is EditorSelectionSettings value && Equals(value);
-
-        public bool Equals(EditorSelectionSettings other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return MultiRequiresHold == other.MultiRequiresHold
-                   && LongPressDelay.Equals(other.LongPressDelay)
-                   && LongPressMoveThreshold.Equals(other.LongPressMoveThreshold)
-                   && PreviewColliderOnSelect == other.PreviewColliderOnSelect
-                   && ColliderOpacitySelection.Equals(other.ColliderOpacitySelection)
-                   && ColliderOpacityView.Equals(other.ColliderOpacityView)
-                   && PickInvisibleAABB == other.PickInvisibleAABB;
         }
     }
 }

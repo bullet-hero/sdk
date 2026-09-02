@@ -17,14 +17,17 @@ without an engine, `#if BHSDK_UNITY` choosing, so it ships in both builds) and `
 standalone (e.g. by external tooling, a future
 companion website) without dragging Unity along.
 
-**That independence is now CHECKED rather than merely stated.** Three `.csproj` files build this
-repo with no Unity anywhere, and all three are the same sources Unity compiles — never a copy:
+**That independence is now CHECKED rather than merely stated.** Four `.csproj` files build this
+repo with no Unity anywhere, and every one of them is the same sources Unity compiles — never a copy
+(the fourth is the exception that proves it: Unity must NOT compile the Roslyn tests, hence the
+tilde):
 
 | Project | Target | What it builds |
 |---|---|---|
 | `BH.SDK.csproj` | netstandard2.1 | The library: everything except `Roslyn/`, `Tests/` and `UnityExtensions/`. **`UnityIntegration/` is included WHOLE** — every file there is dual by contract (`#if BHSDK_UNITY`), and this build is what enforces it; see its `README.md` |
 | `Tests/BH.SDK.Tests.csproj` | net8.0 | The same 47 fixtures the Unity Test Runner runs, under `dotnet test` — **447 passing** outside Unity |
 | `Roslyn/BH.SDK.Roslyn.csproj` | netstandard2.0 | The analyzers and generators — see `Roslyn/README.md` |
+| `Roslyn/Tests~/BH.SDK.Roslyn.Tests.csproj` | net8.0 | Tests for the components themselves. **Invisible to Unity by the tilde**, and has to be — the asmdef above it would otherwise swallow the fixtures |
 
 `netstandard2.1` and `LangVersion 9.0` are not choices: they are what the Unity project compiles
 with (`apiCompatibilityLevel: 6`). Raising either would let code in that Unity then refuses.
@@ -126,15 +129,11 @@ alive so `GamePlayer`'s jobs can re-roll randomness every frame instead of freez
   `Package/` (what a level package contains, written and read; the reader is also the future
   server's entry point, which is why every refusal is a value rather than an exception).
   **This is where the SDK started reading files**, so any header claiming it reads none is stale.
-  **`Cache/` is DEAD CODE and a deletion candidate** - nothing in the consumer constructs it any
-  more, and it is kept only so the session that builds the `.blob` format can read it first. It is
-  still worth reading for exactly that: `LevelObjectCodec` is the object tree written out BY HAND,
-  i.e. a worked example of what a generated codec has to emit and which of this model's types are
-  polymorphic; `LevelCacheKey` is a staleness rule that a format will not need; `LevelCacheCodec`
-  shows the hand-written/serializer split. The measured reason any of it exists is that Newtonsoft
-  binds members by reflection, and `Level.Copy()` shows what the same graph costs without any
-  (131 ms against 11-15 s). `docs/issues/ROSLYN_PLAN.md` in the consumer is the context for
-  replacing it; `LOADING_HISTORY.md` §10 is its record.
+  **`Cache/` is GONE**, and what replaced it is a FORMAT rather than another layer: a side-car
+  cache has to decide when it is stale, carry an invalidation hook on every write path and keep a
+  second serializer in step with the real one, while a format cannot disagree with the file because
+  it IS the file. `Serialization/Blob/` is that format; `LevelObjectCodec`, the object tree written
+  out by hand, was its worked example and is no longer needed.
   Also `CryptographyService`
   (AES-256-CBC, and NOT what protects a level any more — see its own header), `ModificationService` (reflection path-based get/set, see "Modification system"
   below), `TextFormatService` (`{variable}` string templating), `FontCharacterService` (builds
@@ -228,19 +227,26 @@ alive so `GamePlayer`'s jobs can re-roll randomness every frame instead of freez
   since 2026-09-02 (they never had before: the gate `#if BHSDK_ROSLYN` was defined nowhere, and the
   `RoslynAnalyzer` label sat on the asmdef, which Unity ignores — it honours that label on a
   precompiled `.dll` alone). Its own `README.md` is the record; the shape in one line: the sources
-  are compiled TWICE, by `BH.SDK.Roslyn.Sources.asmdef` (Editor-only, referenced by nothing, purely
+  are compiled TWICE, by `BH.SDK.Roslyn.Src.asmdef` (Editor-only, referenced by nothing, purely
   so the IDE resolves them) and by `BH.SDK.Roslyn.csproj`, whose output — `BH.SDK.Roslyn.dll` in
   this folder's PARENT, i.e. the SDK root — is the only one Unity loads. **The artifact sits in the
   SDK root rather than in `Roslyn/`** because Unity scopes an analyzer to the asmdef owning its
   folder plus every assembly referencing it: inside `Roslyn/` it reached nothing, in the root it
-  reaches `BH.SDK` and the ~25 assemblies built on it. The asmdef takes the `.Sources` suffix
+  reaches `BH.SDK` and the ~25 assemblies built on it. The asmdef takes the `.Src` suffix
   because Unity refuses a plugin whose file name equals an asmdef's. `Refs/` holds the Editor's own
   Roslyn assemblies, installed rather than committed. **The build tooling ships with the SDK**, in
   `UnityExtensions/Editor/` (`BH.SDK.UnityExtensions.Editor`, Editor-only): `RoslynLayout` (every
   path, derived from this assembly's own asmdef location - nothing about the consuming project is
-  hardcoded), `RoslynBuilder` (Tools > Roslyn > Build Analyzer, shelling out to the `dotnet` Unity
+  hardcoded), `RoslynBuilder` (Tools > BH.SDK.Roslyn > Build Analyzer, shelling out to the `dotnet` Unity
   ships), `RoslynCompilerReferences` and `RoslynImportSettings`. It is deliberately specialised to
   `BH.SDK.Roslyn` rather than generic - one project, one artifact, one folder of references.
+  **The components have their own tests, in `Roslyn/Tests~/`** (`BH.SDK.Roslyn.Tests`, net8.0,
+  `dotnet test`) - what a generator EMITS and which diagnostics it reports, as opposed to `Tests/`,
+  which covers what the generated code DOES. The tilde is load-bearing rather than decorative: an
+  asmdef governs every subfolder under it, so a plain `Tests/` would compile NUnit fixtures into
+  `BH.SDK.Roslyn.Src`, which declares `overrideReferences` with five precompiled references. Its
+  harness compiles against a STUBBED model API rather than referencing `BH.SDK`, so a broken
+  generator stays visible while the library itself is mid-refactor.
 - **UnityExtensions/** — everything that genuinely needs Unity, in four groups. Own asmdef,
   unconditionally requires `UnityEngine` (unlike the core SDK), plus `Unity.Mathematics` and
   `Unity.Collections`, which is what the last three of these brought in:
@@ -810,10 +816,40 @@ without them.
 ## `IModel<T>` pattern
 
 `IModel<T> : ICopyable<T>, IEquatable<T>, IResetable, IUpdatable<T>, IMoveable<T>` — every live
-domain model implements: `Copy()` (new instance), `Equals(T)`/`Equals(object)`/`GetHashCode()`
-(hand-written, not generated — this is exactly the kind of boilerplate a copy-paste mistake hides in,
-see "Conventions" below), `Reset()` (back to defaults, in place, no allocation), and the two
-become-another-instance operations, `Update(src)` and `Pull(src)`.
+domain model implements: `Copy()` (new instance), `Equals(T)`/`Equals(object)`/`GetHashCode()`,
+`Reset()` (back to defaults, in place), and the two become-another-instance operations,
+`Update(src)` and `Pull(src)`.
+
+**ALL OF IT IS GENERATED, AND SO ARE BOTH CODECS.** `BH.SDK.Roslyn`'s `ModelGenerator` writes every
+one of those bodies for every type carrying `[GenerateModel]` — 203 of them — plus that type's
+`.blob` codec (`IBinaryModel`) and its JSON codec (`IJsonModel`); the model file itself holds only
+its members, its constructors and whatever is genuinely its own. It used to be hand-written per class:
+208 `Copy` bodies, 279 typed `Equals`, 206 `Update`, 206 `Pull`, and the failure mode was never a
+compile error but a member quietly missing from one of them. `Equals(object obj) => obj is T value
+&& Equals(value)` was named here as the single easiest place in this codebase to introduce a silent
+bug, because pasting it from a sibling class compiles and only makes the boxed comparison always
+false. That whole class of defect is gone by construction.
+
+**Three models are still hand-written, each for its own reason.** `FrameSpan` and `ModificationKey`
+are structs: C# 9 gives a struct no parameterless constructor body, so "back to what the constructor
+built" means nothing for them and `Update` is `this = src`. `Modification` holds an untyped `object`
+whose copy is not an assignment (a whole-track override stores a `List<TKeyframe>`, which would
+alias) and whose equality is not `object.Equals` (a `List` has no value equality). All three are
+simply not marked `[GenerateModel]`, which is what the attribute being opt-in is for.
+
+**What the generator will NOT do is fail quietly.** A member it has no encoding for is an ERROR
+naming the member (`BHS1003`), never a member skipped; so is a type that forgot `partial`, one with
+no parameterless constructor, and one whose base is a model the generator does not also own. The
+escape valve is explicit: `[GenerateModelIgnore]` on the property, and the partial hooks
+(`OnReset`, `OnCopied`, `OnUpdated`, `OnPulled`, `OnWriteBlob`, `OnReadBlob`) to handle it by hand.
+
+**`[GenerateModelMerge]` is the one thing about `Pull` a type cannot say for itself.** Nine
+dictionaries are merged key by key instead of being replaced - the three object scopes
+(`GameLevel`, `Prefab`, `ClipboardData`) and the two statistics maps - and nothing in the TYPE of a
+`Dictionary<ObjectId, RectObject>` distinguishes them from the seven that are replaced wholesale.
+The dispatcher that merges one polymorphic value is generated too (`RectObjectModelPull.PullValue`),
+which is what removed `LevelUtils.PullObject` - a hand-kept switch whose own header called out that
+a new `RectObject` subtype had to remember to extend it.
 
 **`Update` and `Pull` are what a model offers when its reference is already held somewhere else** —
 `GameData` hands `UserSettings` out live, the editor's operation buffer holds an object across an
@@ -860,12 +896,13 @@ not domain objects; don't expect every `[JsonProperty]`-bearing class in this co
 
 `SerializationService.SerializeData<T>`/`DeserializeData<T>` are the plain string-JSON entry points —
 both throw `ArgumentException` if `T` has no `[DataVersion]` (only aggregate roots may go through
-this API). `GetDataSerializer(SerializationType.Json/Bson)` returns an `IDataSerializer`
-(`SerializeEnvelope`/`DeserializeEnvelope` operating on raw `byte[]` + `EnvelopeData` — version tag +
-untyped payload) — `JsonDataSerializer`/`BsonDataSerializer` share all envelope logic in
-`BaseNewtonsoftDataSerializer`, differing only in `JsonTextWriter/Reader` vs. `BsonDataWriter/Reader`.
-`SerializationType` is `byte`-backed (`Json=0, Bson=1, JsonPretty=2`);
-`SerializationTypeExtensions.ToFileExtension`/`TryFromFileExtension` map `.json`/`.bson`.
+this API). They take no mode: **text is always compact JSON**, and which FORMAT a file is written in
+is `SerializeEnvelope`'s question, since only bytes can answer it. `GetDataSerializer(type)` returns
+an `IDataSerializer` (`SerializeEnvelope`/`DeserializeEnvelope` over raw `byte[]` + `EnvelopeData` —
+version tag + untyped payload): `JsonDataSerializer` on `BaseNewtonsoftDataSerializer`, and
+`BlobDataSerializer`, which shares none of that machinery because it goes through no Newtonsoft at
+all. `SerializationType` is `byte`-backed and holds **two** members, `Json = 0` and `Blob = 3`;
+`SerializationTypeExtensions.ToFileExtension`/`TryFromFileExtension` map `.json`/`.blob`.
 
 **Nothing on the read path materializes a `JToken` tree, and that is a rule, not an implementation
 detail.** A version has to be known before the payload can be typed, and reading it used to mean
@@ -879,21 +916,39 @@ value happens to come first (hand-edited, or written by another tool) is still r
 buffering that one subtree until the version that types it arrives. `Tests/SerializationPerformance
 Tests` pins both formats.
 
-**BSON is not the fast format here, and it was measured.** On a 4.7k-object level it reads ~5% faster
-than JSON while writing a file ~30% *larger* — what dominates is Newtonsoft binding members by
-reflection, which both formats pay identically, not tokenizing. Choose between them for what they are
-(one is readable and diffable, the other is not), not for speed.
+**BSON IS GONE, AND `.blob` IS WHAT IT WAS PRETENDING TO BE.** BSON's role here was speed and it
+never delivered any: on a 4.7k-object level it read ~5% faster than JSON while writing a file ~30%
+*larger*, because what dominates is Newtonsoft binding members by reflection and both formats pay
+that identically. `.blob` removes the reflection instead of re-encoding around it - the codec is
+generated onto the models themselves - and the difference is not incremental. Measured on the real
+corpus, three passes, minimum:
 
-**`JsonPretty` is a write-only distinction and `Formatting` lives on the MODE, not on the settings.**
-It writes the same document as `Json` with indentation, shares its `.json` extension, and is read by
-the same reader — so `TryFromFileExtension` resolves `.json` to `Json` alone, deliberately: nothing
-can recover the choice from a file, and it belongs to whoever is saving. `SerializationSettings` has
-no `formatting` field any more (it applied to the one shared `JsonSerializer`, so one screen's "write
-this readable" re-indented every file written afterwards); `SerializationTypeExtensions.ToFormatting`
-is the single conversion, applied per `JsonTextWriter` by `JsonDataSerializer` and by
-`SerializeData<T>(value, type)`. Adding a third member is also why nothing may test `== Bson` any
-more — a two-branch ternary reads `JsonPretty` as `Json` silently, which is what the Unity project's
-`Core/Utils/SerializationModeUtils` exists to prevent at the five UI call sites that did.
+| level | `level.json` | read | `.blob` | read | speedup | size |
+|---|---:|---:|---:|---:|---:|---:|
+| smoke | 2 KB | 1 ms | | 0 ms | 28x | 0.41x |
+| **volcano** | **15.7 MB** | **9 946 ms** | **5.1 MB** | **203 ms** | **49x** | **0.32x** |
+| weathergirl | 3.2 MB | 2 176 ms | 1.1 MB | 39 ms | 55x | 0.33x |
+
+Writing volcano went 9.6 s to 147 ms. All three round-trip `Level.Equals`-identical.
+
+The enum member `Bson = 1` is RETIRED, not reused: an old `settings.json` holding 1 lands on an
+undefined value that `RuleEnumValid` repairs to `Json`, rather than silently meaning something new.
+`Blob = 3` is appended, which is why `SerializationModeUtils`' dropdown index is no longer the
+enum's own number - order is what that class promises, and equality was a coincidence of the
+numbers happening to be 0, 1, 2.
+
+**`JsonPretty` WAS MEMBER 2 AND IS GONE, and there is no `Formatting` question left anywhere.** It
+wrote the same document as `Json` with indentation, shared its `.json` extension and was read by the
+same reader — so nothing could ever recover the choice from a file, which made it a property of
+whoever happened to save rather than of the level. What it was FOR is reading a level file by eye,
+and that is what an editor's own formatter does, on demand, without a second shape of the format
+existing to be tested, migrated and explained. Every JSON document this project writes is now
+compact, `ToFormatting` is deleted rather than moved, and `SerializationSettings` carries no
+`formatting` field (it applied to the one shared `JsonSerializer`, so one screen's "write this
+readable" re-indented every file written afterwards). Number 2 is retired like number 1 and is never
+reissued — and the reason nothing may test `== Bson`-style two-branch ternaries survives it: a third
+member reads as `Json` silently, which is what the Unity project's `Core/Utils/SerializationModeUtils`
+exists to prevent at the five UI call sites that did.
 
 Two `JsonSerializerSettings` are built: one with the full converter list, one bare ("`settingsDefault`",
 the escape hatch every `IRequiresDefaultSerializer` converter needs — see "Value system" above).
@@ -910,6 +965,71 @@ reconstruct via `Activator.CreateInstance(type, value)`, so every such wrapper n
 single-arg constructor. `PrimitiveGuidConverter` specifically handles Guid surfacing as a `string`
 under JSON but an already-boxed `Guid` under BSON (BSON's native UUID subtype).
 
+## The JSON codec (`Serialization/Json/`)
+
+The same models write and read their own JSON now. **The format did not change by one byte** — that
+is the whole acceptance test, and it is checked against the real corpus, volcano included, by
+`Core.Tests`' `CorpusLoadCostTests.EveryCorpusLevel_IsWrittenAndReadIdenticallyByBothJsonPaths` and
+by `JsonParityTests` here. What changed is the cost of READING one: volcano goes 11 249 ms to
+1 837 ms, six times faster, because nothing binds members by reflection any more.
+
+**Writing did not move** (924 ms against 921 on volcano), and that is worth knowing before anyone
+tries: reflection dominates reading, while writing is `JsonTextWriter` turning numbers into text,
+which both paths do identically.
+
+- **`SerializationSettings.useGeneratedCodecs`** is the switch, on by default, and it exists for
+  exactly one caller: the parity test, through `SerializationService.CreateWithoutGeneratedCodecs()`.
+  Anything that changes how a level is READ is locked by a test comparing the same bytes through
+  both paths — the rule a withdrawn reader bought this project after it passed 4 494 tests and
+  shipped a game that could not open a level.
+- **`GeneratedModelConverter` goes LAST in the converter list**, and that placement is the whole of
+  its wiring: the router takes the first match by runtime type, so a `Vector2Value` still reaches
+  `Vector2Converter` and still comes out `[0,{...}]`, and this one writes the payload inside it.
+- **The top-level `{version, value}` envelope is still `VersionedEnvelopeConverter`'s**, because it
+  is the only thing that resolves an OLD version to its snapshot type and walks the migrations. A
+  versioned MEMBER is wrapped by whoever holds it instead.
+- **`[GenerateModelKeyed]`** names the property a dictionary's key is recovered from, which is what
+  lets the collection write as a bare array of values. It records the same knowledge the twelve
+  `DictionaryAsListConverter` subclasses hold; those stay, because they are the reflective path the
+  parity test compares against.
+- The traps this reproduces are all in `docs/issues/MODEL_CODEGEN_HISTORY.md` §5, and every one of
+  them is a way the format is not what it looks like: the contract is OptOut in practice so
+  `Resource.Type` IS written, members are ordered derived-first, an abstract property is written by
+  its override, `[JsonIgnore]` is inherited, and a CONCRETE member of a value family is still tagged.
+
+## The binary format (`Serialization/Blob/`)
+
+`.blob` is a first-class level format, equal to `.json` rather than a cache beside it - a level may
+be saved only as `.blob`, and `LevelPackageBuilder` carries it inside a package the same way. What
+`.json` keeps is the promise the project actually makes about it: readable, diffable, openable by
+somebody else's tool in ten years. `.blob` deliberately does not make that promise, and it is the
+default nowhere.
+
+- **`BlobWriter`/`BlobReader` are ref structs over a byte buffer**, not `Stream` wrappers: writing a
+  value is a bounds check and a store, with no allocation and no virtual call. Passed by `ref`
+  because the writer's buffer grows.
+- **The encoding is the level cache's**, which was written out by hand for this same model and
+  proved the shape works: little-endian, fixed width, no varints; a length prefix of `-1` for null
+  (an empty keyframe list and a missing one are different states and a round trip has to keep them
+  apart); a one-byte tag for a polymorphic value with `0xFF` reserved for null. **The tag is the
+  model's own `GetModelType()`** - the generator reads the enum member that method names - so the
+  blob and the JSON `[tag, payload]` carry the same discriminator and cannot drift apart.
+- **Every `[DataVersion]` aggregate writes its own envelope**: domain as text, `major`, `minor`, and
+  a byte length the reader checks the content against. The version tags are written so that the day
+  a domain bumps there is somewhere to attach a migration; today an unknown version is REFUSED,
+  which is honest rather than a gap - no build has ever written a `.blob`, so none of an older
+  generation can exist, and the `.json` beside it is the recovery path.
+- **The file header is checked in one order and nothing is allocated before it passes**: magic,
+  codec generation, declared length against the real one, then an xxHash64 of the payload. Four
+  distinct refusals, because "this file is damaged" and "this file is from a newer build" ask
+  completely different things of a player. The hash is non-cryptographic on purpose - what is being
+  checked is corruption, and forgery is already answered by the OpenPGP layer that protects a level.
+- **A count the FILE chose is refused before it is believed** (`BlobReader.ReadCount`). That is the
+  one attack surface a format has and a cache did not: its payload was self-produced.
+- `BlobPrimitives` holds the four structs the generator cannot write for itself - `FrameSpan`
+  (packed, so writing its fields would write the packing), `ModificationKey` and `RunProfile`
+  (readonly, get-only), `Pixel` (four bytes seen as one int, on image-sized arrays).
+
 ## Model versioning (`Versions/`)
 
 **Read `Versions/README.md` first** — it documents the folder convention (generation-first, e.g.
@@ -917,11 +1037,14 @@ under JSON but an already-boxed `Guid` under BSON (BSON's native UUID subtype).
 type" rule in detail; this section only adds what it doesn't cover.
 
 - `[DataVersion(domain, major, minor)]` marks an aggregate-root boundary that gets its own envelope
-  and migrates as one unit. **Every live domain today is `(1, 0)`** — nothing has bumped yet. 18
-  types currently carry it: `Level`, `LevelMeta`, `UserSettings`, `Prefab`, `EffectData`, `ThemeData`,
-  `CompositeShape`, `ClipboardData` (SDK-repo "core" tier); `PublishProfile` (`Publishing/`);
-  `LevelSettings`, `GameLevel`, `AudioLevel`, `LevelResources`, `LevelHints` (nested under `Level`);
-  `GameEvents`, `CameraEvents`, `PostProcessingEvents`, `PlayerEvents` (nested under `GameLevel`). `DataDomains.cs` is the `nameof()`-based constant list.
+  and migrates as one unit. **20 types currently carry it, and exactly one has bumped** —
+  `UserSettings` is at `(2, 0)`, every other domain is still `(1, 0)`: `Level`, `LevelMeta`,
+  `UserSettings`, `Prefab`, `EffectData`, `ThemeData`, `CompositeShape`, `ClipboardData` (SDK-repo
+  "core" tier); `PublishProfile` (`Publishing/`); `GameStatistics`, `LevelStatistics`
+  (`Models/Statistics/`, two roots rather than one — see that section); `LevelSettings`, `GameLevel`,
+  `AudioLevel`, `LevelResources`, `LevelHints` (nested under `Level`); `GameEvents`, `CameraEvents`,
+  `PostProcessingEvents`, `PlayerEvents` (nested under `GameLevel`). `DataDomains.cs` is the
+  `nameof()`-based constant list.
 - `VersionedEnvelopeConverter` (`Serialization/Converters/`, not `Versions/`) writes/reads the
   `{"version": "major.minor", "value": ...}` wrapper, gated purely by `[DataVersion]` presence — a
   `_activeDomains` reentrancy guard lets member serialization fall through to plain fields while
@@ -935,9 +1058,11 @@ type" rule in detail; this section only adds what it doesn't cover.
   if a step is missing.
 - **`V0_0` is a scaffold that exercises the machinery end-to-end, not real shipped format history** —
   its `Names` use placeholder JSON keys (`"test_settings"`, etc.) and its snapshot classes are
-  structurally near-identical to current ones. There is no `V1_0` folder or class anywhere — "current"
-  is just the live, un-suffixed model class carrying `[DataVersion(..., 1, 0)]` directly; migrator
-  filenames like `LevelV0_0ToV1_0.cs` reference that live class by convention, not an actual file.
+  structurally near-identical to current ones. **`V1_0/` is the first real one** —
+  `UserSettingsV1_0`/`GameEditorSettingsV1_0` plus `Migrations/UserSettingsV1_0ToV2_0.cs`, frozen with
+  literal JSON keys as the convention demands. For every domain that has never bumped, "current" is
+  still just the live, un-suffixed class carrying `[DataVersion(..., 1, 0)]` directly, and a migrator
+  filename like `LevelV0_0ToV1_0.cs` names that live class by convention rather than an actual file.
 - Replaces an older `CompatibilityService`/`SaveData<T>`/`JsonConverterData<T>` design — those names
   are fully gone from the codebase (only survive in a comment explaining what replaced them); don't
   reintroduce or reference them as if live.
@@ -1049,13 +1174,11 @@ non-static, non-abstract, and has a public parameterless constructor — because
   (max markers/checkpoints/keys/prefabs/audio-layers/...) — check there before hardcoding a magic
   cap elsewhere; `Level.Objects` itself is deliberately uncapped (see the commented-out
   `MaxObjects` in `LevelRules.cs`).
-- **`IModel<T>`'s `Equals(object obj) => obj is T value && Equals(value);` boilerplate is hand-written
-  per class, not generated** — when adding a new `IModel<T>` type, double-check the `is T` matches
-  the enclosing class exactly. This exact one-line pattern is the single easiest place to introduce a
-  silent bug in this codebase: it looks identical across every model, so pasting it from a sibling
-  class without updating the type name compiles fine and just makes `Equals(object)` always return
-  `false` for real instances (the strongly-typed `Equals(T)` overload keeps working, so the bug only
-  shows up wherever something compares through the non-generic `object.Equals`/`==` boxed path).
+- **A new model is `[GenerateModel] public sealed partial class`, and nothing else.** Write the
+  members, the constructors and the `[JsonProperty]` names; the whole `IModel<T>` contract and the
+  blob codec are written for you. Leave it non-sealed only if something derives from it - `sealed`
+  is the ONLY signal the generator has for "can anything override this", so a base that forgets it
+  gets a pointless virtual on every member, and a leaf that forgets it gets the same.
 
 ## Testing
 

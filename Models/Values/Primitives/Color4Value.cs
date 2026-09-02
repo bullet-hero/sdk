@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Enums.Values;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Models.Interfaces.Values;
@@ -7,7 +8,6 @@ using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
 using Newtonsoft.Json;
 
-// ReSharper disable NonReadonlyMemberInGetHashCode
 // ReSharper disable InconsistentNaming
 // ReSharper disable ArrangeAccessorOwnerBody
 
@@ -18,7 +18,8 @@ namespace BH.SDK.Models.Values
     /// in its palette (a theme slot must be a real color, never another reference).
     /// </summary>
     [RuleContainer]
-    public class Color4Value : IColor4, IModel<Color4Value>
+    [GenerateModel]
+    public sealed partial class Color4Value : IColor4, IModel<Color4Value>
     {
         /// <summary> Red channel, normalized 0..1 (not 0..255). </summary>
         [RuleInRange(ValueRules.MinColor, ValueRules.MaxColor)]
@@ -54,60 +55,9 @@ namespace BH.SDK.Models.Values
             B = b;
             A = a;
         }
-        public void Reset()
-        {
-            R = ValueRules.MaxColor;
-            G = ValueRules.MaxColor;
-            B = ValueRules.MaxColor;
-            A = ValueRules.MaxColor;
-        }
 
         public ColorType GetModelType() => ColorType.Value;
 
-        public object Clone() => Copy();
-        IColor4 ICopyable<IColor4>.Copy() => new Color4Value(R, G, B, A);
-        public Color4Value Copy() => new(R, G, B, A);
-
-        public void Update(Color4Value src)
-        {
-            R = src.R;
-            G = src.G;
-            B = src.B;
-            A = src.A;
-        }
-
-        public void Pull(Color4Value src)
-        {
-            R = src.R;
-            G = src.G;
-            B = src.B;
-            A = src.A;
-        }
-
-        void IUpdatable<IColor4>.Update(IColor4 src)
-        {
-            if (src is Color4Value value) Update(value);
-        }
-        void IMoveable<IColor4>.Pull(IColor4 src)
-        {
-            if (src is Color4Value value) Pull(value);
-        }
-
-        public override bool Equals(object obj) => obj is Color4Value value && Equals(value);
-        public override int GetHashCode() => HashCode.Combine(R, G, B, A);
-        
-        public bool Equals(IColor4 other) => other is Color4Value value && Equals(value);
-        public bool Equals(Color4Value other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            var result = R.Equals(other.R)
-                         && G.Equals(other.G)
-                         && B.Equals(other.B)
-                         && A.Equals(other.A);
-            return result;
-        }
-        
         /// <summary>
         ///   <para>
         ///               ColorValue Preset of RGBA(0.9411765f, 0.9725491f, 1f, 1f)

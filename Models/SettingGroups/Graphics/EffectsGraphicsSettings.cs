@@ -1,4 +1,5 @@
 ﻿using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Enums.Settings;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Rules;
@@ -12,7 +13,8 @@ namespace BH.SDK.Models.SettingGroups.Graphics
     /// than the game itself, which is the main lever for keeping heavy levels playable on phones.
     /// </summary>
     [RuleContainer]
-    public class EffectsGraphicsSettings : BaseGraphicsSettings, IFrameable,
+    [GenerateModel]
+    public sealed partial class EffectsGraphicsSettings : BaseGraphicsSettings, IFrameable,
         IModel<EffectsGraphicsSettings>, IMoveable<EffectsGraphicsSettings>
     {
         /// <summary> Where the effect update rate comes from - separate from the game's own, hence
@@ -77,60 +79,6 @@ namespace BH.SDK.Models.SettingGroups.Graphics
             MaxScrubTime = maxScrubTime;
             ReplayStepBudget = replayStepBudget;
             FrameStepBudget = frameStepBudget;
-        }
-        public override void Reset()
-        {
-            base.Reset();
-            Render = true;
-            FramerateTarget = FramerateTarget.Fixed;
-            FixedFramerate = 50;
-            MaxScrubTime = 0.5f;
-            ReplayStepBudget = EffectRules.ReplayStepBudget_Default;
-            FrameStepBudget = EffectRules.FrameStepBudget_Default;
-        }
-
-        public override object Clone() => CopyImpl();
-        public override BaseGraphicsSettings Copy() => CopyImpl();
-        EffectsGraphicsSettings ICopyable<EffectsGraphicsSettings>.Copy() => CopyImpl();
-
-        private EffectsGraphicsSettings CopyImpl() => new(Render, FramerateTarget, FixedFramerate,
-            MaxScrubTime, ReplayStepBudget, FrameStepBudget);
-
-        public void Pull(EffectsGraphicsSettings source)
-        {
-            Render = source.Render;
-            FramerateTarget = source.FramerateTarget;
-            FixedFramerate = source.FixedFramerate;
-            MaxScrubTime = source.MaxScrubTime;
-            ReplayStepBudget = source.ReplayStepBudget;
-            FrameStepBudget = source.FrameStepBudget;
-        }
-
-        public void Update(EffectsGraphicsSettings src)
-        {
-            base.Update(src);
-
-            FramerateTarget = src.FramerateTarget;
-            FixedFramerate = src.FixedFramerate;
-            MaxScrubTime = src.MaxScrubTime;
-            ReplayStepBudget = src.ReplayStepBudget;
-            FrameStepBudget = src.FrameStepBudget;
-        }
-
-        public override bool Equals(object obj) => obj is EffectsGraphicsSettings value && Equals(value);
-        public override int GetHashCode() => HashCode.Combine(base.GetHashCode(),
-            (int)FramerateTarget, FixedFramerate, MaxScrubTime, ReplayStepBudget, FrameStepBudget);
-
-        public bool Equals(EffectsGraphicsSettings other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return base.Equals(other)
-                   && FramerateTarget == other.FramerateTarget
-                   && FixedFramerate == other.FixedFramerate
-                   && MaxScrubTime.Equals(other.MaxScrubTime)
-                   && ReplayStepBudget == other.ReplayStepBudget
-                   && FrameStepBudget == other.FrameStepBudget;
         }
     }
 }

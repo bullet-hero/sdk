@@ -1,4 +1,5 @@
 using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Rules.Attributes;
 using Newtonsoft.Json;
@@ -20,7 +21,8 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
     /// </summary>
     [RuleContainer]
     [RulePropertyOrder(nameof(MinSize), nameof(MaxSize))]
-    public class EditorCameraSettings : IModel<EditorCameraSettings>, IMoveable<EditorCameraSettings>
+    [GenerateModel]
+    public sealed partial class EditorCameraSettings : IModel<EditorCameraSettings>, IMoveable<EditorCameraSettings>
     {
         /// <summary> Closest the editor camera may zoom in. </summary>
         [RuleMinValue(0f)]
@@ -75,7 +77,6 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
             WheelMultiplier = wheelMultiplier;
             ZoomToMouse = zoomToMouse;
         }
-        public void Reset() => ResetOwn();
         private void ResetOwn()
         {
             MinSize = 0.1f;
@@ -85,49 +86,6 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
             MoveSensitivityY = 1f;
             WheelMultiplier = 0.1f;
             ZoomToMouse = true;
-        }
-
-        public object Clone() => Copy();
-        public EditorCameraSettings Copy() => new(MinSize, MaxSize, Invert, MoveSensitivityX,
-            MoveSensitivityY, WheelMultiplier, ZoomToMouse);
-
-        public void Pull(EditorCameraSettings source)
-        {
-            MinSize = source.MinSize;
-            MaxSize = source.MaxSize;
-            Invert = source.Invert;
-            MoveSensitivityX = source.MoveSensitivityX;
-            MoveSensitivityY = source.MoveSensitivityY;
-            WheelMultiplier = source.WheelMultiplier;
-            ZoomToMouse = source.ZoomToMouse;
-        }
-
-        public void Update(EditorCameraSettings src)
-        {
-            MinSize = src.MinSize;
-            MaxSize = src.MaxSize;
-            Invert = src.Invert;
-            MoveSensitivityX = src.MoveSensitivityX;
-            MoveSensitivityY = src.MoveSensitivityY;
-            WheelMultiplier = src.WheelMultiplier;
-            ZoomToMouse = src.ZoomToMouse;
-        }
-
-        public override int GetHashCode() => HashCode.Combine(MinSize, MaxSize, Invert,
-            MoveSensitivityX, MoveSensitivityY, WheelMultiplier, ZoomToMouse);
-        public override bool Equals(object obj) => obj is EditorCameraSettings value && Equals(value);
-
-        public bool Equals(EditorCameraSettings other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return MinSize.Equals(other.MinSize)
-                   && MaxSize.Equals(other.MaxSize)
-                   && Invert == other.Invert
-                   && MoveSensitivityX.Equals(other.MoveSensitivityX)
-                   && MoveSensitivityY.Equals(other.MoveSensitivityY)
-                   && WheelMultiplier.Equals(other.WheelMultiplier)
-                   && ZoomToMouse == other.ZoomToMouse;
         }
     }
 }

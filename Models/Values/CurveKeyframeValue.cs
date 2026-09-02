@@ -1,11 +1,10 @@
 ﻿using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Enums.Values;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
 using Newtonsoft.Json;
-
-// ReSharper disable NonReadonlyMemberInGetHashCode
 
 namespace BH.SDK.Models.Values
 {
@@ -14,7 +13,8 @@ namespace BH.SDK.Models.Values
     /// it carries no EaseType - shape comes from the tangents here, not from a named easing.
     /// </summary>
     [RuleContainer]
-    public class CurveKeyframeValue : IModel<CurveKeyframeValue>
+    [GenerateModel]
+    public sealed partial class CurveKeyframeValue : IModel<CurveKeyframeValue>
     {
         // TODO maybe replace FloatValue to IFloat (in editor step)
 
@@ -38,7 +38,6 @@ namespace BH.SDK.Models.Values
         [RuleEnumValid]
         [JsonProperty(Names.TangentMode)]
         public CurveTangentMode TangentMode { get; set; }
-
 
         /// <summary> Slope arriving at this point, shaping the segment before it. </summary>
         [RuleInRange(ValueRules.MinFloatValue, ValueRules.MaxFloatValue)]
@@ -106,64 +105,6 @@ namespace BH.SDK.Models.Values
             OutTangent = outTangent;
             InWeight = inWeight;
             OutWeight = outWeight;
-        }
-        public void Reset()
-        {
-            Time = ValueRules.FloatZero;
-            Value = ValueRules.FloatZero;
-            WeightedMode = CurveWeightedMode.None;
-            TangentMode = CurveTangentMode.Free;
-            InTangent = ValueRules.FloatZero;
-            OutTangent = ValueRules.FloatZero;
-            InWeight = ValueRules.FloatZero;
-            OutWeight = ValueRules.FloatZero;
-        }
-
-        public object Clone() => Copy();
-        public CurveKeyframeValue Copy() => new(Time, Value,
-            WeightedMode, TangentMode, InTangent, OutTangent, InWeight, OutWeight);
-
-        public void Update(CurveKeyframeValue src)
-        {
-            Time = src.Time;
-            Value = src.Value;
-            WeightedMode = src.WeightedMode;
-            TangentMode = src.TangentMode;
-            InTangent = src.InTangent;
-            OutTangent = src.OutTangent;
-            InWeight = src.InWeight;
-            OutWeight = src.OutWeight;
-        }
-
-        public void Pull(CurveKeyframeValue src)
-        {
-            Time = src.Time;
-            Value = src.Value;
-            WeightedMode = src.WeightedMode;
-            TangentMode = src.TangentMode;
-            InTangent = src.InTangent;
-            OutTangent = src.OutTangent;
-            InWeight = src.InWeight;
-            OutWeight = src.OutWeight;
-        }
-
-        public override bool Equals(object obj) => obj is CurveKeyframeValue value && Equals(value);
-        public override int GetHashCode() => HashCode.Combine(Time, Value,
-            (int)WeightedMode, (int)TangentMode, InTangent, OutTangent, InWeight, OutWeight);
-
-        public bool Equals(CurveKeyframeValue other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            var result = Time.Equals(other.Time)
-                         && Value.Equals(other.Value)
-                         && WeightedMode == other.WeightedMode
-                         && TangentMode == other.TangentMode
-                         && InTangent.Equals(other.InTangent)
-                         && OutTangent.Equals(other.OutTangent)
-                         && InWeight.Equals(other.InWeight)
-                         && OutWeight.Equals(other.OutWeight);
-            return result;
         }
     }
 }

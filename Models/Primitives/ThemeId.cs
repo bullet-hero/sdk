@@ -12,7 +12,7 @@ namespace BH.SDK.Models.Primitives
     public struct ThemeId : IEquatable<ThemeId>, IPrimitiveGuid
     {
         /// <summary> The raw Guid. Serialized as a string under JSON and as a native UUID under
-        /// BSON by PrimitiveGuidConverter. </summary>
+        /// a binary format by PrimitiveGuidConverter. </summary>
         public Guid value;
         Guid IPrimitiveGuid.Value => value;
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Models.Objects;
 using BH.SDK.Models.Primitives;
@@ -8,8 +9,6 @@ using BH.SDK.Rules.Attributes;
 using BH.SDK.Utils;
 using BH.SDK.Versions;
 using Newtonsoft.Json;
-
-// ReSharper disable NonReadonlyMemberInGetHashCode
 
 namespace BH.SDK.Models.Game
 {
@@ -20,7 +19,8 @@ namespace BH.SDK.Models.Game
     /// </summary>
     [RuleContainer]
     [DataVersion(DataDomains.GameLevel, 1, 0)]
-    public class GameLevel : IObjectScope, IModel<GameLevel>
+    [GenerateModel]
+    public sealed partial class GameLevel : IObjectScope, IModel<GameLevel>
     {
         /// <summary> Markers, checkpoints, screen limits, background and theme tracks. </summary>
         [RuleNotNull]
@@ -46,6 +46,8 @@ namespace BH.SDK.Models.Game
         // TODO add a contextual Rule validating this whole dictionary (key must equal value's own id)
         /// <summary> Every object in the level, flat and keyed by id - hierarchy is expressed through
         /// each object's ParentObjectId, not by nesting. </summary>
+        [GenerateModelKeyed(nameof(RectObject.ObjectId))]
+        [GenerateModelMerge]
         [RuleNotNull, RuleCollectionMaxCount(LevelRules.MaxObjects)]
         [RuleDictionaryKeyMatches(nameof(RectObject.ObjectId))]
         [JsonProperty(Names.Objects)]
@@ -69,53 +71,6 @@ namespace BH.SDK.Models.Game
             PlayerEvents = playerEvents;
 
             Objects = objects;
-        }
-        public void Reset()
-        {
-            Events.Reset();
-            CameraEvents.Reset();
-            PostProcessingEvents.Reset();
-            PlayerEvents.Reset();
-
-            Objects.Clear();
-        }
-
-        public object Clone() => Copy();
-        public GameLevel Copy() => new(Events.Copy(), CameraEvents.Copy(), PostProcessingEvents.Copy(),
-            PlayerEvents.Copy(), Objects.CopyDictionary());
-
-        public void Update(GameLevel src)
-        {
-            Events = src.Events.Copy();
-            CameraEvents = src.CameraEvents.Copy();
-            PostProcessingEvents = src.PostProcessingEvents.Copy();
-            PlayerEvents = src.PlayerEvents.Copy();
-            Objects = src.Objects.CopyDictionary();
-        }
-
-        public void Pull(GameLevel src)
-        {
-            Events.Pull(src.Events);
-            CameraEvents.Pull(src.CameraEvents);
-            PostProcessingEvents.Pull(src.PostProcessingEvents);
-            PlayerEvents.Pull(src.PlayerEvents);
-            Objects.PullDictionary(src.Objects, LevelUtils.PullObject);
-        }
-
-        public override bool Equals(object obj) => obj is GameLevel value && Equals(value);
-        public override int GetHashCode() => HashCode.Combine(Events, CameraEvents, PostProcessingEvents, PlayerEvents,
-            Objects.GetDictionaryHashCode());
-
-        public bool Equals(GameLevel other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            var result = Events.Equals(other.Events)
-                         && CameraEvents.Equals(other.CameraEvents)
-                         && PostProcessingEvents.Equals(other.PostProcessingEvents)
-                         && PlayerEvents.Equals(other.PlayerEvents)
-                         && Objects.DictionaryEquals(other.Objects);
-            return result;
         }
     }
 }

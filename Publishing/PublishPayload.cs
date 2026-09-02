@@ -19,10 +19,10 @@ namespace BH.SDK.Publishing
     {
         private readonly Dictionary<(ResourceType, int), long> _resourceBytes = new();
 
-        /// <summary> Size of level.json/.bson. </summary>
+        /// <summary> Size of level.json/.blob. </summary>
         public long LevelBytes { get; set; }
 
-        /// <summary> Size of metadata.json/.bson. </summary>
+        /// <summary> Size of metadata.json/.blob. </summary>
         public long MetaBytes { get; set; }
 
         /// <summary> Everything the level folder weighs, packed - including files no model

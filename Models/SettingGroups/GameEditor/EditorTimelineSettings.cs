@@ -1,4 +1,5 @@
 using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Rules.Attributes;
 using Newtonsoft.Json;
@@ -14,7 +15,8 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
     /// How the editor's timelines respond to a pointer, and whether playback wraps.
     /// </summary>
     [RuleContainer]
-    public class EditorTimelineSettings : IModel<EditorTimelineSettings>, IMoveable<EditorTimelineSettings>
+    [GenerateModel]
+    public sealed partial class EditorTimelineSettings : IModel<EditorTimelineSettings>, IMoveable<EditorTimelineSettings>
     {
         // Both are ON-SCREEN distances, so they mean the same thing at every zoom - and both are the
         // finger-versus-mouse trade the long-press pair makes: a grab zone sized for a cursor is
@@ -56,46 +58,12 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
             GlobalLoop = globalLoop;
             LocalLoop = localLoop;
         }
-        public void Reset() => ResetOwn();
         private void ResetOwn()
         {
             SnapThresholdPx = 10f;
             EdgeHandlePx = 8f;
             GlobalLoop = true;
             LocalLoop = true;
-        }
-
-        public object Clone() => Copy();
-        public EditorTimelineSettings Copy() => new(SnapThresholdPx, EdgeHandlePx, GlobalLoop, LocalLoop);
-
-        public void Pull(EditorTimelineSettings source)
-        {
-            SnapThresholdPx = source.SnapThresholdPx;
-            EdgeHandlePx = source.EdgeHandlePx;
-            GlobalLoop = source.GlobalLoop;
-            LocalLoop = source.LocalLoop;
-        }
-
-        public void Update(EditorTimelineSettings src)
-        {
-            SnapThresholdPx = src.SnapThresholdPx;
-            EdgeHandlePx = src.EdgeHandlePx;
-            GlobalLoop = src.GlobalLoop;
-            LocalLoop = src.LocalLoop;
-        }
-
-        public override int GetHashCode() =>
-            HashCode.Combine(SnapThresholdPx, EdgeHandlePx, GlobalLoop, LocalLoop);
-        public override bool Equals(object obj) => obj is EditorTimelineSettings value && Equals(value);
-
-        public bool Equals(EditorTimelineSettings other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return SnapThresholdPx.Equals(other.SnapThresholdPx)
-                   && EdgeHandlePx.Equals(other.EdgeHandlePx)
-                   && GlobalLoop == other.GlobalLoop
-                   && LocalLoop == other.LocalLoop;
         }
     }
 }

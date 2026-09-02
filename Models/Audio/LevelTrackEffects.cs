@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.AudioEffects;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Models.Keyframes;
@@ -7,8 +8,6 @@ using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
 using BH.SDK.Utils;
 using Newtonsoft.Json;
-
-// ReSharper disable NonReadonlyMemberInGetHashCode
 
 namespace BH.SDK.Models.Audio
 {
@@ -18,7 +17,8 @@ namespace BH.SDK.Models.Audio
     /// by its own MixLevel, so there is no list to add to or flags to keep in sync.
     /// </summary>
     [RuleContainer]
-    public class LevelTrackEffects : IModel<LevelTrackEffects>
+    [GenerateModel]
+    public sealed partial class LevelTrackEffects : IModel<LevelTrackEffects>
     {
         /// <summary> Volume automation over the level timeline - the one place a track fades. </summary>
         [RuleNotNull, RuleCollectionMaxCount(LevelRules.MaxAudioKeys)]
@@ -137,109 +137,6 @@ namespace BH.SDK.Models.Audio
             Compressor = compressor;
             Normalize = normalize;
             ParamEQ = paramEQ;
-        }
-        public void Reset()
-        {
-            Volumes.Clear();
-            StereoPans.Clear();
-            Active = AudioRules.ActiveDefault;
-            
-            Lowpass.Reset();
-            Highpass.Reset();
-            Echo.Reset();
-            Reverb.Reset();
-            Chorus.Reset();
-            PitchShifter.Reset();
-            Distortion.Reset();
-            Flange.Reset();
-            Compressor.Reset();
-            Normalize.Reset();
-            ParamEQ.Reset();
-        }
-
-        public object Clone() => Copy();
-        public LevelTrackEffects Copy() => new(Volumes.CopyList(), StereoPans.CopyList(), Active,
-            (AudioLowpass)Lowpass.Clone(), (AudioHighpass)Highpass.Clone(), (AudioEcho)Echo.Clone(),
-            (AudioReverb)Reverb.Clone(), (AudioChorus)Chorus.Clone(), (AudioPitchShifter)PitchShifter.Clone(),
-            (AudioDistortion)Distortion.Clone(), (AudioFlange)Flange.Clone(), (AudioCompressor)Compressor.Clone(),
-            (AudioNormalize)Normalize.Clone(), (AudioParamEQ)ParamEQ.Clone());
-
-        public void Update(LevelTrackEffects src)
-        {
-            Volumes = src.Volumes.CopyList();
-            StereoPans = src.StereoPans.CopyList();
-            Active = src.Active;
-            Lowpass = (AudioLowpass)src.Lowpass.Clone();
-            Highpass = (AudioHighpass)src.Highpass.Clone();
-            Echo = (AudioEcho)src.Echo.Clone();
-            Reverb = (AudioReverb)src.Reverb.Clone();
-            Chorus = (AudioChorus)src.Chorus.Clone();
-            PitchShifter = (AudioPitchShifter)src.PitchShifter.Clone();
-            Distortion = (AudioDistortion)src.Distortion.Clone();
-            Flange = (AudioFlange)src.Flange.Clone();
-            Compressor = (AudioCompressor)src.Compressor.Clone();
-            Normalize = (AudioNormalize)src.Normalize.Clone();
-            ParamEQ = (AudioParamEQ)src.ParamEQ.Clone();
-        }
-
-        public void Pull(LevelTrackEffects src)
-        {
-            Volumes = src.Volumes.CopyList();
-            StereoPans = src.StereoPans.CopyList();
-            Active = src.Active;
-            Lowpass.Pull(src.Lowpass);
-            Highpass.Pull(src.Highpass);
-            Echo.Pull(src.Echo);
-            Reverb.Pull(src.Reverb);
-            Chorus.Pull(src.Chorus);
-            PitchShifter.Pull(src.PitchShifter);
-            Distortion.Pull(src.Distortion);
-            Flange.Pull(src.Flange);
-            Compressor.Pull(src.Compressor);
-            Normalize.Pull(src.Normalize);
-            ParamEQ.Pull(src.ParamEQ);
-        }
-
-        public override bool Equals(object obj) => obj is LevelTrackEffects value && Equals(value);
-        public override int GetHashCode()
-        {
-            var hashCode = new HashCode();
-            hashCode.Add(Volumes.GetListHashCode());
-            hashCode.Add(StereoPans.GetListHashCode());
-            hashCode.Add(Active);
-            hashCode.Add(Lowpass);
-            hashCode.Add(Highpass);
-            hashCode.Add(Echo);
-            hashCode.Add(Reverb);
-            hashCode.Add(Chorus);
-            hashCode.Add(PitchShifter);
-            hashCode.Add(Distortion);
-            hashCode.Add(Flange);
-            hashCode.Add(Compressor);
-            hashCode.Add(Normalize);
-            hashCode.Add(ParamEQ);
-            return hashCode.ToHashCode();
-        }
-
-        public bool Equals(LevelTrackEffects other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            var result = Volumes.ListEquals(other.Volumes)
-                         && StereoPans.ListEquals(other.StereoPans)
-                         && Active == other.Active
-                         && Lowpass.Equals(other.Lowpass)
-                         && Highpass.Equals(other.Highpass)
-                         && Echo.Equals(other.Echo)
-                         && Reverb.Equals(other.Reverb)
-                         && Chorus.Equals(other.Chorus)
-                         && PitchShifter.Equals(other.PitchShifter)
-                         && Distortion.Equals(other.Distortion)
-                         && Flange.Equals(other.Flange)
-                         && Compressor.Equals(other.Compressor)
-                         && Normalize.Equals(other.Normalize)
-                         && ParamEQ.Equals(other.ParamEQ);
-            return result;
         }
     }
 }

@@ -28,9 +28,11 @@ namespace BH.SDK.Serialization
 
             dataSerializer = type switch
             {
-                SerializationType.Json => new JsonDataSerializer(Serializer, SerializationType.Json),
-                SerializationType.JsonPretty => new JsonDataSerializer(Serializer, SerializationType.JsonPretty),
-                SerializationType.Bson => new BsonDataSerializer(Serializer),
+                SerializationType.Json => new JsonDataSerializer(Serializer),
+                // The one implementation that shares nothing below the interface: its payload is
+                // written by generated code on the models themselves, so it needs no JsonSerializer,
+                // no converters and no contract resolver.
+                SerializationType.Blob => new BlobDataSerializer(),
                 _ => throw new ArgumentOutOfRangeException(nameof(type), type, null),
             };
             _dataSerializers[type] = dataSerializer;
@@ -40,6 +42,13 @@ namespace BH.SDK.Serialization
         public SerializationService() : this(new SerializationSettings())
         {
         }
+
+        /// <summary> The reflective path, with no generated codecs - what every level on disk was
+        /// written by. Its ONE caller is the parity test that compares the same bytes through both
+        /// paths; it is a method rather than a settings flag at the call site because SerializationSettings'
+        /// own fields are Newtonsoft types, and Core.Tests does not reference Newtonsoft. </summary>
+        public static SerializationService CreateWithoutGeneratedCodecs()
+            => new(new SerializationSettings { useGeneratedCodecs = false });
 
         public SerializationService(SerializationSettings serializationSettings)
         {
@@ -63,7 +72,7 @@ namespace BH.SDK.Serialization
                 TypeNameHandling = serializationSettings.typeNameHandling,
                 ContractResolver = contractResolver,
                 ObjectCreationHandling = ObjectCreationHandling.Replace,
-                Converters = GetConverters(settingsDefault),
+                Converters = GetConverters(settingsDefault, serializationSettings.useGeneratedCodecs),
             };
             Serializer = JsonSerializer.Create(settings);
         }
@@ -80,7 +89,8 @@ namespace BH.SDK.Serialization
         // re-wrapping its own payload, and a per-type cache cannot express that.
 
         /// <summary> Builds the converter set a serializer needs, already routed. </summary>
-        public static List<JsonConverter> GetConverters(JsonSerializerSettings settingsDefault)
+        public static List<JsonConverter> GetConverters(JsonSerializerSettings settingsDefault,
+            bool useGeneratedCodecs = true)
         {
             var versionedEnvelope = new VersionedEnvelopeConverter();
             var converters = new List<JsonConverter>
@@ -135,6 +145,12 @@ namespace BH.SDK.Serialization
                 new ObjectConverter(),
             };
 
+            // LAST, AND THAT IS THE WHOLE OF ITS WIRING - see its own header. First match wins, so
+            // every tagged value still reaches the converter that tags it, and this one answers for
+            // the payload inside. It is what makes reading a level stop binding members by
+            // reflection; the thirty-five converters above stay for the shapes it hands back to.
+            if (useGeneratedCodecs) converters.Add(new GeneratedModelConverter());
+
             // Some converters above resolve a concrete implementation of a polymorphic type and need a
             // private "default" JsonSerializer to populate that concrete type's own members (see
             // IRequiresDefaultSerializer for why). Wired automatically here, so adding a new converter of
@@ -183,7 +199,10 @@ namespace BH.SDK.Serialization
         // SerializationSettings and therefore applied to every save this service ever made, which is
         // the opposite of what a per-save choice needs. Bson is not a valid argument here - this is
         // the plain-text entry point; use GetDataSerializer for the binary one.
-        public string SerializeData<TValue>(TValue value, SerializationType type = SerializationType.Json)
+        /// <summary> The TEXT api: always compact JSON, whatever a caller's chosen file format is.
+        /// Which FORMAT a level is written in is SerializeEnvelope's question, since only bytes can
+        /// answer it - a blob has no text form, and there is no longer a second JSON shape. </summary>
+        public string SerializeData<TValue>(TValue value)
         {
             if (value == null) return string.Empty;
 
@@ -193,7 +212,7 @@ namespace BH.SDK.Serialization
             }
 
             using var stringWriter = new StringWriter();
-            using (var textWriter = new JsonTextWriter(stringWriter) { Formatting = type.ToFormatting() })
+            using (var textWriter = new JsonTextWriter(stringWriter) { Formatting = Formatting.None })
                 Serializer.Serialize(textWriter, value);
 
             var json = stringWriter.ToString();

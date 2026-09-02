@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Enums;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Models.Keyframes;
@@ -9,8 +10,6 @@ using BH.SDK.Rules.Attributes;
 using BH.SDK.Utils;
 using Newtonsoft.Json;
 
-// ReSharper disable NonReadonlyMemberInGetHashCode
-
 namespace BH.SDK.Models.Objects
 {
     /// <summary>
@@ -19,7 +18,8 @@ namespace BH.SDK.Models.Objects
     /// object only keeps the bookkeeping needed to re-sync them when the template changes.
     /// </summary>
     [RuleContainer]
-    public class PrefabObject : RectObject, IModel<PrefabObject>, IUpdatable<PrefabObject>
+    [GenerateModel]
+    public sealed partial class PrefabObject : RectObject, IModel<PrefabObject>, IUpdatable<PrefabObject>
     {
         public override ObjectType GetModelType() => ObjectType.PrefabObject;
 
@@ -52,6 +52,7 @@ namespace BH.SDK.Models.Objects
         // a child can have several fields overridden at once, but only one override per field.
 
         /// <summary> Per-placement field overrides, keyed by (template object, field path). </summary>
+        [GenerateModelKeyed(nameof(Modification.Key))]
         [RuleNotNull, RuleCollectionMaxCount(PrefabRules.MaxModifications)]
         [JsonProperty(Names.Mod)]
         public Dictionary<ModificationKey, Modification> Modifications { get; set; }
@@ -72,89 +73,6 @@ namespace BH.SDK.Models.Objects
             PrefabId = prefabId;
             ObjectIds = objectIds;
             Modifications = modifications;
-        }
-        public override void Reset()
-        {
-            base.Reset();
-            PrefabId = PrefabId.Null;
-            ObjectIds.Clear();
-            Modifications.Clear();
-        }
-
-        public override object Clone() => CopyImpl();
-        public override RectObject Copy() => CopyImpl();
-        PrefabObject ICopyable<PrefabObject>.Copy() => CopyImpl();
-
-        private PrefabObject CopyImpl() => new(ObjectId, ParentObjectId, Name, Active, Span, Layer,
-            Positions.CopyList(), Rotations.CopyList(), Scales.CopyList(), Sizes.CopyList(),
-            AnchorsMin.CopyList(), AnchorsMax.CopyList(), Pivots.CopyList(),
-            PrefabId, ObjectIds.CopyDictionaryUnmanaged(), Modifications.CopyDictionaryManaged());
-
-        public void Update(PrefabObject src)
-        {
-            base.Update(src);
-
-            PrefabId = src.PrefabId;
-            ObjectIds = src.ObjectIds.CopyDictionaryUnmanaged();
-            Modifications = src.Modifications.CopyDictionaryManaged();
-        }
-
-        public void Pull(PrefabObject src)
-        {
-            base.Pull(src);
-
-            PrefabId = src.PrefabId;
-            ObjectIds = src.ObjectIds.CopyDictionaryUnmanaged();
-            Modifications = src.Modifications.CopyDictionaryManaged();
-        }
-
-        public override bool Equals(object obj) => obj is PrefabObject value && Equals(value);
-        public override int GetHashCode()
-        {
-            var hashCode = new HashCode();
-            hashCode.Add(base.GetHashCode());
-            hashCode.Add(PrefabId);
-            hashCode.Add(ObjectIds.GetDictionaryHashCode());
-            hashCode.Add(Modifications.GetDictionaryHashCode());
-            return hashCode.ToHashCode();
-        }
-
-        public bool Equals(PrefabObject other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-
-            var result = EqualsObject(other)
-                         && EqualsPrefabObject(other);
-            return result;
-        }
-        public override bool Equals(RectObject other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-
-            switch (other)
-            {
-                case PrefabObject prefabObject:
-                {
-                    var result = EqualsObject(prefabObject)
-                                 && EqualsPrefabObject(prefabObject);
-                    return result;
-                }
-                default:
-                {
-                    var result = EqualsObject(other);
-                    return result;
-                }
-            }
-        }
-
-        private bool EqualsPrefabObject(PrefabObject other)
-        {
-            var result = PrefabId.Equals(other.PrefabId)
-                         && ObjectIds.DictionaryEquals(other.ObjectIds)
-                         && Modifications.DictionaryEquals(other.Modifications);
-            return result;
         }
     }
 }

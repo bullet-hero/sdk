@@ -1,5 +1,4 @@
 using BH.SDK.Serialization.Serializers;
-using Newtonsoft.Json;
 using NUnit.Framework;
 
 namespace BH.SDK.Tests
@@ -7,8 +6,7 @@ namespace BH.SDK.Tests
     public class SerializationTypeExtensionsTests
     {
         [TestCase(SerializationType.Json, ".json")]
-        [TestCase(SerializationType.Bson, ".bson")]
-        [TestCase(SerializationType.JsonPretty, ".json")]
+        [TestCase(SerializationType.Blob, ".blob")]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.VeryEasy)]
@@ -19,8 +17,8 @@ namespace BH.SDK.Tests
 
         [TestCase(".json", SerializationType.Json)]
         [TestCase(".JSON", SerializationType.Json)]
-        [TestCase(".bson", SerializationType.Bson)]
-        [TestCase(".BSON", SerializationType.Bson)]
+        [TestCase(".blob", SerializationType.Blob)]
+        [TestCase(".BLOB", SerializationType.Blob)]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.VeryEasy)]
@@ -34,6 +32,8 @@ namespace BH.SDK.Tests
         [TestCase(".txt")]
         [TestCase("")]
         [TestCase(".jsonx")]
+        // The retired one. Its number is never reissued and its extension resolves to nothing.
+        [TestCase(".bson")]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.VeryEasy)]
@@ -43,27 +43,17 @@ namespace BH.SDK.Tests
             Assert.IsFalse(result);
         }
 
-        [TestCase(SerializationType.Json, Formatting.None)]
-        [TestCase(SerializationType.Bson, Formatting.None)]
-        [TestCase(SerializationType.JsonPretty, Formatting.Indented)]
+        // Two members are retired and neither number is ever reissued: 1 was Bson, 2 was JsonPretty.
+        // A settings file in the wild still holds one of them, and what it must NOT do is quietly
+        // mean whatever took the slot - so the numbers stay vacant and the values stay undefined.
+        [TestCase(1)]
+        [TestCase(2)]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.VeryEasy)]
-        public void ToFormatting_ReturnsExpectedFormatting(SerializationType type, Formatting expected)
+        public void ARetiredNumber_IsNotReissued(byte number)
         {
-            Assert.AreEqual(expected, type.ToFormatting());
-        }
-
-        // Pretty and compact share ".json" on purpose, so nothing can recover the choice from a file.
-        // Resolving it to Json is what keeps a load deterministic - see SerializationType's header.
-        [Test]
-        [Author(Metadata.Author.Vertoker)]
-        [Category(Metadata.Category.Self)]
-        [Category(Metadata.Category.VeryEasy)]
-        public void TryFromFileExtension_NeverResolvesToJsonPretty()
-        {
-            SerializationTypeExtensions.TryFromFileExtension(".json", out var type);
-            Assert.AreEqual(SerializationType.Json, type);
+            Assert.IsFalse(System.Enum.IsDefined(typeof(SerializationType), (SerializationType)number));
         }
     }
 }

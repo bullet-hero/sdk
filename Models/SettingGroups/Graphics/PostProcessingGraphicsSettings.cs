@@ -1,4 +1,5 @@
 ﻿using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Interfaces;
 using Newtonsoft.Json;
 
@@ -9,7 +10,8 @@ namespace BH.SDK.Models.SettingGroups.Graphics
     /// player can disable exactly the effects that cost them frames (or that they find unreadable)
     /// while keeping the rest of the level's look. Inherited Render kills the whole stack.
     /// </summary>
-    public class PostProcessingGraphicsSettings : BaseGraphicsSettings,
+    [GenerateModel]
+    public sealed partial class PostProcessingGraphicsSettings : BaseGraphicsSettings,
         IModel<PostProcessingGraphicsSettings>, IMoveable<PostProcessingGraphicsSettings>
     {
         /// <summary> Allow bloom. One of the four effects flagged as heavy on phones. </summary>
@@ -95,32 +97,7 @@ namespace BH.SDK.Models.SettingGroups.Graphics
             RenderAnalogGlitch = renderAnalogGlitch;
             RenderDigitalGlitch = renderDigitalGlitch;
         }
-        public override void Reset() // PresetAll
-        {
-            base.Reset();
-            Render = true;
-            RenderBloom = true;
-            RenderChroma = true;
-            RenderVignette = true;
-            RenderLens = true;
-            RenderGrain = true;
-            RenderMotionBlur = true;
-            RenderColorCurves = true;
-            RenderLiftGammaGain = true;
-            RenderShadowsMidtonesHighlights = true;
-            RenderWhiteBalance = true;
-            RenderAnalogGlitch = true;
-            RenderDigitalGlitch = true;
-        }
         
-        public override object Clone() => CopyImpl();
-        public override BaseGraphicsSettings Copy() => CopyImpl();
-        PostProcessingGraphicsSettings ICopyable<PostProcessingGraphicsSettings>.Copy() => CopyImpl();
-        
-        private PostProcessingGraphicsSettings CopyImpl() => new(Render, RenderBloom, RenderChroma, RenderVignette,
-            RenderLens, RenderGrain, RenderMotionBlur, RenderColorCurves, RenderLiftGammaGain,
-            RenderShadowsMidtonesHighlights, RenderWhiteBalance, RenderAnalogGlitch, RenderDigitalGlitch);
-
         public PostProcessingGraphicsSettings GetPresetNone() => new()
         {
             Render = false,
@@ -169,79 +146,5 @@ namespace BH.SDK.Models.SettingGroups.Graphics
             RenderAnalogGlitch = true,
             RenderDigitalGlitch = true,
         };
-
-        public void Pull(PostProcessingGraphicsSettings source)
-        {
-            Render = source.Render;
-            RenderBloom = source.RenderBloom;
-            RenderChroma = source.RenderChroma;
-            RenderVignette = source.RenderVignette;
-            RenderLens = source.RenderLens;
-            RenderGrain = source.RenderGrain;
-            RenderMotionBlur = source.RenderMotionBlur;
-            RenderColorCurves = source.RenderColorCurves;
-            RenderLiftGammaGain = source.RenderLiftGammaGain;
-            RenderShadowsMidtonesHighlights = source.RenderShadowsMidtonesHighlights;
-            RenderWhiteBalance = source.RenderWhiteBalance;
-            RenderAnalogGlitch = source.RenderAnalogGlitch;
-            RenderDigitalGlitch = source.RenderDigitalGlitch;
-        }
-
-        public void Update(PostProcessingGraphicsSettings src)
-        {
-            base.Update(src);
-
-            RenderBloom = src.RenderBloom;
-            RenderChroma = src.RenderChroma;
-            RenderVignette = src.RenderVignette;
-            RenderLens = src.RenderLens;
-            RenderGrain = src.RenderGrain;
-            RenderMotionBlur = src.RenderMotionBlur;
-            RenderColorCurves = src.RenderColorCurves;
-            RenderLiftGammaGain = src.RenderLiftGammaGain;
-            RenderShadowsMidtonesHighlights = src.RenderShadowsMidtonesHighlights;
-            RenderWhiteBalance = src.RenderWhiteBalance;
-            RenderAnalogGlitch = src.RenderAnalogGlitch;
-            RenderDigitalGlitch = src.RenderDigitalGlitch;
-        }
-
-        public override bool Equals(object obj) => obj is PostProcessingGraphicsSettings value && Equals(value);
-        public override int GetHashCode()
-        {
-            var hashCode = new HashCode();
-            hashCode.Add(base.GetHashCode());
-            hashCode.Add(RenderBloom);
-            hashCode.Add(RenderChroma);
-            hashCode.Add(RenderVignette);
-            hashCode.Add(RenderLens);
-            hashCode.Add(RenderGrain);
-            hashCode.Add(RenderMotionBlur);
-            hashCode.Add(RenderColorCurves);
-            hashCode.Add(RenderLiftGammaGain);
-            hashCode.Add(RenderShadowsMidtonesHighlights);
-            hashCode.Add(RenderWhiteBalance);
-            hashCode.Add(RenderAnalogGlitch);
-            hashCode.Add(RenderDigitalGlitch);
-            return hashCode.ToHashCode();
-        }
-        
-        public bool Equals(PostProcessingGraphicsSettings other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return base.Equals(other)
-                   && RenderBloom == other.RenderBloom
-                   && RenderChroma == other.RenderChroma
-                   && RenderVignette == other.RenderVignette
-                   && RenderLens == other.RenderLens
-                   && RenderGrain == other.RenderGrain
-                   && RenderMotionBlur == other.RenderMotionBlur
-                   && RenderColorCurves == other.RenderColorCurves
-                   && RenderLiftGammaGain == other.RenderLiftGammaGain
-                   && RenderShadowsMidtonesHighlights == other.RenderShadowsMidtonesHighlights
-                   && RenderWhiteBalance == other.RenderWhiteBalance
-                   && RenderAnalogGlitch == other.RenderAnalogGlitch
-                   && RenderDigitalGlitch == other.RenderDigitalGlitch;
-        }
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
@@ -20,7 +21,8 @@ namespace BH.SDK.Models.Statistics
 
     /// <summary> What the avatar itself has done, across every level. </summary>
     [RuleContainer]
-    public class AvatarStatistics : IModel<AvatarStatistics>
+    [GenerateModel]
+    public sealed partial class AvatarStatistics : IModel<AvatarStatistics>
     {
         /// <summary> Dashes spent. A long for the same reason the frame counter is one. </summary>
         [JsonProperty(Names.TotalDashes)]
@@ -30,41 +32,10 @@ namespace BH.SDK.Models.Statistics
         [JsonProperty(Names.TotalDistanceMoved)]
         public double TotalDistanceMoved { get; set; }
 
-        public AvatarStatistics() => Reset();
-
-        public void Reset()
+        public AvatarStatistics()
         {
             TotalDashes = 0L;
             TotalDistanceMoved = 0.0;
         }
-
-        public object Clone() => Copy();
-
-        public AvatarStatistics Copy()
-        {
-            var copy = new AvatarStatistics();
-            copy.Update(this);
-            return copy;
-        }
-
-        public void Update(AvatarStatistics src)
-        {
-            TotalDashes = src.TotalDashes;
-            TotalDistanceMoved = src.TotalDistanceMoved;
-        }
-
-        public void Pull(AvatarStatistics source) => Update(source);
-
-        public override bool Equals(object obj) => obj is AvatarStatistics value && Equals(value);
-
-        public bool Equals(AvatarStatistics other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return TotalDashes == other.TotalDashes
-                   && TotalDistanceMoved.Equals(other.TotalDistanceMoved);
-        }
-
-        public override int GetHashCode() => HashCode.Combine(TotalDashes, TotalDistanceMoved);
     }
 }

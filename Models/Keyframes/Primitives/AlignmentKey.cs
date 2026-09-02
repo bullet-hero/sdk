@@ -1,4 +1,5 @@
 ﻿using System;
+using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Enums;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Models.Interfaces.Values;
@@ -15,7 +16,8 @@ namespace BH.SDK.Models.Keyframes
     /// defaulting to center - animating it moves the point an object rotates and scales around.
     /// </summary>
     [RuleContainer]
-    public class AlignmentKey : Keyframe, IModel<AlignmentKey>
+    [GenerateModel]
+    public sealed partial class AlignmentKey : Keyframe, IModel<AlignmentKey>
     {
         /// <summary> Normalized point in the rect at this frame: (0,0) left-bottom, (1,1) right-top. </summary>
         [RuleNotNull(typeof(Vector2Value)), RuleIVector2InRange(ValueRules.MinAlignment, ValueRules.MaxAlignment)]
@@ -30,43 +32,7 @@ namespace BH.SDK.Models.Keyframes
         {
             Value = value;
         }
-        public override void Reset()
-        {
-            base.Reset();
-            Value = Alignment.DefaultValue;
-        }
 
-        public override object Clone() => CopyImpl();
-        public override Keyframe Copy() => CopyImpl();
-        AlignmentKey ICopyable<AlignmentKey>.Copy() => CopyImpl();
-        
-        private AlignmentKey CopyImpl() => new(Value.Copy(), Frame, Ease);
-
-        public void Update(AlignmentKey src)
-        {
-            base.Update(src);
-
-            Value = src.Value.Copy();
-        }
-
-        public void Pull(AlignmentKey src)
-        {
-            base.Pull(src);
-
-            Value = Value.PullFrom(src.Value);
-        }
-
-        public override bool Equals(object obj) => obj is AlignmentKey value && Equals(value);
-        public override int GetHashCode() => HashCode.Combine(Frame, Value);
-
-        public bool Equals(AlignmentKey other)
-        {
-            if (other is null) return false;
-            if (ReferenceEquals(this, other)) return true;
-            var result = base.Equals(other) && Value.Equals(other.Value);
-            return result;
-        }
-        
         public static AlignmentKey GetLeftBottom(int frame, EaseType ease = DefaultEase)
             => new(Alignment.LeftBottomValue, frame, ease);
         public static AlignmentKey GetLeftMiddle(int frame, EaseType ease = DefaultEase)
