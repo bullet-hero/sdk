@@ -32,7 +32,12 @@ namespace BH.SDK.Models.Objects
     // comparing it is not object.Equals (a List has no value equality), so both bodies below are
     // real decisions rather than boilerplate. FrameSpan and ModificationKey are the other two, for
     // the different reason that a struct has no constructor body to read defaults from.
-    public sealed class Modification : IModel<Modification>, Serialization.Blob.IBinaryModel, Serialization.Json.IJsonModel
+    //
+    // It is `partial` anyway, and for a different generator: ValidationGenerator writes a walk for
+    // every [RuleContainer], and opting out of ModelGenerator says nothing about that one. There is
+    // no third state - a container either gets a generated walk or stays the slowest kind of node on
+    // a level's load path - so BHS1101 is an error and this word is how it is answered.
+    public sealed partial class Modification : IModel<Modification>, Serialization.Blob.IBinaryModel, Serialization.Json.IJsonModel
     {
         // WHICH object (inner/template ObjectId) and WHICH field (Path) this override applies to -
         // see ModificationKey's own doc comment. Also PrefabObject.Modifications' dictionary key.

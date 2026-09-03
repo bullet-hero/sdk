@@ -11,6 +11,9 @@ namespace BH.SDK.Rules.Attributes
     {
         public override string RuleNameKey => "rule_istring_max";
 
+        // Warning, for RuleStringMax's reason: cosmetic, and repaired only by truncating authored text.
+        public override RuleGroup Group => RuleGroup.Warning;
+
         public int MaxLength { get; set; }
 
         public RuleIStringMaxAttribute(int maxLength)

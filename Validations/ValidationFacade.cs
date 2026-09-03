@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using BH.SDK.Models;
+using BH.SDK.Publishing;
 using BH.SDK.Validations.Graph;
 
 namespace BH.SDK.Validations
@@ -22,6 +24,7 @@ namespace BH.SDK.Validations
         private readonly RuleAnalyzer _analyzer = new();
         private readonly RuleFixer _fixer = new();
         private readonly LevelGraphAnalyzer _graphAnalyzer = new();
+        private readonly PublishReadinessAnalyzer _publishAnalyzer = new();
 
         /// <summary> Validate any aggregate root - Level, LevelMeta, UserSettings, a standalone
         /// Prefab or EffectData. The graph pass runs only for a Level, since cross-object invariants
@@ -59,6 +62,47 @@ namespace BH.SDK.Validations
                 : new List<GraphIssue>();
 
             return new ValidationReport(ruleIssues, graphIssues);
+        }
+
+        // WHY THIS IS ONE CALL AND NOT THREE. Publishing is the only caller that needs all three
+        // passes, and it is also the only one that would get them wrong by hand: the metadata is its
+        // own aggregate root, so validating the level alone silently skips every rule on LevelMeta -
+        // which is precisely the half a publish check cares about. Passing the level is OPTIONAL for
+        // the same reason PublishReadinessAnalyzer makes it optional: metadata.json exists so a
+        // catalogue can grade thousands of levels without opening one, and the report says which
+        // kind of pass it was.
+        //
+        // Nothing is repaired here, deliberately. ValidateAndFix exists for content an author owns;
+        // a publish check is asked about content on its way out, where a silent repair is the last
+        // thing anyone wants.
+
+        /// <summary>
+        /// Everything all three passes think of a level about to be published: the declarative
+        /// rules and the graph over both the level and its metadata, plus one service's own
+        /// conditions. <paramref name="level"/> may be null to grade metadata alone.
+        /// </summary>
+        public PublishValidationReport ValidateForPublish(LevelMeta meta, PublishProfile profile,
+            Level level = null, DateTime now = default, PublishPayload payload = null,
+            RuleAnalyzerSettings settings = null)
+        {
+            if (meta == null) throw new ArgumentNullException(nameof(meta));
+            if (profile == null) throw new ArgumentNullException(nameof(profile));
+
+            settings ??= new RuleAnalyzerSettings();
+
+            var ruleIssues = _analyzer.Analyze(meta, settings);
+            var graphIssues = new List<GraphIssue>();
+
+            if (level != null)
+            {
+                ruleIssues.AddRange(_analyzer.Analyze(level, settings));
+                graphIssues = _graphAnalyzer.Analyze(level);
+            }
+
+            var content = new ValidationReport(ruleIssues, graphIssues);
+            var publish = _publishAnalyzer.Analyze(meta, profile, level, now, payload);
+
+            return new PublishValidationReport(content, publish);
         }
     }
 }

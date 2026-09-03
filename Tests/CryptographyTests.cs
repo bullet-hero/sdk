@@ -37,7 +37,7 @@ namespace BH.SDK.Tests
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
-        [Category(Metadata.Category.Hard)]
+        [Category(Metadata.Category.Extreme)]
         public void Encrypt_IsNotDeterministic()
         {
             var cryptography = new CryptographyService();

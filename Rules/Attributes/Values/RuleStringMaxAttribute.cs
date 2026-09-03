@@ -8,6 +8,11 @@ namespace BH.SDK.Rules.Attributes
     {
         public override string RuleNameKey => "rule_string_max";
 
+        // Warning, not Error: a name too long is cosmetic, and the Fix is a TRUNCATION - it destroys
+        // authored text to satisfy a bound nothing at playback depends on. Reporting it as fatal
+        // would make an author choose between a permanent error and losing what they typed.
+        public override RuleGroup Group => RuleGroup.Warning;
+
         public int MaxLength { get; set; }
 
         public RuleStringMaxAttribute(int maxLength)

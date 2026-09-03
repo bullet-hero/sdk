@@ -1,6 +1,7 @@
 ﻿using System;
 using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Interfaces;
+using BH.SDK.Rules.Attributes;
 using Newtonsoft.Json;
 
 namespace BH.SDK.Models.SettingGroups.Graphics
@@ -10,6 +11,7 @@ namespace BH.SDK.Models.SettingGroups.Graphics
     /// player can disable exactly the effects that cost them frames (or that they find unreadable)
     /// while keeping the rest of the level's look. Inherited Render kills the whole stack.
     /// </summary>
+    [RuleContainer]
     [GenerateModel]
     public sealed partial class PostProcessingGraphicsSettings : BaseGraphicsSettings,
         IModel<PostProcessingGraphicsSettings>, IMoveable<PostProcessingGraphicsSettings>

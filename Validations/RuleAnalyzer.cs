@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -10,9 +9,10 @@ using BH.SDK.Utils;
 
 namespace BH.SDK.Validations
 {
-    // The walk is the one full-graph pass a level pays on every load (a consumer's level loader
-    // validates before handing the level over), and a level is ~150k nodes, so what this class does
-    // NOT do per node is as load-bearing as what it does. Two things were measured and removed:
+    // The walk is the one full-graph pass a level pays when an author opens it (a consumer's level
+    // loader validates on the editor path; playback skips it), and a level is ~150k nodes, so what
+    // this class does NOT do per node is as load-bearing as what it does. Two things were measured
+    // and removed:
     //
     // - The [RuleContainer] lookup used to run uncached on every node. Under Mono a custom-attribute
     //   query is the most expensive reflection call there is - it allocates a fresh attribute
@@ -22,16 +22,17 @@ namespace BH.SDK.Validations
     //   ever be one, and a property with no rules whose value can hold no container below it is
     //   pure cost: fetch, box, recurse, return immediately. PropertyEntry decides that once per
     //   type instead of once per instance - see Walkable.
+    //
+    // THE SPLIT WITH RuleWalk. Everything decided once per TYPE lives here - which properties are
+    // walked, which rules sit on them, whether a type is a container, and the buffer pool that
+    // outlives a single analysis. Everything belonging to one CALL lives on the walk - the trace,
+    // the findings, the settings. That is what makes a walk cheap to allocate per Analyze, and it is
+    // the seam a generated Validate arrives through: RuleWalk.Node is the only place a child node is
+    // reached from, and WalkNode below is what it falls back to when a value has no generated walk
+    // of its own. The two are mutually recursive through that one point on purpose.
 
     public class RuleAnalyzer
     {
-        // Boxing an int is what a RulePath costs per list/array element, and a level's keyframe
-        // tracks are the bulk of the walk. Indices below this reuse one box each.
-        private const int BoxedIndexCount = 1024;
-
-        private static readonly object[] BoxedIndexes = CreateBoxedIndexes();
-
-        private readonly List<RulePath> _trace = new(16);
         private readonly Dictionary<Type, PropertyEntry[]> _typesCache = new(32);
         private readonly Dictionary<Type, BaseObjectRuleAttribute[]> _objectRulesCache = new(32);
         private readonly Dictionary<Type, bool> _containerCache = new(64);
@@ -50,17 +51,27 @@ namespace BH.SDK.Validations
             var visited = new HashSet<Type>();
             foreach (var contextType in GetType().Assembly.GetTypes())
             {
-                if (IsRuleContainer(contextType))
-                    CacheRecursively(contextType, visited);
+                if (!IsRuleContainer(contextType)) continue;
+
+                CacheRecursively(contextType, visited);
+                WarmGeneratedTable(contextType);
             }
         }
 
-        private static object[] CreateBoxedIndexes()
+        // A GENERATED WALK ADDRESSES ITS PROPERTIES BY ORDINAL, and RuleTable's static initializer is
+        // what checks those ordinals against reflection. Left lazy, a disagreement would surface on
+        // whichever node first reaches that type - halfway through a level, wrapped in a
+        // TypeInitializationException, on a path that has nothing to do with the cause. Forcing the
+        // initializers here moves it to "the analyzer was constructed", which is where a build
+        // problem belongs; a stale BH.SDK.Roslyn.dll is the likeliest cause and the message says so.
+        //
+        // It costs nothing extra: the loop above already walks every [RuleContainer] type and warms
+        // the same reflection this makes the tables out of.
+
+        private static void WarmGeneratedTable(Type type)
         {
-            var indexes = new object[BoxedIndexCount];
-            for (var i = 0; i < BoxedIndexCount; i++)
-                indexes[i] = i;
-            return indexes;
+            if (type.IsAbstract || !typeof(IValidatable).IsAssignableFrom(type)) return;
+            System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(type.TypeHandle);
         }
 
         private void CacheRecursively(Type contextType, HashSet<Type> visited)
@@ -89,28 +100,24 @@ namespace BH.SDK.Validations
         // was found, on top of whoever consumed the returned list writing it again - so a level with
         // several hundred findings paid for every one of them twice, in stack traces the analyzer
         // has no use for. What to do about a report is the caller's policy (see ValidationFacade).
+        //
+        // THE TRACE NEEDS NO RESET ANY MORE, and that is the one behavioural note about this method:
+        // it used to live on the analyzer and had to be cleared in a finally, because a misapplied
+        // rule aborts the walk by design and a leftover trace poisoned every later issue's path with
+        // a dead prefix. It lives on the walk now, and the walk dies with the call - so an aborted
+        // analysis leaves nothing behind to clear. RuleAnalyzerPoolTests still pins the outcome.
 
         public List<RuleIssue> Analyze(object obj, RuleAnalyzerSettings settings)
         {
-            var result = new List<RuleIssue>(8);
-
-            try
-            {
-                AnalyzeRecursive(obj, settings, result, RuleContext.ForRoot(obj));
-            }
-            finally
-            {
-                // A misapplied rule aborts the walk by design, and the analyzer is meant to be
-                // reusable afterwards - so the trace is reset unconditionally, not only on success.
-                // Leaving it behind poisons every later issue's path with a dead prefix.
-                _trace.Clear();
-            }
-
-            return result;
+            var walk = new RuleWalk(this, settings);
+            walk.Node(obj, RuleContext.ForRoot(obj));
+            return walk.Issues;
         }
 
-        private void AnalyzeRecursive(object target, RuleAnalyzerSettings settings,
-            List<RuleIssue> result, RuleContext context)
+        /// <summary> Walk one node by reflection. Reached only through <see cref="RuleWalk.Node"/>,
+        /// and its own recursion goes back through it - so a value carrying a generated walk is
+        /// still walked by that walk even when its owner has none. </summary>
+        internal void WalkNode(object target, RuleContext context, RuleWalk walk)
         {
             if (target == null) return;
             var targetType = target.GetType();
@@ -125,19 +132,8 @@ namespace BH.SDK.Validations
             // Object rules run before the property walk, so an issue spanning two properties is
             // reported against the object owning both - and lands in the trace before either of
             // them, which is what makes the reverse-order fix pass repair the pair first.
-            foreach (var rule in GetObjectRules(targetType))
-            {
-                if (!rule.IsValidType(targetType))
-                {
-                    throw new ArgumentException($"Can't apply rule {rule.GetType().Name} " +
-                                                $"to type {targetType.Name}, path: {_trace.GetPath()}");
-                }
+            walk.ObjectRules(GetObjectRules(targetType), target, targetType, context);
 
-                if (!settings.Reports(rule.Group)) continue;
-                if (rule.IsValid(target, context)) continue;
-
-                result.Add(new RuleIssue(rule, context, new List<RulePath>(_trace)));
-            }
 
             var objProperties = GetObjProperties(targetType);
 
@@ -152,93 +148,26 @@ namespace BH.SDK.Validations
 
             try
             {
+                // PHASE A - every property's own rules, and no descent at all.
                 foreach (var entry in objProperties)
                 {
                     // Nothing to check and nowhere to descend - reading the property at all would
-                    // only box its value for an AnalyzeRecursive that returns on its first line.
+                    // only box its value for a walk that returns on its first line.
                     var rules = entry.Rules;
                     if (rules.Length == 0 && !entry.Walkable) continue;
 
-                    var property = entry.Property;
-                    var nextObj = property.GetValue(target);
-                    _trace.Add(new RulePath(property));
+                    var nextObj = entry.Property.GetValue(target);
+                    var canDescend = walk.Check(entry.Property, rules, nextObj, context,
+                        entry.TypeChecked);
 
-                    var hasInvalidRule = false;
-                    foreach (var rule in rules)
-                    {
-                        // TODO move to Roslyn Analyzer, this must not be in runtime
-                        if (!rule.IsValidType(property))
-                        {
-                            throw new ArgumentException($"Can't apply rule {rule.GetType().Name} " +
-                                                     $"to type {nextObj?.GetType().Name}, path: {_trace.GetPath()}");
-                        }
-
-                        if (!settings.Reports(rule.Group)) continue;
-
-                        if (!rule.IsValid(nextObj, context))
-                        {
-                            hasInvalidRule = true;
-                            result.Add(new RuleIssue(rule, context, new List<RulePath>(_trace)));
-
-                            if (!settings.analyzeAllPropertyRules) break;
-                        }
-                    }
-
-                    if (entry.Walkable && nextObj != null
-                        && (!hasInvalidRule || settings.analyzeAllRecursiveRules))
-                    {
-                        nextObjects.Add((nextObj, entry));
-                    }
-
-                    _trace.RemoveAt(_trace.Count - 1);
+                    if (entry.Walkable && canDescend) nextObjects.Add((nextObj, entry));
                 }
 
+                // PHASE B - the descent, as a SECOND pass in the same property order. Never fused
+                // with the loop above: an object with two walkable properties reports in a different
+                // order the moment the two interleave.
                 foreach (var (nextObj, nextEntry) in nextObjects)
-                {
-                    var nextProp = nextEntry.Property;
-                    if (nextObj is IList list)
-                    {
-                        for (var i = 0; i < list.Count; i++)
-                        {
-                            _trace.Add(new RulePath(nextProp, BoxIndex(i)));
-                            AnalyzeRecursive(list[i], settings, result, context);
-                            _trace.RemoveAt(_trace.Count - 1);
-                        }
-                    }
-                    else if (nextObj is IDictionary dictionary)
-                    {
-                        // Values only, deliberately. A RulePath addresses "this property, at this key",
-                        // which is how RuleFixer finds its way back to a value - there is no way to
-                        // express "the key itself", so an issue raised on a key would be repaired into
-                        // the value instead. Keys stay safe without the walk: every key in the format is
-                        // an id struct, and a struct can never be a [RuleContainer] anyway (it is boxed
-                        // on the way in, so any Fix would write into a copy and vanish). Anything a key
-                        // needs checking for - above all whether it agrees with its value's own id - is
-                        // relational, and belongs to the graph pass rather than here.
-                        foreach (DictionaryEntry entry in dictionary)
-                        {
-                            _trace.Add(new RulePath(nextProp, entry.Key));
-                            AnalyzeRecursive(entry.Value, settings, result, context);
-                            _trace.RemoveAt(_trace.Count - 1);
-                        }
-                    }
-                    else if (nextObj.GetType().IsArray)
-                    {
-                        var array = (Array)nextObj;
-                        for (var i = 0; i < array.Length; i++)
-                        {
-                            _trace.Add(new RulePath(nextProp, BoxIndex(i)));
-                            AnalyzeRecursive(array.GetValue(i), settings, result, context);
-                            _trace.RemoveAt(_trace.Count - 1);
-                        }
-                    }
-                    else
-                    {
-                        _trace.Add(new RulePath(nextProp));
-                        AnalyzeRecursive(nextObj, settings, result, context);
-                        _trace.RemoveAt(_trace.Count - 1);
-                    }
-                }
+                    walk.Descend(nextEntry.Property, nextObj, context);
             }
             finally
             {
@@ -247,23 +176,32 @@ namespace BH.SDK.Validations
             }
         }
 
-        private static object BoxIndex(int index)
-            => index < BoxedIndexCount ? BoxedIndexes[index] : index;
-
         private PropertyEntry[] GetObjProperties(Type objType)
         {
             if (!_typesCache.TryGetValue(objType, out var entries))
             {
                 entries = objType.GetProperties(BindingFlags.Public | BindingFlags.Instance)
                     .Where(property => property.CanRead && property.CanWrite)
-                    .Select(property => new PropertyEntry(property,
-                        property.GetCustomAttributes<BasePropertyRuleAttribute>(true).ToArray(),
-                        IsWalkable(property.PropertyType)))
+                    .Select(CreateEntry)
                     .ToArray();
 
                 _typesCache.Add(objType, entries);
             }
+
             return entries;
+        }
+
+        private static PropertyEntry CreateEntry(PropertyInfo property)
+        {
+            var rules = property.GetCustomAttributes<BasePropertyRuleAttribute>(true).ToArray();
+
+            // Whether a rule may sit on a property is a fact about the TYPE, so it is settled here
+            // rather than per node. Where every rule answered yes, the walk skips the check
+            // entirely; where one did not, it keeps the original per-rule check, throw and all.
+            var typeChecked = true;
+            foreach (var rule in rules) typeChecked &= rule.IsValidType(property);
+
+            return new PropertyEntry(property, rules, IsWalkable(property.PropertyType), typeChecked);
         }
 
         // "Can a [RuleContainer] be reached through a value of this type at all?" The attribute is
@@ -296,6 +234,7 @@ namespace BH.SDK.Validations
                 rules = type.GetCustomAttributes<BaseObjectRuleAttribute>(true).ToArray();
                 _objectRulesCache.Add(type, rules);
             }
+
             return rules;
         }
 
@@ -309,11 +248,17 @@ namespace BH.SDK.Validations
             /// <summary> Can a [RuleContainer] be reached through this property's value? </summary>
             public readonly bool Walkable;
 
-            public PropertyEntry(PropertyInfo property, BasePropertyRuleAttribute[] rules, bool walkable)
+            /// <summary> Whether every rule here already answered IsValidType, once, for this type.
+            /// </summary>
+            public readonly bool TypeChecked;
+
+            public PropertyEntry(PropertyInfo property, BasePropertyRuleAttribute[] rules,
+                bool walkable, bool typeChecked)
             {
                 Property = property;
                 Rules = rules;
                 Walkable = walkable;
+                TypeChecked = typeChecked;
             }
         }
     }

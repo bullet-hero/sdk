@@ -24,6 +24,11 @@ namespace BH.SDK.Rules.Attributes
     {
         public override string RuleNameKey => "rule_modification_key_valid";
 
+        // Warning, not Error, and its own header already says why: a key that does not resolve degrades
+        // into "the override silently does not apply". The placement still materializes and the
+        // level still plays - it plays the template's value instead of the author's.
+        public override RuleGroup Group => RuleGroup.Warning;
+
         public int MaxPathLength { get; set; }
 
         public RuleModificationKeyValidAttribute(int maxPathLength)

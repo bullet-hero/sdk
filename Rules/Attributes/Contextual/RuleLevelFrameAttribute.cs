@@ -22,6 +22,11 @@ namespace BH.SDK.Rules.Attributes
     {
         public override string RuleNameKey => "rule_level_frame";
 
+        // Warning, not Error: a frame past its scope's timeline is not broken data, it is content that
+        // never plays. The level runs, and what the author authored past the end simply does not
+        // appear - which is exactly the difference this severity is for.
+        public override RuleGroup Group => RuleGroup.Warning;
+
         protected override bool IsValidTypeInternal(PropertyInfo property)
             => typeof(int).IsAssignableFrom(property.PropertyType);
 

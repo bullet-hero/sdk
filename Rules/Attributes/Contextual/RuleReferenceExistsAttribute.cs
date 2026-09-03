@@ -31,6 +31,12 @@ namespace BH.SDK.Rules.Attributes
     {
         public override string RuleNameKey => "rule_reference_exists";
 
+        // Warning, not Error, and Fix has nothing to do with it: a dangling reference is UNREPAIRABLE by
+        // design - inventing an id would point the object at some other resource - so reporting it as
+        // Error would mean a level that can never stop being an error. The consumer substitutes its
+        // fallback and the level plays; what it loses is one texture, font or clip.
+        public override RuleGroup Group => RuleGroup.Warning;
+
         public ResourceReferenceKind Kind { get; }
 
         /// <summary> Whether an unset reference is a legitimate authored state rather than a

@@ -25,6 +25,11 @@ namespace BH.SDK.Rules.Attributes
     {
         public override string RuleNameKey => "rule_control_priority";
 
+        // Warning, not Error: a broken permutation makes one device unreachable or listed twice. The
+        // game runs and the other devices steer; this is a settings file describing preferences,
+        // not a level describing content.
+        public override RuleGroup Group => RuleGroup.Warning;
+
         protected override bool IsValidTypeInternal(PropertyInfo property)
             => property.PropertyType == typeof(ControlDevice[]);
 

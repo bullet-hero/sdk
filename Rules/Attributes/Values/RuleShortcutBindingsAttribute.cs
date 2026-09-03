@@ -34,6 +34,11 @@ namespace BH.SDK.Rules.Attributes
     {
         public override string RuleNameKey => "rule_shortcut_bindings";
 
+        // Warning, not Error, and the Fix is why: dropping a malformed entry hands the shortcut back to
+        // its shipped default, so nothing stops working. It is a settings file that lost one
+        // rebinding, not a file that cannot be used.
+        public override RuleGroup Group => RuleGroup.Warning;
+
         protected override bool IsValidTypeInternal(PropertyInfo property)
             => typeof(IDictionary).IsAssignableFrom(property.PropertyType);
 

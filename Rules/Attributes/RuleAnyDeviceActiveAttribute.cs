@@ -23,6 +23,10 @@ namespace BH.SDK.Rules.Attributes
     {
         public override string RuleNameKey => "rule_any_device_active";
 
+        // Warning, not Error: this is UserSettings, not a level. A player who turned every device off
+        // did it to themselves and can turn one back on; nothing about the file is malformed.
+        public override RuleGroup Group => RuleGroup.Warning;
+
         protected override bool IsValidTypeInternal(Type type)
             => typeof(ControlsSettings).IsAssignableFrom(type);
 

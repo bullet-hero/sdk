@@ -11,6 +11,7 @@ namespace BH.SDK.Models.SettingGroups.Graphics
     /// Audio playback options that cost performance: whether DSP effects run, and how hard the
     /// engine works to keep audio locked to the level timeline. Inherited Render mutes audio entirely.
     /// </summary>
+    [RuleContainer]
     [GenerateModel]
     public sealed partial class AudioGraphicsSettings : BaseGraphicsSettings,
         IModel<AudioGraphicsSettings>, IMoveable<AudioGraphicsSettings>

@@ -81,7 +81,17 @@ anything older, never newer - a component built against a newer Roslyn is silent
 - `Analyzers/SandboxProbeAnalyzer.cs`, `Generators/SandboxProbeGenerator.cs` - a probe kept
   deliberately: `BHS0001` on any type named `*RoslynProbe`, and a generated `RoslynSandboxStamp`
   in every assembly in scope. Between them they answer "is Roslyn working right now" in one glance.
-  Delete both once the real generators land.
+  Two real generators have landed since; the probe is kept anyway, because "is Roslyn working" is
+  still the first question when a generated member goes missing.
+- `Generators/Model/` - `ModelGenerator`, which writes the whole `IModel<T>` contract plus the
+  `.blob` and JSON codecs for every `[GenerateModel]` type. `BHS1001`-`BHS1008`.
+- `Generators/Validation/` - `ValidationGenerator`, which writes a `Validate` for every
+  `[RuleContainer]` type so the rule walk stops being reflective. `BHS1102`-`BHS1105` and
+  `BHS1108`; **`BHS1101` and `BHS1107` are retired and must not be reissued** - both refused a
+  LEGAL state (a non-partial container, a hand-written `IValidatable`) that the reflective fallback
+  exists for, and both errored on the private nested fixtures in `Tests/Rules` that are that
+  fallback's only coverage. What they claimed is asserted by `BH.SDK.Tests`'
+  `RuleContainerCoverageTests` instead, where it can be scoped to the format's own models.
 - `Tests~/` - the components' own tests, see below.
 
 ## Testing

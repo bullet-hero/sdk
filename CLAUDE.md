@@ -172,6 +172,11 @@ alive so `GamePlayer`'s jobs can re-roll randomness every frame instead of freez
     present. Streaming platforms are listed as `NotAllowed` rather than omitted, since an absent
     site grades differently from a refused one.
   - `PublishIssue`/`PublishRule`/`PublishPayload`/`PublishReadinessReport` are the finding shapes.
+  - **`ValidationFacade.ValidateForPublish` is how a host asks all three passes at once**, returning
+    a `PublishValidationReport` that carries the content half and this one side by side. It exists
+    for one mistake it prevents: `LevelMeta` is its own aggregate root, so `Validate(level)` never
+    touches a single rule on it - and the metadata is precisely the half a publish check is about.
+    The level is OPTIONAL, for the same reason the analyzer makes it optional. It repairs nothing.
 
 - **Generators/** — authoring automation: a generator produces level content from a few parameters.
   Non-generic `IGenerator` root (so `GeneratorRegistry`'s reflection scan and a reflection-built
@@ -287,10 +292,16 @@ alive so `GamePlayer`'s jobs can re-roll randomness every frame instead of freez
 `Tests/Services/ShapeCatalogServiceTests` (the built-in shape library — id round trip, retired and
 future-axis ids refused, and the two geometric invariants a person cannot eyeball across five
 hundred entries: a shape and its inverse tile the sector they were cut from, and slices tile the
-whole). **`Tests/Rules/` is the bulk** — 42 files,
+whole). **`Tests/Rules/` is the bulk** — 54 files,
   roughly one per `[RuleXxx]` attribute on top of `BaseRuleTests` (the shared analyze/fix harness),
   `RuleCoverageTests` (fails if a rule has no test file), `RuleContextTests`, `RulesConsistencyTests`,
-  `LevelGraphAnalyzerTests`, `ValidationFacadeTests`, `ModificationCheckedWriteTests`.
+  `LevelGraphAnalyzerTests`, `ValidationFacadeTests`, `ModificationCheckedWriteTests`. Five of them
+  guard the GENERATED walk rather than a rule, and are what any change to it answers to:
+  `ValidationParityTests` (three reports stated in full), `RuleWalkSeamTests` (a hand-written
+  `IValidatable` compared against reflection - also the executable spec of what the generator must
+  emit), `RuleContainerCoverageTests` (every container declares its marker and has a generated
+  walk), `RuleSeverityTests` (a rule states its `Group` or is named as deliberately Error) and
+  `ValidationFacadePublishTests`.
 
 ## Object model (`Models/Objects/`)
 
@@ -1077,8 +1088,15 @@ type" rule in detail; this section only adds what it doesn't cover.
 `Rules/` classes are mostly pure `public const` numeric tables with zero `Models/` dependency
 (`FrameRules`, `ValueRules`, `LevelRules`, `AudioRules`, `PostProcessingRules`, `ResourceRules`,
 `TextRules`) — `EffectRules` is the one exception, constructing default `CurveValue`/`GradientValue`
-model instances. `RuleGroup` (`None/Error/Warning/Advice`) is a severity enum that exists but is
-**never actually set away from its `Error` default** by any current rule attribute.
+model instances. `RuleGroup` (`None/Error/Warning/Advice`) is the severity enum, and it is **real
+now**: 36 rules are Error, 8 are Warning, 1 is Advice. It was not - forty-four of forty-five took
+`BaseRuleAttribute`'s default, so `ValidationReport.HasErrors` was identical to `!IsValid` and no
+consumer could act on it. What was missing was the CRITERION, which is now written out at the top of
+`RuleGroup.cs`: Error means the file cannot be played as written, Warning means it plays but not as
+authored (content that never appears, a dangling reference taking a fallback, an override that does
+not apply) or that the only repair is destructive, Advice means playback does not change.
+`Tests/Rules/RuleSeverityTests` makes the choice mandatory - a rule either states its own `Group` or
+is named in that file's `IntentionallyError` list, so a new rule cannot inherit Error by silence.
 
 **`ValueRules.MaxShapeTriangles` is 128, and it was 64 until the game's own shapes outgrew it** —
 an inverted 32-sided ring is the box's rim, the ring's outer rim and its inner disc, which is 94
@@ -1123,14 +1141,61 @@ found, on top of whatever the caller did with the returned list, so a level brea
 every object paid for each finding twice in Editor stack traces; what to do about a report is
 `ValidationFacade`'s caller's policy.
 
-**The walk is on a level's load path**, so its per-node cost is that level's load time: the Unity
-project's `LevelLoaderService.LoadLevel` runs `ValidationFacade.Validate` on every level it reads
-(reporting only — it never refuses or repairs). Two things it therefore must not do per node, both
-removed after measuring ~1.3 s on a 4.7k-object level: query `[RuleContainer]` uncached (a Mono
-custom-attribute lookup allocates a fresh attribute instance every call), and read a property whose
-value can lead nowhere. `RuleContainerAttribute` is `AttributeTargets.Class`, so a value type — or a
-collection of value types, since the walk only descends into items/values — is a proven dead end and
-is never fetched at all. `Tests/RuleAnalyzerPerformanceTests` pins the result.
+**The walk is on the EDITOR's load path, not the player's**, and that is a decision the consumer
+made rather than a property of this code: `Core`'s `LevelLoaderService` carries an enum
+`LevelValidation { Report, Skip }`, `LoadLevel` (playback) defaults to `Skip` and
+`LoadLevelProtected` (opening a level in the editor) defaults to `Report`. So what this costs is how
+long an author waits, and nothing a player waits for. Anything here claiming it runs on every level
+read is stale.
+
+**IT IS GENERATED NOW.** `BH.SDK.Roslyn`'s `ValidationGenerator` writes a `Validate` for every
+`[RuleContainer]` type - 200 of them - and `RuleWalk.Node` dispatches a value to its own walk through
+`IValidatable`, falling back to `RuleAnalyzer.WalkNode` for anything without one (a non-partial type,
+a test fixture, a future hand-written model). The two are mutually recursive through that one point,
+so a half-migrated tree is a legal state. Measured on the corpus, three passes, volcano's rules pass
+went **1614 ms to 850 ms** and weathergirl's **264 ms to 112 ms** - 1.9x and 2.4x, not the
+order-of-magnitude the `.blob` codec bought, because there reflection was the whole cost of reading
+and here it is part of it. What survives is the virtual `rule.IsValid(object, RuleContext)` and the
+boxing at that boundary.
+
+Four things carry that:
+
+- **`RuleWalk`** owns one `Analyze` call's state - the trace, the findings, the settings - and is the
+  only place a child node is reached from. A class rather than a `ref struct`: it travels through an
+  interface, so `ref` would spread to 200 generated signatures to save one object per call.
+- **`RuleTable`** is what the generator deliberately does NOT produce. Reflection builds the
+  `PropertyInfo` array and the rule arrays once per type, so a trace holds the same `PropertyInfo`
+  object either way, `RuleIssue.Rule` is the same attribute instance it has always been, and the
+  rule array keeps reflection's order - which decides WHICH finding is reported when a property
+  carries several. The generator supplies values by ordinal plus the property names it expected, and
+  a disagreement throws at analyzer construction naming a stale `BH.SDK.Roslyn.dll`.
+- **`IsValidType` is asked once per type, not per node**, on both paths (`RuleTable.RulesTypeChecked`
+  and `PropertyEntry.TypeChecked`). It is a reflective type test that used to run per rule per node,
+  and hoisting it is where most of the speedup came from. It is NOT hoisted out of the rule loop
+  entirely, and must not be: an earlier failing rule breaks that loop, so a later misapplied one is
+  never reached and must not throw.
+- **The trace segment is pushed lazily** - only once a finding actually needs it.
+
+**Two things the walk must not do per node** predate all of this and still hold, both removed after
+measuring ~1.3 s on a 4.7k-object level: query `[RuleContainer]` uncached (a Mono custom-attribute
+lookup allocates a fresh attribute instance every call), and read a property whose value can lead
+nowhere. `RuleContainerAttribute` is `AttributeTargets.Class`, so a value type — or a collection of
+value types, since the walk only descends into items/values — is a proven dead end and is never
+fetched at all. `Tests/RuleAnalyzerPerformanceTests` pins the result.
+
+**`[RuleContainer]` is INHERITED and the generator only sees DECLARED attributes**, which is the one
+trap in the arrangement: a type that is a container purely through its base is invisible to
+`ForAttributeWithMetadataName` and silently keeps the reflective walk. Two types were in that state
+and now declare it; `Tests/Rules/RuleContainerCoverageTests` keeps the count at zero and separately
+asserts that every `[RuleContainer]` in this assembly has a generated walk.
+
+**The acceptance test is that the report did not change**, and it is two-sided:
+`Core.Tests.ValidationParityTests` mutates each corpus level so every object and track reports (the
+unmutated corpus reports nothing at all, so a baseline of it would pin nothing), then compares
+against a stored count-plus-digest AND compares both walks against each other through
+`RuleAnalyzerSettings.useGeneratedWalk`. That switch exists for that one caller, exactly as
+`SerializationSettings.useGeneratedCodecs` does - which is also why the reflective path is not
+deleted now that every model has a generated one: deleting it would take the proof with it.
 
 `Roslyn/Analyzers/RuleContainerAnalyzer.cs` (shipped as `BH.SDK.Roslyn.dll` in the SDK root, and
 live in the Editor since 2026-09-02) enforces at compile time that every `[RuleContainer]` class is
