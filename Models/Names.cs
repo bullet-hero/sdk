@@ -349,6 +349,7 @@
         public const string Seed = "seed";
         public const string Framerate = "framerate";
         public const string Fps = "fps";
+        public const string Format = "format";
         public const string Length = "length";
         public const string LengthShort = "len";
         public const string Duration = "duration";
@@ -649,6 +650,7 @@
         public const string EdgeHandle = Edge + _ + Handle;
         public const string LoopGlobal = Loop + _ + Global;
         public const string LoopLocal = Loop + _ + Local;
+        public const string TimeFormat = Time + _ + Format;
         public const string DirtyFieldDelay = Dirty + _ + Field + _ + Delay;
         public const string RotationUnit = Rotation + _ + Unit;
         public const string LogClamps = Log + _ + Clamps;

@@ -1,22 +1,27 @@
 using System;
 using BH.SDK.Models.Attributes;
+using BH.SDK.Models.Enums.Settings;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Rules.Attributes;
 using Newtonsoft.Json;
 
 namespace BH.SDK.Models.SettingGroups.GameEditor
 {
-    // Only four numbers out of the timeline's several dozen are here, and the line between them and
-    // the rest is one question: does a wrong value make the screen WRONG, or merely uncomfortable?
-    // Lane heights, pixels-per-frame, overscans and warmup counts all fail the first way and stay in
-    // the project's asset. These four fail the second way.
+    // Only five of the timeline's several dozen settings are here, and the line between them and the
+    // rest is one question: does a wrong value make the screen WRONG, or merely uncomfortable? Lane
+    // heights, pixels-per-frame, overscans and warmup counts all fail the first way and stay in the
+    // project's asset. These five fail the second way - the ruler spelling a frame in a language the
+    // author does not think in is uncomfortable, never incorrect, since it addresses the same frame
+    // either way.
 
     /// <summary>
-    /// How the editor's timelines respond to a pointer, and whether playback wraps.
+    /// How the editor's timelines respond to a pointer, whether playback wraps, and what
+    /// language they count in.
     /// </summary>
     [RuleContainer]
     [GenerateModel]
-    public sealed partial class EditorTimelineSettings : IModel<EditorTimelineSettings>, IMoveable<EditorTimelineSettings>
+    public sealed partial class EditorTimelineSettings : IModel<EditorTimelineSettings>,
+        IMoveable<EditorTimelineSettings>
     {
         // Both are ON-SCREEN distances, so they mean the same thing at every zoom - and both are the
         // finger-versus-mouse trade the long-press pair makes: a grab zone sized for a cursor is
@@ -47,23 +52,39 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
         [JsonProperty(Names.LoopLocal)]
         public bool LocalLoop { get; set; }
 
+        // One answer for every ruler AND for the playhead readout, which is the whole point of it
+        // being one setting: the two used to speak different languages on the same screen (the ruler
+        // counted frames while the readout printed MM:SS.FF), and an author reading a number off one
+        // to type into the other had to convert it in their head.
+
+        /// <summary> How a ruler label and the playhead readout spell a frame. Default
+        /// <see cref="TimelineTimeFormat.Frames"/>, which is what the ruler always printed. </summary>
+        [RuleEnumValid]
+        [JsonProperty(Names.TimeFormat)]
+        public TimelineTimeFormat TimeFormat { get; set; }
+
         public EditorTimelineSettings()
         {
             ResetOwn();
         }
-        public EditorTimelineSettings(float snapThresholdPx, float edgeHandlePx, bool globalLoop, bool localLoop)
+
+        public EditorTimelineSettings(float snapThresholdPx, float edgeHandlePx, bool globalLoop,
+            bool localLoop, TimelineTimeFormat timeFormat)
         {
             SnapThresholdPx = snapThresholdPx;
             EdgeHandlePx = edgeHandlePx;
             GlobalLoop = globalLoop;
             LocalLoop = localLoop;
+            TimeFormat = timeFormat;
         }
+
         private void ResetOwn()
         {
             SnapThresholdPx = 10f;
             EdgeHandlePx = 8f;
             GlobalLoop = true;
             LocalLoop = true;
+            TimeFormat = TimelineTimeFormat.Frames;
         }
     }
 }
