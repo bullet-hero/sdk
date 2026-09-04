@@ -27,12 +27,12 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
     [GenerateModel]
     public sealed partial class EditorGridSettings : IModel<EditorGridSettings>, IMoveable<EditorGridSettings>
     {
-        // TRUE rather than the zero value, and both halves of that matter. A grid is what the
-        // viewport is missing before anything is placed in it, so switching it on by hand every
-        // session is a step nobody chooses to keep; and a settings file written before this field
-        // existed reads back as the field's default, so making that default true is also what keeps
-        // this additive - no DataVersion moved and there is no migrator, the same call
-        // LevelOrientation.Horizontal makes about not being its enum's zero.
+        // FALSE, which is both the zero value and the answer a session actually wants: the lines are
+        // drawn behind every object in the viewport, and on a phone - where the whole viewport is the
+        // size of a desktop panel - they read as content rather than as a guide. Reaching for the
+        // grid is one press; getting it out of the way every session is one press per session.
+        // Being the zero value also keeps the field additive: a settings file written before it
+        // existed reads back as false, so no DataVersion moved and there is no migrator.
 
         /// <summary> Whether the editor's viewport grid starts switched on. </summary>
         [JsonProperty(Names.ActiveDefault)]
@@ -60,7 +60,7 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
         }
         private void ResetOwn()
         {
-            ActiveDefault = true;
+            ActiveDefault = false;
             Size = 1f;
             Opacity = 0.25f;
         }

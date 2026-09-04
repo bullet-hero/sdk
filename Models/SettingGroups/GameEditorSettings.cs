@@ -45,6 +45,11 @@ namespace BH.SDK.Models.SettingGroups
         [JsonProperty(Names.Grid)]
         public EditorGridSettings Grid { get; set; }
 
+        /// <summary> Whether the editor previews a level's post-processing effects. </summary>
+        [RuleNotNull]
+        [JsonProperty(Names.Effects)]
+        public EditorEffectsSettings Effects { get; set; }
+
         /// <summary> How objects are picked, and what a picked object shows about itself. </summary>
         [RuleNotNull]
         [JsonProperty(Names.Selection)]
@@ -76,6 +81,7 @@ namespace BH.SDK.Models.SettingGroups
             Camera = new EditorCameraSettings();
             Player = new EditorPlayerSettings();
             Grid = new EditorGridSettings();
+            Effects = new EditorEffectsSettings();
             Selection = new EditorSelectionSettings();
             Gizmos = new EditorGizmosSettings();
             Timeline = new EditorTimelineSettings();
@@ -84,7 +90,8 @@ namespace BH.SDK.Models.SettingGroups
         }
 
         public GameEditorSettings(EditorSavingsSettings savings, EditorCameraSettings camera,
-            EditorPlayerSettings player, EditorGridSettings grid, EditorSelectionSettings selection,
+            EditorPlayerSettings player, EditorGridSettings grid, EditorEffectsSettings effects,
+            EditorSelectionSettings selection,
             EditorGizmosSettings gizmos, EditorTimelineSettings timeline,
             EditorInterfaceSettings interfaceSettings, EditorSerializationSettings serialization)
         {
@@ -92,6 +99,7 @@ namespace BH.SDK.Models.SettingGroups
             Camera = camera;
             Player = player;
             Grid = grid;
+            Effects = effects;
             Selection = selection;
             Gizmos = gizmos;
             Timeline = timeline;
@@ -99,7 +107,7 @@ namespace BH.SDK.Models.SettingGroups
             Serialization = serialization;
         }
 
-        // HashCode.Combine takes at most 8 values and this holds 9, so the tail folds into the
+        // HashCode.Combine takes at most 8 values and this holds 10, so the tail folds into the
         // eighth slot - the same shape the flat version needed twice over for its sixteen.
     }
 }

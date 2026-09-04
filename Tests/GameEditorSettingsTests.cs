@@ -29,6 +29,7 @@ namespace BH.SDK.Tests
             Assert.NotNull(settings.Camera);
             Assert.NotNull(settings.Player);
             Assert.NotNull(settings.Grid);
+            Assert.NotNull(settings.Effects);
             Assert.NotNull(settings.Selection);
             Assert.NotNull(settings.Gizmos);
             Assert.NotNull(settings.Timeline);
@@ -62,6 +63,35 @@ namespace BH.SDK.Tests
             Assert.IsFalse(settings.Player.ActiveDefault);
         }
 
+        // The viewport grid and the effects preview are the other two "where does a session start"
+        // switches, and they answer opposite ways on purpose. The grid is drawn BEHIND every object
+        // and reads as content rather than as a guide on a small screen, so it starts off and is one
+        // press away. The effects preview starts ON, because that is what the editor did before the
+        // field existed and a settings file written before it has to read back as the behaviour it
+        // already had - the per-platform seeding a fresh file gets is the host's (RootEntryPoint),
+        // never the model's.
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.VeryEasy)]
+        public void ViewportGrid_DefaultsToOff()
+        {
+            var settings = new GameEditorSettings();
+
+            Assert.IsFalse(settings.Grid.ActiveDefault);
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.VeryEasy)]
+        public void EffectsPreview_DefaultsToOn()
+        {
+            var settings = new GameEditorSettings();
+
+            Assert.IsTrue(settings.Effects.ActiveDefault);
+        }
+
         // Reset on the root has to reach every group. It delegates rather than reassigning, so a
         // group somebody forgot to list would keep whatever the author had left in it.
         [Test]
@@ -77,6 +107,7 @@ namespace BH.SDK.Tests
             settings.Camera.ZoomToMouse = false;
             settings.Player.ActiveDefault = true;
             settings.Grid.Size = 0.25f;
+            settings.Effects.ActiveDefault = false;
             settings.Selection.PickInvisibleAABB = true;
             settings.Gizmos.Scale = 4f;
             settings.Timeline.GlobalLoop = false;
@@ -90,6 +121,7 @@ namespace BH.SDK.Tests
             Assert.IsTrue(settings.Camera.ZoomToMouse);
             Assert.IsFalse(settings.Player.ActiveDefault);
             Assert.AreEqual(1f, settings.Grid.Size);
+            Assert.IsTrue(settings.Effects.ActiveDefault);
             Assert.IsFalse(settings.Selection.PickInvisibleAABB);
             Assert.AreEqual(1f, settings.Gizmos.Scale);
             Assert.IsTrue(settings.Timeline.GlobalLoop);
@@ -113,6 +145,7 @@ namespace BH.SDK.Tests
             Assert.AreNotSame(source.Camera, copy.Camera);
             Assert.AreNotSame(source.Player, copy.Player);
             Assert.AreNotSame(source.Grid, copy.Grid);
+            Assert.AreNotSame(source.Effects, copy.Effects);
             Assert.AreNotSame(source.Selection, copy.Selection);
             Assert.AreNotSame(source.Gizmos, copy.Gizmos);
             Assert.AreNotSame(source.Timeline, copy.Timeline);
