@@ -223,7 +223,10 @@ namespace BH.SDK.Tests
                 AppearingMask = "X#@",
             };
             textObject.Colors.Add(new Color4Key());
-            textObject.FontSizes.Add(new FloatKey());
+            // BOTH kinds of font-size key, because the track is polymorphic and a round trip that
+            // lost the tag would still pass carrying only one of them.
+            textObject.FontSizes.Add(new FontSizeKey());
+            textObject.FontSizes.Add(new AutoFontSizeKey(new FloatValue(0.25f), new FloatValue(3f), 10));
             // Non-default direction/mode on purpose: they live on the KEY, so a round trip that
             // dropped them would still pass with the defaults.
             textObject.Fillments.Add(new FillmentKey(0.5f, 0, TextFillDirection.ToCenter));

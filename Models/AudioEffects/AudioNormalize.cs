@@ -15,7 +15,7 @@ namespace BH.SDK.Models.AudioEffects
     [GenerateModel]
     public sealed partial class AudioNormalize : AudioEffect, IModel<AudioNormalize>
     {
-        /// <summary> Seconds the gain takes to settle, so the correction is not audible as a jump. </summary>
+        /// <summary> Milliseconds the gain takes to settle, so the correction is not audible as a jump. </summary>
         [RuleInRange(AudioRules.Normalize.FadeInTime_Min, AudioRules.Normalize.FadeInTime_Max)]
         [JsonProperty(Names.FadeInTime)]
         public float FadeInTime { get; set; }

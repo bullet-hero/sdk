@@ -54,8 +54,24 @@ namespace BH.SDK.Rules
             public const bool Loop_Default = true;
             public const bool IsLocal_Default = true;
             
+            // THE MAXIMUM IS THE GRAPH'S CAPACITY, and it is one number living in two files. Every
+            // effect plays through UniversalVFX_Local/UniversalVFX_World, whose `capacity` is the
+            // most particles a system can hold; a count above it is clamped by the graph with
+            // nothing reported. Raising this without raising `capacity` in BOTH .vfx assets
+            // therefore promises what the runtime silently refuses to deliver.
+            //
+            // It was 32 768 against a capacity of 32 768, and that pairing is where the cost came
+            // from rather than the promise: a VFX graph's per-frame passes dispatch over CAPACITY,
+            // not over the live particle count, so every instance was a 32 768-particle system
+            // whatever it actually held. Authored content is nowhere near - the heaviest effect in
+            // the corpus asks 500, medians are in the tens, and the default below is 10. Both
+            // numbers moved to 1024 together; GamePlayer's CLAUDE.md carries the measurement.
+            //
+            // Lowering a bound cannot corrupt a level that exceeded it: RuleInRange repairs itself
+            // by clamping, so ValidateAndFix brings an older level down to the new ceiling.
+
             public const uint ParticleCount_Min = 0;
-            public const uint ParticleCount_Max = 32768;
+            public const uint ParticleCount_Max = 1024;
             public const uint ParticleCount_Default = 10;
             
             // Particle lifetime range, in seconds. The upper bound is what keeps ParticleCount

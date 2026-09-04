@@ -78,7 +78,7 @@ namespace BH.SDK.Tests
         {
             var text = new TextObject();
             text.Colors.Add(new Color4Key());
-            text.FontSizes.Add(new FloatKey());
+            text.FontSizes.Add(new FontSizeKey());
             text.Fillments.Add(new FillmentKey());
             text.Appearings.Add(new AppearingKey());
 

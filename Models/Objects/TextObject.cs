@@ -4,6 +4,7 @@ using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Enums;
 using BH.SDK.Models.Enums.Text;
 using BH.SDK.Models.Interfaces;
+using BH.SDK.Models.Interfaces.Keyframes;
 using BH.SDK.Models.Interfaces.Values;
 using BH.SDK.Models.Keyframes;
 using BH.SDK.Models.Primitives;
@@ -48,12 +49,19 @@ namespace BH.SDK.Models.Objects
         [JsonProperty(Names.Color)]
         public List<Color4Key> Colors { get; set; }
 
+        // THE ONLY TRACK HERE WHOSE KEY CLASS IS POLYMORPHIC, and it is what makes auto sizing a
+        // property of a FRAME rather than of the object: a FontSizeKey draws at the size it carries,
+        // an AutoFontSizeKey is fitted into the band it carries, and a track mixes the two freely.
+        // Which one a frame between two keys is in follows the LATER key of the pair, exactly as the
+        // Fillment/Appearing modes below do - and across that boundary a plain key blends as the
+        // degenerate band min = max = Value, so nothing jumps.
+
         /// <summary> Font size track, animated independently of the object's Scales - one resizes
         /// glyphs, the other stretches the whole rendered block. </summary>
         [RuleNotNull, RuleCollectionMaxCount(LevelRules.MaxObjectKeys)]
-        [RuleCollectionUnique(nameof(FloatKey.Frame)), RuleCollectionNoNullItems]
+        [RuleCollectionUnique(nameof(Keyframe.Frame)), RuleCollectionNoNullItems]
         [JsonProperty(Names.FontSize)]
-        public List<FloatKey> FontSizes { get; set; }
+        public List<IFontSizeKey> FontSizes { get; set; }
 
         // The two tracks below are per-character effects rather than transform ones, so they are
         // resolved by the player's text job over the string itself rather than by the usual
@@ -99,13 +107,13 @@ namespace BH.SDK.Models.Objects
         [RuleEnumValid(TextRules.VerticalAlignment_Default)]
         [JsonProperty(Names.VerticalAlignment)]
         public TextObjectVerticalAlignment VerticalAlignment { get; set; }
-        
+
         public TextObject()
         {
             Text = new StringValue();
             FontResourceId = FontResourceId.Default;
             Colors = new List<Color4Key>();
-            FontSizes = new List<FloatKey>();
+            FontSizes = new List<IFontSizeKey>();
             Fillments = new List<FillmentKey>();
             Appearings = new List<AppearingKey>();
             AppearingMask = TextRules.AppearingMask_Default;
@@ -114,10 +122,12 @@ namespace BH.SDK.Models.Objects
             HorizontalAlignment = TextRules.HorizontalAlignment_Default;
             VerticalAlignment = TextRules.VerticalAlignment_Default;
         }
-        public TextObject(ObjectId objectId, ObjectId parentObjectId, string name, bool active, FrameSpan span, int layer,
+
+        public TextObject(ObjectId objectId, ObjectId parentObjectId, string name, bool active, FrameSpan span,
+            int layer,
             List<PosKey> positions, List<AngleKey> rotations, List<ScaKey> scales, List<ScaKey> sizes,
             List<AlignmentKey> anchorsMin, List<AlignmentKey> anchorsMax, List<AlignmentKey> pivots,
-            IString text, FontResourceId fontResourceId, List<Color4Key> colors, List<FloatKey> fontSizes,
+            IString text, FontResourceId fontResourceId, List<Color4Key> colors, List<IFontSizeKey> fontSizes,
             List<FillmentKey> fillments, List<AppearingKey> appearings, string appearingMask, bool wordWrap,
             TextObjectHorizontalAlignment horizontalAlignment, TextObjectVerticalAlignment verticalAlignment)
             : base(objectId, parentObjectId, name, active, span, layer,

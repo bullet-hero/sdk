@@ -142,6 +142,7 @@ namespace BH.SDK.Serialization
 
                 new ScreenLimitConverter(),
                 new Color4X4KeyConverter(),
+                new FontSizeKeyConverter(),
                 new ObjectConverter(),
             };
 

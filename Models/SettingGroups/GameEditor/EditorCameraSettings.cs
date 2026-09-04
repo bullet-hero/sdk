@@ -80,7 +80,7 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
         private void ResetOwn()
         {
             MinSize = 0.1f;
-            MaxSize = 100f;
+            MaxSize = 1000f;
             Invert = true;
             MoveSensitivityX = 1f;
             MoveSensitivityY = 1f;
