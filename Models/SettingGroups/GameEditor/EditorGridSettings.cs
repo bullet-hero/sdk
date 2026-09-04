@@ -7,11 +7,12 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models.SettingGroups.GameEditor
 {
-    // The grid's own VISIBILITY is not here, and that is the split: whether the lines are drawn right
-    // now is the current view, like the active gizmo, and lives in the session (Services.GameEditor's
-    // GridModeService). How big a cell is and how loud the lines are describe how the author works -
-    // a level authored on a half-unit grid stays authored on one across sessions - so only those are
-    // remembered.
+    // WHETHER THE LINES ARE DRAWN RIGHT NOW is not here, and that is the split: the current view is
+    // session state, like the active gizmo, and lives in Services.GameEditor's GridModeService. What
+    // the STARTING state is describes how the author works, so that half is remembered - the same
+    // split, and the same pair of names, as the preview player's EditorPlayerSettings.ActiveDefault.
+    // How big a cell is and how loud the lines are are remembered for the same reason: a level
+    // authored on a half-unit grid stays authored on one across sessions.
     //
     // Alpha is deliberately the ONLY thing authored about the colour: the hue is the inverse of
     // whatever the camera is showing on the current frame, so the one decision left is how far the
@@ -26,6 +27,17 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
     [GenerateModel]
     public sealed partial class EditorGridSettings : IModel<EditorGridSettings>, IMoveable<EditorGridSettings>
     {
+        // TRUE rather than the zero value, and both halves of that matter. A grid is what the
+        // viewport is missing before anything is placed in it, so switching it on by hand every
+        // session is a step nobody chooses to keep; and a settings file written before this field
+        // existed reads back as the field's default, so making that default true is also what keeps
+        // this additive - no DataVersion moved and there is no migrator, the same call
+        // LevelOrientation.Horizontal makes about not being its enum's zero.
+
+        /// <summary> Whether the editor's viewport grid starts switched on. </summary>
+        [JsonProperty(Names.ActiveDefault)]
+        public bool ActiveDefault { get; set; }
+
         /// <summary> Side of one cell of the editor's viewport grid, in world units. </summary>
         [RuleMinValue(ValueRules.MinGridSize)]
         [JsonProperty(Names.Size)]
@@ -40,13 +52,15 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
         {
             ResetOwn();
         }
-        public EditorGridSettings(float size, float opacity)
+        public EditorGridSettings(bool activeDefault, float size, float opacity)
         {
+            ActiveDefault = activeDefault;
             Size = size;
             Opacity = opacity;
         }
         private void ResetOwn()
         {
+            ActiveDefault = true;
             Size = 1f;
             Opacity = 0.25f;
         }

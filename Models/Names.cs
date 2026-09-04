@@ -655,6 +655,7 @@
         public const string RotationUnit = Rotation + _ + Unit;
         public const string LogClamps = Log + _ + Clamps;
         public const string RenderInframes = Render + _ + Inframes;
+        public const string LinkColliderShape = Link + _ + Collider + _ + Shape;
 
         public const string GameEditor = Game + _ + Editor;
         public const string OpenMenuOnLose = Open + _ + Menu + _ + On + _ + Lose;

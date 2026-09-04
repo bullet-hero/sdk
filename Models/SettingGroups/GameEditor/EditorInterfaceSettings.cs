@@ -57,17 +57,32 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
         [JsonProperty(Names.RenderInframes)]
         public bool RenderInframes { get; set; }
 
+        // Off by default, and it is a MODIFIER of one action rather than a state of anything: while
+        // it is on, explicitly picking a shape writes that same id into the object's ColliderId, so
+        // the hitbox follows the silhouette without a second trip through the collider picker. It is
+        // a preference of the person editing rather than data about a level, which is why it lives
+        // here and why ShapeObject grew no field for it - a link is not a third answer beside the two
+        // ids, it is how one of them is typed in.
+        //
+        // Picking None never reaches the collider: a Null ShapeId beside a real ColliderId is how an
+        // invisible hitbox is authored, and a mode that erased it would take an authoring idiom away.
+
+        /// <summary> Whether picking a shape also writes it as that object's collider. </summary>
+        [JsonProperty(Names.LinkColliderShape)]
+        public bool LinkColliderToShape { get; set; }
+
         public EditorInterfaceSettings()
         {
             ResetOwn();
         }
         public EditorInterfaceSettings(float dirtyFieldDelay, AngleDisplayUnit rotationDisplayUnit,
-            bool logValueClamps, bool renderInframes)
+            bool logValueClamps, bool renderInframes, bool linkColliderToShape)
         {
             DirtyFieldDelay = dirtyFieldDelay;
             RotationDisplayUnit = rotationDisplayUnit;
             LogValueClamps = logValueClamps;
             RenderInframes = renderInframes;
+            LinkColliderToShape = linkColliderToShape;
         }
         private void ResetOwn()
         {
@@ -75,6 +90,7 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
             RotationDisplayUnit = AngleDisplayUnit.Degrees;
             LogValueClamps = true;
             RenderInframes = false;
+            LinkColliderToShape = false;
         }
     }
 }

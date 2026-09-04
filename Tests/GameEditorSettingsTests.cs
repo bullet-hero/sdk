@@ -48,6 +48,20 @@ namespace BH.SDK.Tests
             Assert.AreEqual(SerializationType.Json, settings.Serialization.ResourcesMode);
         }
 
+        // The one default here that used to differ by platform: the host seeded it on for a desktop
+        // and off for a phone, so the editor opened differently depending on where it was opened.
+        // Off everywhere is the answer now, and the SDK owns it alone - nothing outside re-seeds it.
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.VeryEasy)]
+        public void PreviewPlayer_DefaultsToOff()
+        {
+            var settings = new GameEditorSettings();
+
+            Assert.IsFalse(settings.Player.ActiveDefault);
+        }
+
         // Reset on the root has to reach every group. It delegates rather than reassigning, so a
         // group somebody forgot to list would keep whatever the author had left in it.
         [Test]
@@ -61,7 +75,7 @@ namespace BH.SDK.Tests
             settings.Savings.Autosave = false;
             settings.Savings.HistoryLength = 64;
             settings.Camera.ZoomToMouse = false;
-            settings.Player.ActiveDefault = false;
+            settings.Player.ActiveDefault = true;
             settings.Grid.Size = 0.25f;
             settings.Selection.PickInvisibleAABB = true;
             settings.Gizmos.Scale = 4f;
@@ -74,7 +88,7 @@ namespace BH.SDK.Tests
             Assert.IsTrue(settings.Savings.Autosave);
             Assert.AreEqual(512, settings.Savings.HistoryLength);
             Assert.IsTrue(settings.Camera.ZoomToMouse);
-            Assert.IsTrue(settings.Player.ActiveDefault);
+            Assert.IsFalse(settings.Player.ActiveDefault);
             Assert.AreEqual(1f, settings.Grid.Size);
             Assert.IsFalse(settings.Selection.PickInvisibleAABB);
             Assert.AreEqual(1f, settings.Gizmos.Scale);
@@ -159,6 +173,7 @@ namespace BH.SDK.Tests
             AssertDiffers(a, s => s.Gizmos.Scale = 3f);
             AssertDiffers(a, s => s.Timeline.EdgeHandlePx = 24f);
             AssertDiffers(a, s => s.Interface.LogValueClamps = false);
+            AssertDiffers(a, s => s.Interface.LinkColliderToShape = true);
             AssertDiffers(a, s => s.Serialization.ResourcesMode = SerializationType.Blob);
         }
 
@@ -183,6 +198,19 @@ namespace BH.SDK.Tests
             Assert.IsFalse(settings.Selection.PreviewColliderOnSelect);
             Assert.IsFalse(settings.Selection.PickInvisibleAABB);
             Assert.IsFalse(settings.Interface.RenderInframes);
+        }
+
+        // Off for the same reason those three are, and for one more: it CHANGES what an ordinary
+        // edit writes. A mode that silently edits a second field has to be asked for.
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.VeryEasy)]
+        public void LinkColliderToShape_DefaultsToOff()
+        {
+            var settings = new GameEditorSettings();
+
+            Assert.IsFalse(settings.Interface.LinkColliderToShape);
         }
 
         // The bot's own two defaults, and they point opposite ways on purpose. BotControl is off

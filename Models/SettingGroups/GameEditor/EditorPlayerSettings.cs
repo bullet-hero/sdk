@@ -6,11 +6,12 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models.SettingGroups.GameEditor
 {
-    // The preview player's toggle is also what decides who owns the viewport's touches, so its
-    // starting state is a real preference rather than a constant: a desktop author wants the player
-    // there from the first frame (a mouse loses nothing to it), a phone author does not, since the
-    // whole viewport goes to the avatar the moment it exists. The platform only picks the value a
-    // FRESH settings file is born with - after that it is the author's own.
+    // The preview player's toggle is also what decides who owns the viewport's touches, and it starts
+    // OFF on every platform: someone opening the editor is there to edit, and on touch the avatar
+    // takes the whole viewport the moment it exists. It used to be seeded per platform into a fresh
+    // settings file instead by the host's platform rules (desktop on, mobile off) - one
+    // behaviour everywhere is worth more here than a free preview on a mouse, so that seeding is gone
+    // and the field is the author's own from the first launch.
     //
     // The toggle now also answers a second question - who STEERS that player - and BotControl is
     // where that lives for the same reason: which of the two the author wants is how they work, not
@@ -85,7 +86,7 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
 
         private void ResetOwn()
         {
-            ActiveDefault = true;
+            ActiveDefault = false;
             ResetGizmos = true;
             BotControl = false;
             BotDebug = false;
