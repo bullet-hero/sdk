@@ -112,6 +112,7 @@ namespace BH.SDK.Tests
             settings.Gizmos.Scale = 4f;
             settings.Timeline.GlobalLoop = false;
             settings.Interface.RenderInframes = true;
+            settings.Interface.SelectionAutoOpenActive = true;
             settings.Serialization.LevelMode = SerializationType.Blob;
 
             settings.Reset();
@@ -126,6 +127,7 @@ namespace BH.SDK.Tests
             Assert.AreEqual(1f, settings.Gizmos.Scale);
             Assert.IsTrue(settings.Timeline.GlobalLoop);
             Assert.IsFalse(settings.Interface.RenderInframes);
+            Assert.IsFalse(settings.Interface.SelectionAutoOpenActive);
             Assert.AreEqual(SerializationType.Json, settings.Serialization.LevelMode);
         }
 
@@ -207,6 +209,7 @@ namespace BH.SDK.Tests
             AssertDiffers(a, s => s.Timeline.EdgeHandlePx = 24f);
             AssertDiffers(a, s => s.Interface.LogValueClamps = false);
             AssertDiffers(a, s => s.Interface.LinkColliderToShape = true);
+            AssertDiffers(a, s => s.Interface.SelectionAutoOpenActive = true);
             AssertDiffers(a, s => s.Serialization.ResourcesMode = SerializationType.Blob);
         }
 
@@ -244,6 +247,51 @@ namespace BH.SDK.Tests
             var settings = new GameEditorSettings();
 
             Assert.IsFalse(settings.Interface.LinkColliderToShape);
+        }
+
+        // OFF, and the assert is worth its own test because this is the one field here that changed
+        // the editor's behaviour rather than adding to it: the right panel used to open itself on any
+        // selection and now waits to be asked. The field is named for the behaviour, so the zero
+        // value and the shipped default are the same word - which is also what keeps it additive.
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.VeryEasy)]
+        public void SelectionAutoOpenActive_DefaultsToOff()
+        {
+            var settings = new GameEditorSettings();
+
+            Assert.IsFalse(settings.Interface.SelectionAutoOpenActive);
+        }
+
+        // The additive half of the same contract, asked of the SERIALIZER rather than of the
+        // constructor: a document with no such key at all must still deserialize, and must come back
+        // with the editor's shipped behaviour rather than with whatever the reader last held.
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Normal)]
+        public void SelectionAutoOpenActive_SurvivesARoundTripAndIsAdditive()
+        {
+            var service = new SerializationService(new SerializationSettings());
+
+            var settings = new UserSettings();
+            settings.GameEditor.Interface.SelectionAutoOpenActive = true;
+
+            var restored = service.DeserializeData<UserSettings>(service.SerializeData(settings));
+            Assert.IsTrue(restored.GameEditor.Interface.SelectionAutoOpenActive);
+
+            // Both comma placements, because the property is currently the LAST of its group and a
+            // later addition moves it - the test is about the key being absent, not about where it sat.
+            var written = service.SerializeData(new UserSettings());
+            StringAssert.Contains("auto_open", written);
+            var withoutKey = written
+                .Replace(",\"auto_open\":false", string.Empty)
+                .Replace("\"auto_open\":false,", string.Empty);
+            Assert.IsFalse(withoutKey.Contains("auto_open"));
+
+            var older = service.DeserializeData<UserSettings>(withoutKey);
+            Assert.IsFalse(older.GameEditor.Interface.SelectionAutoOpenActive);
         }
 
         // The bot's own two defaults, and they point opposite ways on purpose. BotControl is off

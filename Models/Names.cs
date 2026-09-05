@@ -553,6 +553,7 @@
         public const string Open = "open";
         public const string Menu = "menu";
         public const string Lose = "lose";
+        public const string Auto = "auto";
 
         // Statistics
 
@@ -656,6 +657,7 @@
         public const string LogClamps = Log + _ + Clamps;
         public const string RenderInframes = Render + _ + Inframes;
         public const string LinkColliderShape = Link + _ + Collider + _ + Shape;
+        public const string AutoOpen = Auto + _ + Open;
 
         public const string GameEditor = Game + _ + Editor;
         public const string OpenMenuOnLose = Open + _ + Menu + _ + On + _ + Lose;

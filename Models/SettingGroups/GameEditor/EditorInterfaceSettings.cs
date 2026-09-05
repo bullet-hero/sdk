@@ -70,19 +70,25 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
         /// <summary> Whether picking a shape also writes it as that object's collider. </summary>
         [JsonProperty(Names.LinkColliderShape)]
         public bool LinkColliderToShape { get; set; }
+        
+        /// <summary> Whether selecting something opens the editor's right panel by itself. </summary>
+        [JsonProperty(Names.AutoOpen)]
+        public bool SelectionAutoOpenActive { get; set; }
 
         public EditorInterfaceSettings()
         {
             ResetOwn();
         }
         public EditorInterfaceSettings(float dirtyFieldDelay, AngleDisplayUnit rotationDisplayUnit,
-            bool logValueClamps, bool renderInframes, bool linkColliderToShape)
+            bool logValueClamps, bool renderInframes, bool linkColliderToShape,
+            bool selectionAutoOpenActive)
         {
             DirtyFieldDelay = dirtyFieldDelay;
             RotationDisplayUnit = rotationDisplayUnit;
             LogValueClamps = logValueClamps;
             RenderInframes = renderInframes;
             LinkColliderToShape = linkColliderToShape;
+            SelectionAutoOpenActive = selectionAutoOpenActive;
         }
         private void ResetOwn()
         {
@@ -91,6 +97,7 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
             LogValueClamps = true;
             RenderInframes = false;
             LinkColliderToShape = false;
+            SelectionAutoOpenActive = false;
         }
     }
 }
