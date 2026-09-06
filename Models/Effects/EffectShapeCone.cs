@@ -44,7 +44,7 @@ namespace BH.SDK.Models.Effects
 
         /// <summary> Distance between the two ends - how deep the spawn volume is. </summary>
         [RuleNotNull, RuleIFloatMin(EffectRules.Shape.ConeHeight_Min)]
-        [JsonProperty(Names.Height)]
+        [JsonProperty(Names.HeightShort)]
         public IFloat Height { get; set; }
 
         /// <summary> How successive particles walk the arc. </summary>

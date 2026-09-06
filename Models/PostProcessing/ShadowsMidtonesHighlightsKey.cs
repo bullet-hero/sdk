@@ -42,7 +42,7 @@ namespace BH.SDK.Models.PostProcessing
         public bool Shadows { get; set; }
 
         /// <summary> Tint applied to the dark band. </summary>
-        [RuleNotNull(typeof(Color3Value))]
+        [RuleOptional]
         [JsonProperty(Names.ShadowColor)]
         public IColor3 ShadowsColor3 { get; set; }
 
@@ -51,7 +51,7 @@ namespace BH.SDK.Models.PostProcessing
         public bool Midtones { get; set; }
 
         /// <summary> Tint applied to the middle band - whatever falls between the two limits. </summary>
-        [RuleNotNull(typeof(Color3Value))]
+        [RuleOptional]
         [JsonProperty(Names.MidtoneColor)]
         public IColor3 MidtonesColor3 { get; set; }
 
@@ -60,36 +60,35 @@ namespace BH.SDK.Models.PostProcessing
         public bool Highlights { get; set; }
 
         /// <summary> Tint applied to the bright band. </summary>
-        [RuleNotNull(typeof(Color3Value))]
+        [RuleOptional]
         [JsonProperty(Names.HighlightColor)]
         public IColor3 HighlightsColor3 { get; set; }
 
         /// <summary> Start/end luminance of the shadow band - a range, not a single cut, so shadows
         /// fade into midtones instead of banding. </summary>
-        [RuleNotNull, RuleIVector2Ordered]
+        [RuleIVector2Ordered]
         [RuleIVector2InRange(PostProcessingRules.ShadowsMidtonesHighlights.ShadowLimitMin,
              PostProcessingRules.ShadowsMidtonesHighlights.ShadowLimitMax)]
+        [RuleOptional]
         [JsonProperty(Names.ShadowLimit)]
         public IVector2 ShadowLimits { get; set; }
 
         /// <summary> Start/end luminance of the highlight band, same blended-edge idea. </summary>
-        [RuleNotNull, RuleIVector2Ordered]
+        [RuleIVector2Ordered]
         [RuleIVector2InRange(PostProcessingRules.ShadowsMidtonesHighlights.HighlightLimitMin,
              PostProcessingRules.ShadowsMidtonesHighlights.HighlightLimitMax)]
+        [RuleOptional]
         [JsonProperty(Names.HighlightLimit)]
         public IVector2 HighlightLimits { get; set; }
 
+        // The three colours and the two limit pairs are born null - 180 of this key's 238 default
+        // bytes - and read back as the neutrals PostProcessingRules.ShadowsMidtonesHighlights names.
+        // See docs/NAMING.md; compression rather than a third state.
         public ShadowsMidtonesHighlightsKey()
         {
             Shadows = false;
-            ShadowsColor3 = Color3Value.white;
             Midtones = false;
-            MidtonesColor3 = Color3Value.white;
             Highlights = false;
-            HighlightsColor3 = Color3Value.white;
-            
-            ShadowLimits = new Vector2Value(0f, 0.3f);
-            HighlightLimits = new Vector2Value(0.55f, 1f);
         }
         public ShadowsMidtonesHighlightsKey(
             bool shadows, IColor3 shadowsColor3,

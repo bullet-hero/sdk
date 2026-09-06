@@ -1,4 +1,5 @@
 using System;
+using BH.SDK.Models;
 using Newtonsoft.Json;
 
 namespace BH.SDK.Serialization.Json
@@ -66,9 +67,9 @@ namespace BH.SDK.Serialization.Json
             }
 
             writer.WriteStartObject();
-            writer.WritePropertyName("version");
+            writer.WritePropertyName(Names.Version);
             writer.WriteValue(version);
-            writer.WritePropertyName("value");
+            writer.WritePropertyName(Names.Value);
             value.WriteJson(writer);
             writer.WriteEndObject();
         }
@@ -91,7 +92,7 @@ namespace BH.SDK.Serialization.Json
                 var name = (string)reader.Value;
                 reader.Read();
 
-                if (name == "value") ReadObject(reader, value);
+                if (name == Names.Value) ReadObject(reader, value);
                 else reader.Skip();
             }
 
@@ -117,8 +118,8 @@ namespace BH.SDK.Serialization.Json
                 var name = (string)reader.Value;
                 reader.Read();
 
-                if (name == "value") ReadObject(reader, model);
-                else if (name == "version") CheckVersion(reader, domain, major, minor);
+                if (name == Names.Value) ReadObject(reader, model);
+                else if (name == Names.Version) CheckVersion(reader, domain, major, minor);
                 else reader.Skip();
             }
         }

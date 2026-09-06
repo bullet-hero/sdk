@@ -32,7 +32,7 @@ namespace BH.SDK.Generators
         protected override GeneratedLevel CreateTyped(Parameters parameters)
         {
             var level = new Level();
-            level.Settings.Framerate = parameters.Framerate;
+            level.Settings.Fps = parameters.Framerate;
             level.Settings.FrameDuration = parameters.FrameDuration;
 
             var meta = new LevelMeta

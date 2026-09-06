@@ -132,7 +132,7 @@ namespace BH.SDK.Tests
                 "{\"fps\":45,\"f_dur\":4500,\"id_counter\":20,\"aid_counter\":3,\"seed\":0}");
 
             Assert.AreEqual(LevelOrientation.Horizontal, settings.Orientation);
-            Assert.AreEqual(45, settings.Framerate);
+            Assert.AreEqual(45, settings.Fps);
         }
     }
 }

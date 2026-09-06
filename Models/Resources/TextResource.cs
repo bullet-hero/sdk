@@ -23,6 +23,7 @@ namespace BH.SDK.Models.Resources
         [JsonProperty(Names.TextResourceId)]
         public TextResourceId TextResourceId { get; set; }
 
+        [JsonProperty(Names.Type)]
         public override ResourceType Type => ResourceType.Text;
 
         public TextResource()

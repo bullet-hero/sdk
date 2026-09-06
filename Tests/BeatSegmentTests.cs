@@ -46,7 +46,7 @@ namespace BH.SDK.Tests
             Assert.IsTrue(source.Equals(copy));
             Assert.IsTrue(source.Equals((object)copy));
 
-            copy.Bpm = 90f;
+            copy.BPM = 90f;
             Assert.IsFalse(source.Equals(copy));
         }
 
@@ -59,7 +59,7 @@ namespace BH.SDK.Tests
             var segment = Sample();
             segment.Reset();
 
-            Assert.AreEqual(LevelRules.DefaultBpm, segment.Bpm);
+            Assert.AreEqual(LevelRules.DefaultBpm, segment.BPM);
             Assert.AreEqual(LevelRules.DefaultBeatsPerBar, segment.BeatsPerBar);
             Assert.AreEqual(0f, segment.Offset);
             Assert.AreEqual(string.Empty, segment.Name);

@@ -20,14 +20,14 @@ namespace BH.SDK.Models.SettingGroups.Graphics
         /// <summary> Where the effect update rate comes from - separate from the game's own, hence
         /// the duplicate of GraphicsSettings' pair of fields. </summary>
         [RuleEnumValid]
-        [JsonProperty(Names.FramerateTarget)]
-        public FramerateTarget FramerateTarget { get; set; }
+        [JsonProperty(Names.FpsTarget)]
+        public FramerateTarget FpsTarget { get; set; }
 
         /// <summary> Explicit effect update rate, used when FramerateTarget says so. Lower than the
         /// game framerate by default. </summary>
         [RuleMinValue(1)]
-        [JsonProperty(Names.FixedFramerate)]
-        public int FixedFramerate { get; set; }
+        [JsonProperty(Names.FpsFixed)]
+        public int FpsFixed { get; set; }
 
         /// <summary> Longest effect state the player will fast-forward when seeking, before it gives
         /// up and starts the effect fresh. </summary>
@@ -65,8 +65,8 @@ namespace BH.SDK.Models.SettingGroups.Graphics
         public EffectsGraphicsSettings()
         {
             Render = true;
-            FramerateTarget = FramerateTarget.Fixed;
-            FixedFramerate = 50;
+            FpsTarget = FramerateTarget.Fixed;
+            FpsFixed = 50;
             MaxScrubTime = 0.5f;
             ReplayStepBudget = EffectRules.ReplayStepBudget_Default;
             FrameStepBudget = EffectRules.FrameStepBudget_Default;
@@ -74,8 +74,8 @@ namespace BH.SDK.Models.SettingGroups.Graphics
         public EffectsGraphicsSettings(bool render, FramerateTarget framerateTarget,
             int fixedFramerate, float maxScrubTime, int replayStepBudget, int frameStepBudget) : base(render)
         {
-            FramerateTarget = framerateTarget;
-            FixedFramerate = fixedFramerate;
+            FpsTarget = framerateTarget;
+            FpsFixed = fixedFramerate;
             MaxScrubTime = maxScrubTime;
             ReplayStepBudget = replayStepBudget;
             FrameStepBudget = frameStepBudget;

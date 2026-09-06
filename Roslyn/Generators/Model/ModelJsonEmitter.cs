@@ -73,6 +73,30 @@ namespace BH.SDK.Roslyn.Model
             foreach (var member in spec.Members)
             {
                 if (member.JsonIgnored) continue;
+
+                // A NULL SUB-MODEL IS OMITTED WHOLE, name included, and only a sub-model is. Null is
+                // how the format says "the author never touched this" (ColorCurvesKey's eight curves
+                // are the worked example), and writing `"crvmstr":null` eight times per keyframe made
+                // that third state cost more than the sentinel it replaced. Absent reads back as the
+                // constructor's value, so a member that may be null must be constructed null.
+                //
+                // COLLECTIONS ARE DELIBERATELY NOT SKIPPED: an empty list and a missing one are
+                // different states the blob codec keeps apart (BlobFormat's header), and dropping a
+                // null list here would make JSON the one format that cannot say which it had.
+                var skippable = member.Shape == MemberShape.Model
+                                || member.Shape == MemberShape.PolymorphicModel;
+
+                if (skippable)
+                {
+                    builder.Append(indent).Append("    if (").Append(member.Name).AppendLine(" is not null)");
+                    builder.Append(indent).AppendLine("    {");
+                    builder.Append(indent).Append("        writer.WritePropertyName(\"").Append(member.JsonName)
+                        .AppendLine("\");");
+                    WriteValue(builder, indent + "        ", member);
+                    builder.Append(indent).AppendLine("    }");
+                    continue;
+                }
+
                 builder.Append(indent).Append("    writer.WritePropertyName(\"").Append(member.JsonName)
                     .AppendLine("\");");
                 WriteValue(builder, indent + "    ", member);

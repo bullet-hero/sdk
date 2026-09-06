@@ -23,12 +23,12 @@ namespace BH.SDK.Models.Effects
         /// <summary> One end of the size range (the JSON key reads "scale x" for historical
         /// reasons - it is the A bound, not the X axis). </summary>
         [RuleNotNull]
-        [JsonProperty(Names.ScaleX)]
+        [JsonProperty(Names.ScaleA)]
         public IVector2 ScaleA { get; set; }
 
         /// <summary> The other end of the size range. </summary>
         [RuleNotNull]
-        [JsonProperty(Names.ScaleY)]
+        [JsonProperty(Names.ScaleB)]
         public IVector2 ScaleB { get; set; }
 
         public EffectScaleType GetModelType() => EffectScaleType.RandomUniform;

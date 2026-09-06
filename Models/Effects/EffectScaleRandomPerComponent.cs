@@ -22,12 +22,12 @@ namespace BH.SDK.Models.Effects
     {
         /// <summary> Per-axis first bound of the size draw. </summary>
         [RuleNotNull]
-        [JsonProperty(Names.ScaleX)]
+        [JsonProperty(Names.ScaleA)]
         public IVector2 ScaleA { get; set; }
 
         /// <summary> Per-axis second bound of the size draw. </summary>
         [RuleNotNull]
-        [JsonProperty(Names.ScaleY)]
+        [JsonProperty(Names.ScaleB)]
         public IVector2 ScaleB { get; set; }
         
         public EffectScaleType GetModelType() => EffectScaleType.RandomPerComponent;

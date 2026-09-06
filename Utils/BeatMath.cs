@@ -25,8 +25,8 @@ namespace BH.SDK.Utils
 
         /// <summary> Can this segment produce a grid at all (real tempo, real framerate). </summary>
         public static bool IsUsable(BeatSegment segment, int framerate) =>
-            segment != null && framerate > 0 && segment.Bpm > 0f &&
-            FramesPerBeat(segment.Bpm, framerate) >= MinFramesPerBeat;
+            segment != null && framerate > 0 && segment.BPM > 0f &&
+            FramesPerBeat(segment.BPM, framerate) >= MinFramesPerBeat;
 
         /// <summary> The phase brought back into the first beat of the segment, [0, framesPerBeat). </summary>
         public static float NormalizeOffset(float offset, float framesPerBeat)
@@ -81,7 +81,7 @@ namespace BH.SDK.Utils
 
             var span = segment.Span;
             var start = span.StartFrame;
-            var step = FramesPerBeat(segment.Bpm, framerate) / division;
+            var step = FramesPerBeat(segment.BPM, framerate) / division;
             if (step < MinFramesPerBeat) return 0;
 
             var offset = segment.Offset;

@@ -55,12 +55,12 @@ namespace BH.SDK.Models.SettingGroups.Controls
         // are pushing with.
 
         /// <summary> Absolute mode: hide the OS cursor while the hold button is down. </summary>
-        [JsonProperty(Names.HideCursorAbsolute)]
-        public bool HideCursorAbsolute { get; set; }
+        [JsonProperty(Names.CursorHideAbsolute)]
+        public bool CursorHideAbsolute { get; set; }
 
         /// <summary> Relative mode: hide the OS cursor while the hold button is down. </summary>
-        [JsonProperty(Names.HideCursorRelative)]
-        public bool HideCursorRelative { get; set; }
+        [JsonProperty(Names.CursorHideRelative)]
+        public bool CursorHideRelative { get; set; }
 
         public override ControlMode GeneralMode => (ControlMode)Mode;
         public override ControlDevice Device => ControlDevice.KeyboardMouse;
@@ -82,8 +82,8 @@ namespace BH.SDK.Models.SettingGroups.Controls
             DashOnDoubleClick = dashOnDoubleClick;
             DoubleClickTime = doubleClickTime;
             DashKeys = dashKeys;
-            HideCursorAbsolute = hideCursorAbsolute;
-            HideCursorRelative = hideCursorRelative;
+            CursorHideAbsolute = hideCursorAbsolute;
+            CursorHideRelative = hideCursorRelative;
         }
         private void ResetOwn()
         {
@@ -93,8 +93,8 @@ namespace BH.SDK.Models.SettingGroups.Controls
             DashOnDoubleClick = true;
             DoubleClickTime = ControlsRules.DefaultDoubleClickTime;
             DashKeys = KeyBindingMask.Space | KeyBindingMask.Shift;
-            HideCursorAbsolute = true;
-            HideCursorRelative = false;
+            CursorHideAbsolute = true;
+            CursorHideRelative = false;
         }
 
         // The last slot is a nested Combine: HashCode.Combine tops out at eight arguments.

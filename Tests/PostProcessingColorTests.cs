@@ -3,6 +3,8 @@ using BH.SDK.Models.PostProcessing;
 using BH.SDK.Models.Values;
 using BH.SDK.Serialization;
 using Newtonsoft.Json;
+using BH.SDK.Models;
+using BH.SDK.Rules;
 using NUnit.Framework;
 
 namespace BH.SDK.Tests
@@ -29,14 +31,10 @@ namespace BH.SDK.Tests
         public void GradingColours_DefaultToWhiteWithNoFourthComponent()
         {
             var lift = new LiftGammaGainKey();
-            var shadows = new ShadowsMidtonesHighlightsKey();
 
             Assert.IsInstanceOf<Color3Value>(lift.LiftColor3);
             Assert.IsInstanceOf<Color3Value>(lift.GammaColor3);
             Assert.IsInstanceOf<Color3Value>(lift.GainColor3);
-            Assert.IsInstanceOf<Color3Value>(shadows.ShadowsColor3);
-            Assert.IsInstanceOf<Color3Value>(shadows.MidtonesColor3);
-            Assert.IsInstanceOf<Color3Value>(shadows.HighlightsColor3);
 
             var white = (Color3Value)lift.LiftColor3;
             Assert.AreEqual(1f, white.R);
@@ -44,20 +42,48 @@ namespace BH.SDK.Tests
             Assert.AreEqual(1f, white.B);
         }
 
+        // ShadowsMidtonesHighlights went further than LiftGammaGain: its three colours and two limit
+        // pairs are born ABSENT, 180 of the key's 238 default bytes, and read back as the neutrals
+        // PostProcessingRules names. The fourth component is still gone - what a set colour is, is
+        // pinned by the round trip below.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.VeryEasy)]
-        public void VignetteColour_DefaultsToBlackWithNoFourthComponent()
+        public void GradingColours_AreAbsentUntilSet()
+        {
+            var shadows = new ShadowsMidtonesHighlightsKey();
+
+            Assert.IsNull(shadows.ShadowsColor3);
+            Assert.IsNull(shadows.MidtonesColor3);
+            Assert.IsNull(shadows.HighlightsColor3);
+            Assert.IsNull(shadows.ShadowLimits);
+            Assert.IsNull(shadows.HighlightLimits);
+
+            Assert.AreEqual(1f, PostProcessingRules.ShadowsMidtonesHighlights.ColorR_Default,
+                "the neutral an absent grading colour reads back as stopped being white");
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.VeryEasy)]
+        public void VignetteColour_IsAbsentUntilSetAndItsNeutralIsBlack()
         {
             var vignette = new VignetteKey();
 
-            Assert.IsInstanceOf<Color3Value>(vignette.Color3);
+            Assert.IsNull(vignette.Color3, "the colour is born absent, not black");
+            Assert.IsNull(vignette.Center);
 
-            var black = (Color3Value)vignette.Color3;
-            Assert.AreEqual(0f, black.R);
-            Assert.AreEqual(0f, black.G);
-            Assert.AreEqual(0f, black.B);
+            // What absent reads back as - the neutral moved out of the constructor and into the
+            // rules when it did, so this is where it can be checked at all.
+            Assert.AreEqual(0f, PostProcessingRules.Vignette.ColorR_Default);
+            Assert.AreEqual(0f, PostProcessingRules.Vignette.ColorG_Default);
+            Assert.AreEqual(0f, PostProcessingRules.Vignette.ColorB_Default);
+
+            // And a colour that IS set is still three components.
+            vignette.Color3 = Color3Value.white;
+            Assert.IsInstanceOf<Color3Value>(vignette.Color3);
         }
 
         // A level written before the fourth component was removed. Its colour is a four-property
@@ -69,11 +95,13 @@ namespace BH.SDK.Tests
         [Category(Metadata.Category.Easy)]
         public void AFourComponentColour_WrittenBeforeThis_StillReadsBack()
         {
-            // Spelled with the wire names rather than with Names constants on purpose: what this
-            // pins is a file somebody already has on disk, and a constant that moved would rewrite
-            // the very thing being checked.
-            const string written = "{\"lift\":true,\"lift_clr\":[0,{\"r\":0.25,\"g\":0.5,\"b\":0.75,\"a\":0.9}],"
-                                   + "\"gamma\":false,\"gain\":false,\"a\":true,\"f\":7}";
+            // What this pins is the PAYLOAD carrying one component too many - the colour is three
+            // components now and the fourth was doing real damage (it reached URP as a signed
+            // offset, not an alpha). The key names come from the constants: which spelling the
+            // format uses is not what is under test, and pre-release there is no file on disk to
+            // preserve anyway (root CLAUDE.md Rule 11).
+            var written = $"{{\"{Names.Lift}\":true,\"{Names.LiftColor}\":[0,{{\"r\":0.25,\"g\":0.5,\"b\":0.75,\"a\":0.9}}],"
+                          + $"\"{Names.Gamma}\":false,\"{Names.Gain}\":false,\"{Names.ActiveShort}\":true,\"{Names.FrameShort}\":7}}";
 
             var key = Read<LiftGammaGainKey>(written);
 

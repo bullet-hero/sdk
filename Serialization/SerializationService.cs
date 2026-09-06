@@ -11,6 +11,7 @@ using BH.SDK.Serialization.Converters.CustomTypes;
 using BH.SDK.Serialization.Converters.Dict;
 using BH.SDK.Serialization.Serializers;
 using BH.SDK.Versions;
+using BH.SDK.Models.Interfaces;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
@@ -193,6 +194,31 @@ namespace BH.SDK.Serialization
                 contract.MemberSerialization = _serializationSettings.memberSerialization;
 
                 return contract;
+            }
+
+            // THE REFLECTIVE PATH HAS TO AGREE WITH THE GENERATED ONE, byte for byte - JsonParityTests
+            // compares them - so the rule the emitter applies is applied here too: a null SUB-MODEL is
+            // omitted whole, and nothing else is. The test is that the member's type is an IModel<T>,
+            // which is exactly what the generator calls a Model or a PolymorphicModel: every concrete
+            // model implements it and so does every polymorphic value interface (IVector2 : IModel
+            // <IVector2>), while List<T> and Dictionary<,> do not - which is what keeps a null
+            // collection distinguishable from an empty one, as the blob codec keeps it.
+            protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
+            {
+                var property = base.CreateProperty(member, memberSerialization);
+
+                if (property.PropertyType != null && IsModel(property.PropertyType))
+                    property.NullValueHandling = NullValueHandling.Ignore;
+
+                return property;
+            }
+
+            private static bool IsModel(Type type)
+            {
+                foreach (var contract in type.GetInterfaces())
+                    if (contract.IsGenericType && contract.GetGenericTypeDefinition() == typeof(IModel<>))
+                        return true;
+                return false;
             }
         }
 

@@ -93,8 +93,8 @@ namespace BH.SDK.Tests
         [Category(Metadata.Category.Easy)]
         public void Deserialization_OlderFileWithoutBudgets_KeepsDefaults()
         {
-            var json = $"{{\"{Models.Names.Render}\":true,\"{Models.Names.FramerateTarget}\":2," +
-                       $"\"{Models.Names.FixedFramerate}\":50,\"{Models.Names.MaxScrubTime}\":0.5}}";
+            var json = $"{{\"{Models.Names.Render}\":true,\"{Models.Names.FpsTarget}\":2," +
+                       $"\"{Models.Names.FpsFixed}\":50,\"{Models.Names.MaxScrubTime}\":0.5}}";
 
             var restored = JsonConvert.DeserializeObject<EffectsGraphicsSettings>(json);
 

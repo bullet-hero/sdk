@@ -26,14 +26,15 @@ namespace BH.SDK.Models.PostProcessing
         // that used to ask for an HDR check here was asking for something the effect does not have.
 
         /// <summary> Color the edges fade toward; black is the usual choice, but any tint works. </summary>
-        [RuleNotNull(typeof(Color3Value))]
+        [RuleOptional]
         [JsonProperty(Names.Color)]
         public IColor3 Color3 { get; set; }
 
         /// <summary> Screen point the vignette opens around, in 0..1 - offset it to frame something
         /// off-center. </summary>
-        [RuleNotNull(typeof(Vector2Value)), RuleIVector2InRange(PostProcessingRules.Vignette.CenterMin,
+        [RuleIVector2InRange(PostProcessingRules.Vignette.CenterMin,
              PostProcessingRules.Vignette.CenterMax)]
+        [RuleOptional]
         [JsonProperty(Names.Center)]
         public IVector2 Center { get; set; }
 
@@ -53,10 +54,11 @@ namespace BH.SDK.Models.PostProcessing
         [JsonProperty(Names.Rounded)]
         public bool Rounded { get; set; }
 
+        // Colour and centre are born null - "the author never touched this" - and read back as the
+        // neutrals PostProcessingRules now names. See docs/NAMING.md; this is compression rather
+        // than a third state, since the neutral is also a legal authored value.
         public VignetteKey()
         {
-            Color3 = Color3Value.black;
-            Center = new Vector2Value(0.5f, 0.5f);
             Intensity = 0.3f;
             Smoothness = 0.5f;
             Rounded = false;

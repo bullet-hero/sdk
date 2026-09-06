@@ -192,7 +192,7 @@ namespace BH.SDK.Tests
             var source = SampleLevel();
 
             var json = service.SerializeData(source);
-            var token = JObject.Parse(json)["value"]?["difficulty"]?[Names.DeathsByCheckpoint];
+            var token = JObject.Parse(json)[Names.Value]?["difficulty"]?[Names.DeathsByCheckpoint];
 
             Assert.IsNotNull(token);
             Assert.AreEqual(JTokenType.Array, token.Type);

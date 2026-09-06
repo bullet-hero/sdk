@@ -32,7 +32,7 @@ namespace BH.SDK.Models.Keyframes
 
         /// <summary> Which end the text is written from on the way into this key. </summary>
         [RuleEnumValid(TextRules.FillDirection_Default)]
-        [JsonProperty(Names.FillDirection)]
+        [JsonProperty(Names.Direction)]
         public TextFillDirection Direction { get; set; }
 
         public FillmentKey()

@@ -24,6 +24,7 @@ namespace BH.SDK.Models.Resources
         [JsonProperty(Names.ByteResourceId)]
         public BytesResourceId ByteResourceId { get; set; }
 
+        [JsonProperty(Names.Type)]
         public override ResourceType Type => ResourceType.Bytes;
 
         public BytesResource()

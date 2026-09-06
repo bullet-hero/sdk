@@ -26,8 +26,14 @@ namespace BH.SDK.Models.Resources
         [JsonProperty(Names.Src)]
         public List<ResourceKey> Sources { get; set; }
 
+        // A MEMBER WITH NO [JsonProperty] IS STILL SERIALIZED, under its C# name - this one wrote
+        // "Type" with a capital T into every resource of every level, the only such key the naming
+        // audit missed, because that audit read attributes and this member had none. Every
+        // serialized member declares its key; see docs/NAMING.md.
+
         /// <summary> Which category this resource is, filled in by each subtype rather than stored -
         /// it is derivable from the type, so it never has to be kept in sync. </summary>
+        [JsonProperty(Names.Type)]
         public abstract ResourceType Type { get; }
 
         protected Resource()

@@ -11,7 +11,7 @@ namespace BH.SDK
         {
             while (true)
             {
-                switch (frameable.FramerateTarget)
+                switch (frameable.FpsTarget)
                 {
                     case FramerateTarget.Default:
                     {
@@ -30,7 +30,7 @@ namespace BH.SDK
                     }
                     case FramerateTarget.Fixed:
                     {
-                        return frameable.FixedFramerate;
+                        return frameable.FpsFixed;
                     }
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -42,7 +42,7 @@ namespace BH.SDK
         {
             while (true)
             {
-                switch (frameable.FramerateTarget)
+                switch (frameable.FpsTarget)
                 {
                     case FramerateTarget.Default:
                     {
@@ -61,7 +61,7 @@ namespace BH.SDK
                     }
                     case FramerateTarget.Fixed:
                     {
-                        return 1f / frameable.FixedFramerate;
+                        return 1f / frameable.FpsFixed;
                     }
                     default:
                         throw new ArgumentOutOfRangeException();

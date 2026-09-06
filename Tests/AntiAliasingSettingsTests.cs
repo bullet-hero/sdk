@@ -27,8 +27,8 @@ namespace BH.SDK.Tests
             var settings = new AntiAliasingGraphicsSettings();
 
             Assert.AreEqual(AntiAliasingType.Msaa, settings.Type);
-            Assert.AreEqual(MsaaType.X2, settings.Msaa);
-            Assert.IsFalse(settings.Hdr);
+            Assert.AreEqual(MsaaType.X2, settings.MSAA);
+            Assert.IsFalse(settings.HDR);
         }
 
         [Test]
@@ -42,8 +42,8 @@ namespace BH.SDK.Tests
             settings.Reset();
 
             Assert.AreEqual(AntiAliasingType.Msaa, settings.Type);
-            Assert.AreEqual(MsaaType.X2, settings.Msaa);
-            Assert.IsFalse(settings.Hdr);
+            Assert.AreEqual(MsaaType.X2, settings.MSAA);
+            Assert.IsFalse(settings.HDR);
         }
 
         [Test]
@@ -77,11 +77,11 @@ namespace BH.SDK.Tests
             Assert.IsFalse(a.Equals(b));
 
             var c = a.Copy();
-            c.Msaa = MsaaType.X8;
+            c.MSAA = MsaaType.X8;
             Assert.IsFalse(a.Equals(c));
 
             var d = a.Copy();
-            d.Hdr = true;
+            d.HDR = true;
             Assert.IsFalse(a.Equals(d));
         }
 
@@ -109,15 +109,15 @@ namespace BH.SDK.Tests
 
             var settings = new UserSettings();
             settings.Graphics.AntiAliasing.Type = AntiAliasingType.Fxaa;
-            settings.Graphics.AntiAliasing.Msaa = MsaaType.X8;
-            settings.Graphics.AntiAliasing.Hdr = true;
+            settings.Graphics.AntiAliasing.MSAA = MsaaType.X8;
+            settings.Graphics.AntiAliasing.HDR = true;
 
             var json = service.SerializeData(settings);
             var restored = service.DeserializeData<UserSettings>(json);
 
             Assert.AreEqual(AntiAliasingType.Fxaa, restored.Graphics.AntiAliasing.Type);
-            Assert.AreEqual(MsaaType.X8, restored.Graphics.AntiAliasing.Msaa);
-            Assert.IsTrue(restored.Graphics.AntiAliasing.Hdr);
+            Assert.AreEqual(MsaaType.X8, restored.Graphics.AntiAliasing.MSAA);
+            Assert.IsTrue(restored.Graphics.AntiAliasing.HDR);
         }
 
         // What a settings.json written before this group existed deserializes to. The key is simply
@@ -138,8 +138,8 @@ namespace BH.SDK.Tests
 
             Assert.IsNotNull(restored.Graphics.AntiAliasing);
             Assert.AreEqual(AntiAliasingType.Msaa, restored.Graphics.AntiAliasing.Type);
-            Assert.AreEqual(MsaaType.X2, restored.Graphics.AntiAliasing.Msaa);
-            Assert.IsFalse(restored.Graphics.AntiAliasing.Hdr);
+            Assert.AreEqual(MsaaType.X2, restored.Graphics.AntiAliasing.MSAA);
+            Assert.IsFalse(restored.Graphics.AntiAliasing.HDR);
         }
     }
 }

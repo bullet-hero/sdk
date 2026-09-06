@@ -27,6 +27,15 @@
 
             public const float SmoothnessMin = 0.01f;
             public const float SmoothnessMax = 1f;
+
+            // The neutrals the model used to spell out in its constructor. They moved here when the
+            // two sub-models started being born null: absent has to read back as these, and a
+            // default that lives in two places is a default that can disagree with itself.
+            public const float ColorR_Default = 0f;
+            public const float ColorG_Default = 0f;
+            public const float ColorB_Default = 0f;
+            public const float CenterX_Default = 0.5f;
+            public const float CenterY_Default = 0.5f;
         }
         public static class LensDistortion
         {
@@ -41,6 +50,11 @@
             
             public const float ScaleMin = 0.01f;
             public const float ScaleMax = 5f;
+
+            public const float MultiplierX_Default = 1f;
+            public const float MultiplierY_Default = 1f;
+            public const float CenterX_Default = 0.5f;
+            public const float CenterY_Default = 0.5f;
         }
         public static class FilmGrain
         {
@@ -75,6 +89,14 @@
             
             public const float HighlightLimitMin = 0f;
             public const float HighlightLimitMax = 1f;
+
+            public const float ColorR_Default = 1f;
+            public const float ColorG_Default = 1f;
+            public const float ColorB_Default = 1f;
+            public const float ShadowLimitX_Default = 0f;
+            public const float ShadowLimitY_Default = 0.3f;
+            public const float HighlightLimitX_Default = 0.55f;
+            public const float HighlightLimitY_Default = 1f;
         }
         public static class WhiteBalance
         {

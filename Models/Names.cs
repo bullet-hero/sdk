@@ -16,7 +16,7 @@
         public const string Time = "time";
         public const string FrameShort = "f";
         public const string TimeShort = "t";
-        public const string Ease = "ease";
+        public const string Ease = "e";
         public const string Min = "min";
         public const string Max = "max";
         public const string Step = "step";
@@ -31,13 +31,17 @@
 
         public const string Type = "type";
         public const string Kind = "kind";
-        public const string Value = "value";
+        public const string Value = "v";
+        /// <summary> The word "value", for a settings key that spells it out - Value
+        /// itself is the ENVELOPE's payload key and is one character. </summary>
+        public const string ValueWord = "value";
         public const string Data = "data";
-        public const string TypeShort = "t";
+        public const string TypeShort = "tp";
         public const string ValueShort = "v";
 
         public const string Level = "level";
-        public const string Version = "version";
+        public const string LevelShort = "lvl";
+        public const string Version = "vrs";
         public const string Meta = "meta";
         public const string Track = "track";
         public const string Tracks = "tracks";
@@ -47,6 +51,7 @@
         public const string Interface = "iface";
         public const string Stats = "stats";
         public const string Show = "show";
+        public const string All = "all";
         public const string Progress = "progress";
         public const string Pause = "pause";
         public const string Game = "game";
@@ -58,6 +63,7 @@
         public const string Target = "target";
         public const string Fixed = "fixed";
         public const string Render = "render";
+        public const string RenderShort = "r";
         public const string Load = "load";
         public const string Parallel = "parallel";
         public const string Web = "web";
@@ -77,16 +83,20 @@
         public const string Active = "active";
         public const string ActiveShort = "a";
 
-        public const string Bool = "bool";
+        // EVERY KEYFRAME PAYLOAD IS ONE KEY. A keyframe's concrete type comes from the static
+        // type of the track holding it, and the polymorphic value inside carries its own
+        // positional tag - nothing ever inferred a type from the property name, so spelling the
+        // type out cost 3 characters on 176 383 of volcano's keys and bought nothing.
+        public const string Bool = ValueShort;
         public const string Byte = "byte";
-        public const string Int = "int";
-        public const string Float = "flt";
-        public const string Vector2 = "vec2";
-        public const string Vector3 = "vec3";
-        public const string Vector4 = "vec4";
+        public const string Int = ValueShort;
+        public const string Float = ValueShort;
+        public const string Vector2 = ValueShort;
+        public const string Vector3 = ValueShort;
+        public const string Vector4 = ValueShort;
 
         public const string String = "string";
-        public const string Strings = "strings";
+        public const string Strings = "strs";
         public const string Language = "lang";
 
         public const string Index = "idx";
@@ -99,10 +109,10 @@
         public const string Scale = "sca";
         public const string Zoom = "zoom";
         public const string Shake = "shake";
-        public const string Size = "size";
+        public const string Size = "sz";
         public const string Angle = "ang";
-        public const string Curve = "curve";
-        public const string Gradient = "gradient";
+        public const string Curve = "crv";
+        public const string Gradient = "grd";
         public const string Color = "clr";
         public const string Alpha = "alpha";
         public const string AlphaShort = "a";
@@ -129,63 +139,63 @@
         public const string Num7 = "7";
         public const string Num8 = "8";
         public const string Num9 = "9";
-        public const string AlignmentB = "B"; // bottom
-        public const string AlignmentT = "T"; // top
-        public const string AlignmentL = "L"; // left
-        public const string AlignmentR = "R"; // right
-        public const string AlignmentBL = "BL"; // bottom-left
-        public const string AlignmentBM = "BM"; // bottom-middle
-        public const string AlignmentBR = "BR"; // bottom-right
-        public const string AlignmentCL = "CL"; // center-left
-        public const string AlignmentCM = "CM"; // center-middle
-        public const string AlignmentCR = "CR"; // center-right
-        public const string AlignmentTL = "TL"; // top-left
-        public const string AlignmentTM = "TM"; // top-middle
-        public const string AlignmentTR = "TR"; // top-right
+        public const string AlignmentB = "b"; // bottom
+        public const string AlignmentT = "t"; // top
+        public const string AlignmentL = "l"; // left
+        public const string AlignmentR = "r"; // right
+        public const string AlignmentBL = "bl"; // bottom-left
+        public const string AlignmentBM = "bm"; // bottom-middle
+        public const string AlignmentBR = "br"; // bottom-right
+        public const string AlignmentCL = "cl"; // center-left
+        public const string AlignmentCM = "cm"; // center-middle
+        public const string AlignmentCR = "cr"; // center-right
+        public const string AlignmentTL = "tl"; // top-left
+        public const string AlignmentTM = "tm"; // top-middle
+        public const string AlignmentTR = "tr"; // top-right
 
-        public const string Speed = "speed";
+        public const string Speed = "spd";
         public const string Range = "range";
         public const string Core = "core";
-        public const string Force = "force";
-        public const string Forces = "forces";
+        public const string Force = "frc";
+        public const string Forces = "frcs";
         public const string Linear = "linear";
         public const string Velocity = "velocity";
         public const string Point = "point";
         public const string Points = "points";
         public const string PointShort = "p";
-        public const string Angular = "aglular";
+        public const string Angular = "angular";
         public const string Orbital = "orbital";
         public const string Gravity = "gravity";
-        public const string Offset = "offset";
-        public const string Center = "center";
+        public const string Offset = "off";
+        public const string Center = "cntr";
         public const string CenterShort = "c";
-        public const string Intensity = "intensity";
+        public const string Intensity = "intns";
         public const string Collision = "collision";
         public const string Collisions = "collisions";
 
-        public const string Radius = "radius";
+        public const string Radius = "rad";
         public const string RadiusShort = "r";
         public const string Major = "major";
         public const string Minor = "minor";
         public const string Top = "top";
         public const string Base = "base";
 
-        public const string Thickness = "thickness";
+        public const string Thickness = "thk";
         public const string Arc = "arc";
         public const string Width = "width";
         public const string Height = "height";
         public const string WidthShort = "w";
         public const string HeightShort = "h";
-        public const string Spread = "spread";
+        public const string Spread = "spr";
 
-        public const string Matrix = "matrix";
+        public const string Matrix = "mtx";
         public const string Theme = "theme";
         public const string Themes = "themes";
         public const string Marker = "marker";
         public const string Markers = "markers";
         public const string Beat = "beat";
         public const string Beats = "beats";
-        public const string Bpm = "bpm";
+        public const string BPM = "bpm";
         public const string BeatsPerBar = "bpb";
         public const string Checkpoint = "checkpoint";
         public const string Checkpoints = "checkpoints";
@@ -194,7 +204,7 @@
         public const string BackgroundShort = "bg";
 
         public const string Object = "object";
-        public const string Objects = "objects";
+        public const string Objects = "objs";
         public const string Instance = "instance";
         public const string Instances = "instances";
         public const string Parent = "parent";
@@ -221,9 +231,9 @@
         public const string Layer = "layer";
         public const string Layers = "layers";
         public const string Pivot = "pivot";
-        public const string Anchor = "anchor";
+        public const string Anchor = "anc";
         public const string LayerShort = "l";
-        public const string PivotShort = "p";
+        public const string PivotShort = "pv";
         public const string AnchorShort = "a";
 
         public const string Collider = "collider";
@@ -233,25 +243,25 @@
         public const string Indices = "idxs";
         public const string Texture = "texture";
         public const string Textures = "textures";
-        public const string Subling = "sbl";
         public const string Text = "text";
         public const string Texts = "texts";
         public const string Font = "font";
         public const string Fonts = "fonts";
-        public const string Chars = "chars";
+        public const string Chars = "chrs";
         public const string Fill = "fill";
         public const string Mask = "mask";
-        public const string Direction = "direction";
+        public const string Direction = "dir";
         public const string Resource = "resource";
         public const string Res = "res";
         public const string UV = "uv";
-        public const string Tilling = "tilling";
+        public const string Tiling = "til";
 
         public const string Loop = "loop";
+        public const string LoopShort = "l";
         public const string Particle = "particle";
         public const string Count = "count";
         public const string Counter = "counter";
-        public const string Lifetime = "lifetime";
+        public const string Lifetime = "lt";
         public const string Has = "has";
         public const string Stop = "stop";
         public const string Local = "local";
@@ -259,13 +269,13 @@
         public const string LocalShort = "l";
         public const string GlobalShort = "g";
         public const string Effect = "effect";
-        public const string Effects = "effects";
+        public const string Effects = "eff";
         public const string Eff = "eff";
-        public const string Shape = "shape";
+        public const string Shape = "shp";
         public const string Shapes = "shapes";
         public const string ShapesOpaque = "shapes_opaque";
         public const string ShapesTransparent = "shapes_transparent";
-        public const string Shader = "shader";
+        public const string Shader = ShapeShort;
         public const string Triangle = "triangle";
         public const string Triangles = "triangles";
 
@@ -273,6 +283,7 @@
         public const string Prefabs = "prefabs";
         public const string Mod = "mod";
         public const string Key = "key";
+        public const string KeyShort = "k";
         public const string Property = "property";
         public const string Path = "path";
         public const string PathShort = "p";
@@ -280,10 +291,14 @@
 
         public const string Author = "author";
         public const string Authors = "authors";
+
         public const string Credit = "credit";
-        public const string Source = "source";
-        public const string Sources = "sources";
+
+        // ONE SPELLING FOR A SOURCE. Resource.Sources wrote src while ResourceMeta and
+        // PublishProfile wrote sources, for the same concept.
         public const string Src = "src";
+        public const string Source = Src;
+        public const string Sources = Src;
         public const string Link = "link";
         public const string Uri = "uri";
         public const string Url = "url";
@@ -294,6 +309,7 @@
         public const string VerticalShort = "v";
         public const string HorizontalShort = "h";
         public const string AlignmentShort = "align";
+        public const string AlignmentShortest = "a";
         public const string Over = "over";
         public const string Under = "under";
         public const string Edge = "edge";
@@ -313,8 +329,8 @@
         public const string Red = "red";
         public const string Green = "green";
         public const string Blue = "blue";
-        public const string Scatter = "scatter";
-        public const string Multiplier = "multiplier";
+        public const string Scatter = "sctr";
+        public const string Multiplier = "mult";
         public const string Multi = "multi";
         public const string Lift = "lift";
         public const string Gamma = "gamma";
@@ -330,13 +346,15 @@
         public const string HintShort = "hnt";
         public const string Capacity = "capacity";
         public const string CapacityShort = "cap";
-        public const string Smoothness = "smt";
-        public const string Rounded = "rnd";
-        public const string Temperature = "tmp";
+        public const string Smoothness = "smo";
+        public const string Rounded = "rou";
+        public const string Temperature = "tem";
         public const string Tint = "tnt";
 
         public const string In = "in";
         public const string Out = "out";
+        public const string InShort = "i";
+        public const string OutShort = "o";
         public const string Tangent = "tangent";
         public const string Weight = "weight";
         public const string TangentShort = "t";
@@ -349,11 +367,10 @@
         public const string Post = "post";
         public const string Word = "word";
         public const string Wrap = "wrap";
-        public const string Space = "space";
-        public const string Aspect = "aspect";
+        public const string Space = "spc";
+        public const string Aspect = "asp";
 
         public const string Seed = "seed";
-        public const string Framerate = "framerate";
         public const string Fps = "fps";
         public const string Format = "format";
         public const string Length = "length";
@@ -376,6 +393,7 @@
         public const string Editor = "editor";
 
         public const string Pitch = "pitch";
+        public const string PitchShort = "pth";
         public const string Stereo = "stereo";
         public const string Pan = "pan";
         public const string Mixer = "mixer";
@@ -386,22 +404,22 @@
         public const string Low = "low";
         public const string High = "high";
         public const string Echo = "echo";
-        public const string Reverb = "reverb";
-        public const string Chorus = "chorus";
+        public const string Reverb = "rvrb";
+        public const string Chorus = "chrs";
         public const string Shifter = "shifter";
-        public const string Distortion = "distortion";
-        public const string Flange = "flange";
-        public const string Compressor = "compressor";
-        public const string Normalize = "normalize";
-        public const string ParamEQ = "parameq";
+        public const string Distortion = "dist";
+        public const string Flange = "flng";
+        public const string Compressor = "cmpr";
+        public const string Normalize = "nrml";
+        public const string ParamEQ = "pmeq";
 
         public const string Mix = "mix";
         public const string Dry = "dry";
         public const string Wet = "wet";
         public const string Cutoff = "cutoff";
         public const string Freq = "freq";
-        public const string Delay = "delay";
-        public const string Decay = "decay";
+        public const string Delay = "dly";
+        public const string Decay = "dcy";
         public const string Ratio = "ratio";
         public const string HF = "hf";
         public const string LF = "lf";
@@ -410,31 +428,32 @@
         public const string Tap2 = "tap2";
         public const string Tap3 = "tap3";
         public const string Room = "room";
-        public const string Reflect = "reflect";
-        public const string Reflections = "reflections";
-        public const string Diffusion = "diffusion";
-        public const string Density = "density";
+        public const string Reflect = "rfl";
+        public const string Reflections = "rfls";
+        public const string Diffusion = "dffs";
+        public const string Density = "dnst";
         public const string Ref = "ref";
         public const string Reference = "reference";
         public const string Rate = "rate";
-        public const string Depth = "depth";
-        public const string Feedback = "feedback";
-        public const string Overlap = "overlap";
+        public const string Depth = "dpth";
+        public const string Feedback = "fdbk";
+        public const string Overlap = "ovlp";
         public const string Fade = "fade";
-        public const string Volume = "volume";
+        public const string Volume = "vlm";
         public const string Lowest = "lowest";
         public const string Amp = "amp";
         public const string FFT = "fft";
         public const string Octave = "octave";
         public const string Threshold = "threshold";
-        public const string Attack = "attack";
-        public const string Release = "release";
+        public const string ThresholdShort = "thld";
+        public const string Attack = "atk";
+        public const string Release = "rls";
         public const string Make = "make";
 
         public const string Autosave = "autosave";
         public const string File = "file";
         public const string Files = "files";
-        public const string Logo = "Logo";
+        public const string Logo = "logo";
 
         public const string Aggressive = "aggressive";
         public const string License = "license";
@@ -452,6 +471,7 @@
         public const string Age = "age";
         public const string Rating = "rating";
         public const string Content = "content";
+        public const string Found = "found";
         public const string Descriptors = "descriptors";
         public const string Hashes = "hashes";
         public const string Grantor = "grantor";
@@ -557,6 +577,8 @@
         public const string Log = "log";
         public const string Unit = "unit";
         public const string Open = "open";
+        public const string Select = "select";
+        public const string To = "to";
         public const string Menu = "menu";
         public const string Lose = "lose";
         public const string Auto = "auto";
@@ -604,6 +626,13 @@
         public const string Lives = "lives";
         public const string Centi = "centi";
         public const string Before = "before";
+        public const string By = "by";
+        public const string Current = "current";
+        public const string Longest = "longest";
+        public const string Most = "most";
+        public const string Clear = "clear";
+        public const string Streak = "streak";
+        public const string Levels = "levels";
         public const string Moved = "moved";
         public const string Seconds = "seconds";
         public const string Avatar = "avatar";
@@ -619,8 +648,8 @@
         // ---------------------------------------------------------------------------------------------
 
         public const string IsLocal = Is + _ + Local;
-        public const string FrameDurationShort = FrameShort + _ + DurationShort;
-        public const string ScreenLimit = Screen + _ + Limit;
+        public const string FrameDurationShort = "fdur";
+        public const string ScreenLimit = "slim";
         public const string ScreenLimits = Screen + _ + Limits;
 
         public const string EditorSettings = Editor + _ + Settings;
@@ -629,40 +658,40 @@
         // groups, which is what lets them stay this short - a key only has to be unique among its
         // siblings, so the group's own name carries the qualifier the flat shape used to spell out
         // (the old "grid_size" is "grid": { "size" } now). The flat keys these replaced are gone
-        // from here entirely and survive only as literals in GameEditorSettingsV1_0, per the
-        // Versions README: a snapshot must not track current naming.
+        // from here entirely, and now that the snapshot that held them as literals is deleted, they
+        // survive nowhere at all - a settings.json predating the restructure reads back as defaults.
 
-        public const string MaxFiles = Max + _ + Files;
+        public const string MaxFiles = Max + _ + Autosave + _ + Files;
         public const string HistoryLength = History + _ + Length;
         public const string MinSize = Min + _ + Size;
         public const string MaxSize = Max + _ + Size;
         public const string MoveSensitivityX = Move + _ + Sensitivity + _ + CoordX;
         public const string MoveSensitivityY = Move + _ + Sensitivity + _ + CoordY;
         public const string WheelMultiplier = Wheel + _ + Multiplier;
-        public const string ZoomToMouse = Zoom + _ + Mouse;
+        public const string ZoomToMouse = Zoom + _ + To + _ + Mouse;
         public const string ActiveDefault = Active + _ + Default;
         public const string ResetGizmos = Reset + _ + Gizmos;
         public const string BotDebug = Bot + _ + Debug;
         public const string BotDebugGrid = Bot + _ + Debug + _ + Grid;
         public const string BotDebugTarget = Bot + _ + Debug + _ + Target;
         public const string BotDebugReach = Bot + _ + Debug + _ + Reach;
-        public const string RequiresHold = Requires + _ + Hold;
-        public const string PreviewCollider = Preview + _ + Collider;
+        public const string RequiresHold = Multi + _ + Requires + _ + Hold;
+        public const string PreviewCollider = Preview + _ + Collider + _ + On + _ + Select;
         public const string PickInvisibleAABB = Pick + _ + Invisible + _ + AABB;
         public const string LongPressDelay = Long + _ + Press + _ + Delay;
-        public const string LongPressThreshold = Long + _ + Press + _ + Threshold;
-        public const string ColliderOpacity = Collider + _ + Opacity;
+        public const string LongPressThreshold = Long + _ + Press + _ + Move + _ + Threshold;
+        public const string ColliderOpacity = Collider + _ + Opacity + _ + Selection;
         public const string ColliderOpacityView = Collider + _ + Opacity + _ + View;
         public const string SnapThreshold = Snap + _ + Threshold;
         public const string EdgeHandle = Edge + _ + Handle;
-        public const string LoopGlobal = Loop + _ + Global;
-        public const string LoopLocal = Loop + _ + Local;
+        public const string LoopGlobal = Global + _ + Loop;
+        public const string LoopLocal = Local + _ + Loop;
         public const string TimeFormat = Time + _ + Format;
         public const string DirtyFieldDelay = Dirty + _ + Field + _ + Delay;
-        public const string RotationUnit = Rotation + _ + Unit;
-        public const string LogClamps = Log + _ + Clamps;
+        public const string RotationUnit = Rotation + _ + Display + _ + Unit;
+        public const string LogClamps = Log + _ + ValueWord + _ + Clamps;
         public const string RenderInframes = Render + _ + Inframes;
-        public const string LinkColliderShape = Link + _ + Collider + _ + Shape;
+        public const string LinkColliderShape = Link + _ + Collider + _ + To + _ + Shape;
         public const string AutoOpen = Auto + _ + Open;
 
         public const string GameEditor = Game + _ + Editor;
@@ -675,9 +704,10 @@
         public const string ShowGameProgress = Show + _ + Game + _ + Progress;
         public const string ShowGamePause = Show + _ + Game + _ + Pause;
         public const string ShowGameInterface = Show + _ + Game + _ + Interface;
-        public const string FramerateTarget = Framerate + _ + Target;
-        public const string FixedFramerate = Fixed + _ + Framerate;
+        public const string FpsTarget = Fps + _ + Target;
+        public const string FpsFixed = Fps + _ + Fixed;
         public const string RenderEffects = Render + _ + Effects;
+        public const string ShowAllFoundContent = Show + _ + All + _ + Found + _ + Content;
         public const string ResourceParallelLoadCount = Resource + _ + Parallel + _ + Load + _ + Count;
         public const string ResourceWebTimeout = Resource + _ + Web + _ + Timeout;
         public const string TargetDeltaTime = Target + _ + Delta + _ + Time;
@@ -717,16 +747,16 @@
 
         public const string RequireHold = Require + _ + Hold;
         public const string HoldButton = Hold + _ + Button;
-        public const string DashOnDoubleClick = Dash + _ + Double + _ + Click;
+        public const string DashOnDoubleClick = Dash + _ + On + _ + Double + _ + Click;
         public const string DoubleClickTime = Double + _ + Click + _ + Time;
         public const string DashKeys = Dash + _ + Keys;
-        public const string HideCursorAbsolute = Hide + _ + Cursor + _ + Absolute;
-        public const string HideCursorRelative = Hide + _ + Cursor + _ + Relative;
+        public const string CursorHideAbsolute = Cursor + _ + Hide + _ + Absolute;
+        public const string CursorHideRelative = Cursor + _ + Hide + _ + Relative;
 
         public const string FingerOffsetX = Finger + _ + Offset + _ + CoordX;
         public const string FingerOffsetY = Finger + _ + Offset + _ + CoordY;
-        public const string DashOnSecondFinger = Dash + _ + Second + _ + Finger;
-        public const string DashOnDoubleTap = Dash + _ + Double + _ + Tap;
+        public const string DashOnSecondFinger = Dash + _ + On + _ + Second + _ + Finger;
+        public const string DashOnDoubleTap = Dash + _ + On + _ + Double + _ + Tap;
         public const string DoubleTapTime = Double + _ + Tap + _ + Time;
         public const string TapMaxTravel = Tap + _ + Max + _ + Travel;
         public const string JoystickAnchor = Joystick + _ + Anchor;
@@ -744,7 +774,7 @@
         public const string AxisMapping = Axis + _ + Mapping;
         public const string MaxTiltAngle = Max + _ + Tilt + _ + Angle;
 
-        public const string CalibrateOnStart = Calibrate + _ + Start;
+        public const string CalibrateOnStart = Calibrate + _ + On + _ + Start;
         public const string TiltCenterX = Tilt + _ + Center + _ + CoordX;
         public const string TiltCenterY = Tilt + _ + Center + _ + CoordY;
         public const string DashSource = Dash + _ + Source;
@@ -754,8 +784,8 @@
         // key on GraphicsSettings; the group reuses the shared Type key, which is safe because no
         // other model in this aggregate carries one.
         public const string AntiAliasing = "aa";
-        public const string Msaa = "msaa";
-        public const string Hdr = "hdr";
+        public const string MSAA = "msaa";
+        public const string HDR = "hdr";
 
         // Textures. The group's own key is the shared Textures one - a level's resource list and a
         // settings group can never appear on one model, which is the reuse this file allows.
@@ -786,9 +816,9 @@
         public const string RenderAnalogGlitch = Render + _ + AnalogGlitchShort;
         public const string RenderDigitalGlitch = Render + _ + DigitalGlitchShort;
 
-        public const string ThemeIndex = Theme + _ + Index;
-        public const string ThemeId = Theme + _ + Id;
-        public const string EffectId = Effect + _ + Id;
+        public const string ThemeIndex = "tidx";
+        public const string ThemeId = "thid";
+        public const string EffectId = "eid";
 
         public const string CameraEvents = Camera + _ + Events;
         public const string PostProcessingEvents = Post + Processing + _ + Events;
@@ -810,11 +840,11 @@
         // Instances
 
         public const string LevelId = Level + _ + Id;
-        public const string PrefabId = Prefab + _ + Id;
+        public const string PrefabId = "pfid";
         public const string AudioId = AudioShort + Id;
         public const string ObjectId = Id;
-        public const string ObjectIdCounter = Id + _ + Counter;
-        public const string AudioIdCounter = AudioShort + Id + _ + Counter;
+        public const string ObjectIdCounter = "idctr";
+        public const string AudioIdCounter = "aidctr";
         public const string PrevObjectId = Prev + _ + Id;
         public const string NextObjectId = Next + _ + Id;
 
@@ -824,15 +854,15 @@
         // They must stay distinct keys even though the values are interchangeable.
         public const string ShapeId = ShapeShort + Id;
         public const string ColliderId = ColliderShort + Id;
-        public const string ShapeName = Shape + _ + Name;
+        public const string ShapeName = "shname";
         public const string ParentObjectId = ParentShort + ObjectId;
 
         public const string LocalFrame = Local + _ + Frame;
         public const string LocalFrameShort = LocalShort + FrameShort;
-        public const string StopLocalFrame = Stop + _ + LocalFrame;
-        public const string HasStopLocalFrame = Has + _ + StopLocalFrame;
-        public const string OffsetTime = Offset + _ + Time;
-        public const string AudioLayer = Audio + _ + Layer;
+        public const string StopLocalFrame = "slf";
+        public const string HasStopLocalFrame = "hslf";
+        public const string OffsetTime = "offt";
+        public const string AudioLayer = "al";
 
         public const string EffShape = Eff + _ + Shape;
         public const string EffAngle = Eff + _ + Angle;
@@ -840,56 +870,59 @@
         public const string EffColor = Eff + _ + Color;
 
         public const string PrefabIndex = Prefab + _ + Index;
-        public const string FontSize = Font + Size;
-        public const string WordWrap = Word + Wrap;
-        public const string HorizontalAlignment = HorizontalShort + _ + Alignment;
-        public const string VerticalAlignment = VerticalShort + _ + Alignment;
+        public const string FontSize = "fsize";
+        public const string WordWrap = Wrap;
+        public const string HorizontalAlignment = HorizontalShort + AlignmentShortest;
+        public const string VerticalAlignment = VerticalShort + AlignmentShortest;
 
-        public const string Fillment = "fillment";
-        public const string Appearing = "appearing";
+        public const string Fillment = "fill";
+        public const string Appearing = "appr";
         public const string FillDirection = Fill + _ + Direction;
         public const string AppearingMode = Appearing + _ + ModeShort;
-        public const string AppearingMask = Appearing + _ + Mask;
+        public const string AppearingMask = "amsk";
         public const string OverEdge = Over + _ + Edge;
         public const string UnderEdge = Under + _ + Edge;
 
         public const string ResourceType = Resource + _ + Type;
         public const string ResourceId = Resource + _ + Id;
+
         public const string ResourcesMeta = Resources + _ + Meta;
-        public const string TextureResourceId = Texture + _ + Res + _ + Id;
-        public const string TextureResourceUV = Texture + _ + Res + _ + UV;
-        public const string FontResourceId = Font + _ + Res + _ + Id;
-        public const string FontCharacters = Font + _ + Chars;
-        public const string AudioResourceId = Audio + _ + Res + _ + Id;
-        public const string ByteResourceId = Byte + _ + Res + _ + Id;
-        public const string TextResourceId = Text + _ + Res + _ + Id;
+
+        // The resource-id family, on the shape shid/cid/pid/aid already had. auid rather than
+        // aid because LevelTrack carries BOTH its AudioId and its AudioResourceId.
+        public const string TextureResourceId = "txid";
+        public const string TextureResourceUV = "txuv";
+        public const string FontResourceId = "fnid";
+        public const string FontCharacters = Font + Chars;
+        public const string AudioResourceId = "auid";
+        public const string ByteResourceId = "byid";
+        public const string TextResourceId = "ttid";
         public const string UriType = Uri + _ + Type;
-        public const string SublingIndex = Subling + _ + Index;
 
         // Values
 
-        public const string AngleA = Angle + _ + ValueA;
-        public const string AngleB = Angle + _ + ValueB;
-        public const string ColorA = Color + _ + ValueA;
-        public const string ColorB = Color + _ + ValueB;
-        public const string CurveX = Curve + _ + CoordX;
-        public const string CurveY = Curve + _ + CoordY;
-        public const string ScaleX = Scale + _ + CoordX;
-        public const string ScaleY = Scale + _ + CoordY;
+        public const string AngleA = Angle + ValueA;
+        public const string AngleB = Angle + ValueB;
+        public const string ColorA = Color + ValueA;
+        public const string ColorB = Color + ValueB;
+        public const string CurveX = Curve + CoordX;
+        public const string CurveY = Curve + CoordY;
+        public const string ScaleA = Scale + ValueA;
+        public const string ScaleB = Scale + ValueB;
 
-        public const string ColorBottom = Color + _ + AlignmentB;
-        public const string ColorTop = Color + _ + AlignmentT;
-        public const string ColorLeft = Color + _ + AlignmentL;
-        public const string ColorRight = Color + _ + AlignmentR;
-        public const string ColorBL = Color + _ + AlignmentBL;
-        public const string ColorBM = Color + _ + AlignmentBM;
-        public const string ColorBR = Color + _ + AlignmentBR;
-        public const string ColorCL = Color + _ + AlignmentCL;
-        public const string ColorCM = Color + _ + AlignmentCM;
-        public const string ColorCR = Color + _ + AlignmentCR;
-        public const string ColorTL = Color + _ + AlignmentTL;
-        public const string ColorTM = Color + _ + AlignmentTM;
-        public const string ColorTR = Color + _ + AlignmentTR;
+        public const string ColorBottom = Color + AlignmentB;
+        public const string ColorTop = Color + AlignmentT;
+        public const string ColorLeft = Color + AlignmentL;
+        public const string ColorRight = Color + AlignmentR;
+        public const string ColorBL = Color + AlignmentBL;
+        public const string ColorBM = Color + AlignmentBM;
+        public const string ColorBR = Color + AlignmentBR;
+        public const string ColorCL = Color + AlignmentCL;
+        public const string ColorCM = Color + AlignmentCM;
+        public const string ColorCR = Color + AlignmentCR;
+        public const string ColorTL = Color + AlignmentTL;
+        public const string ColorTM = Color + AlignmentTM;
+        public const string ColorTR = Color + AlignmentTR;
 
         public const string MinR = Min + ChannelR;
         public const string MinG = Min + ChannelG;
@@ -915,107 +948,109 @@
 
         public const string WeightedMode = WeightShort + ModeShort;
         public const string TangentMode = TangentShort + ModeShort;
-        public const string InTangent = In + _ + TangentShort;
-        public const string OutTangent = Out + _ + TangentShort;
-        public const string InWeight = In + _ + WeightShort;
-        public const string OutWeight = Out + _ + WeightShort;
+        public const string InTangent = InShort + TangentShort;
+        public const string OutTangent = OutShort + TangentShort;
+        public const string InWeight = InShort + WeightShort;
+        public const string OutWeight = OutShort + WeightShort;
 
-        public const string PreWrapMode = Pre + _ + Wrap + _ + Mode;
-        public const string PostWrapMode = Post + _ + Wrap + _ + Mode;
+        public const string PreWrapMode = "prewrap";
+        public const string PostWrapMode = "postwrap";
 
-        public const string ColorKeys = Color + _ + Keys;
-        public const string AlphaKeys = Alpha + _ + Keys;
-        public const string ColorSpace = Color + _ + Space;
+        public const string ColorKeys = Color + Keys;
+        public const string AlphaKeys = Alpha + Keys;
+        public const string ColorSpace = Color + Space;
 
-        public const string MinAspect = Min + _ + Aspect;
-        public const string MaxAspect = Max + _ + Aspect;
+        public const string MinAspect = Min + Aspect;
+        public const string MaxAspect = Max + Aspect;
 
-        public const string AnchorMin = Anchor + _ + Min;
-        public const string AnchorMax = Anchor + _ + Max;
+        // MIN AND MAX ARE ALWAYS A PREFIX, never a suffix - min_aspect, min_size and minx all
+        // read that way already and these two were the outliers.
+        public const string AnchorMin = "minanc";
+        public const string AnchorMax = "maxanc";
 
         public const string LanguageStrings = Language + _ + Strings;
 
 
         // Effects
 
-        public const string ParticleCount = Particle + _ + Count;
+        public const string ParticleCount = "pc";
         public const string ParticleCollider = Particle + _ + Collider;
-        public const string ParticlePivot = Particle + _ + Pivot;
-        public const string SpeedRange = Speed + _ + Range;
+        public const string ParticlePivot = "pp";
+        public const string SpeedRange = "sprng";
 
-        public const string GravityMin = Gravity + _ + Min;
-        public const string GravityMax = Gravity + _ + Max;
-        public const string VelocityMin = Velocity + _ + Min;
-        public const string VelocityMax = Velocity + _ + Max;
-        public const string AngularVelocityMin = Angular + _ + VelocityMin;
-        public const string AngularVelocityMax = Angular + _ + VelocityMax;
-        public const string LinearVelocity = Linear + _ + Velocity;
-        public const string OrbitalVelocity = Orbital + _ + Velocity;
-        public const string OrbitalCenterOffset = Orbital + _ + Center + _ + Offset;
-        public const string VelocitySpeed = Velocity + _ + Speed;
+        public const string MinStartGravity = "mingrv";
+        public const string MaxStartGravity = "maxgrv";
+        public const string MinStartVelocity = "minvel";
+        public const string MaxStartVelocity = "maxvel";
+        public const string MinStartAngularVelocity = "minavel";
+        public const string MaxStartAngularVelocity = "maxavel";
+        public const string LinearVelocity = "lvel";
+        public const string OrbitalVelocity = "ovel";
+        public const string OrbitalCenterOffset = "ocoff";
+        public const string VelocitySpeed = "vspd";
         public const string VelocityPoint = Velocity + _ + Point;
-        public const string LinearForce = Linear + _ + Force;
+        public const string LinearForce = "lfrc";
 
-        public const string RadiusMajor = Radius + _ + Major;
-        public const string RadiusMinor = Radius + _ + Minor;
-        public const string TopRadius = Top + _ + Radius;
-        public const string BaseRadius = Base + _ + Radius;
+        public const string MajorRadius = "mjrad";
+        public const string MinorRadius = "mnrad";
+        public const string TopRadius = "trad";
+        public const string BaseRadius = "brad";
 
         // Audio
 
-        public const string StereoPan = Stereo + _ + Pan;
-        public const string Lowpass = Low + Pass;
-        public const string Highpass = High + Pass;
-        public const string PitchShifter = Pitch + Shifter;
+        public const string StereoPan = "stpan";
+        public const string Lowpass = "lpas";
+        public const string Highpass = "hpas";
+        public const string PitchShifter = "ptsh";
 
-        public const string MixLevel = Mix + _ + Level;
-        public const string DryLevel = Dry + _ + Level;
-        public const string DryMix = Dry + Mix;
-        public const string WetMix = Wet + Mix;
-        public const string CutoffFreq = Cutoff + _ + Freq;
-        public const string ReverbDelay = Reverb + _ + Delay;
-        public const string RoomHF = Room + HF;
-        public const string RoomLF = Room + LF;
-        public const string HFRef = HF + Ref;
-        public const string LFRef = LF + Ref;
-        public const string MaxChannels = Max + _ + Channels;
-        public const string FFTSize = FFT + Size;
-        public const string DecayTime = Decay + _ + Time;
-        public const string DecayHFRatio = Decay + _ + HF + Ratio;
-        public const string ReflectDelay = Reflect + _ + Delay;
-        public const string CenterFreq = Center + _ + Freq;
-        public const string OctaveRange = Octave + _ + Range;
-        public const string FreqGain = Freq + _ + Gain;
-        public const string WetMixTap1 = WetMix + _ + Tap1;
-        public const string WetMixTap2 = WetMix + _ + Tap2;
-        public const string WetMixTap3 = WetMix + _ + Tap3;
-        public const string MakeUpGain = Make + Up + _ + Gain;
-        public const string FadeInTime = Fade + _ + In + _ + Time;
-        public const string LowestVolume = Lowest + _ + Volume;
-        public const string MaximumAmp = Max + _ + Amp;
+        public const string MixLevel = "mixl";
+        public const string DryLevel = "dlvl";
+        public const string DryMix = "dmix";
+        public const string WetMix = "wmix";
+        public const string CutoffFreq = "cutf";
+        public const string ReverbDelay = "rvbd";
+        public const string RoomHF = "rmhf";
+        public const string RoomLF = "rmlf";
+        public const string HFRef = "hfrf";
+        public const string LFRef = "lfrf";
+        public const string MaxChannels = "mchn";
+        public const string FFTSize = "fftz";
+        public const string DecayTime = "dcyt";
+        public const string DecayHFRatio = "dchf";
+        public const string ReflectDelay = "rfld";
+        public const string CenterFreq = "cntf";
+        public const string OctaveRange = "octr";
+        public const string FreqGain = "fgn";
+        public const string WetMixTap1 = WetMix + Num1;
+        public const string WetMixTap2 = WetMix + Num2;
+        public const string WetMixTap3 = WetMix + Num3;
+        public const string MakeUpGain = "mkgn";
+        public const string FadeInTime = "fint";
+        public const string LowestVolume = "lvlm";
+        public const string MaxAmp = "mamp";
 
         // Post Processing
 
-        public const string ScanLineJitter = Scan + _ + Line + _ + Jitter;
-        public const string VerticalJump = Vertical + _ + Jump;
-        public const string HorizontalShake = Horizontal + _ + Shake;
-        public const string ColorDrift = Color + _ + Drift;
-        public const string HueVsHue = Hue + _ + Vs + _ + Hue;
-        public const string HueVsSat = Hue + _ + Vs + _ + Sat;
-        public const string SatVsSat = Sat + _ + Vs + _ + Sat;
-        public const string LumVsSat = Lum + _ + Vs + _ + Sat;
-        public const string CurveMaster = Curve + _ + Master;
-        public const string CurveRed = Curve + _ + Red;
-        public const string CurveGreen = Curve + _ + Green;
-        public const string CurveBlue = Curve + _ + Blue;
-        public const string LiftColor = Lift + _ + Color;
-        public const string GammaColor = Gamma + _ + Color;
-        public const string GainColor = Gain + _ + Color;
-        public const string ShadowColor = Shadow + _ + Color;
-        public const string MidtoneColor = Midtone + _ + Color;
-        public const string HighlightColor = Highlight + _ + Color;
-        public const string ShadowLimit = Shadow + _ + Limit;
-        public const string HighlightLimit = Highlight + _ + Limit;
+        public const string ScanLineJitter = "slj";
+        public const string VerticalJump = "vj";
+        public const string HorizontalShake = "hs";
+        public const string ColorDrift = Color + "dft";
+        public const string HueVsHue = "hvsh";
+        public const string HueVsSat = "hvss";
+        public const string SatVsSat = "svss";
+        public const string LumVsSat = "lvss";
+        public const string CurveMaster = Curve + "mstr";
+        public const string CurveRed = Curve + ChannelR;
+        public const string CurveGreen = Curve + ChannelG;
+        public const string CurveBlue = Curve + ChannelB;
+        public const string LiftColor = Lift + Color;
+        public const string GammaColor = Gamma + Color;
+        public const string GainColor = Gain + Color;
+        public const string ShadowColor = Shadow + Color;
+        public const string MidtoneColor = Midtone + Color;
+        public const string HighlightColor = Highlight + Color;
+        public const string ShadowLimit = Shadow + "lim";
+        public const string HighlightLimit = Highlight + "lim";
 
         // Licensing
 
@@ -1071,34 +1106,34 @@
         public const string LoadingSeconds = Loading + _ + Seconds;
 
         public const string AppLaunches = App + _ + Launches;
-        public const string CheckpointRestarts = Checkpoints + _ + Restarts;
+        public const string CheckpointRestarts = Checkpoint + _ + Restarts;
 
         public const string BestFrame = Best + _ + Frame;
         public const string BestProgress = Best + _ + Progress;
         public const string LivesLeft = Lives + _ + Left;
         public const string SpeedCenti = Speed + _ + Centi;
 
-        public const string DeathsByBucket = Deaths + _ + Bucket;
-        public const string HitsByBucket = Hits + _ + Bucket;
-        public const string DeathsByCheckpoint = Deaths + _ + Checkpoints;
-        public const string DeathsBeforeCheckpoint = Deaths + _ + Before + _ + Checkpoints;
+        public const string DeathsByBucket = Deaths + _ + By + _ + Bucket;
+        public const string HitsByBucket = Hits + _ + By + _ + Bucket;
+        public const string DeathsByCheckpoint = Deaths + _ + By + _ + Checkpoint;
+        public const string DeathsBeforeCheckpoint = Deaths + _ + Before + _ + Checkpoint;
         public const string BucketFrameDuration = Bucket + _ + Frame + _ + Duration;
 
         public const string DistinctLevelsPlayed = Distinct + _ + Played;
         public const string DistinctLevelsCleared = Distinct + _ + Cleared;
         public const string FramesSimulated = Frames + _ + Simulated;
 
-        public const string CurrentClearStreak = Clears + _ + Streaks;
-        public const string LongestClearStreak = Max + _ + Clears + _ + Streaks;
-        public const string MostPlayedLevelId = Max + _ + Played + _ + Level;
-        public const string MostPlayedAttempts = Max + _ + Played + _ + Attempts;
-        public const string LastPlayedLevelId = Last + _ + Played + _ + Level;
+        public const string CurrentClearStreak = Current + _ + Clear + _ + Streak;
+        public const string LongestClearStreak = Longest + _ + Clear + _ + Streak;
+        public const string MostPlayedLevelId = Most + _ + Played + _ + LevelId;
+        public const string MostPlayedAttempts = Most + _ + Played + _ + Attempts;
+        public const string LastPlayedLevelId = Last + _ + Played + _ + LevelId;
 
         public const string TotalDashes = Total + _ + Dashes;
-        public const string TotalDistanceMoved = Distance + _ + Moved;
+        public const string TotalDistanceMoved = Total + _ + Distance + _ + Moved;
 
-        public const string LevelsCreated = Level + _ + Created;
-        public const string LevelsDeleted = Level + _ + Deleted;
+        public const string LevelsCreated = Levels + _ + Created;
+        public const string LevelsDeleted = Levels + _ + Deleted;
         public const string ObjectsCreated = Objects + _ + Created;
         public const string GeneratorsRun = Generators + _ + Ran;
         public const string TotalResources = Total + _ + Resources;

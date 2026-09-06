@@ -17,10 +17,11 @@ namespace BH.SDK.Models.Game
     /// Fields are grouped below as general / color grading / glitches.
     /// </summary>
     [RuleContainer]
-    // 1.1: ColorCurves' two scalars became URP's eight curves - see ColorCurvesKey's own header for
-    // why they could not simply be joined by six more. Versions/V1_0 carries the snapshot and the
-    // migrator; nothing else about this type moved.
-    [DataVersion(DataDomains.PostProcessingEvents, 1, 1)]
+    // ColorCurves' two scalars became URP's eight curves - see ColorCurvesKey's own header for why
+    // they could not simply be joined by six more. That took the domain to 1.1 and shipped with a
+    // snapshot and a migrator; both are gone and the domain is back at 1.0, per root CLAUDE.md
+    // Rule 11 - the game is pre-release, so the format changes in place and nothing migrates.
+    [DataVersion(DataDomains.PostProcessingEvents, 1, 0)]
     [GenerateModel]
     public sealed partial class PostProcessingEvents : IModel<PostProcessingEvents>
     {
@@ -73,7 +74,7 @@ namespace BH.SDK.Models.Game
         [RuleNotNull, RuleCollectionMaxCount(LevelRules.MaxPostProcessingKeys)]
         [RuleCollectionUnique(nameof(ColorCurvesKey.Frame))]
         [JsonProperty(Names.ColorCurvesShort)]
-        public List<ColorCurvesKey> ColorCurveses { get; set; }
+        public List<ColorCurvesKey> ColorCurves { get; set; }
 
         /// <summary> Three-way grading by fixed tonal ranges. </summary>
         [RuleNotNull, RuleCollectionMaxCount(LevelRules.MaxPostProcessingKeys)]
@@ -85,7 +86,7 @@ namespace BH.SDK.Models.Game
         [RuleNotNull, RuleCollectionMaxCount(LevelRules.MaxPostProcessingKeys)]
         [RuleCollectionUnique(nameof(ShadowsMidtonesHighlightsKey.Frame))]
         [JsonProperty(Names.ShadowsMidtonesHighlightsShort)]
-        public List<ShadowsMidtonesHighlightsKey> ShadowsMidtonesHighlightses { get; set; }
+        public List<ShadowsMidtonesHighlightsKey> ShadowsMidtonesHighlights { get; set; }
 
         /// <summary> Global temperature/tint shift. </summary>
         [RuleNotNull, RuleCollectionMaxCount(LevelRules.MaxPostProcessingKeys)]
@@ -116,9 +117,9 @@ namespace BH.SDK.Models.Game
             Lenses = new List<LensDistortionKey>();
             Grains = new List<FilmGrainKey>();
             MotionBlurs = new List<MotionBlurKey>();
-            ColorCurveses = new List<ColorCurvesKey>();
+            ColorCurves = new List<ColorCurvesKey>();
             LiftGammaGains = new List<LiftGammaGainKey>();
-            ShadowsMidtonesHighlightses = new List<ShadowsMidtonesHighlightsKey>();
+            ShadowsMidtonesHighlights = new List<ShadowsMidtonesHighlightsKey>();
             WhiteBalances = new List<WhiteBalanceKey>();
             AnalogGlitches = new List<AnalogGlitchKey>();
             DigitalGlitches = new List<DigitalGlitchKey>();
@@ -144,9 +145,9 @@ namespace BH.SDK.Models.Game
             Lenses = lenses;
             Grains = grains;
             MotionBlurs = motionBlurs;
-            ColorCurveses = colorCurveses;
+            ColorCurves = colorCurveses;
             LiftGammaGains = liftGammaGains;
-            ShadowsMidtonesHighlightses = shadowsMidtonesHighlightses;
+            ShadowsMidtonesHighlights = shadowsMidtonesHighlightses;
             WhiteBalances = whiteBalances;
             AnalogGlitches = analogGlitches;
             DigitalGlitches = digitalGlitches;

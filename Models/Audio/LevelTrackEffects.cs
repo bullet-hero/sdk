@@ -12,9 +12,8 @@ using Newtonsoft.Json;
 namespace BH.SDK.Models.Audio
 {
     /// <summary>
-    /// The mixing chain of one LevelTrack: two animated tracks plus a fixed slot per DSP effect.
-    /// Flat by design - every effect object always exists, and whether it does anything is decided
-    /// by its own MixLevel, so there is no list to add to or flags to keep in sync.
+    /// The mixing chain of one LevelTrack: two animated tracks plus one slot per DSP effect.
+    /// Flat by design - a fixed slot each, never a list to add to or flags to keep in sync.
     /// </summary>
     [RuleContainer]
     [GenerateModel]
@@ -36,66 +35,66 @@ namespace BH.SDK.Models.Audio
 
         /// <summary> Master switch for this whole DSP chain, off by default - the opposite default
         /// from PostProcessingEvents.Active, and the only explicit on/off flag here. </summary>
-        [JsonProperty(Names.Active)]
+        [JsonProperty(Names.ActiveShort)]
         public bool Active { get; set; }
 
         // TODO replace float to IFloat
 
         /// <summary> Cuts highs above a cutoff - the muffling half of the filter pair. </summary>
-        [RuleNotNull]
+        [RuleOptional]
         [JsonProperty(Names.Lowpass)]
         public AudioLowpass Lowpass { get; set; }
 
         /// <summary> Cuts lows below a cutoff - thins the track out, the mirror of Lowpass. </summary>
-        [RuleNotNull]
+        [RuleOptional]
         [JsonProperty(Names.Highpass)]
         public AudioHighpass Highpass { get; set; }
 
         /// <summary> Discrete repeats of the signal. </summary>
-        [RuleNotNull]
+        [RuleOptional]
         [JsonProperty(Names.Echo)]
         public AudioEcho Echo { get; set; }
 
         /// <summary> Simulated room tail - dense and diffuse, where Echo is countable repeats. </summary>
-        [RuleNotNull]
+        [RuleOptional]
         [JsonProperty(Names.Reverb)]
         public AudioReverb Reverb { get; set; }
 
         /// <summary> Detuned copies layered in to thicken the sound. </summary>
-        [RuleNotNull]
+        [RuleOptional]
         [JsonProperty(Names.Chorus)]
         public AudioChorus Chorus { get; set; }
 
         /// <summary> Changes pitch without changing playback speed - unlike a plain rate change. </summary>
-        [RuleNotNull]
+        [RuleOptional]
         [JsonProperty(Names.PitchShifter)]
         public AudioPitchShifter PitchShifter { get; set; }
 
         /// <summary> Clipping/saturation for a dirty sound. </summary>
-        [RuleNotNull]
+        [RuleOptional]
         [JsonProperty(Names.Distortion)]
         public AudioDistortion Distortion { get; set; }
 
         /// <summary> Sweeping comb filter - the whoosh, closely related to Chorus but modulated
         /// through a shorter delay. </summary>
-        [RuleNotNull]
+        [RuleOptional]
         [JsonProperty(Names.Flange)]
         public AudioFlange Flange { get; set; }
 
         /// <summary> Reduces dynamic range above a threshold. </summary>
-        [RuleNotNull]
+        [RuleOptional]
         [JsonProperty(Names.Compressor)]
         public AudioCompressor Compressor { get; set; }
 
         /// <summary> Brings the overall level to a target - loudness, where Compressor shapes
         /// dynamics. </summary>
-        [RuleNotNull]
+        [RuleOptional]
         [JsonProperty(Names.Normalize)]
         public AudioNormalize Normalize { get; set; }
         
         /// <summary> Single-band parametric EQ - boosts or cuts around one frequency, where
         /// Low/Highpass can only cut past one. </summary>
-        [RuleNotNull]
+        [RuleOptional]
         [JsonProperty(Names.ParamEQ)]
         public AudioParamEQ ParamEQ { get; set; }
 
@@ -105,17 +104,16 @@ namespace BH.SDK.Models.Audio
             StereoPans = new List<FloatKey>();
             Active = AudioRules.ActiveDefault;
             
-            Lowpass = new AudioLowpass();
-            Highpass = new AudioHighpass();
-            Echo = new AudioEcho();
-            Reverb = new AudioReverb();
-            Chorus = new AudioChorus();
-            PitchShifter = new AudioPitchShifter();
-            Distortion = new AudioDistortion();
-            Flange = new AudioFlange();
-            Compressor = new AudioCompressor();
-            Normalize = new AudioNormalize();
-            ParamEQ = new AudioParamEQ();
+            // THE ELEVEN SLOTS ARE BORN EMPTY, and null is what "this effect is not in the
+            // chain" means. It used to be an always-present object at the disabled floor, which
+            // wrote 1.1 KB of pure defaults into every track of every level - eleven effects with
+            // every parameter, whether or not one was in use. A member that may be null must be
+            // CONSTRUCTED null (docs/NAMING.md), which is what makes the writer's skip reach it.
+            //
+            // MixLevel stays exactly what it was: a real wet level whose floor means silence. It
+            // answers "how loud", null answers "is it here at all", and the two are not the same
+            // question - an effect an author dialled in and then switched off keeps its object and
+            // its settings.
         }
         public LevelTrackEffects(List<FloatKey> volumes, List<FloatKey> stereoPans, bool active, 
             AudioLowpass lowpass, AudioHighpass highpass, AudioEcho echo, AudioReverb reverb, 

@@ -102,7 +102,7 @@ namespace BH.SDK.Tests.Rules
         // with, which is a comparison that fails on one machine and passes on another.
 
         private const string InvalidLevel =
-            "rule_in_range Settings.Framerate\n" +
+            "rule_in_range Settings.Fps\n" +
             "rule_iprimitive_guid_not_null Game.Events.Themes[0].ThemeId\n" +
             "rule_iprimitive_int_not_null Audio.Tracks[AudioId=1].AudioResourceId\n" +
             "rule_in_range Audio.Tracks[AudioId=1].Speed\n" +
@@ -124,7 +124,7 @@ namespace BH.SDK.Tests.Rules
             "rule_control_priority Controls.Priority\n" +
             "rule_in_range Audio.Game\n" +
             "rule_in_range Audio.UI\n" +
-            "rule_min_value Graphics.Effects.FixedFramerate\n" +
+            "rule_min_value Graphics.Effects.FpsFixed\n" +
             "rule_min_value GameEditor.Camera.MinSize\n";
     }
 }

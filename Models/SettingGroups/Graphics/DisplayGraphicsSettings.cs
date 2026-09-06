@@ -75,7 +75,7 @@ namespace BH.SDK.Models.SettingGroups.Graphics
 
         /// <summary> Whether presentation waits for the display's refresh. Desktop only - Unity
         /// ignores vSyncCount on phones - and it OUTRANKS
-        /// <see cref="SettingGroups.GraphicsSettings.FramerateTarget"/>: Unity ignores
+        /// <see cref="GraphicsSettings.FpsTarget"/>: Unity ignores
         /// targetFrameRate whenever this is not Off. </summary>
         [RuleEnumValid]
         [JsonProperty(Names.VSync)]

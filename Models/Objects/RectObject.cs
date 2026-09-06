@@ -51,7 +51,7 @@ namespace BH.SDK.Models.Objects
 
         /// <summary> Whether the object participates at all - drawn and collided against. Applies
         /// down the hierarchy: an inactive parent takes its whole subtree with it. </summary>
-        [JsonProperty(Names.Active)]
+        [JsonProperty(Names.ActiveShort)]
         public bool Active { get; set; }
 
         /// <summary> Half-open lifetime [Start, End) on the owning scope's timeline. Outside it the
@@ -62,7 +62,7 @@ namespace BH.SDK.Models.Objects
         /// <summary> Draw order among siblings - higher draws in front. Static here; LayerKey
         /// animates it where a track is wired up. </summary>
         [RuleInRange(ValueRules.MinLayer, ValueRules.MaxLayer)]
-        [JsonProperty(Names.Layer)]
+        [JsonProperty(Names.LayerShort)]
         public int Layer { get; set; }
 
         // Rect content
@@ -110,7 +110,7 @@ namespace BH.SDK.Models.Objects
         /// position refers to. </summary>
         [RuleNotNull, RuleCollectionMaxCount(LevelRules.MaxObjectKeys)]
         [RuleCollectionUnique(nameof(AlignmentKey.Frame))]
-        [JsonProperty(Names.Pivot)]
+        [JsonProperty(Names.PivotShort)]
         public List<AlignmentKey> Pivots { get; set; }
 
         public RectObject()

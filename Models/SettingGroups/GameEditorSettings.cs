@@ -8,14 +8,16 @@ using Newtonsoft.Json;
 namespace BH.SDK.Models.SettingGroups
 {
     // This is the one UserSettings group that has ever been RESTRUCTURED rather than added to, and it
-    // is what took the domain from (1,0) to (2,0). Sixteen flat properties had accumulated here, and
-    // the audit that fed twenty new ones in (docs/issues/EDITOR_SETTINGS_HISTORY.md) would have made
-    // it thirty-six - a constructor nobody can call correctly and a GetHashCode already folding twice.
+    // is what once took the domain from (1,0) to (2,0). Sixteen flat properties had accumulated here,
+    // and the audit that fed twenty new ones in (docs/issues/EDITOR_SETTINGS_HISTORY.md) would have
+    // made it thirty-six - a constructor nobody can call correctly and a GetHashCode already folding
+    // twice.
     //
-    // Moving keys is the one change an additive default cannot cover, so unlike every other group
-    // here it ships with a snapshot (UserSettingsV1_0) and a migrator beside it. The shape it moved
-    // to is GraphicsSettings' own - a root holding nothing but sub-groups - except that this one keeps
-    // no loose properties at all: every field belongs to exactly one of the nine.
+    // Moving keys is the one change an additive default cannot cover, so it shipped with a snapshot
+    // and a migrator. Both are deleted and the domain is back at (1,0) - root CLAUDE.md Rule 11, the
+    // game is pre-release. The shape it moved to is GraphicsSettings' own - a root holding nothing but
+    // sub-groups - except that this one keeps no loose properties at all: every field belongs to
+    // exactly one of the nine.
 
     /// <summary>
     /// Preferences for the in-game level editor, per device. Belongs to the person editing, never to

@@ -21,8 +21,8 @@ namespace BH.SDK.Models.Keyframes
         /// <summary> Repeat count per axis; values above 1 tile the texture. </summary>
         [RuleNotNull]
         [RuleIVector2InRange(ValueRules.MinUv, ValueRules.MaxUv)]
-        [JsonProperty(Names.Tilling)]
-        public Vector2Value Tilling { get; set; }
+        [JsonProperty(Names.Tiling)]
+        public Vector2Value Tiling { get; set; }
 
         /// <summary> Shift of the texture within the rect - animate it for a scrolling surface. </summary>
         [RuleNotNull]
@@ -32,12 +32,12 @@ namespace BH.SDK.Models.Keyframes
 
         public UVKey()
         {
-            Tilling = new Vector2Value(ValueRules.DefaultUvX, ValueRules.DefaultUvY);
+            Tiling = new Vector2Value(ValueRules.DefaultUvX, ValueRules.DefaultUvY);
             Offset = new Vector2Value(ValueRules.DefaultUvZ, ValueRules.DefaultUvW);
         }
         public UVKey(Vector2Value tilling, Vector2Value offset, int frame, EaseType ease = DefaultEase) : base(frame, ease)
         {
-            Tilling = tilling;
+            Tiling = tilling;
             Offset = offset;
         }
     }

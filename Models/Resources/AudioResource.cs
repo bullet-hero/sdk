@@ -23,6 +23,7 @@ namespace BH.SDK.Models.Resources
         [JsonProperty(Names.AudioResourceId)]
         public AudioResourceId AudioResourceId { get; set; }
         
+        [JsonProperty(Names.Type)]
         public override ResourceType Type => ResourceType.Audio;
 
         public AudioResource()

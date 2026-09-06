@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using BH.SDK.Models;
 using BH.SDK.Models.Audio;
+using BH.SDK.Models.AudioEffects;
 using BH.SDK.Models.Data;
 using BH.SDK.Models.Effects;
 using BH.SDK.Models.Enums;
@@ -141,7 +142,7 @@ namespace BH.SDK.Tests
             var level = new Level();
             var themeId = ThemeId.NewGuid();
 
-            level.Settings.Framerate = 61;
+            level.Settings.Fps = 61;
             level.Settings.ObjectIdCounter = 5;
             level.Settings.AudioIdCounter = 2;
 
@@ -179,14 +180,14 @@ namespace BH.SDK.Tests
             level.Game.PostProcessingEvents.Lenses.Add(new LensDistortionKey());
             level.Game.PostProcessingEvents.Grains.Add(new FilmGrainKey());
             level.Game.PostProcessingEvents.MotionBlurs.Add(new MotionBlurKey());
-            level.Game.PostProcessingEvents.ColorCurveses.Add(new ColorCurvesKey());
+            level.Game.PostProcessingEvents.ColorCurves.Add(new ColorCurvesKey());
             level.Game.PostProcessingEvents.LiftGammaGains.Add(new LiftGammaGainKey());
-            level.Game.PostProcessingEvents.ShadowsMidtonesHighlightses.Add(new ShadowsMidtonesHighlightsKey());
+            level.Game.PostProcessingEvents.ShadowsMidtonesHighlights.Add(new ShadowsMidtonesHighlightsKey());
             level.Game.PostProcessingEvents.WhiteBalances.Add(new WhiteBalanceKey());
             level.Game.PostProcessingEvents.AnalogGlitches.Add(new AnalogGlitchKey());
             level.Game.PostProcessingEvents.DigitalGlitches.Add(new DigitalGlitchKey());
 
-            level.Game.PlayerEvents.Visibles.Add(new BoolKey());
+            level.Game.PlayerEvents.Visibilities.Add(new BoolKey());
             level.Game.PlayerEvents.Controls.Add(new BoolKey());
             level.Game.PlayerEvents.Collisions.Add(new BoolKey());
             // Deliberately not the neutral 1: a round trip that dropped the track would still come
@@ -321,9 +322,23 @@ namespace BH.SDK.Tests
             var customShapeId = ShapeId.NewGuid();
             level.Resources.CompositeShapes.Add(customShapeId, CreateTestCompositeShape(customShapeId, "CustomShape"));
 
+            // The eleven slots are born null now - "this effect is not in the chain" - so a fixture
+            // that means to touch every field materializes them, exactly as the editor does on the
+            // author's first edit.
             var trackEffects = new LevelTrackEffects
             {
                 Active = true,
+                Lowpass = new AudioLowpass(),
+                Highpass = new AudioHighpass(),
+                Echo = new AudioEcho(),
+                Reverb = new AudioReverb(),
+                Chorus = new AudioChorus(),
+                PitchShifter = new AudioPitchShifter(),
+                Distortion = new AudioDistortion(),
+                Flange = new AudioFlange(),
+                Compressor = new AudioCompressor(),
+                Normalize = new AudioNormalize(),
+                ParamEQ = new AudioParamEQ(),
             };
             trackEffects.Volumes.Add(new FloatKey());
             trackEffects.StereoPans.Add(new FloatKey());
@@ -338,7 +353,7 @@ namespace BH.SDK.Tests
             trackEffects.Distortion.Level = 0.3f;
             trackEffects.Flange.Depth = 0.5f;
             trackEffects.Compressor.Threshold = -20f;
-            trackEffects.Normalize.MaximumAmp = 15f;
+            trackEffects.Normalize.MaxAmp = 15f;
             trackEffects.ParamEQ.CenterFreq = 3000f;
 
             var track = new LevelTrack(new AudioId(1), new AudioResourceId(-1), FrameSpan.FromBounds(0, 11),
@@ -352,7 +367,7 @@ namespace BH.SDK.Tests
         {
             var level = new Level();
 
-            level.Settings.Framerate = -15;
+            level.Settings.Fps = -15;
 
             level.Game.Events.Backgrounds.Add(new Color3Key());
             level.Game.Events.Checkpoints.Add(new Checkpoint());
@@ -369,14 +384,14 @@ namespace BH.SDK.Tests
             level.Game.PostProcessingEvents.Lenses.Add(new LensDistortionKey());
             level.Game.PostProcessingEvents.Grains.Add(new FilmGrainKey());
             level.Game.PostProcessingEvents.MotionBlurs.Add(new MotionBlurKey());
-            level.Game.PostProcessingEvents.ColorCurveses.Add(new ColorCurvesKey());
+            level.Game.PostProcessingEvents.ColorCurves.Add(new ColorCurvesKey());
             level.Game.PostProcessingEvents.LiftGammaGains.Add(new LiftGammaGainKey());
-            level.Game.PostProcessingEvents.ShadowsMidtonesHighlightses.Add(new ShadowsMidtonesHighlightsKey());
+            level.Game.PostProcessingEvents.ShadowsMidtonesHighlights.Add(new ShadowsMidtonesHighlightsKey());
             level.Game.PostProcessingEvents.WhiteBalances.Add(new WhiteBalanceKey());
             level.Game.PostProcessingEvents.AnalogGlitches.Add(new AnalogGlitchKey());
             level.Game.PostProcessingEvents.DigitalGlitches.Add(new DigitalGlitchKey());
 
-            level.Game.PlayerEvents.Visibles.Add(new BoolKey());
+            level.Game.PlayerEvents.Visibilities.Add(new BoolKey());
             level.Game.PlayerEvents.Collisions.Add(new BoolKey());
 
             var shapeObject = new ShapeObject()
@@ -572,7 +587,7 @@ namespace BH.SDK.Tests
         public static Level CreateLargeTestLevel(int objectCount, int prefabCount, int prefabObjectCount)
         {
             var level = new Level();
-            level.Settings.Framerate = 60;
+            level.Settings.Fps = 60;
             level.Settings.ObjectIdCounter = objectCount + 1;
 
             for (var i = 1; i <= objectCount; i++)
@@ -644,8 +659,8 @@ namespace BH.SDK.Tests
                         HoldButton = MouseButton.Right,
                         DoubleClickTime = 0.25f,
                         DashKeys = KeyBindingMask.Space | KeyBindingMask.KeyE,
-                        HideCursorAbsolute = false,
-                        HideCursorRelative = true,
+                        CursorHideAbsolute = false,
+                        CursorHideRelative = true,
                     },
                     Touchscreen =
                     {
@@ -685,8 +700,8 @@ namespace BH.SDK.Tests
                 },
                 Graphics =
                 {
-                    FramerateTarget = FramerateTarget.Fixed,
-                    FixedFramerate = 120,
+                    FpsTarget = FramerateTarget.Fixed,
+                    FpsFixed = 120,
                     Audio =
                     {
                         Render = false,
@@ -700,8 +715,8 @@ namespace BH.SDK.Tests
                     Effects =
                     {
                         Render = false,
-                        FramerateTarget = FramerateTarget.ScreenHz,
-                        FixedFramerate = 90,
+                        FpsTarget = FramerateTarget.ScreenHz,
+                        FpsFixed = 90,
                         MaxScrubTime = 0.3f,
                     },
                     // Every field away from its default, so a round trip that dropped one is visible:
@@ -709,8 +724,8 @@ namespace BH.SDK.Tests
                     AntiAliasing =
                     {
                         Type = AntiAliasingType.Fxaa,
-                        Msaa = MsaaType.X8,
-                        Hdr = true,
+                        MSAA = MsaaType.X8,
+                        HDR = true,
                     },
                     PostProcessing =
                     {
@@ -785,10 +800,10 @@ namespace BH.SDK.Tests
                 },
                 Graphics =
                 {
-                    FixedFramerate = 1000,
+                    FpsFixed = 1000,
                     Effects =
                     {
-                        FixedFramerate = -1
+                        FpsFixed = -1
                     },
                     PostProcessing =
                     {

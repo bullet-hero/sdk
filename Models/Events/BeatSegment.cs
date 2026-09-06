@@ -49,8 +49,8 @@ namespace BH.SDK.Models.Events
         /// same number spans a different frame count in a 30 fps and a 60 fps level - which is
         /// correct, a frame is a different length of time in each. </summary>
         [RuleInRange(LevelRules.MinBpm, LevelRules.MaxBpm)]
-        [JsonProperty(Names.Bpm)]
-        public float Bpm { get; set; }
+        [JsonProperty(Names.BPM)]
+        public float BPM { get; set; }
 
         // Fractional on purpose. A song's first beat almost never lands on a frame boundary, and at
         // 30 fps a whole-frame phase is 33ms out - audible. Beat frames round on the way out (see
@@ -81,7 +81,7 @@ namespace BH.SDK.Models.Events
         public BeatSegment()
         {
             Span = new FrameSpan();
-            Bpm = LevelRules.DefaultBpm;
+            BPM = LevelRules.DefaultBpm;
             Offset = 0f;
             BeatsPerBar = LevelRules.DefaultBeatsPerBar;
             Name = string.Empty;
@@ -91,7 +91,7 @@ namespace BH.SDK.Models.Events
             string name, Color4Value color4)
         {
             Span = span;
-            Bpm = bpm;
+            BPM = bpm;
             Offset = offset;
             BeatsPerBar = beatsPerBar;
             Name = name;

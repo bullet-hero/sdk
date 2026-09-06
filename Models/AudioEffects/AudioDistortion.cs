@@ -16,7 +16,7 @@ namespace BH.SDK.Models.AudioEffects
     {
         /// <summary> How hard the signal is clipped. </summary>
         [RuleInRange(AudioRules.Distortion.Level_Min, AudioRules.Distortion.Level_Max)]
-        [JsonProperty(Names.Level)]
+        [JsonProperty(Names.LevelShort)]
         public float Level { get; set; }
 
         public AudioDistortion()

@@ -20,16 +20,16 @@ namespace BH.SDK.Models.SettingGroups
         /// <summary> Where the target framerate comes from - the screen's refresh rate or the fixed
         /// value below. </summary>
         [RuleEnumValid]
-        [JsonProperty(Names.FramerateTarget)]
-        public FramerateTarget FramerateTarget { get; set; }
+        [JsonProperty(Names.FpsTarget)]
+        public FramerateTarget FpsTarget { get; set; }
 
         // if 0 - doesn't setup framerate, use Unity default. Require project restart
         // if > 0 - target framerate
 
         /// <summary> Explicit framerate cap, used when FramerateTarget says so. </summary>
         [RuleMinValue(1)]
-        [JsonProperty(Names.FixedFramerate)]
-        public int FixedFramerate { get; set; }
+        [JsonProperty(Names.FpsFixed)]
+        public int FpsFixed { get; set; }
 
         /// <summary> Audio playback/sync options - grouped here rather than in AudioSettings because
         /// these are performance trade-offs, not volume preferences. </summary>
@@ -77,8 +77,8 @@ namespace BH.SDK.Models.SettingGroups
 
         public GraphicsSettings()
         {
-            FramerateTarget = FramerateTarget.ScreenHz;
-            FixedFramerate = 60;
+            FpsTarget = FramerateTarget.ScreenHz;
+            FpsFixed = 60;
             Audio = new AudioGraphicsSettings();
             Effects = new EffectsGraphicsSettings();
             PostProcessing = new PostProcessingGraphicsSettings();
@@ -92,8 +92,8 @@ namespace BH.SDK.Models.SettingGroups
             PostProcessingGraphicsSettings postProcessing, AntiAliasingGraphicsSettings antiAliasing,
             TexturesGraphicsSettings textures, DisplayGraphicsSettings display)
         {
-            FramerateTarget = framerateTarget;
-            FixedFramerate = fixedFramerate;
+            FpsTarget = framerateTarget;
+            FpsFixed = fixedFramerate;
             Audio = audio;
             Effects = effects;
             PostProcessing = postProcessing;

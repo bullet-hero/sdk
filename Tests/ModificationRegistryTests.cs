@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using BH.SDK.Models;
 using BH.SDK.Models.Keyframes;
 using BH.SDK.Models.Objects;
 using BH.SDK.Models.Primitives;
@@ -81,7 +82,10 @@ namespace BH.SDK.Tests
             text.FontSizes.Add(new FontSizeKey(new FloatValue(10f), 0));
 
             var replacement = new FloatValue(42f);
-            text.Apply(new Modification(new ModificationKey(text.ObjectId, "fontsize[0].flt"), replacement));
+            // Built from the constants rather than spelled out: a modification path IS a chain of
+            // JSON names, so a literal here silently stops resolving the day one of them moves.
+            var path = $"{Names.FontSize}[0].{Names.Float}";
+            text.Apply(new Modification(new ModificationKey(text.ObjectId, path), replacement));
 
             var key = text.FontSizes[0] as FontSizeKey;
             Assert.IsNotNull(key, "The font size stopped being a FontSizeKey.");

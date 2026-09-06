@@ -9,14 +9,19 @@ namespace BH.SDK.Models.AudioEffects
 {
     /// <summary>
     /// Base of every DSP effect on a track. Carries the one field they all share - how loudly the
-    /// processed signal is mixed back in - which doubles as the effect's on/off switch.
+    /// processed signal is mixed back in, whose floor is silence.
     /// </summary>
     [RuleContainer]
     [GenerateModel]
     public partial class AudioEffect : IModel<AudioEffect>
     {
-        /// <summary> Wet-signal level in dB. At the disabled floor the effect is silent, which is
-        /// how "enabled" is encoded - there is deliberately no separate bool per effect. </summary>
+        // MIXLEVEL ANSWERS "HOW LOUD", NOT "IS THIS EFFECT HERE" - those are two questions and were
+        // one field until the slots on LevelTrackEffects started being born null. An effect an
+        // author dialled in and then turned down to the floor still exists, with its settings; one
+        // never touched is absent from the chain entirely.
+
+        /// <summary> Wet-signal level in dB. At the floor the effect is silent but still in the
+        /// chain, which is what AudioRules.IsActiveMixLevel asks about. </summary>
         [RuleInRange(AudioRules.MixLevel_Disabled, AudioRules.MixLevel_Enabled)]
         [JsonProperty(Names.MixLevel)]
         public float MixLevel { get; set; }

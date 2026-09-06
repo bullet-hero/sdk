@@ -14,12 +14,14 @@ namespace BH.SDK.Models
     /// next to a level and its metadata. Nothing here travels with a level: the same level must
     /// play the same way regardless of these.
     /// </summary>
-    // (2,0) because GameEditorSettings was RESTRUCTURED - sixteen flat properties became nine nested
-    // groups. Every earlier change to this file was additive and rode on Newtonsoft leaving a
-    // constructor's default in place for an absent key; moving keys is the one thing that cannot,
-    // so this is the domain's first snapshot-and-migrator pair (Versions/V1_0/).
+    // GameEditorSettings was RESTRUCTURED once - sixteen flat properties became nine nested groups.
+    // Every other change to this file was additive and rode on Newtonsoft leaving a constructor's
+    // default in place for an absent key; moving keys is the one thing that cannot, so that change
+    // took the domain to (2,0) and shipped a snapshot and a migrator. Both are gone and the domain is
+    // back at (1,0), per root CLAUDE.md Rule 11: pre-release, the format changes in place. A
+    // settings.json older than that restructure now reads its editor group back as defaults.
     [RuleContainer]
-    [DataVersion(DataDomains.UserSettings, 2, 0)]
+    [DataVersion(DataDomains.UserSettings, 1, 0)]
     [GenerateModel]
     public sealed partial class UserSettings : IModel<UserSettings>, IMoveable<UserSettings>
     {

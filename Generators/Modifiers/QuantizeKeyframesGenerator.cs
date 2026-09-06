@@ -106,7 +106,7 @@ namespace BH.SDK.Generators.Modifiers
 
             var bpm = parameters.Bpm < 1f ? 1f : parameters.Bpm;
             var division = parameters.Division < 1 ? 1 : parameters.Division;
-            var framerate = context?.Settings?.Framerate ?? 60;
+            var framerate = context?.Settings?.Fps ?? 60;
 
             var framesPerBeat = framerate * 60f / bpm / division;
             var step = (int)(framesPerBeat + 0.5f);

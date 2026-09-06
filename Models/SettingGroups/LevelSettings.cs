@@ -24,7 +24,7 @@ namespace BH.SDK.Models.SettingGroups
         /// what every keyframe's Frame refers to. Not a rendering framerate. </summary>
         [RuleInRange(FrameRules.MinFramerate, FrameRules.MaxFramerate)]
         [JsonProperty(Names.Fps)]
-        public int Framerate { get; set; }
+        public int Fps { get; set; }
 
         /// <summary> Total length of the level in frames; every keyframe is validated against it. </summary>
         [RuleInRange(FrameRules.MinFrameDuration, FrameRules.MaxFrameDuration)]
@@ -73,8 +73,8 @@ namespace BH.SDK.Models.SettingGroups
 
         public LevelSettings()
         {
-            Framerate = 60;
-            FrameDuration = Framerate * 10;
+            Fps = 60;
+            FrameDuration = Fps * 10;
             ObjectIdCounter = ObjectId.MinLevelValue;
             AudioIdCounter = AudioId.MinValue;
             Seed = LevelRules.NullSeed;
@@ -82,7 +82,7 @@ namespace BH.SDK.Models.SettingGroups
         }
         public LevelSettings(int framerate, int frameDuration, int objectIdCounter, int audioIdCounter)
         {
-            Framerate = framerate;
+            Fps = framerate;
             FrameDuration = frameDuration;
             ObjectIdCounter = objectIdCounter;
             AudioIdCounter = audioIdCounter;

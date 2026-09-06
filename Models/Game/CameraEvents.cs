@@ -54,7 +54,7 @@ namespace BH.SDK.Models.Game
         /// <summary> The point rotation and zoom happen around. </summary>
         [RuleNotNull, RuleCollectionMaxCount(LevelRules.MaxObjectKeys)]
         [RuleCollectionUnique(nameof(AlignmentKey.Frame))]
-        [JsonProperty(Names.Pivot)]
+        [JsonProperty(Names.PivotShort)]
         public List<AlignmentKey> Pivots { get; set; }
 
         /// <summary> Procedural shake layered over Positions - the one track with no RectObject

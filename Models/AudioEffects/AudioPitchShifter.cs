@@ -17,7 +17,7 @@ namespace BH.SDK.Models.AudioEffects
     {
         /// <summary> Pitch multiplier; 1 is unchanged, 2 an octave up. </summary>
         [RuleInRange(AudioRules.PitchShifter.Pitch_Min, AudioRules.PitchShifter.Pitch_Max)]
-        [JsonProperty(Names.Pitch)]
+        [JsonProperty(Names.PitchShort)]
         public float Pitch { get; set; }
 
         /// <summary> Analysis window size - the quality/latency dial of the algorithm. </summary>

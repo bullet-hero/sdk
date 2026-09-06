@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Reflection;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
@@ -120,6 +121,12 @@ namespace BH.SDK.Validations
         public bool Check(PropertyInfo property, BasePropertyRuleAttribute[] rules, object value,
             RuleContext context, bool typeChecked = false)
         {
+            // AN ABSENT VALUE BREAKS NO BOUND. Only a property the model marked [RuleOptional] takes
+            // this branch; everywhere else a null still reports, which is the safety net for a
+            // forgotten RuleNotNull. Asked only when the value IS null, so the ordinary path pays a
+            // reference comparison and nothing more.
+            if (value is null && IsOptional(property)) return true;
+
             if (rules.Length == 0) return value != null;
 
             // THE TRACE SEGMENT IS PUSHED LAZILY, and on a real level that is most of what this
@@ -254,5 +261,18 @@ namespace BH.SDK.Validations
 
         private static object BoxIndex(int index)
             => index < BoxedIndexCount ? BoxedIndexes[index] : index;
+
+        // Cached because a Mono custom-attribute lookup allocates a fresh attribute instance on every
+        // call - the same reason RuleContainer is not queried per node.
+        private static readonly ConcurrentDictionary<PropertyInfo, bool> OptionalCache = new();
+
+        private static bool IsOptional(PropertyInfo property)
+        {
+            if (property == null) return false;
+            if (OptionalCache.TryGetValue(property, out var optional)) return optional;
+            optional = property.GetCustomAttribute<RuleOptionalAttribute>() != null;
+            OptionalCache[property] = optional;
+            return optional;
+        }
     }
 }

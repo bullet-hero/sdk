@@ -27,7 +27,7 @@ namespace BH.SDK.Tests.Generators
         private static Level CreateLevel()
         {
             var level = new Level();
-            level.Settings.Framerate = 60;
+            level.Settings.Fps = 60;
             level.Settings.FrameDuration = 600;
             return level;
         }
@@ -53,7 +53,7 @@ namespace BH.SDK.Tests.Generators
 
             var (level, meta) = generator.Create(parameters);
 
-            Assert.AreEqual(60, level.Settings.Framerate);
+            Assert.AreEqual(60, level.Settings.Fps);
             Assert.AreEqual(720, level.Settings.FrameDuration, "(10 + 2) seconds at 60 fps");
 
             var resource = level.Resources.Audios.Values.Single();

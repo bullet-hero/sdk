@@ -64,6 +64,7 @@ namespace BH.SDK.Models.Resources
         [JsonProperty(Names.Wrap)]
         public TextureWrapKind Wrap { get; set; }
 
+        [JsonProperty(Names.Type)]
         public override ResourceType Type => ResourceType.Texture;
 
         public TextureResource()

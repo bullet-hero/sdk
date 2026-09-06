@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using BH.SDK.Models;
 using Newtonsoft.Json;
 
 namespace BH.SDK.Serialization.Converters.Base
@@ -14,8 +15,8 @@ namespace BH.SDK.Serialization.Converters.Base
     {
         private struct Pair
         {
-            public TKey K;
-            public TValue V;
+            [JsonProperty(Names.KeyShort)] public TKey K;
+            [JsonProperty(Names.ValueShort)] public TValue V;
         }
 
         public override void WriteJson(JsonWriter writer, Dictionary<TKey, TValue> value, JsonSerializer serializer)

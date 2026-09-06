@@ -50,7 +50,7 @@ namespace BH.SDK.Models.Game
         [RuleNotNull, RuleCollectionMaxCount(LevelRules.MaxPlayerKeys)]
         [RuleCollectionUnique(nameof(BoolKey.Frame))]
         [JsonProperty(Names.Visibles)]
-        public List<BoolKey> Visibles { get; set; } // player can see himself
+        public List<BoolKey> Visibilities { get; set; } // player can see himself
 
         /// <summary> Whether input moves the player. Off freezes them in place while the level keeps
         /// running. </summary>
@@ -103,7 +103,7 @@ namespace BH.SDK.Models.Game
         {
             Velocities = new List<Velocity>();
             VelocityPoints = new List<VelocityPoint>();
-            Visibles = new List<BoolKey>();
+            Visibilities = new List<BoolKey>();
             Controls = new List<BoolKey>();
             Collisions = new List<BoolKey>();
             Sizes = new List<FloatKey>();
@@ -115,7 +115,7 @@ namespace BH.SDK.Models.Game
         {
             Velocities = velocities;
             VelocityPoints = velocityPoints;
-            Visibles = visibles;
+            Visibilities = visibles;
             Controls = controls;
             Collisions = collisions;
             Sizes = sizes;

@@ -3,6 +3,7 @@ using BH.SDK.Models.Events;
 using BH.SDK.Models.Game;
 using BH.SDK.Models.Values;
 using BH.SDK.Serialization;
+using BH.SDK.Models;
 using NUnit.Framework;
 
 namespace BH.SDK.Tests
@@ -39,8 +40,10 @@ namespace BH.SDK.Tests
         [Category(Metadata.Category.Easy)]
         public void Deserialize_DocumentWithoutTheNewKeys_ReadsAsWorldAtOrigin()
         {
-            const string json =
-                "{\"version\":\"1.0\",\"value\":{\"checkpoints\":[{\"f\":42,\"name\":\"Old\",\"a\":true}]}}";
+            // Built from the constants: this fixture is a document in the CURRENT format that simply
+            // omits the two keys under test, so the envelope has to follow the format, not a literal.
+            var json =
+                $"{{\"{Names.Version}\":\"1.0\",\"{Names.Value}\":{{\"checkpoints\":[{{\"f\":42,\"name\":\"Old\",\"a\":true}}]}}}}";
 
             var events = new SerializationService().DeserializeData<GameEvents>(json);
 

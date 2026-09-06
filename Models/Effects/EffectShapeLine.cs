@@ -22,12 +22,12 @@ namespace BH.SDK.Models.Effects
     {
         /// <summary> One end of the segment, local to the effect object. </summary>
         [RuleNotNull]
-        [JsonProperty(Names.Start)]
+        [JsonProperty(Names.StartShort)]
         public IVector2 Start { get; set; }
 
         /// <summary> The other end of the segment. </summary>
         [RuleNotNull]
-        [JsonProperty(Names.End)]
+        [JsonProperty(Names.EndShort)]
         public IVector2 End { get; set; }
 
         /// <summary> How successive particles walk from Start to End. </summary>

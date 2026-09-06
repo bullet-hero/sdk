@@ -149,15 +149,15 @@ namespace BH.SDK.Generators.Modifiers
             Trim(context, post.Lenses, window, invert);
             Trim(context, post.Grains, window, invert);
             Trim(context, post.MotionBlurs, window, invert);
-            Trim(context, post.ColorCurveses, window, invert);
+            Trim(context, post.ColorCurves, window, invert);
             Trim(context, post.LiftGammaGains, window, invert);
-            Trim(context, post.ShadowsMidtonesHighlightses, window, invert);
+            Trim(context, post.ShadowsMidtonesHighlights, window, invert);
             Trim(context, post.WhiteBalances, window, invert);
             Trim(context, post.AnalogGlitches, window, invert);
             Trim(context, post.DigitalGlitches, window, invert);
 
             var player = context.Game.PlayerEvents;
-            Trim(context, player.Visibles, window, invert);
+            Trim(context, player.Visibilities, window, invert);
             Trim(context, player.Controls, window, invert);
             Trim(context, player.Collisions, window, invert);
             Trim(context, player.Sizes, window, invert);

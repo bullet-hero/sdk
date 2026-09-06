@@ -23,6 +23,7 @@ namespace BH.SDK.Models.Resources
         [JsonProperty(Names.FontResourceId)]
         public FontResourceId FontResourceId { get; set; }
 
+        [JsonProperty(Names.Type)]
         public override ResourceType Type => ResourceType.Font;
 
         public FontResource()

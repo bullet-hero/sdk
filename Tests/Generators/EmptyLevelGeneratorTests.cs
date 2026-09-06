@@ -24,7 +24,7 @@ namespace BH.SDK.Tests.Generators
             var (level, meta) = generator.Create(parameters);
 
             Assert.IsEmpty(level.Game.Objects);
-            Assert.AreEqual(120, level.Settings.Framerate);
+            Assert.AreEqual(120, level.Settings.Fps);
             Assert.AreEqual(2400, level.Settings.FrameDuration);
             Assert.IsNotNull(meta);
         }

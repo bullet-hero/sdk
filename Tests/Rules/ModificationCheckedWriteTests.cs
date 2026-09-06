@@ -41,7 +41,7 @@ namespace BH.SDK.Tests.Rules
             var service = ServiceFor(typeof(RectObject));
             var obj = new RectObject { ObjectId = new ObjectId(1) };
 
-            Assert.IsTrue(service.SetValueChecked(obj, 50, Names.Layer, ContextOfLength(100)));
+            Assert.IsTrue(service.SetValueChecked(obj, 50, Names.LayerShort, ContextOfLength(100)));
             Assert.AreEqual(50, obj.Layer);
         }
 
@@ -56,7 +56,7 @@ namespace BH.SDK.Tests.Rules
             var service = ServiceFor(typeof(RectObject));
             var obj = new RectObject { ObjectId = new ObjectId(1), Layer = 10 };
 
-            Assert.IsFalse(service.SetValueChecked(obj, ValueRules.MaxLayer + 1, Names.Layer,
+            Assert.IsFalse(service.SetValueChecked(obj, ValueRules.MaxLayer + 1, Names.LayerShort,
                 ContextOfLength(100)));
             Assert.AreEqual(10, obj.Layer, "A refused write must change nothing");
         }
@@ -70,9 +70,9 @@ namespace BH.SDK.Tests.Rules
             var service = ServiceFor(typeof(RectObject));
             var obj = new RectObject { ObjectId = new ObjectId(1) };
 
-            Assert.IsFalse(service.IsValueAllowed(obj, ValueRules.MaxLayer + 1, Names.Layer,
+            Assert.IsFalse(service.IsValueAllowed(obj, ValueRules.MaxLayer + 1, Names.LayerShort,
                 ContextOfLength(100)));
-            Assert.IsTrue(service.IsValueAllowed(obj, ValueRules.MaxLayer, Names.Layer,
+            Assert.IsTrue(service.IsValueAllowed(obj, ValueRules.MaxLayer, Names.LayerShort,
                 ContextOfLength(100)));
         }
 
@@ -99,7 +99,7 @@ namespace BH.SDK.Tests.Rules
             var service = ServiceFor(typeof(RectObject));
             var obj = new RectObject { ObjectId = new ObjectId(1) };
 
-            Assert.IsTrue(service.SetValue(obj, ValueRules.MaxLayer + 1, Names.Layer));
+            Assert.IsTrue(service.SetValue(obj, ValueRules.MaxLayer + 1, Names.LayerShort));
             Assert.AreEqual(ValueRules.MaxLayer + 1, obj.Layer);
         }
 

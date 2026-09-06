@@ -20,7 +20,7 @@ namespace BH.SDK.Tests.Generators
         private static Level CreateLevel(int framerate = 60)
         {
             var level = new Level();
-            level.Settings.Framerate = framerate;
+            level.Settings.Fps = framerate;
             level.Settings.FrameDuration = 600;
             return level;
         }

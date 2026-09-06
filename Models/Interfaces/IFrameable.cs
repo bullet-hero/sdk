@@ -4,8 +4,8 @@ namespace BH.SDK.Models.Interfaces
 {
     public interface IFrameable
     {
-        public FramerateTarget FramerateTarget { get; set; }
+        public FramerateTarget FpsTarget { get; set; }
         
-        public int FixedFramerate { get; set; }
+        public int FpsFixed { get; set; }
     }
 }

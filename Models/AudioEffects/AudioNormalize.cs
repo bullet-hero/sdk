@@ -28,21 +28,21 @@ namespace BH.SDK.Models.AudioEffects
 
         /// <summary> Ceiling on how much gain may be applied. </summary>
         [RuleInRange(AudioRules.Normalize.MaximumAmp_Min, AudioRules.Normalize.MaximumAmp_Max)]
-        [JsonProperty(Names.MaximumAmp)]
-        public float MaximumAmp { get; set; }
+        [JsonProperty(Names.MaxAmp)]
+        public float MaxAmp { get; set; }
 
         public AudioNormalize()
         {
             FadeInTime = AudioRules.Normalize.FadeInTime_Default;
             LowestVolume = AudioRules.Normalize.LowestVolume_Default;
-            MaximumAmp = AudioRules.Normalize.MaximumAmp_Default;
+            MaxAmp = AudioRules.Normalize.MaximumAmp_Default;
         }
         public AudioNormalize(float mixLevel, float fadeInTime,
             float lowestVolume, float maximumAmp) : base(mixLevel)
         {
             FadeInTime = fadeInTime;
             LowestVolume = lowestVolume;
-            MaximumAmp = maximumAmp;
+            MaxAmp = maximumAmp;
         }
     }
 }

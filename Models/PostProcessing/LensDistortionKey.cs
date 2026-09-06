@@ -28,14 +28,16 @@ namespace BH.SDK.Models.PostProcessing
 
         /// <summary> Per-axis weight of the distortion - zero on one axis limits the bend to the
         /// other. </summary>
-        [RuleNotNull(typeof(Vector2Value)), RuleIVector2InRange(PostProcessingRules.LensDistortion.MultiplierMin,
+        [RuleIVector2InRange(PostProcessingRules.LensDistortion.MultiplierMin,
              PostProcessingRules.LensDistortion.MultiplierMax)]
+        [RuleOptional]
         [JsonProperty(Names.Multiplier)]
         public IVector2 Multiplier { get; set; }
 
         /// <summary> Screen point the distortion radiates from. </summary>
-        [RuleNotNull(typeof(Vector2Value)), RuleIVector2InRange(PostProcessingRules.LensDistortion.CenterMin,
+        [RuleIVector2InRange(PostProcessingRules.LensDistortion.CenterMin,
              PostProcessingRules.LensDistortion.CenterMax)]
+        [RuleOptional]
         [JsonProperty(Names.Center)]
         public IVector2 Center { get; set; }
 
@@ -45,11 +47,11 @@ namespace BH.SDK.Models.PostProcessing
         [JsonProperty(Names.Scale)]
         public float Scale { get; set; }
 
+        // Multiplier and centre are born null and read back as the neutrals in
+        // PostProcessingRules.LensDistortion - see docs/NAMING.md.
         public LensDistortionKey()
         {
             Intensity = 0.5f;
-            Multiplier = new Vector2Value(1f, 1f);
-            Center = new Vector2Value(0.5f, 0.5f);
             Scale = 1f;
         }
         public LensDistortionKey(float intensity, IVector2 multiplier, IVector2 center, float scale,

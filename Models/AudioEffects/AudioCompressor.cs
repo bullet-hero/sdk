@@ -17,7 +17,7 @@ namespace BH.SDK.Models.AudioEffects
     {
         /// <summary> Level in dB above which compression starts acting. </summary>
         [RuleInRange(AudioRules.Compressor.Threshold_Min, AudioRules.Compressor.Threshold_Max)]
-        [JsonProperty(Names.Threshold)]
+        [JsonProperty(Names.ThresholdShort)]
         public float Threshold { get; set; }
 
         /// <summary> How quickly it clamps down after a peak; too fast kills transients. </summary>

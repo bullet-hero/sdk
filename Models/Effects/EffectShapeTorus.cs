@@ -22,13 +22,13 @@ namespace BH.SDK.Models.Effects
     {
         /// <summary> Radius of the tube itself - how thick the ring is. </summary>
         [RuleNotNull, RuleIFloatMin(EffectRules.Shape.TorusRadiusMinor_Min)]
-        [JsonProperty(Names.RadiusMinor)]
-        public IFloat RadiusMinor { get; set; }
+        [JsonProperty(Names.MinorRadius)]
+        public IFloat MinorRadius { get; set; }
 
         /// <summary> Radius of the ring the tube is bent around. </summary>
         [RuleNotNull, RuleIFloatMin(EffectRules.Shape.TorusRadiusMajor_Min)]
-        [JsonProperty(Names.RadiusMajor)]
-        public IFloat RadiusMajor { get; set; }
+        [JsonProperty(Names.MajorRadius)]
+        public IFloat MajorRadius { get; set; }
 
         /// <summary> Portion of the ring used, in radians, measured counter-clockwise from the +X
         /// axis - the same convention <see cref="EffectShapeCircle"/> and
@@ -46,22 +46,22 @@ namespace BH.SDK.Models.Effects
         
         public EffectShapeTorus()
         {
-            RadiusMinor = new FloatValue(EffectRules.Shape.TorusRadiusMinor_Default);
-            RadiusMajor = new FloatValue(EffectRules.Shape.TorusRadiusMajor_Default);
+            MinorRadius = new FloatValue(EffectRules.Shape.TorusRadiusMinor_Default);
+            MajorRadius = new FloatValue(EffectRules.Shape.TorusRadiusMajor_Default);
             Arc = new FloatValue(EffectRules.Shape.Arc_Default);
             Spread = new EffectShapeSpreadRandom();
         }
         public EffectShapeTorus(float radiusMinor, float radiusMajor, float arc, IEffectShapeSpread spread)
         {
-            RadiusMinor = new FloatValue(radiusMinor);
-            RadiusMajor = new FloatValue(radiusMajor);
+            MinorRadius = new FloatValue(radiusMinor);
+            MajorRadius = new FloatValue(radiusMajor);
             Arc = new FloatValue(arc);
             Spread = spread;
         }
         public EffectShapeTorus(IFloat radiusMinor, IFloat radiusMajor, IFloat arc, IEffectShapeSpread spread)
         {
-            RadiusMinor = radiusMinor;
-            RadiusMajor = radiusMajor;
+            MinorRadius = radiusMinor;
+            MajorRadius = radiusMajor;
             Arc = arc;
             Spread = spread;
         }

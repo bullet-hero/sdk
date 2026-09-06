@@ -32,12 +32,12 @@ namespace BH.SDK.Models.Effects
     {
         /// <summary> Whether particles are drawn at all. Off keeps the system simulating - useful
         /// when only its side effects matter. </summary>
-        [JsonProperty(Names.Render)]
+        [JsonProperty(Names.RenderShort)]
         public bool Render { get; set; }
 
         /// <summary> Whether emission restarts once the batch is spent, instead of running once.
-        /// NOTE: serialized under the "local" key - a legacy name, not a second meaning. </summary>
-        [JsonProperty(Names.Local)]
+        /// </summary>
+        [JsonProperty(Names.LoopShort)]
         public bool Loop { get; set; }
 
 
@@ -53,7 +53,7 @@ namespace BH.SDK.Models.Effects
         [RuleIVector2InRange(EffectRules.Core.LifetimeBounds_Min, EffectRules.Core.LifetimeBounds_Max)]
         [JsonProperty(Names.Lifetime)]
         public IVector2 LifetimeBounds { get; set; }
-        
+
         /// <summary> Geometry each particle is drawn with, out of the same shape pool ShapeObject
         /// draws from. Null draws NOTHING, exactly like ShapeObject.ShapeId; the quad is an
         /// ordinary value (ShapeId.Square.Fill) and is this field's default. </summary>
@@ -85,6 +85,7 @@ namespace BH.SDK.Models.Effects
                 EffectRules.Core.Pivot_X_Default,
                 EffectRules.Core.Pivot_Y_Default));
         }
+
         public EffectObjectCore(bool render, bool loop, uint particleCount,
             IVector2 lifetimeBounds, TextureResourceId textureResourceId, ShapeId particleShapeId,
             Alignment particlePivot)

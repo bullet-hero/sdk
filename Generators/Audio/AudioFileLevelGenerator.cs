@@ -58,7 +58,7 @@ namespace BH.SDK.Generators.Audio
         {
             var framerate = Framerate(parameters.Framerate);
             var level = new Level();
-            level.Settings.Framerate = framerate;
+            level.Settings.Fps = framerate;
             level.Settings.FrameDuration = FrameDuration(parameters, framerate);
 
             var resourceId = new AudioResourceId(AudioResourceId.MaxUserDefinedValue);

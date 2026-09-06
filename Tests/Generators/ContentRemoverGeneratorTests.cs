@@ -25,7 +25,7 @@ namespace BH.SDK.Tests.Generators
         private static Level CreateLevel()
         {
             var level = new Level();
-            level.Settings.Framerate = 60;
+            level.Settings.Fps = 60;
             level.Settings.FrameDuration = FrameDuration;
             return level;
         }
@@ -284,7 +284,7 @@ namespace BH.SDK.Tests.Generators
             level.Game.Events.Checkpoints.Add(new Checkpoint { Frame = FrameDuration + 5 });
             level.Game.CameraEvents.Zooms.Add(new ZoomKey { Frame = 50 });
             level.Game.CameraEvents.Zooms.Add(new ZoomKey { Frame = FrameDuration + 50 });
-            level.Game.PlayerEvents.Visibles.Add(new BoolKey { Frame = FrameDuration });
+            level.Game.PlayerEvents.Visibilities.Add(new BoolKey { Frame = FrameDuration });
 
             Run(level, Outside(objects: false, events: true));
 
@@ -293,7 +293,7 @@ namespace BH.SDK.Tests.Generators
             Assert.AreEqual(0, level.Game.Events.Checkpoints.Count);
             Assert.AreEqual(1, level.Game.CameraEvents.Zooms.Count);
             Assert.AreEqual(50, level.Game.CameraEvents.Zooms[0].Frame);
-            Assert.AreEqual(0, level.Game.PlayerEvents.Visibles.Count);
+            Assert.AreEqual(0, level.Game.PlayerEvents.Visibilities.Count);
         }
 
         /// <summary> A keyframe is a point, so the two modes really are exact opposites on one -

@@ -161,12 +161,19 @@ namespace BH.SDK.Tests
                 var contract = resolver.ResolveContract(type) as JsonObjectContract;
                 if (contract == null) continue;
 
+                var instance = (IJsonModel)Activator.CreateInstance(type);
+
+                // A null SUB-MODEL is omitted by both writers, name included - that is what makes
+                // null affordable as a third state. So the contract's answer for THIS instance is
+                // what the reflective path would write for it, not every property it declares.
                 var expected = contract.Properties
                     .Where(p => !p.Ignored)
+                    .Where(p => p.NullValueHandling != NullValueHandling.Ignore
+                                || p.ValueProvider?.GetValue(instance) != null)
                     .Select(p => p.PropertyName)
                     .ToList();
 
-                var actual = Written((IJsonModel)Activator.CreateInstance(type));
+                var actual = Written(instance);
                 swept++;
 
                 if (!expected.SequenceEqual(actual))

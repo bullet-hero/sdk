@@ -35,24 +35,24 @@ namespace BH.SDK.Models.SettingGroups.Graphics
         /// <see cref="AntiAliasingType.Msaa"/> - kept across a switch to another method so turning
         /// MSAA back on restores the count the player chose. </summary>
         [RuleEnumValid]
-        [JsonProperty(Names.Msaa)]
-        public MsaaType Msaa { get; set; }
+        [JsonProperty(Names.MSAA)]
+        public MsaaType MSAA { get; set; }
 
         /// <summary> Whether the camera renders into an HDR target. Off everywhere by default. </summary>
-        [JsonProperty(Names.Hdr)]
-        public bool Hdr { get; set; }
+        [JsonProperty(Names.HDR)]
+        public bool HDR { get; set; }
 
         public AntiAliasingGraphicsSettings()
         {
             Type = AntiAliasingType.Msaa;
-            Msaa = MsaaType.X2;
-            Hdr = false;
+            MSAA = MsaaType.X2;
+            HDR = false;
         }
         public AntiAliasingGraphicsSettings(AntiAliasingType type, MsaaType msaa, bool hdr)
         {
             Type = type;
-            Msaa = msaa;
-            Hdr = hdr;
+            MSAA = msaa;
+            HDR = hdr;
         }
     }
 }

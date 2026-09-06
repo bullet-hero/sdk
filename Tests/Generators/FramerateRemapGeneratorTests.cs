@@ -35,7 +35,7 @@ namespace BH.SDK.Tests.Generators
         private static Level CreateLevel()
         {
             var level = new Level();
-            level.Settings.Framerate = Framerate;
+            level.Settings.Fps = Framerate;
             level.Settings.FrameDuration = FrameDuration;
             return level;
         }
@@ -108,7 +108,7 @@ namespace BH.SDK.Tests.Generators
 
             Run(level, Params(30));
 
-            Assert.AreEqual(30, level.Settings.Framerate);
+            Assert.AreEqual(30, level.Settings.Fps);
             Assert.AreEqual(FrameDuration / 2, level.Settings.FrameDuration);
         }
 
@@ -124,7 +124,7 @@ namespace BH.SDK.Tests.Generators
 
             Run(level, Params(120));
 
-            Assert.AreEqual(120, level.Settings.Framerate);
+            Assert.AreEqual(120, level.Settings.Fps);
             Assert.AreEqual(FrameDuration * 2, level.Settings.FrameDuration);
         }
 
@@ -140,7 +140,7 @@ namespace BH.SDK.Tests.Generators
 
             var result = Run(level, Params(Framerate));
 
-            Assert.AreEqual(Framerate, level.Settings.Framerate);
+            Assert.AreEqual(Framerate, level.Settings.Fps);
             Assert.AreEqual(FrameDuration, level.Settings.FrameDuration);
             Assert.AreEqual(0, result.Log.Count, "a no-op run must journal nothing");
             Assert.IsTrue(before.Equals(level.Game));
@@ -157,7 +157,7 @@ namespace BH.SDK.Tests.Generators
 
             Run(level, Params(FrameRules.MaxFramerate + 5_000));
 
-            Assert.AreEqual(FrameRules.MaxFramerate, level.Settings.Framerate);
+            Assert.AreEqual(FrameRules.MaxFramerate, level.Settings.Fps);
         }
 
         /// <summary> CurrentFramerate is a display mirror the host fills in. A run must take its own
@@ -214,7 +214,7 @@ namespace BH.SDK.Tests.Generators
             Run(level, Params(30, objects: false));
 
             var untouched = (ShapeObject)level.Game.Objects[obj.ObjectId];
-            Assert.AreEqual(30, level.Settings.Framerate, "the framerate itself still changes");
+            Assert.AreEqual(30, level.Settings.Fps, "the framerate itself still changes");
             Assert.AreEqual(60, untouched.Span.StartFrame);
             Assert.AreEqual(300, untouched.Span.EndFrame);
             CollectionAssert.AreEqual(new[] { 0, 20, 100 }, Frames(untouched.Positions));
@@ -561,14 +561,14 @@ namespace BH.SDK.Tests.Generators
             level.Game.Events.Markers.Add(new Marker("m", string.Empty, new Color4Value(), 100));
             level.Game.Events.Checkpoints.Add(new Checkpoint { Frame = 200 });
             level.Game.CameraEvents.Zooms.Add(new ZoomKey { Frame = 60 });
-            level.Game.PlayerEvents.Visibles.Add(new BoolKey { Frame = 300 });
+            level.Game.PlayerEvents.Visibilities.Add(new BoolKey { Frame = 300 });
 
             Run(level, Params(30, events: true));
 
             Assert.AreEqual(50, level.Game.Events.Markers[0].Frame);
             Assert.AreEqual(100, level.Game.Events.Checkpoints[0].Frame);
             Assert.AreEqual(30, level.Game.CameraEvents.Zooms[0].Frame);
-            Assert.AreEqual(150, level.Game.PlayerEvents.Visibles[0].Frame);
+            Assert.AreEqual(150, level.Game.PlayerEvents.Visibilities[0].Frame);
         }
 
         [Test]
@@ -630,11 +630,11 @@ namespace BH.SDK.Tests.Generators
             var gameAfter = level.Game.Copy();
             var audioAfter = level.Audio.Copy();
 
-            Assert.AreEqual(30, level.Settings.Framerate);
+            Assert.AreEqual(30, level.Settings.Fps);
 
             result.Log.Revert();
 
-            Assert.AreEqual(Framerate, level.Settings.Framerate);
+            Assert.AreEqual(Framerate, level.Settings.Fps);
             Assert.AreEqual(FrameDuration, level.Settings.FrameDuration);
             Assert.IsTrue(gameBefore.Equals(level.Game), "revert must restore objects and events exactly");
             Assert.IsTrue(audioBefore.Equals(level.Audio), "revert must restore audio exactly");
@@ -642,7 +642,7 @@ namespace BH.SDK.Tests.Generators
 
             result.Log.Reapply();
 
-            Assert.AreEqual(30, level.Settings.Framerate);
+            Assert.AreEqual(30, level.Settings.Fps);
             Assert.AreEqual(FrameDuration / 2, level.Settings.FrameDuration);
             Assert.IsTrue(gameAfter.Equals(level.Game), "redo must reproduce the run exactly");
             Assert.IsTrue(audioAfter.Equals(level.Audio), "redo must reproduce audio exactly");

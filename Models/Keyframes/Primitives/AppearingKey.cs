@@ -28,7 +28,7 @@ namespace BH.SDK.Models.Keyframes
 
         /// <summary> Which characters hide first on the way into this key. </summary>
         [RuleEnumValid(TextRules.AppearingMode_Default)]
-        [JsonProperty(Names.AppearingMode)]
+        [JsonProperty(Names.ModeShort)]
         public TextAppearingMode Mode { get; set; }
 
         public AppearingKey()

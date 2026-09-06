@@ -56,7 +56,7 @@ namespace BH.SDK.Generators.Modifiers
         protected override void Generate(GeneratorContext context, Parameters parameters)
         {
             var settings = context.Settings;
-            var from = settings.Framerate;
+            var from = settings.Fps;
             var to = Math.Clamp(parameters.Framerate, FrameRules.MinFramerate, FrameRules.MaxFramerate);
             if (from < FrameRules.MinFramerate || to == from) return;
 
@@ -67,7 +67,7 @@ namespace BH.SDK.Generators.Modifiers
 
             // Both through the journal: a framerate left behind by an undo is a level that plays at
             // one rate with frame numbers written for another.
-            context.SetValue(() => settings.Framerate, value => settings.Framerate = value, to);
+            context.SetValue(() => settings.Fps, value => settings.Fps = value, to);
             context.SetValue(() => settings.FrameDuration, value => settings.FrameDuration = value, frameDuration);
 
             if (parameters.RemapObjects) RemapObjects(context, from, to, shift, last);
@@ -83,7 +83,7 @@ namespace BH.SDK.Generators.Modifiers
         /// <summary> Any real framerate change is dangerous: it rewrites every frame number in the
         /// level at once and can drop keys, neither of which the author pointed at object by object. </summary>
         protected override bool IsDangerousTyped(GeneratorContext context, Parameters parameters)
-            => context?.Settings != null && parameters.Framerate != context.Settings.Framerate;
+            => context?.Settings != null && parameters.Framerate != context.Settings.Fps;
 
         private static void RemapObjects(GeneratorContext context, int from, int to, int shift, int last)
         {
@@ -145,15 +145,15 @@ namespace BH.SDK.Generators.Modifiers
             RemapKeyList(context, post.Lenses, from, to, shift, last);
             RemapKeyList(context, post.Grains, from, to, shift, last);
             RemapKeyList(context, post.MotionBlurs, from, to, shift, last);
-            RemapKeyList(context, post.ColorCurveses, from, to, shift, last);
+            RemapKeyList(context, post.ColorCurves, from, to, shift, last);
             RemapKeyList(context, post.LiftGammaGains, from, to, shift, last);
-            RemapKeyList(context, post.ShadowsMidtonesHighlightses, from, to, shift, last);
+            RemapKeyList(context, post.ShadowsMidtonesHighlights, from, to, shift, last);
             RemapKeyList(context, post.WhiteBalances, from, to, shift, last);
             RemapKeyList(context, post.AnalogGlitches, from, to, shift, last);
             RemapKeyList(context, post.DigitalGlitches, from, to, shift, last);
 
             var player = context.Game.PlayerEvents;
-            RemapKeyList(context, player.Visibles, from, to, shift, last);
+            RemapKeyList(context, player.Visibilities, from, to, shift, last);
             RemapKeyList(context, player.Controls, from, to, shift, last);
             RemapKeyList(context, player.Collisions, from, to, shift, last);
         }

@@ -566,11 +566,21 @@ layer, converted once at load via `LevelStateBuilder`).
   `Sine` and `Point` carry zero fields, pure enum-selected behavior).
 - **Audio**: `AudioLevel.Tracks : Dictionary<AudioId, LevelTrack>` (one flat dict per level;
   `AudioId` bans negative values — no game/user-defined split unlike other ids). `LevelTrackEffects`
-  is a **flat class with one always-present field per DSP effect** (Lowpass/Highpass/Echo/Reverb/
-  Chorus/PitchShifter/Distortion/Flange/Compressor/Normalize/ParamEQ), not a dictionary/flags/list.
-  Each effect's "enabled" state is encoded as `MixLevel > -80dB` (`AudioRules.IsActiveMixLevel`) —
-  **no explicit bool per effect**. `LevelTrackEffects.Active` (track-level, default `false`) *is* an
-  explicit bool — don't confuse the two.
+  is a **flat class with one slot per DSP effect** (Lowpass/Highpass/Echo/Reverb/Chorus/
+  PitchShifter/Distortion/Flange/Compressor/Normalize/ParamEQ), not a dictionary/flags/list.
+  **A slot is NULL until an author touches it**, and null means "this effect is not in the chain" —
+  the eleven used to be always-present objects sitting at the disabled floor, which wrote 1.1 KB of
+  pure defaults into every track of every level. They are constructed null because a member that may
+  be null has to be (see `docs/NAMING.md`), which is what lets the writer skip it: an untouched
+  track's whole chain is now `"eff":{"vlm":[],"stpan":[],"a":false}`, and dialling ONE effect in
+  writes that one.
+  `MixLevel` did NOT change meaning: it is a real wet level in dB whose floor is silence, so
+  `AudioRules.IsActiveMixLevel` still answers "is this audible". Null answers "is it here at all",
+  and the two are different questions — an effect an author dialled in and then switched off keeps
+  its object and its settings. Every consumer treats a null slot as the default instance, which IS
+  the off state field for field (`MixLevel_Default` is `MixLevel_Disabled`).
+  `LevelTrackEffects.Active` (track-level, default `false`) is the master switch for the whole
+  chain — a third thing again, don't confuse it with either.
   **`LevelTrack.Volume` (`[0, 1]`, default `1`) is the track's own fader and the SECOND thing on it
   called volume** - the first being `Effects.Volumes`, the keyframed curve. They MULTIPLY at playback
   rather than compete (the consumer does it in `BuildAudioJob`): the fader is what the whole track
@@ -587,9 +597,9 @@ layer, converted once at load via `LevelStateBuilder`).
   on purpose (`AudioLevel` stays at `(1, 0)`): a pre-Speed file deserializes to `0f`, i.e. silent
   tracks, and the levels that existed at the time were the author's own to re-save. Don't add a
   `NullSpeed`-style sentinel after the fact — `0` is a legal authored value here.
-- **PostProcessing**: `GameLevel.PostProcessingEvents` (**`(1, 1)`** — the one domain besides
-  `UserSettings` that has bumped, and the only one whose migrator carries real data; see
-  `docs/issues/COLOR_CURVES_HISTORY.md` in the consuming project) — top-level `Active` (default `true`,
+- **PostProcessing**: `GameLevel.PostProcessingEvents` (`(1, 0)` like every other domain - it was at
+  `(1, 1)` while the ColorCurves migrator existed; see `docs/issues/COLOR_CURVES_HISTORY.md` in the
+  consuming project) - top-level `Active` (default `true`,
   opposite default from audio's `Active`) + 12 keyframe-track lists, one per URP effect (Bloom,
   ChromaticAberration, Vignette, LensDistortion, FilmGrain, MotionBlur, ColorCurves, LiftGammaGain,
   ShadowsMidtonesHighlights, WhiteBalance, AnalogGlitch, DigitalGlitch — matches Unity's
@@ -1089,9 +1099,10 @@ default nowhere.
 type" rule in detail; this section only adds what it doesn't cover.
 
 - `[DataVersion(domain, major, minor)]` marks an aggregate-root boundary that gets its own envelope
-  and migrates as one unit. **20 types currently carry it, and two have bumped** —
-  `UserSettings` is at `(2, 0)`, `PostProcessingEvents` at `(1, 1)`, every other domain is still
-  `(1, 0)`: `Level`, `LevelMeta`,
+  and migrates as one unit. **20 types carry it and EVERY ONE of them is at `(1, 0)`.** Two had
+  bumped (`UserSettings` to `(2, 0)`, `PostProcessingEvents` to `(1, 1)`) and both were put back when
+  their snapshots were deleted - the game is pre-release, so the format changes in place and nothing
+  migrates; root `CLAUDE.md` Rule 11 is the record. The twenty: `Level`, `LevelMeta`,
   `UserSettings`, `Prefab`, `EffectData`, `ThemeData`, `CompositeShape`, `ClipboardData` (SDK-repo
   "core" tier); `PublishProfile` (`Publishing/`); `GameStatistics`, `LevelStatistics`
   (`Models/Statistics/`, two roots rather than one — see that section); `LevelSettings`, `GameLevel`,
@@ -1109,16 +1120,18 @@ type" rule in detail; this section only adds what it doesn't cover.
   every `[DataVersion]` type and every `IMigration` implementation. `UpgradeToLatest` walks
   `IMigration` step by step from a deserialized instance's version to the domain's latest, throwing
   if a step is missing.
-- **`V1_0/PostProcessingEventsV1_0.cs` + its migrator is the first snapshot carrying REAL DATA.**
-  Only one of the twelve tracks changed shape (ColorCurves), so every other list in the snapshot is
-  typed with its CURRENT key class rather than a frozen copy — restating a shape that did not move
-  would only give the format a second place to drift from.
+- **`V1_0/` IS GONE, and its absence is the point.** It held the only two real snapshots this repo
+  ever had - `PostProcessingEventsV1_0` (+ the frozen leaf `ColorCurvesKeyV1_0`) and
+  `UserSettingsV1_0`/`GameEditorSettingsV1_0` - plus their two migrators. They were deleted along
+  with the version bumps that needed them: pre-release there is no file on anyone's disk worth
+  migrating, so a settings.json older than the GameEditorSettings restructure simply reads its
+  editor group back as defaults. Root `CLAUDE.md` Rule 11 says when this stops being true.
 - **`V0_0` is a scaffold that exercises the machinery end-to-end, not real shipped format history** —
   its `Names` use placeholder JSON keys (`"test_settings"`, etc.) and its snapshot classes are
-  structurally near-identical to current ones. **`V1_0/` is the first real one** —
-  `UserSettingsV1_0`/`GameEditorSettingsV1_0` plus `Migrations/UserSettingsV1_0ToV2_0.cs`, frozen with
-  literal JSON keys as the convention demands. For every domain that has never bumped, "current" is
-  still just the live, un-suffixed class carrying `[DataVersion(..., 1, 0)]` directly, and a migrator
+  structurally near-identical to current ones. **It is kept for exactly that reason**: with `V1_0`
+  gone it is the ONLY thing that still proves `VersionedTypeRegistry` and `IMigration` work at all,
+  and they have to work the day the game ships. "Current" is
+  the live, un-suffixed class carrying `[DataVersion(..., 1, 0)]` directly, and a migrator
   filename like `LevelV0_0ToV1_0.cs` names that live class by convention rather than an actual file.
 - Replaces an older `CompatibilityService`/`SaveData<T>`/`JsonConverterData<T>` design — those names
   are fully gone from the codebase (only survive in a comment explaining what replaced them); don't
@@ -1157,6 +1170,17 @@ wrong point, `RuleCollectionMaxCount` would truncate the vertex list out from un
 still referencing its tail. Both look local and corrupt the shape silently. The class-level
 `RuleShapeGeometry` owns all of it instead — only a rule seeing both lists can fix one without
 breaking the other. Don't "helpfully" add a collection rule to `Vertices`/`Indices`.
+
+**`[RuleOptional]` is what makes a nullable member representable at all.** `BasePropertyRuleAttribute
+.IsValid` answers null for every rule at once (`if (value == null) return false`), which is the safety
+net for a forgotten `RuleNotNull` and is pinned by a `TestNull` case in each of the ~12 value-rule
+fixtures. It is also why a member that deliberately starts null - `LevelTrackEffects`' eleven DSP
+slots, `EffectObjectForces`' eleven forces, the colours and limits on `ShadowsMidtonesHighlightsKey`/
+`VignetteKey`/`LensDistortionKey` - made every bound on it start reporting an absent value as out of
+range. The marker is read once per property and cached in `RuleWalk`, on the null path only, so the
+ordinary path pays a reference comparison; both walks go through the same `Check`, so the reflective
+and generated paths cannot disagree about it. Null stays `RuleNotNull`'s question - `[RuleOptional]`
+is the opposite answer to the same one, written down instead of inferred from an absent attribute.
 
 `RuleEnumValid` covers single-choice enums only; `[Flags]` enums (today: `ContentDescriptor` on
 `LevelMeta`) go through `RuleEnumFlagsValid`, which asks "does this carry an undeclared bit" and
