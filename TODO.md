@@ -1,8 +1,4 @@
-﻿Serialization
-- verify SerializationService stability/correctness across all keyframe/value/effect type combinations (round-trip tests + real saved level files), especially after the IRequiresDefaultSerializer refactor
-- model versioning core is implemented (DataVersionAttribute + VersionedTypeRegistry + VersionedEnvelopeConverter, replacing CompatibilityService/SaveData<T>/JsonConverterData<T>) - see VERSION-UPDATE.md for what's still open: nested/optional aggregates below the six SaveData kinds (e.g. splitting Level into Settings/Game/Audio/Resources envelopes), and the first real migrator once a version actually needs to bump (Project Arrhythmya import is done and lives in Interop/AfterBeat, deliberately outside the versioning system - a foreign format is not a generation of this one)
-
-Level packages
+﻿Level packages
 - external-tool interop is NOT verified yet, and it is the check the formats were chosen for: `tar -tzf`, `gpg -d <file> | tar -tz`, `gpg -d level.json.gpg`, and a file made by `gpg -c --cipher-algo AES256` opened by the game - both directions, and once with a non-ASCII passphrase (that one is what proves the ...Utf8 overloads)
 - no Android build has been made since BouncyCastle was added; whether the linker keeps it is the one thing the Editor cannot answer, and `Assets/link.xml` is the answer that has not been tested
 - random access to a single entry is gone with ZIP and is not coming back; a listing reads the leading entries instead (documents are packed first)
