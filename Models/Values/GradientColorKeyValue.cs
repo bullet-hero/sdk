@@ -14,8 +14,6 @@ namespace BH.SDK.Models.Values
     [GenerateModel]
     public sealed partial class GradientColorKeyValue : IModel<GradientColorKeyValue>
     {
-        // TODO maybe replace FloatValue to IFloat (color too) (in editor step)
-
         /// <summary> Color at this stop. Typed as the concrete Color4Value, not IColor4 - a gradient
         /// stop can't be themed or randomized, only the gradient's usage can. </summary>
         [RuleNotNull]

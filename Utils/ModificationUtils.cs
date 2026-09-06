@@ -1,9 +1,7 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using BH.SDK.Models.Effects;
 using BH.SDK.Models.Objects;
-using BH.SDK.Models.Values;
 using Newtonsoft.Json;
 
 namespace BH.SDK.Utils
@@ -18,38 +16,15 @@ namespace BH.SDK.Utils
         private static readonly object[] ParamsCache = { 0 };
         private static readonly HashSet<Type> ProcessedTypes = new();
         
+        // THE ROOTS, AND NOTHING BUT THE ROOTS. This used to list every polymorphic implementation
+        // as well - forty-odd type arguments across eleven families - because the walk below cannot
+        // get from an interface to what implements it. That list had gone stale (three Color3
+        // variants and both keyframe families were missing, so an override addressed at one of them
+        // was silently dropped), and it is gone: ModificationImplementations is generated from the
+        // models themselves, so a variant registers itself by existing. See its generator's header.
         static ModificationUtils()
         {
-            // Debug.Log($"Init ModificationUtils");
-            
-            // Objects
-            
             AddPropertiesRecursive<RectObject, ShapeObject, EffectObject, TextObject, PrefabObject>();
-            
-            // Effects
-            
-            AddPropertiesRecursive<EffectShapePoint, EffectShapeCircle, EffectShapeRectangle,
-                EffectShapeLine, EffectShapeCone, EffectShapeTorus>();
-            AddPropertiesRecursive<EffectShapeSpreadRandom, EffectShapeSpreadLoop,
-                EffectShapeSpreadPingPong, EffectShapeSpreadSine>();
-            AddPropertiesRecursive<EffectAngleValue, EffectAngleCurvesOverLife,
-                EffectAngleCurvesBySpeed, EffectAngleRandomUniform, EffectAngleRandomPerComponent>();
-            AddPropertiesRecursive<EffectScaleValue, EffectScaleCurvesOverLife,
-                EffectScaleCurvesBySpeed, EffectScaleRandomUniform, EffectScaleRandomPerComponent>();
-            AddPropertiesRecursive<EffectColorValue, EffectColorGradientOverLife,
-                EffectColorGradientBySpeed, EffectColorRandomUniform, EffectColorRandomPerComponent>();
-            
-            // Values
-            
-            AddPropertiesRecursive<Vector2Value, Vector2Circle, Vector2Rect, Vector2RectStep>();
-            AddPropertiesRecursive<Vector3Value, Vector3Circle, Vector3Rect, Vector3RectStep>();
-            AddPropertiesRecursive<Vector4Value, Vector4Circle, Vector4Rect, Vector4RectStep>();
-            
-            AddPropertiesRecursive<Color4Value, Color4ThemeRef, Color4MinMax>();
-            AddPropertiesRecursive<FloatValue, FloatMinMax, FloatMinMaxStep>();
-            AddPropertiesRecursive<IntValue, IntMinMax, IntMinMaxStep>();
-            AddPropertiesRecursive<StringValue, StringLocalized>();
-            AddPropertiesRecursive<ScreenLimitNone, ScreenLimitFixed, ScreenLimitBounds>();
         }
 
         public static void Apply(this RectObject obj, Modification mod)
@@ -241,6 +216,19 @@ namespace BH.SDK.Utils
         public static void AddPropertiesRecursive(Type type)
         {
             if (!ProcessedTypes.Add(type)) return; // recursive protection
+
+            // AN INTERFACE HAS NO SERIALIZED PROPERTIES OF ITS OWN, so walking one registers nothing
+            // and the descent used to end here. What a path actually meets at run time is one of its
+            // implementations - Apply keys every lookup on currentObject.GetType() - so this is where
+            // the walk fans out into them.
+            if (type.IsInterface)
+            {
+                foreach (var implementation in ModificationImplementations.Of(type))
+                    AddPropertiesRecursive(implementation);
+
+                ProcessedTypes.Remove(type);
+                return;
+            }
             
             foreach (var property in type.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
             {
@@ -273,7 +261,6 @@ namespace BH.SDK.Utils
 
             ProcessedTypes.Remove(type);
         }
-        // TODO add interfaces support into AddPropertiesRecursive (like IVector2, IFloat, IEffectShape)
 
         private static (Type, PropertyCategory) RegisterProperty(Type type, PropertyInfo property)
         {

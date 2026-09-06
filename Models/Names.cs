@@ -280,6 +280,7 @@
 
         public const string Author = "author";
         public const string Authors = "authors";
+        public const string Credit = "credit";
         public const string Source = "source";
         public const string Sources = "sources";
         public const string Src = "src";
@@ -307,6 +308,11 @@
         public const string Hue = "hue";
         public const string Sat = "sat";
         public const string Vs = "vs";
+        public const string Lum = "lum";
+        public const string Master = "master";
+        public const string Red = "red";
+        public const string Green = "green";
+        public const string Blue = "blue";
         public const string Scatter = "scatter";
         public const string Multiplier = "multiplier";
         public const string Multi = "multi";
@@ -764,6 +770,7 @@
         public const string ResolutionWidth = Resolution + _ + Width;
         public const string ResolutionHeight = Resolution + _ + Height;
         public const string RenderScale = Render + _ + Scale;
+        public const string VSync = "vsync";
 
         public const string PostProcessing = Post + Processing;
         public const string RenderBloom = Render + _ + BloomShort;
@@ -994,7 +1001,13 @@
         public const string HorizontalShake = Horizontal + _ + Shake;
         public const string ColorDrift = Color + _ + Drift;
         public const string HueVsHue = Hue + _ + Vs + _ + Hue;
+        public const string HueVsSat = Hue + _ + Vs + _ + Sat;
         public const string SatVsSat = Sat + _ + Vs + _ + Sat;
+        public const string LumVsSat = Lum + _ + Vs + _ + Sat;
+        public const string CurveMaster = Curve + _ + Master;
+        public const string CurveRed = Curve + _ + Red;
+        public const string CurveGreen = Curve + _ + Green;
+        public const string CurveBlue = Curve + _ + Blue;
         public const string LiftColor = Lift + _ + Color;
         public const string GammaColor = Gamma + _ + Color;
         public const string GainColor = Gain + _ + Color;

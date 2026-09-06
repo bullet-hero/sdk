@@ -52,13 +52,21 @@
             public const float IntensityMin = 0f;
             public const float IntensityMax = 1f;
         }
+        // One range for all eight curves rather than one per curve, because URP gives them one:
+        // every ColorCurves curve is sampled out of a 128x1 texture whose axes are both 0..1, so a
+        // key outside it is not a stronger effect, it is a value the texture clamps away. The two
+        // neutrals differ though, and that is a real distinction rather than a naming one - the
+        // YRGB curves are an absolute mapping and are neutral at IDENTITY, the hue/saturation ones
+        // are an offset/multiplier and are neutral at a flat CurveNeutral.
         public static class ColorCurves
         {
-            public const float HueVsHueMin = 0f;
-            public const float HueVsHueMax = 1f;
-            
-            public const float SatVsSatMin = 0f;
-            public const float SatVsSatMax = 1f;
+            public const float CurveMin = 0f;
+            public const float CurveMax = 1f;
+
+            /// <summary> What HueVsHue/HueVsSat/SatVsSat/LumVsSat read as when nothing is authored:
+            /// URP subtracts it from the hue curve and doubles the saturation ones, so a flat curve
+            /// here shifts nothing and multiplies by one. </summary>
+            public const float CurveNeutral = 0.5f;
         }
         public static class ShadowsMidtonesHighlights
         {

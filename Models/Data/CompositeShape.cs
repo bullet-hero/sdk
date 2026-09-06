@@ -42,9 +42,23 @@ namespace BH.SDK.Models.Data
         [JsonProperty(Names.ShapeName)]
         public string ShapeName { get; set; }
 
-        // TODO (MAYBE) add Pivot for shape and maybe add it into collision process
-        // TODO also most reason for it - extend game editor, because game shapes has it only for visuals
-        // TODO or this can be PreferredPivot, it can be used by user in optional pivot in selection
+        // A SHAPE CARRIES NO PIVOT OF ITS OWN, and that was decided rather than forgotten.
+        // RectObject.Pivot is the one pivot, it is per object and keyframed, and every consumer
+        // already maps through it - the renderer and the narrowphase alike
+        // (CollisionUtils.LocalToGlobalFast). Two reasons a second one cannot exist:
+        //
+        // A ShapeObject holds TWO ids into this collection - ShapeId (what is drawn) and
+        // ColliderId (what is hit) - which are independent by design. A pivot living here gives
+        // an object whose two ids differ two answers for one transform, and any tie-break puts
+        // the hitbox somewhere the art is not, which is the exact defect that mapping was
+        // written to end. And a shape is SHARED: editing its pivot would move every object
+        // referencing it, across every level already written.
+        //
+        // What an author actually wanted from it - "rotate this about where it balances" - is
+        // DERIVED instead: ShapeGeometryUtils.GetCentroidPivot reads it off the triangles, and
+        // the editor offers it as a pivot preset beside the built-in forms'. A stored field
+        // would only be a second answer that can disagree with the geometry it describes, one
+        // dragged vertex later.
 
         // Neither list carries a collection rule beyond RuleNotNull, and that is deliberate rather
         // than an omission: every generic collection fix is index-destructive here.

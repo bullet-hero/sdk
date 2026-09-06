@@ -61,7 +61,7 @@ namespace BH.SDK.Models.Statistics
         [JsonProperty(Names.Devices)]
         public DeviceTimeStatistics Devices { get; set; }
 
-        // TODO achievements. When they arrive they belong here as an eighth group, keyed by a stable
+        // TODO post-alpha feature: achievements. When they arrive they belong here as an eighth group, keyed by a stable
         // achievement id. Deliberately not scaffolded now: an empty aggregate cannot be told apart
         // from "this build has no achievements", and every reader would have to handle both anyway.
 

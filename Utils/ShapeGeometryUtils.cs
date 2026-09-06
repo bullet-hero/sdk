@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using BH.SDK.Models.Interfaces;
 using BH.SDK.Models.Values;
 using BH.SDK.Rules;
 
@@ -36,6 +37,58 @@ namespace BH.SDK.Utils
         {
             var area = SignedDoubleArea(a, b, c);
             return area < DegenerateEpsilon && area > -DegenerateEpsilon;
+        }
+
+        // WEIGHTED BY AREA, not by corner count, and that is what makes this the general form of
+        // ShapeCatalogService.GetCentroidPivot. That one averages a form's RIM corners, which is the
+        // centre of mass only because every form it sees is a triangle or a regular polygon; a
+        // triangle soup an author drew has no rim to read and no such guarantee. The two agree on
+        // every built-in form, which is the contract ShapeGeometryUtilsTests pins.
+        //
+        // The weight is the ABSOLUTE area. A back-facing triangle is a defect Sanitize repairs, not
+        // a hole to subtract, and letting a signed weight cancel one would answer a shape that is
+        // merely wound wrong with a point outside itself.
+        //
+        // The result is a PIVOT, i.e. in [0, 1] against the object's rect, while the geometry lives
+        // in [-0.5, 0.5] - hence the 0.5 offset, exactly as the per-form version applies it.
+
+        /// <summary> Where this geometry balances, as a pivot. Returns the box centre for anything
+        /// with no area at all, since nothing else is a more honest answer and a caller offering it
+        /// as a preset then simply repeats the centre cell. </summary>
+        public static Vector2Value GetCentroidPivot(IShapeGeometry geometry)
+            => geometry == null
+                ? new Vector2Value(0.5f, 0.5f)
+                : GetCentroidPivot(geometry.Vertices, geometry.Indices);
+
+        /// <summary> Where this geometry balances, as a pivot. </summary>
+        public static Vector2Value GetCentroidPivot(List<Vector2Value> vertices, List<int> indices)
+        {
+            if (vertices == null || indices == null) return new Vector2Value(0.5f, 0.5f);
+
+            double x = 0.0, y = 0.0, total = 0.0;
+            for (var i = 0; i + 2 < indices.Count; i += 3)
+            {
+                var ia = indices[i];
+                var ib = indices[i + 1];
+                var ic = indices[i + 2];
+                if (!IsValidIndex(ia, vertices.Count) || !IsValidIndex(ib, vertices.Count) ||
+                    !IsValidIndex(ic, vertices.Count)) continue;
+
+                var a = vertices[ia];
+                var b = vertices[ib];
+                var c = vertices[ic];
+                if (a == null || b == null || c == null) continue;
+
+                var weight = System.Math.Abs(SignedDoubleArea(a, b, c));
+                if (weight < DegenerateEpsilon) continue;
+
+                x += weight * (a.X + b.X + c.X) / 3.0;
+                y += weight * (a.Y + b.Y + c.Y) / 3.0;
+                total += weight;
+            }
+
+            if (total <= 0.0) return new Vector2Value(0.5f, 0.5f);
+            return new Vector2Value((float)(0.5 + x / total), (float)(0.5 + y / total));
         }
 
         /// <summary> Triangle count implied by the index list. </summary>

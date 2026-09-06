@@ -43,7 +43,6 @@ namespace BH.SDK.Models.Game
         [JsonProperty(Names.PlayerEvents)]
         public PlayerEvents PlayerEvents { get; set; }
         
-        // TODO add a contextual Rule validating this whole dictionary (key must equal value's own id)
         /// <summary> Every object in the level, flat and keyed by id - hierarchy is expressed through
         /// each object's ParentObjectId, not by nesting. </summary>
         [GenerateModelKeyed(nameof(RectObject.ObjectId))]

@@ -17,8 +17,6 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models
 {
-    // TODO add IResetable (and tests)
-
     /// <summary>
     /// Everything about a level that is not the level itself: identity, presentation, authorship and
     /// licensing. Its own file (metadata.json) and its own serialization root - so a menu can list

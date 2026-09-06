@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using BH.SDK.Models.Values;
 using BH.SDK.Rules;
+using BH.SDK.Services.Shapes;
 using BH.SDK.Utils;
 using NUnit.Framework;
 
@@ -267,6 +268,96 @@ namespace BH.SDK.Tests
             // repair that removed the point instead would have shifted its indices.
             Assert.AreEqual(1, ShapeGeometryUtils.GetTriangleCount(indices));
             Assert.IsTrue(ShapeGeometryUtils.Analyze(vertices, indices).IsClean);
+        }
+
+        // GetCentroidPivot IS THE GENERAL FORM OF ShapeCatalogService's per-form one, and the test
+        // that matters is that the two agree: the six alignment constants an author already clicks
+        // were computed from a form's rim, and a triangle soup has no rim to read. Weighting by
+        // area is what makes them agree - a corner average is the centre of mass only for a
+        // triangle and a regular polygon, which is every case the per-form version ever saw.
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.VeryEasy)]
+        public void GetCentroidPivot_IsTheBoxCentreForASquare()
+        {
+            var pivot = ShapeGeometryUtils.GetCentroidPivot(SquareVertices(), SquareIndices());
+
+            Assert.AreEqual(0.5f, pivot.X, 1e-5f);
+            Assert.AreEqual(0.5f, pivot.Y, 1e-5f);
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.VeryEasy)]
+        public void GetCentroidPivot_IsTheBoxCentreWhenNothingHasArea()
+        {
+            var empty = ShapeGeometryUtils.GetCentroidPivot(new List<Vector2Value>(), new List<int>());
+
+            Assert.AreEqual(0.5f, empty.X, 1e-5f);
+            Assert.AreEqual(0.5f, empty.Y, 1e-5f);
+
+            // Collinear points describe no area, so there is nothing to balance and the answer has
+            // to be the same one rather than a division by zero.
+            var collinear = ShapeGeometryUtils.GetCentroidPivot(
+                new List<Vector2Value>
+                {
+                    new(-0.5f, 0f), new(0f, 0f), new(0.5f, 0f),
+                },
+                new List<int> { 0, 1, 2 });
+
+            Assert.AreEqual(0.5f, collinear.X, 1e-5f);
+            Assert.AreEqual(0.5f, collinear.Y, 1e-5f);
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Easy)]
+        public void GetCentroidPivot_WeighsEachTriangleByItsArea()
+        {
+            // A big triangle on the left and a tiny one on the right. Averaging the six corners
+            // pulls the answer far right; the centre of mass barely moves.
+            var vertices = new List<Vector2Value>
+            {
+                new(-0.5f, -0.5f), new(0f, -0.5f), new(-0.5f, 0.5f),
+                new(0.4f, -0.5f), new(0.5f, -0.5f), new(0.4f, -0.4f),
+            };
+            var indices = new List<int> { 0, 1, 2, 3, 4, 5 };
+
+            var pivot = ShapeGeometryUtils.GetCentroidPivot(vertices, indices);
+
+            const float bigArea = 0.5f * 0.5f * 1.0f;
+            const float smallArea = 0.5f * 0.1f * 0.1f;
+            var bigX = (-0.5f + 0f + -0.5f) / 3f;
+            var smallX = (0.4f + 0.5f + 0.4f) / 3f;
+            var expected = 0.5f + (bigArea * bigX + smallArea * smallX) / (bigArea + smallArea);
+
+            Assert.AreEqual(expected, pivot.X, 1e-4f);
+
+            // The corner average of the same six points lands at 0.55 - right of the box centre,
+            // outside the big triangle entirely. That is the answer this must not give.
+            Assert.Less(pivot.X, 0.3f);
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Normal)]
+        public void GetCentroidPivot_MatchesThePerFormAnswerForEveryBuiltInForm()
+        {
+            foreach (var form in ShapeCatalogService.EnumerateForms())
+            {
+                var expected = ShapeCatalogService.GetCentroidPivot(form);
+                var shape = ShapeCatalogService.Build(new ShapeParameters(form));
+
+                var actual = ShapeGeometryUtils.GetCentroidPivot(shape);
+
+                Assert.AreEqual(expected.X, actual.X, 1e-4f, $"{form.Name} X");
+                Assert.AreEqual(expected.Y, actual.Y, 1e-4f, $"{form.Name} Y");
+            }
         }
 
         [Test]

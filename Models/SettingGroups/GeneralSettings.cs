@@ -9,7 +9,7 @@ namespace BH.SDK.Models.SettingGroups
 {
     /// <summary>
     /// Device-wide options that fit no other group - today, how aggressively a level's resources are
-    /// fetched. Language is planned but not stored yet (see the TODO below).
+    /// fetched. Language is planned but not stored yet
     /// </summary>
     [RuleContainer]
     [GenerateModel]

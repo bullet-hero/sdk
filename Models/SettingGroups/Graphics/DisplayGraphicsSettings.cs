@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Enums.Settings;
 using BH.SDK.Models.Interfaces;
@@ -68,6 +68,19 @@ namespace BH.SDK.Models.SettingGroups.Graphics
         [JsonProperty(Names.RenderScale)]
         public float RenderScale { get; set; }
 
+        // Additive, and the zero value is what makes it so: a settings.json written before this
+        // field has no "vsync" key, Newtonsoft leaves the constructor's Off in place, and Off is
+        // exactly what the game did unconditionally before there was a choice. No DataVersion move,
+        // the same call Textures and Display themselves made.
+
+        /// <summary> Whether presentation waits for the display's refresh. Desktop only - Unity
+        /// ignores vSyncCount on phones - and it OUTRANKS
+        /// <see cref="SettingGroups.GraphicsSettings.FramerateTarget"/>: Unity ignores
+        /// targetFrameRate whenever this is not Off. </summary>
+        [RuleEnumValid]
+        [JsonProperty(Names.VSync)]
+        public VSyncMode VSync { get; set; }
+
         /// <summary> Whether a resolution was authored at all, or the display's own is to be used. </summary>
         public bool HasResolution() =>
             ResolutionWidth > NativeResolution && ResolutionHeight > NativeResolution;
@@ -78,10 +91,13 @@ namespace BH.SDK.Models.SettingGroups.Graphics
             ResolutionWidth = NativeResolution;
             ResolutionHeight = NativeResolution;
             RenderScale = 1f;
+            VSync = VSyncMode.Off;
         }
+
         public DisplayGraphicsSettings(WindowMode windowMode, int resolutionWidth,
-            int resolutionHeight, float renderScale)
+            int resolutionHeight, float renderScale, VSyncMode vSync)
         {
+            VSync = vSync;
             WindowMode = windowMode;
             ResolutionWidth = resolutionWidth;
             ResolutionHeight = resolutionHeight;

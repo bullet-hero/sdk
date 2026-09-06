@@ -167,7 +167,5 @@ namespace BH.SDK.Tests
             copySettings.Audio.Game = 0.123f;
             Assert.IsFalse(settings.Equals(copySettings));
         }
-        
-        // TODO add generators tests
     }
 }

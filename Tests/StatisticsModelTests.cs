@@ -33,9 +33,6 @@ namespace BH.SDK.Tests
             return stats;
         }
 
-        // THE ONE-LINE BOILERPLATE THIS PROJECT CALLS ITS EASIEST SILENT BUG: Equals(object obj)
-        // reads `obj is T` and is pasted between sibling classes, so a stale type name compiles
-        // fine and just makes every comparison through the non-generic path return false.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]

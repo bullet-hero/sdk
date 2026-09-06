@@ -19,8 +19,6 @@ namespace BH.SDK.Models.Audio
     [GenerateModel]
     public sealed partial class AudioLevel : IModel<AudioLevel>
     {
-        // TODO add a contextual Rule validating this whole dictionary (key must equal value's own AudioId)
-
         /// <summary> Every scheduled clip in the level, keyed by the track's own AudioId - the audio
         /// analogue of GameLevel.Objects. </summary>
         [GenerateModelKeyed(nameof(LevelTrack.AudioId))]

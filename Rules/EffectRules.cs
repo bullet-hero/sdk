@@ -52,6 +52,10 @@ namespace BH.SDK.Rules
         {
             public const bool Render_Default = true;
             public const bool Loop_Default = true;
+            // Not authored, and there is no field for it in EffectObjectCore: a level's effect is
+            // always local. This is the value the host starts its runtime state at, and the reason
+            // it is a rule constant rather than a host-side literal is that it names the format's
+            // guarantee - see EffectObjectCore's header.
             public const bool IsLocal_Default = true;
             
             // THE MAXIMUM IS THE GRAPH'S CAPACITY, and it is one number living in two files. Every

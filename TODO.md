@@ -1,5 +1,4 @@
 ﻿Level packages
-- external-tool interop is NOT verified yet, and it is the check the formats were chosen for: `tar -tzf`, `gpg -d <file> | tar -tz`, `gpg -d level.json.gpg`, and a file made by `gpg -c --cipher-algo AES256` opened by the game - both directions, and once with a non-ASCII passphrase (that one is what proves the ...Utf8 overloads)
 - no Android build has been made since BouncyCastle was added; whether the linker keeps it is the one thing the Editor cannot answer, and `Assets/link.xml` is the answer that has not been tested
 - random access to a single entry is gone with ZIP and is not coming back; a listing reads the leading entries instead (documents are packed first)
 - server side: `LevelPackageReader` is meant to be its entry point, so a package can be accepted and stored without a file system anywhere - untested outside `MemoryContentStore`

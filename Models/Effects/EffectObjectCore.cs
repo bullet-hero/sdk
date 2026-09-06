@@ -12,6 +12,16 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models.Effects
 {
+    // THE FORMAT CARRIES NO WORLD/LOCAL SWITCH, and that is a scope decision rather than an
+    // omission. A level's particles are ALWAYS local - they ride their object's own transform, so a
+    // moving parent, a loop and a scrub backwards all behave. World-space emission does exist, in
+    // the game's own engine (a second graph, chosen by a host-side flag no authored data ever
+    // writes), and it belongs to the GAME: debug work and the game's own world effects, never level
+    // content. The distinction is worth stating here because it is what makes the local guarantee
+    // free: a world-space effect cannot be replayed correctly by anything that writes one transform
+    // per frame and then simulates a window of history under it, which is exactly what a scrub, an
+    // edit and a jump all do. Keeping that out of the format keeps it out of levels.
+
     /// <summary>
     /// The "how many, how long, what do they look like" half of an EffectData - everything that
     /// exists before a single force is applied. EffectObjectForces is the other half.
@@ -30,7 +40,6 @@ namespace BH.SDK.Models.Effects
         [JsonProperty(Names.Local)]
         public bool Loop { get; set; }
 
-        // For user-space it's always Local
 
         /// <summary> How many particles the system may have alive at once - the main cost knob, and
         /// what a level's capacity hint ultimately counts. </summary>

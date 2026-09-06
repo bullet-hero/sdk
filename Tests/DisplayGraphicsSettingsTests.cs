@@ -1,4 +1,4 @@
-using BH.SDK.Models.Enums.Settings;
+﻿using BH.SDK.Models.Enums.Settings;
 using BH.SDK.Models.SettingGroups;
 using BH.SDK.Models.SettingGroups.Graphics;
 using Newtonsoft.Json;
@@ -8,8 +8,9 @@ namespace BH.SDK.Tests
 {
     // The group is desktop-only, so what these pin is not behaviour but the two claims that let it
     // ship without a DataVersion bump: the defaults are what the game already does (FullScreenWindow
-    // is ProjectSettings.asset's own fullscreenMode, native resolution, no render scaling), and a
-    // settings file written before the group existed reads back as exactly those.
+    // is ProjectSettings.asset's own fullscreenMode, native resolution, no render scaling, vsync
+    // off - which is what SettingsApplier used to write unconditionally), and a settings file
+    // written before the group, or before VSync joined it, reads back as exactly those.
     //
     // NativeResolution is a zero SENTINEL, not a resolution: HasResolution is the only thing allowed
     // to ask whether one was authored, the same never-a-literal discipline LevelRules.IsValidSeed
@@ -18,7 +19,7 @@ namespace BH.SDK.Tests
     public class DisplayGraphicsSettingsTests
     {
         private static DisplayGraphicsSettings Authored() =>
-            new(WindowMode.Windowed, 1080, 1920, 0.75f);
+            new(WindowMode.Windowed, 1080, 1920, 0.75f, VSyncMode.Half);
 
         [Test]
         [Author(Metadata.Author.Vertoker)]
@@ -32,6 +33,7 @@ namespace BH.SDK.Tests
             Assert.AreEqual(DisplayGraphicsSettings.NativeResolution, settings.ResolutionWidth);
             Assert.AreEqual(DisplayGraphicsSettings.NativeResolution, settings.ResolutionHeight);
             Assert.AreEqual(1f, settings.RenderScale);
+            Assert.AreEqual(VSyncMode.Off, settings.VSync);
         }
 
         [Test]
@@ -41,9 +43,9 @@ namespace BH.SDK.Tests
         public void HasResolution_IsFalseUntilBothSidesAreAuthored()
         {
             Assert.IsFalse(new DisplayGraphicsSettings().HasResolution());
-            Assert.IsFalse(new DisplayGraphicsSettings(WindowMode.Windowed, 1920, 0, 1f).HasResolution());
-            Assert.IsFalse(new DisplayGraphicsSettings(WindowMode.Windowed, 0, 1080, 1f).HasResolution());
-            Assert.IsTrue(new DisplayGraphicsSettings(WindowMode.Windowed, 1920, 1080, 1f).HasResolution());
+            Assert.IsFalse(new DisplayGraphicsSettings(WindowMode.Windowed, 1920, 0, 1f, VSyncMode.Off).HasResolution());
+            Assert.IsFalse(new DisplayGraphicsSettings(WindowMode.Windowed, 0, 1080, 1f, VSyncMode.Off).HasResolution());
+            Assert.IsTrue(new DisplayGraphicsSettings(WindowMode.Windowed, 1920, 1080, 1f, VSyncMode.Off).HasResolution());
         }
 
         [Test]
@@ -107,6 +109,24 @@ namespace BH.SDK.Tests
             Assert.AreEqual(WindowMode.FullScreenWindow, settings.Display.WindowMode);
             Assert.IsFalse(settings.Display.HasResolution());
             Assert.AreEqual(1f, settings.Display.RenderScale);
+            Assert.AreEqual(VSyncMode.Off, settings.Display.VSync);
+        }
+
+        // The same claim one level down, for the field that joined the group after it shipped: a
+        // display object with every other key present and no "vsync" is what an existing install
+        // holds, and Off is what the game did before the setting existed.
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Easy)]
+        public void DisplayWrittenBeforeVSync_ReadsBackAsOff()
+        {
+            var settings = JsonConvert.DeserializeObject<DisplayGraphicsSettings>(
+                "{\"window_mode\":3,\"resolution_width\":1920,\"resolution_height\":1080,\"render_sca\":1.0}");
+
+            Assert.AreEqual(VSyncMode.Off, settings.VSync);
+            Assert.AreEqual(WindowMode.Windowed, settings.WindowMode);
+            Assert.AreEqual(1f, settings.RenderScale);
         }
     }
 }

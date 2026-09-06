@@ -68,7 +68,9 @@ alive so `GamePlayer`'s jobs can re-roll randomness every frame instead of freez
   dictionaries + `TypedResourceId` family), `SettingGroups/` (⚠️ two unrelated aggregates share this
   folder — `LevelSettings`, per-level, vs. `UserSettings`' sub-groups, per-device — see below),
   `Hints/` (`LevelHints` + `LimitHints` — everything advisory, see its own section below),
-  `Meta/` (`Author`, `ResourceMeta` — consumed by `LevelMeta`, itself NOT in this folder; note
+  `Meta/` (`Author` — name, credit and url, where the credit is a localizable free-text line
+  rather than a role enum, since the vocabulary of a credits list is open and an empty one is an
+  ordinary record; `ResourceMeta` — consumed by `LevelMeta`, itself NOT in this folder; note
   `ResourceMeta` carries licensing/attribution only — **age rating and content descriptors live on
   `LevelMeta` alone**, since a rating describes the finished experience, not an asset in isolation),
   `Interfaces/`, `Enum/`, `Primitives/` (id structs). `Models/Names.cs` is the single source of truth
@@ -585,7 +587,9 @@ layer, converted once at load via `LevelStateBuilder`).
   on purpose (`AudioLevel` stays at `(1, 0)`): a pre-Speed file deserializes to `0f`, i.e. silent
   tracks, and the levels that existed at the time were the author's own to re-save. Don't add a
   `NullSpeed`-style sentinel after the fact — `0` is a legal authored value here.
-- **PostProcessing**: `GameLevel.PostProcessingEvents` — top-level `Active` (default `true`,
+- **PostProcessing**: `GameLevel.PostProcessingEvents` (**`(1, 1)`** — the one domain besides
+  `UserSettings` that has bumped, and the only one whose migrator carries real data; see
+  `docs/issues/COLOR_CURVES_HISTORY.md` in the consuming project) — top-level `Active` (default `true`,
   opposite default from audio's `Active`) + 12 keyframe-track lists, one per URP effect (Bloom,
   ChromaticAberration, Vignette, LensDistortion, FilmGrain, MotionBlur, ColorCurves, LiftGammaGain,
   ShadowsMidtonesHighlights, WhiteBalance, AnalogGlitch, DigitalGlitch — matches Unity's
@@ -593,6 +597,24 @@ layer, converted once at load via `LevelStateBuilder`).
   `IKeyframe` directly (not `: Keyframe`) and adds its own per-keyframe `Active` bool — every effect
   is independently toggleable per-keyframe *in addition to* the track-level switch. Several fields
   are commented `HEAVY, PHONES DON'T LIKE IT` (Bloom, MotionBlur, AnalogGlitch, DigitalGlitch).
+  **The grading colours carry THREE channels, and the fourth one they used to carry was never an
+  alpha**: URP reads it as a signed OFFSET (`PrepareLiftGammaGain` adds it per channel,
+  `PrepareShadowsMidtonesHighlights` weights it x4 when positive), so an `IColor4` defaulting to
+  white sent w = 1 and pushed a whole tonal band four stops up the moment its range was enabled.
+  `LiftGammaGainKey`, `ShadowsMidtonesHighlightsKey` and `VignetteKey` are `IColor3` now - the
+  vignette's for URP's own reason, it declares that colour `hdr: false, showAlpha: false` - and the
+  consumer writes URP's neutral zero itself. **No version moved with it**, deliberately: an older
+  payload carries one property more than the type has and Newtonsoft drops it, which
+  `PostProcessingColorTests` checks rather than assumes.
+
+  **`ColorCurvesKey` is URP's own eight curves, each a NULLABLE `CurveValue`** — `Master`/`Red`/
+  `Green`/`Blue` (an absolute mapping, neutral at the IDENTITY line) and `HueVsHue`/`HueVsSat`/
+  `SatVsSat`/`LumVsSat` (an offset or a multiplier, neutral at a flat
+  `PostProcessingRules.ColorCurves.CurveNeutral`). Null means "the author never touched this", which
+  is a real state rather than missing data. It replaced two scalars, and its own header carries the
+  LutBuilder formula that is the reason six MORE scalars would have been worthless. Both wrap modes
+  are `ClampForever` on purpose — `CurveWrapMode.Default` behaves as `Once`, which answers a sample
+  at exactly the last key time by wrapping to the first.
 - **Theme**: `ThemeData` (`Level.Resources.Themes`) holds a fixed `Color4Value[64] Matrix` (an
   "8×8 grid", index layout documented in-file, mirrors *Project Arrhythmya*'s convention).
   `ThemeKeyframe` (a real animated track, unlike `Marker`/`Checkpoint`) selects which `ThemeId` is
@@ -1067,8 +1089,9 @@ default nowhere.
 type" rule in detail; this section only adds what it doesn't cover.
 
 - `[DataVersion(domain, major, minor)]` marks an aggregate-root boundary that gets its own envelope
-  and migrates as one unit. **20 types currently carry it, and exactly one has bumped** —
-  `UserSettings` is at `(2, 0)`, every other domain is still `(1, 0)`: `Level`, `LevelMeta`,
+  and migrates as one unit. **20 types currently carry it, and two have bumped** —
+  `UserSettings` is at `(2, 0)`, `PostProcessingEvents` at `(1, 1)`, every other domain is still
+  `(1, 0)`: `Level`, `LevelMeta`,
   `UserSettings`, `Prefab`, `EffectData`, `ThemeData`, `CompositeShape`, `ClipboardData` (SDK-repo
   "core" tier); `PublishProfile` (`Publishing/`); `GameStatistics`, `LevelStatistics`
   (`Models/Statistics/`, two roots rather than one — see that section); `LevelSettings`, `GameLevel`,
@@ -1086,6 +1109,10 @@ type" rule in detail; this section only adds what it doesn't cover.
   every `[DataVersion]` type and every `IMigration` implementation. `UpgradeToLatest` walks
   `IMigration` step by step from a deserialized instance's version to the domain's latest, throwing
   if a step is missing.
+- **`V1_0/PostProcessingEventsV1_0.cs` + its migrator is the first snapshot carrying REAL DATA.**
+  Only one of the twelve tracks changed shape (ColorCurves), so every other list in the snapshot is
+  typed with its CURRENT key class rather than a frozen copy — restating a shape that did not move
+  would only give the format a second place to drift from.
 - **`V0_0` is a scaffold that exercises the machinery end-to-end, not real shipped format history** —
   its `Names` use placeholder JSON keys (`"test_settings"`, etc.) and its snapshot classes are
   structurally near-identical to current ones. **`V1_0/` is the first real one** —

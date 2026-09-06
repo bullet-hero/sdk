@@ -9,8 +9,6 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models
 {
-    // TODO Add tests for IResetable
-
     /// <summary>
     /// The player's own options, saved once per device (settings.json) - the third top-level file
     /// next to a level and its metadata. Nothing here travels with a level: the same level must

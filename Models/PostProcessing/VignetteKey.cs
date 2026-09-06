@@ -20,10 +20,15 @@ namespace BH.SDK.Models.PostProcessing
     [GenerateModel]
     public sealed partial class VignetteKey : PostProcessingKeyframe, IModel<VignetteKey>
     {
+        // NO ALPHA AND NO HDR PART, and both are URP's own call rather than ours: the component
+        // declares its colour as `new ColorParameter(Color.black, hdr: false, showAlpha: false, ...)`,
+        // so a value above one changes nothing and a fourth component is not read at all. The note
+        // that used to ask for an HDR check here was asking for something the effect does not have.
+
         /// <summary> Color the edges fade toward; black is the usual choice, but any tint works. </summary>
-        [RuleNotNull(typeof(Color4Value))] // TODO add extra part for checking HDR part
+        [RuleNotNull(typeof(Color3Value))]
         [JsonProperty(Names.Color)]
-        public IColor4 Color4 { get; set; }
+        public IColor3 Color3 { get; set; }
 
         /// <summary> Screen point the vignette opens around, in 0..1 - offset it to frame something
         /// off-center. </summary>
@@ -50,16 +55,16 @@ namespace BH.SDK.Models.PostProcessing
 
         public VignetteKey()
         {
-            Color4 = Color4Value.black;
+            Color3 = Color3Value.black;
             Center = new Vector2Value(0.5f, 0.5f);
             Intensity = 0.3f;
             Smoothness = 0.5f;
             Rounded = false;
         }
-        public VignetteKey(IColor4 color4, IVector2 center, float intensity, float smoothness, bool rounded,
+        public VignetteKey(IColor3 color3, IVector2 center, float intensity, float smoothness, bool rounded,
             bool active, int frame, EaseType ease = Keyframe.DefaultEase) : base(active, frame, ease)
         {
-            Color4 = color4;
+            Color3 = color3;
             Center = center;
             Intensity = intensity;
             Smoothness = smoothness;

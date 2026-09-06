@@ -17,7 +17,10 @@ namespace BH.SDK.Models.Game
     /// Fields are grouped below as general / color grading / glitches.
     /// </summary>
     [RuleContainer]
-    [DataVersion(DataDomains.PostProcessingEvents, 1, 0)]
+    // 1.1: ColorCurves' two scalars became URP's eight curves - see ColorCurvesKey's own header for
+    // why they could not simply be joined by six more. Versions/V1_0 carries the snapshot and the
+    // migrator; nothing else about this type moved.
+    [DataVersion(DataDomains.PostProcessingEvents, 1, 1)]
     [GenerateModel]
     public sealed partial class PostProcessingEvents : IModel<PostProcessingEvents>
     {

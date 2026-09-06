@@ -16,8 +16,6 @@ namespace BH.SDK.Models.Values
     [GenerateModel]
     public sealed partial class CurveKeyframeValue : IModel<CurveKeyframeValue>
     {
-        // TODO maybe replace FloatValue to IFloat (in editor step)
-
         /// <summary> Normalized position along the curve (0..1), not a level frame. </summary>
         [RuleInRange(ValueRules.MinCurveTime, ValueRules.MaxCurveTime)]
         [JsonProperty(Names.TimeShort)]

@@ -12,6 +12,23 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models.PostProcessing
 {
+    // THE FOURTH COMPONENT WAS NEVER AN ALPHA, and carrying one is what this stopped doing. URP
+    // takes each of these as a Vector4 whose w is a signed OFFSET, not opacity: PrepareLiftGammaGain
+    // adds it to every channel after removing the luminance (gamma additionally does w += 1 and
+    // inverts), and PrepareShadowsMidtonesHighlights weights it - times one when negative, times
+    // FOUR when positive - and adds that. Its neutral is zero.
+    //
+    // The model stored a four-component colour defaulting to white, so w arrived as 1: turning any
+    // of these ranges on with an untouched colour pushed +4 into every channel of a whole tonal
+    // band. The colour picker called it Alpha, nothing said otherwise, and the neutral value was
+    // unreachable except by guessing. So the component is gone rather than documented - these carry
+    // three channels now and the provider sends URP the zero the effect is neutral at.
+    //
+    // A LEVEL WRITTEN BEFORE THIS READS BACK FINE and no version moved, which is a decision about
+    // where the project is rather than about the format: the payload simply carries one property
+    // more than the type has, Newtonsoft drops it, and the colour survives. What does not survive is
+    // whatever the old alpha was doing to the picture - which is the point.
+
     /// <summary>
     /// Three-band color grading where the bands themselves are authorable: the two Limit fields say
     /// where shadows end and highlights begin, which LiftGammaGainKey cannot express.
@@ -25,29 +42,27 @@ namespace BH.SDK.Models.PostProcessing
         public bool Shadows { get; set; }
 
         /// <summary> Tint applied to the dark band. </summary>
-        [RuleNotNull(typeof(Color4Value))] // TODO add color hdr support for alpha rule (0f-2f)
+        [RuleNotNull(typeof(Color3Value))]
         [JsonProperty(Names.ShadowColor)]
-        public IColor4 ShadowsColor4 { get; set; }
+        public IColor3 ShadowsColor3 { get; set; }
 
         /// <summary> Whether the midtone tint is applied. </summary>
         [JsonProperty(Names.Midtone)]
         public bool Midtones { get; set; }
 
         /// <summary> Tint applied to the middle band - whatever falls between the two limits. </summary>
-        [RuleNotNull(typeof(Color4Value))] // TODO add color hdr support for alpha rule (0f-2f)
+        [RuleNotNull(typeof(Color3Value))]
         [JsonProperty(Names.MidtoneColor)]
-        public IColor4 MidtonesColor4 { get; set; }
+        public IColor3 MidtonesColor3 { get; set; }
 
         /// <summary> Whether the highlight tint is applied. </summary>
         [JsonProperty(Names.Highlight)]
         public bool Highlights { get; set; }
 
         /// <summary> Tint applied to the bright band. </summary>
-        [RuleNotNull(typeof(Color4Value))] // TODO add color hdr support for alpha rule (0f-2f)
+        [RuleNotNull(typeof(Color3Value))]
         [JsonProperty(Names.HighlightColor)]
-        public IColor4 HighlightsColor4 { get; set; }
-
-        // TODO graph like in Post Processing menu
+        public IColor3 HighlightsColor3 { get; set; }
 
         /// <summary> Start/end luminance of the shadow band - a range, not a single cut, so shadows
         /// fade into midtones instead of banding. </summary>
@@ -67,28 +82,28 @@ namespace BH.SDK.Models.PostProcessing
         public ShadowsMidtonesHighlightsKey()
         {
             Shadows = false;
-            ShadowsColor4 = Color4Value.white;
+            ShadowsColor3 = Color3Value.white;
             Midtones = false;
-            MidtonesColor4 = Color4Value.white;
+            MidtonesColor3 = Color3Value.white;
             Highlights = false;
-            HighlightsColor4 = Color4Value.white;
+            HighlightsColor3 = Color3Value.white;
             
             ShadowLimits = new Vector2Value(0f, 0.3f);
             HighlightLimits = new Vector2Value(0.55f, 1f);
         }
         public ShadowsMidtonesHighlightsKey(
-            bool shadows, IColor4 shadowsColor4,
-            bool midtones, IColor4 midtonesColor4, 
-            bool highlights, IColor4 highlightsColor4, 
+            bool shadows, IColor3 shadowsColor3,
+            bool midtones, IColor3 midtonesColor3, 
+            bool highlights, IColor3 highlightsColor3, 
             IVector2 shadowLimits, IVector2 highlightLimits,
             bool active, int frame, EaseType ease = Keyframe.DefaultEase) : base(active, frame, ease)
         {
             Shadows = shadows;
-            ShadowsColor4 = shadowsColor4;
+            ShadowsColor3 = shadowsColor3;
             Midtones = midtones;
-            MidtonesColor4 = midtonesColor4;
+            MidtonesColor3 = midtonesColor3;
             Highlights = highlights;
-            HighlightsColor4 = highlightsColor4;
+            HighlightsColor3 = highlightsColor3;
             ShadowLimits = shadowLimits;
             HighlightLimits = highlightLimits;
         }

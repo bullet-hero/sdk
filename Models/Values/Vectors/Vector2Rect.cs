@@ -19,8 +19,6 @@ namespace BH.SDK.Models.Values
     [GenerateModel]
     public sealed partial class Vector2Rect : IVector2, IModel<Vector2Rect>
     {
-        // TODO add rule check for Min and Max, must be always Min < Max
-
         /// <summary> Left edge of the roll area. </summary>
         [RuleInRange(ValueRules.MinFloatValue, ValueRules.MaxFloatValue)]
         [JsonProperty(Names.MinX)]
@@ -45,15 +43,16 @@ namespace BH.SDK.Models.Values
         {
             MinX = ValueRules.FloatZero;
             MinY = ValueRules.FloatZero;
-            
+
             MaxX = ValueRules.FloatOne;
             MaxY = ValueRules.FloatOne;
         }
+
         public Vector2Rect(float minX, float minY, float maxX, float maxY)
         {
             MinX = minX;
             MinY = minY;
-            
+
             MaxX = maxX;
             MaxY = maxY;
         }
