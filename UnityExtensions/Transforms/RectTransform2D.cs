@@ -160,6 +160,9 @@ namespace BH.SDK.Transforms
             pivot = rectTransform.pivot;
         }
 
+        /// <summary> Returns matrix for quad rendering from local space of transform </summary>
+        /// <remarks> It's not default matrix mult. pipeline, doesn't support shear,
+        /// different from Unity.RectTransform behavior </remarks>
         public float4x4 GetRootMatrix()
         {
             math.sincos(rotation, out var sin, out var cos);
@@ -181,6 +184,10 @@ namespace BH.SDK.Transforms
             return trs;
         }
 
+        /// <summary> Apply parent transform to current, make local to world.
+        /// Not recursive, for full depth level reduce, must call several times </summary>
+        /// <remarks> It's not default matrix mult. pipeline, doesn't support shear,
+        /// different from Unity.RectTransform behavior </remarks>
         public void Apply(RectTransform2D parent)
         {
             rotation += parent.rotation;
