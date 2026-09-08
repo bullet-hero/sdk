@@ -65,6 +65,7 @@ namespace BH.SDK.Models.Statistics
         [JsonIgnore]
         public bool HasValue => BucketFrameDuration > 0;
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public DifficultyStatistics()
         {
             DeathsByBucket = new int[StatisticsRules.BucketCount];
@@ -86,6 +87,7 @@ namespace BH.SDK.Models.Statistics
             return true;
         }
 
+        /// <summary> Empties the per-bucket tallies, keeping the totals. </summary>
         public void ClearBuckets()
         {
             for (var i = 0; i < DeathsByBucket.Length; i++) DeathsByBucket[i] = 0;
@@ -94,12 +96,14 @@ namespace BH.SDK.Models.Statistics
             DeathsByCheckpoint.Clear();
         }
 
+        /// <summary> Records a death in one bucket of the level's length. </summary>
         public void AddDeath(int bucket)
         {
             if (bucket < 0 || bucket >= DeathsByBucket.Length) return;
             DeathsByBucket[bucket]++;
         }
 
+        /// <summary> Records a hit in one. </summary>
         public void AddHit(int bucket)
         {
             if (bucket < 0 || bucket >= HitsByBucket.Length) return;

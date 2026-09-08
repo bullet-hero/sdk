@@ -27,25 +27,34 @@ namespace BH.SDK.Models.Values
         [JsonProperty(Names.CoordY)]
         public float Y { get; set; }
 
+        /// <summary> All components zero. </summary>
         public static Vector2Value Zero => new(0.0f, 0.0f);
+        /// <summary> All components one. </summary>
         public static Vector2Value One => new(1.0f, 1.0f);
         
+        /// <summary> The +X unit vector. </summary>
         public static Vector2Value Right => new(1.0f, 0.0f);
+        /// <summary> The -X unit vector. </summary>
         public static Vector2Value Left => new(-1.0f, 0.0f);
+        /// <summary> The +Y unit vector. </summary>
         public static Vector2Value Up => new(0.0f, 1.0f);
+        /// <summary> The -Y unit vector. </summary>
         public static Vector2Value Down => new(0.0f, -1.0f);
         
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public Vector2Value()
         {
             X = ValueRules.FloatZero;
             Y = ValueRules.FloatZero;
         }
+        /// <summary> Built from its x and y. </summary>
         public Vector2Value(float x, float y)
         {
             X = x;
             Y = y;
         }
 
+        /// <summary> Which concrete form this is - the discriminator a converter writes and reads back. </summary>
         public VectorType GetModelType() => VectorType.Value;
     }
 }

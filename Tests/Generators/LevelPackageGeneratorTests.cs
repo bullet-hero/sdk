@@ -28,6 +28,9 @@ namespace BH.SDK.Tests.Generators
     //
     // Everything the generator cannot read still has to produce a level the author can see is empty,
     // never a plausible-looking one - the same rule the Afterbeat import already states.
+
+    /// <summary> The import half, fed by this project's own writer - so what is proven is that a package we WROTE
+    /// comes back as the level that went in, rather than that the reader agrees with a fixture. </summary>
     public class LevelPackageGeneratorTests
     {
         private static SerializationService Serialization => new SerializationService();

@@ -30,12 +30,14 @@ namespace BH.SDK.Models.AudioEffects
         [JsonProperty(Names.FreqGain)]
         public float FrequencyGain { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public AudioParamEQ()
         {
             CenterFreq = AudioRules.ParamEQ.CenterFreq_Default;
             OctaveRange = AudioRules.ParamEQ.OctaveRange_Default;
             FrequencyGain = AudioRules.ParamEQ.FrequencyGain_Default;
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public AudioParamEQ(float mixLevel, float centerFreq,
             float octaveRange, float frequencyGain) : base(mixLevel)
         {

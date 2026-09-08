@@ -13,6 +13,7 @@ namespace BH.SDK.Roslyn
     [Generator]
     public sealed class SandboxProbeGenerator : IIncrementalGenerator
     {
+        /// <summary> Builds the pipeline: find the marked types, turn each into a spec, emit from the spec alone. </summary>
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
             var facts = context.CompilationProvider.Select(static (compilation, _) =>

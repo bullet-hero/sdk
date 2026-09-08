@@ -25,22 +25,27 @@ namespace BH.SDK.Serialization.Blob
         private byte[] _buffer;
         private int _position;
 
+        /// <summary> Starts on a buffer of the given size, doubling it whenever a write does not fit. </summary>
         public BlobWriter(int capacity)
         {
             _buffer = new byte[capacity < 16 ? 16 : capacity];
             _position = 0;
         }
 
+        /// <summary> How many bytes have been written so far - not the buffer's capacity. </summary>
         public int Length => _position;
 
+        /// <summary> Writes a single byte. </summary>
         public void WriteByte(byte value)
         {
             Ensure(1);
             _buffer[_position++] = value;
         }
 
+        /// <summary> Writes one byte, zero or one. </summary>
         public void WriteBool(bool value) => WriteByte(value ? (byte)1 : (byte)0);
 
+        /// <summary> Writes a little-endian 16-bit integer. </summary>
         public void WriteShort(short value)
         {
             Ensure(2);
@@ -48,6 +53,7 @@ namespace BH.SDK.Serialization.Blob
             _position += 2;
         }
 
+        /// <summary> Writes a little-endian unsigned 16-bit integer. </summary>
         public void WriteUShort(ushort value)
         {
             Ensure(2);
@@ -55,6 +61,7 @@ namespace BH.SDK.Serialization.Blob
             _position += 2;
         }
 
+        /// <summary> Writes a little-endian 32-bit integer. </summary>
         public void WriteInt(int value)
         {
             Ensure(4);
@@ -62,6 +69,7 @@ namespace BH.SDK.Serialization.Blob
             _position += 4;
         }
 
+        /// <summary> Writes a little-endian unsigned 32-bit integer. </summary>
         public void WriteUInt(uint value)
         {
             Ensure(4);
@@ -69,6 +77,7 @@ namespace BH.SDK.Serialization.Blob
             _position += 4;
         }
 
+        /// <summary> Writes a little-endian 64-bit integer. </summary>
         public void WriteLong(long value)
         {
             Ensure(8);
@@ -76,6 +85,7 @@ namespace BH.SDK.Serialization.Blob
             _position += 8;
         }
 
+        /// <summary> Writes a little-endian unsigned 64-bit integer. </summary>
         public void WriteULong(ulong value)
         {
             Ensure(8);
@@ -83,14 +93,17 @@ namespace BH.SDK.Serialization.Blob
             _position += 8;
         }
 
+        /// <summary> Writes a float as its 32-bit pattern. </summary>
         public void WriteFloat(float value) => WriteInt(BitConverter.SingleToInt32Bits(value));
 
+        /// <summary> Writes a double as its 64-bit pattern. </summary>
         public void WriteDouble(double value) => WriteLong(BitConverter.DoubleToInt64Bits(value));
 
         /// <summary> UTC ticks. A statistics file travels between machines, so an instant is stored
         /// rather than a local time; the JSON side stores the same instant readably. </summary>
         public void WriteDateTime(DateTime value) => WriteLong(value.ToUniversalTime().Ticks);
 
+        /// <summary> Sixteen raw bytes, never the textual form. </summary>
         public void WriteGuid(Guid value)
         {
             Ensure(16);
@@ -120,6 +133,7 @@ namespace BH.SDK.Serialization.Blob
             _position += count;
         }
 
+        /// <summary> A byte range behind a length prefix, a null one written as <see cref="NullLength"/>. </summary>
         public void WriteBytes(byte[] value, int offset, int count)
         {
             Ensure(count);
@@ -140,6 +154,7 @@ namespace BH.SDK.Serialization.Blob
             return position;
         }
 
+        /// <summary> The bytes written, trimmed to <see cref="Length"/>. </summary>
         public byte[] ToArray()
         {
             var result = new byte[_position];

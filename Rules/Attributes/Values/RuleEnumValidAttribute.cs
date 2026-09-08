@@ -25,26 +25,33 @@ namespace BH.SDK.Rules.Attributes
     [AttributeUsage(PropertyTarget)]
     public class RuleEnumValidAttribute : BasePropertyRuleAttribute
     {
+        /// <summary> <c>"rule_enum_valid"</c>, the key its message is looked up under. </summary>
         public override string RuleNameKey => "rule_enum_valid";
 
+        /// <summary> What a repair writes instead of the nearer bound, when a bound is not the right answer. </summary>
         public object DefaultValue { get; set; }
 
+        /// <summary> Takes nothing; the defaults apply. </summary>
         public RuleEnumValidAttribute() { }
 
+        /// <summary> What a repair writes, as <c>object</c>. </summary>
         public RuleEnumValidAttribute(object defaultValue)
         {
             DefaultValue = defaultValue;
         }
 
+        /// <summary> Applies to enum properties. </summary>
         protected override bool IsValidTypeInternal(PropertyInfo property)
             => property.PropertyType.IsEnum;
 
+        /// <summary> Passes on a value the enum actually declares - which is what a retired member's number no longer is. </summary>
         protected override bool IsValidInternal(object value, RuleContext context)
         {
             var type = value.GetType();
             return type.IsEnum && Enum.IsDefined(type, value);
         }
 
+        /// <summary> Writes DefaultValue, or the enum's own first member. </summary>
         protected override void FixInternal(object target, PropertyInfo property, RuleContext context)
         {
             var type = property.PropertyType;

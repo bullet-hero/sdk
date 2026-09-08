@@ -33,8 +33,10 @@ namespace BH.SDK.Generators.Modifiers
     /// </summary>
     public class QuantizeKeyframesGenerator : BaseModifier<QuantizeKeyframesGenerator.Parameters>
     {
+        /// <summary> <c>"mod_quantize_keyframes"</c>, the key a host lists this generator under. </summary>
         public override string NameKey => "mod_quantize_keyframes";
 
+        /// <summary> The order, labels and ranges a host lays its form out with. </summary>
         public override GeneratorHints Hints { get; } = new GeneratorHints.Builder()
             .Section(GeneratorSections.Main, nameof(Parameters.UseBpm), nameof(Parameters.Bpm),
                 nameof(Parameters.Division), nameof(Parameters.StepFrames))
@@ -51,6 +53,7 @@ namespace BH.SDK.Generators.Modifiers
             .VisibleWhen(nameof(Parameters.StepFrames), p => !((Parameters)p).UseBpm)
             .Build();
 
+        /// <summary> Applies this run's edit. </summary>
         protected override void Generate(GeneratorContext context, Parameters parameters)
         {
             var step = StepOf(context, parameters);
@@ -94,6 +97,8 @@ namespace BH.SDK.Generators.Modifiers
         // A modifier creates nothing and adds no keys - it moves the ones already there. Reporting
         // anything else here would make the estimate read as "this will add N", which is exactly
         // what it will not do.
+
+        /// <summary> What this run would add, answered before it runs. </summary>
         protected override GeneratorCost EstimateTyped(GeneratorContext context, Parameters parameters)
             => GeneratorCost.Zero;
 
@@ -145,9 +150,13 @@ namespace BH.SDK.Generators.Modifiers
             return new List<ObjectId>(context.Objects.Keys);
         }
 
+        /// <summary> Which grid keyframes are snapped to, and which way one between two lines goes. Public mutable
+        /// fields, like every parameters class here - a form binds to them and a preset serializes from them. </summary>
         public class Parameters
         {
+            /// <summary> Whether the grid is derived from a tempo rather than given in frames. </summary>
             public bool UseBpm = true;
+            /// <summary> That tempo. </summary>
             public float Bpm = 120f;
 
             /// <summary> Grid lines per beat: 1 = quarter notes, 2 = eighths, 4 = sixteenths. </summary>
@@ -159,7 +168,9 @@ namespace BH.SDK.Generators.Modifiers
             /// <summary> Shifts the whole grid, for a song whose first beat is not on frame zero. </summary>
             public int OffsetFrames;
 
+            /// <summary> Which way a keyframe between two grid lines goes. </summary>
             public QuantizeMode Mode = QuantizeMode.Nearest;
+            /// <summary> Which of an object's tracks are snapped. </summary>
             public ObjectTrackMask Tracks = ObjectTrackMask.All;
         }
     }

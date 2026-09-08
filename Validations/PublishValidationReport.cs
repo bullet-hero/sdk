@@ -22,14 +22,17 @@ namespace BH.SDK.Validations
         /// <summary> The declarative and graph halves, over the level and its metadata. </summary>
         public readonly ValidationReport Content;
 
+        /// <summary> What publishing itself asks for, on top of the level being valid. </summary>
         public readonly PublishReadinessReport Publish;
 
+        /// <summary> Built from its content and publish. </summary>
         public PublishValidationReport(ValidationReport content, PublishReadinessReport publish)
         {
             Content = content;
             Publish = publish;
         }
 
+        /// <summary> How many findings there are altogether. </summary>
         public int Count => Content.Count + Publish.Count;
 
         /// <summary> Anything that stops this being published as it stands, from either half. </summary>
@@ -44,6 +47,7 @@ namespace BH.SDK.Validations
         /// </summary>
         public bool IsReady => Publish.IsReady && Content.IsValid;
 
+        /// <summary> One line, for a log. </summary>
         public override string ToString() => $"{Content}, {Publish.Count} publish issue(s)";
     }
 }

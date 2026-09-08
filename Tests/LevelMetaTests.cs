@@ -16,6 +16,9 @@ namespace BH.SDK.Tests
     // LevelDuration's zero is UNKNOWN, not "instant". Every level written before the field existed
     // reads back that way, which is exactly why the browser's duration filter may never hide it.
 
+
+    /// <summary> The two fields the level browser needs, both riding object initializers in Copy - the one shape
+    /// a copy-paste drops silently and the contract sweep cannot see. </summary>
     public class LevelMetaTests
     {
         private static LevelMeta Authored()

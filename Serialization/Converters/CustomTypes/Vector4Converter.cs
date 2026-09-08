@@ -6,9 +6,12 @@ using BH.SDK.Serialization.Converters.Base;
 
 namespace BH.SDK.Serialization.Converters.CustomTypes
 {
+    /// <summary> Tags an authored 4D vector with whether it is plain or one of the random forms. </summary>
     public class Vector4Converter : JsonConverterCustomType<IVector4, VectorType>
     {
+        /// <summary> Which form the value is, read off the value itself. </summary>
         public override VectorType GetCustomType(IVector4 value) => value.GetModelType();
+        /// <summary> The class each vector form is. </summary>
         public override Type GetType(VectorType customType)
         {
             return customType switch

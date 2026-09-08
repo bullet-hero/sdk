@@ -24,12 +24,15 @@ namespace BH.SDK.Models.Effects
         [JsonProperty(Names.Gradient)]
         public GradientValue Gradient { get; set; }
 
+        /// <summary> Which concrete form this is - the discriminator a converter writes and reads back. </summary>
         public EffectColorType GetModelType() => EffectColorType.GradientRandom;
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public EffectColorGradientRandom()
         {
             Gradient = EffectRules.GetGradient_Default();
         }
+        /// <summary> Built from its gradient. </summary>
         public EffectColorGradientRandom(GradientValue gradient)
         {
             Gradient = gradient;

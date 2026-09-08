@@ -1,5 +1,6 @@
 ﻿namespace BH.SDK.Models.Enums.Values
 {
+    /// <summary> Which form an authored vector is in. </summary>
     public enum VectorType : byte
     {
         /// <summary>

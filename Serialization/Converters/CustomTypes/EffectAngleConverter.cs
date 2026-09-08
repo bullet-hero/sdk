@@ -6,9 +6,12 @@ using BH.SDK.Serialization.Converters.Base;
 
 namespace BH.SDK.Serialization.Converters.CustomTypes
 {
+    /// <summary> Tags an effect's angle with which of its forms it is. </summary>
     public class EffectAngleConverter : JsonConverterCustomType<IEffectAngle, EffectAngleType>
     {
+        /// <summary> Which form the value is, read off the value itself. </summary>
         public override EffectAngleType GetCustomType(IEffectAngle value) => value.GetModelType();
+        /// <summary> The class each effect angle form is. </summary>
         public override Type GetType(EffectAngleType customType)
         {
             return customType switch

@@ -16,20 +16,30 @@ namespace BH.SDK.Rules.Attributes
     /// </summary>
     public abstract class BaseObjectRuleAttribute : BaseRuleAttribute
     {
+        /// <summary> Whether this rule can sit on that type at all - a DECLARATION question, asked once per type. </summary>
         protected abstract bool IsValidTypeInternal(Type type);
+
+        /// <summary> Whether the whole object satisfies the rule. </summary>
         protected abstract bool IsValidInternal(object target, RuleContext context);
+
+        /// <summary> Repair the object in place. </summary>
         protected abstract void FixInternal(object target, RuleContext context);
 
+        /// <summary> Guarded entry to the type check. </summary>
         public bool IsValidType(Type type)
         {
             return type != null && IsValidTypeInternal(type);
         }
+
+        /// <summary> Guarded entry to the object check. </summary>
         public bool IsValid(object target, RuleContext context)
         {
             if (!HasIsValid) return true;
             if (target == null) return false;
             return IsValidInternal(target, context);
         }
+
+        /// <summary> Guarded entry to the repair. </summary>
         public void Fix(object target, RuleContext context)
         {
             if (!HasFix) return;

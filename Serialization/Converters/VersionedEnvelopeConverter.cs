@@ -13,6 +13,9 @@ namespace BH.SDK.Serialization.Converters
     // CompatibilityService entirely - see VERSION-UPDATE.md. CanConvert is gated purely on the
     // attribute being present, so this recurses correctly into nested aggregates without any
     // special-casing for "aggregated vs non-aggregated" models.
+
+    /// <summary> Wraps every <c>[DataVersion]</c> domain as <c>{version, value}</c>, and on the way back in resolves
+    /// that version to its historical snapshot type and walks the migration chain up to today's shape. </summary>
     public class VersionedEnvelopeConverter : JsonConverter
     {
         // Domains currently being written/read one level up the call stack. Suppresses CanConvert
@@ -24,9 +27,11 @@ namespace BH.SDK.Serialization.Converters
         // domains get every nested envelope written/upgraded without any special-casing.
         private readonly HashSet<string> _activeDomains = new();
 
+        /// <summary> True for a versioning boundary - except the domain being written one level up, or every envelope would wrap itself forever. </summary>
         public override bool CanConvert(Type objectType) =>
             VersionedTypeRegistry.CanConvert(objectType) && !_activeDomains.Contains(VersionedTypeRegistry.GetDomain(objectType));
 
+        /// <summary> Wraps the payload as <c>{version, value}</c>, at the domain's current version. </summary>
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
             if (value == null)
@@ -77,6 +82,8 @@ namespace BH.SDK.Serialization.Converters
         // needs nothing buffered at all; a document that happens to carry the value first (hand
         // edited, or written by another tool) is still read correctly, by buffering that one subtree
         // until the version that types it arrives.
+
+        /// <summary> Resolves the version tag to its snapshot type, reads that, and walks the migration chain up to today's shape. </summary>
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
             if (reader.TokenType == JsonToken.Null) return null;

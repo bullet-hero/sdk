@@ -2,6 +2,7 @@
 
 namespace BH.SDK.Models.Enums.Settings
 {
+    /// <summary> Which surfaces something is drawn on - the game, the editor, or both. </summary>
     [Flags]
     public enum RenderStatus : byte
     {

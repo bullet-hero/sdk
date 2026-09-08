@@ -25,6 +25,9 @@ namespace BH.SDK.Tests.Services
     // level document alone and leaves the metadata and the cover readable - so a browser can still
     // draw the card and ask for the passphrase only when the level is opened. Those are different
     // promises, and each of them is worth a test that would fail if the other were implemented.
+
+    /// <summary> The whole pipeline with no disk anywhere - which is the server's path exactly - and the two
+    /// independent choices behind the four export modes. </summary>
     public class LevelPackageRoundTripTests
     {
         private static readonly char[] Passphrase = "пароль уровня".ToCharArray();

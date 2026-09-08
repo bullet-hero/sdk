@@ -36,8 +36,10 @@ namespace BH.SDK.Models.Effects
         [JsonProperty(Names.SpeedRange)]
         public IVector2 SpeedRange { get; set; }
 
+        /// <summary> Which concrete form this is - the discriminator a converter writes and reads back. </summary>
         public EffectScaleType GetModelType() => EffectScaleType.CurvesBySpeed;
         
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public EffectScaleCurvesBySpeed()
         {
             CurveX = EffectRules.GetCurve_Default();
@@ -46,6 +48,7 @@ namespace BH.SDK.Models.Effects
                 EffectRules.Scale.BySpeedRange_X_Default,
                 EffectRules.Scale.BySpeedRange_Y_Default);
         }
+        /// <summary> Built from its X, Y and range. </summary>
         public EffectScaleCurvesBySpeed(CurveValue curveX, CurveValue curveY, IVector2 speedRange)
         {
             CurveX = curveX;

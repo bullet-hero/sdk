@@ -16,6 +16,9 @@ namespace BH.SDK.Tests.Generators
     // NOT opposites on a span (partial overlap survives either way), that the level stays structurally
     // whole after the cut (no orphaned child, no broken prefab remap table), that the three content
     // switches are independent, and that the journal can put a deleted audio track back.
+
+    /// <summary> The generator that only ever deletes: that the two modes are opposites on a point and
+    /// deliberately not on a span, that the level stays structurally whole after the cut, and that undo restores it. </summary>
     public class ContentRemoverGeneratorTests
     {
         private const int FrameDuration = 600;

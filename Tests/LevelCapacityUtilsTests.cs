@@ -10,6 +10,7 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests
 {
+    /// <summary> How many objects are alive at once: the peak over a set of spans, and the frame it happens on. </summary>
     [TestFixture]
     public class LevelCapacityUtilsTests
     {

@@ -86,6 +86,7 @@ namespace BH.SDK.Models.Data
         [JsonIgnore]
         public int TriangleCount => ShapeGeometryUtils.GetTriangleCount(Indices);
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public CompositeShape()
         {
             ShapeId = ShapeId.Null;
@@ -94,6 +95,7 @@ namespace BH.SDK.Models.Data
             Indices = new List<int>();
         }
 
+        /// <summary> Built from its id, name, vertices and indices. </summary>
         public CompositeShape(ShapeId shapeId, string shapeName, List<Vector2Value> vertices, List<int> indices)
         {
             ShapeId = shapeId;

@@ -7,22 +7,32 @@ using BH.SDK.Utils;
 
 namespace BH.SDK.Rules.Attributes
 {
+    /// <summary> An authored 3D vector with a per-axis ceiling, in every form of it. </summary>
     [AttributeUsage(PropertyTarget)]
     public class RuleIVector3MaxAttribute : BasePropertyRuleAttribute
     {
+        /// <summary> <c>"rule_ivector3_max"</c>, the key its message is looked up under. </summary>
         public override string RuleNameKey => "rule_ivector3_max";
 
         // always include
+
+        /// <summary> Upper bound on the X axis. </summary>
         public float MaxX { get; set; }
+
+        /// <summary> Upper bound on the Y axis. </summary>
         public float MaxY { get; set; }
+
+        /// <summary> Upper bound on the Z axis. </summary>
         public float MaxZ { get; set; }
         
+        /// <summary> One bound, applied to every axis. </summary>
         public RuleIVector3MaxAttribute(float max)
         {
             MaxX = max;
             MaxY = max;
             MaxZ = max;
         }
+        /// <summary> Takes the upper bound on X, the upper bound on Y and the upper bound on Z. </summary>
         public RuleIVector3MaxAttribute(float maxX, float maxY, float maxZ)
         {
             MaxX = maxX;
@@ -30,9 +40,11 @@ namespace BH.SDK.Rules.Attributes
             MaxZ = maxZ;
         }
 
+        /// <summary> Applies to authored 3D vector properties. </summary>
         protected override bool IsValidTypeInternal(PropertyInfo property)
             => typeof(IVector3).IsAssignableFrom(property.PropertyType);
 
+        /// <summary> Passes when every axis is at or below its bound. </summary>
         protected override bool IsValidInternal(object value, RuleContext context)
         {
             if (value is not IVector3 vec) return false;
@@ -75,6 +87,7 @@ namespace BH.SDK.Rules.Attributes
             }
         }
 
+        /// <summary> Clamps each form of it down to them. </summary>
         protected override void FixInternal(object target, PropertyInfo property, RuleContext context)
         {
             var value = property.GetValue(target);

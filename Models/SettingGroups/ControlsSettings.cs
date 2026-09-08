@@ -18,6 +18,7 @@ namespace BH.SDK.Models.SettingGroups
     [GenerateModel]
     public sealed partial class ControlsSettings : IModel<ControlsSettings>, IMoveable<ControlsSettings>
     {
+        /// <summary> What applies whichever device is steering. </summary>
         [RuleNotNull]
         [JsonProperty(Names.Common)]
         public CommonControlsSettings Common { get; set; }
@@ -28,22 +29,27 @@ namespace BH.SDK.Models.SettingGroups
         [JsonProperty(Names.Priority)]
         public ControlDevice[] Priority { get; set; }
 
+        /// <summary> Keyboard and mouse, which are one device here - they are never used apart. </summary>
         [RuleNotNull]
         [JsonProperty(Names.KeyboardMouse)]
         public KeyboardMouseControlsSettings KeyboardMouse { get; set; }
 
+        /// <summary> The device's own touchscreen. </summary>
         [RuleNotNull]
         [JsonProperty(Names.Touchscreen)]
         public TouchscreenControlsSettings Touchscreen { get; set; }
 
+        /// <summary> A gamepad, through the Input System's own layout. </summary>
         [RuleNotNull]
         [JsonProperty(Names.Gamepad)]
         public GamepadControlsSettings Gamepad { get; set; }
 
+        /// <summary> The phone or tablet's own motion sensor. </summary>
         [RuleNotNull]
         [JsonProperty(Names.DeviceGyro)]
         public DeviceGyroControlsSettings DeviceGyro { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public ControlsSettings()
         {
             Common = new CommonControlsSettings();
@@ -53,6 +59,7 @@ namespace BH.SDK.Models.SettingGroups
             Gamepad = new GamepadControlsSettings();
             DeviceGyro = new DeviceGyroControlsSettings();
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public ControlsSettings(CommonControlsSettings common, ControlDevice[] priority,
             KeyboardMouseControlsSettings keyboardMouse, TouchscreenControlsSettings touchscreen,
             GamepadControlsSettings gamepad, DeviceGyroControlsSettings deviceGyro)

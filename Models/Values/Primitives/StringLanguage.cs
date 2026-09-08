@@ -27,11 +27,13 @@ namespace BH.SDK.Models.Values
         [JsonProperty(Names.ValueShort)]
         public string Value { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public StringLanguage()
         {
             LanguageCode = ValueRules.DefaultLanguageCode;
             Value = string.Empty;
         }
+        /// <summary> Built from its code and value. </summary>
         public StringLanguage(string languageCode, string value)
         {
             LanguageCode = languageCode;

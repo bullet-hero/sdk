@@ -13,6 +13,7 @@ namespace BH.SDK.Tests.Rules
     /// </summary>
     public class RuleIVector2MaxTests : BaseRuleTests
     {
+        /// <summary> The model the rule under test sits on. </summary>
         [RuleContainer]
         private class Model
         {
@@ -20,6 +21,7 @@ namespace BH.SDK.Tests.Rules
             public IVector2 Value { get; set; } = new Vector2Value(0f, 0f);
         }
 
+        /// <summary> A bound given per axis rather than one number for all of them. </summary>
         [RuleContainer]
         private class PerAxisModel
         {
@@ -27,6 +29,7 @@ namespace BH.SDK.Tests.Rules
             public IVector2 Value { get; set; } = new Vector2Value(0f, 0f);
         }
 
+        /// <summary> A property of a type the rule does not apply to, so it must decline rather than refuse. </summary>
         [RuleContainer]
         private class WrongTypeModel
         {

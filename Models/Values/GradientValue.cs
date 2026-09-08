@@ -44,6 +44,7 @@ namespace BH.SDK.Models.Values
         [JsonProperty(Names.ColorSpace)]
         public GradientColorSpace ColorSpace { get; set; }
         
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public GradientValue()
         {
             ColorKeys = new List<GradientColorKeyValue>();
@@ -51,6 +52,7 @@ namespace BH.SDK.Models.Values
             Mode = GradientInterpolationMode.PerceptualBlend;
             ColorSpace = GradientColorSpace.Linear;
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public GradientValue(List<GradientColorKeyValue> colorKeys, List<GradientAlphaKeyValue> alphaKeys,
             GradientInterpolationMode mode, GradientColorSpace colorSpace)
         {

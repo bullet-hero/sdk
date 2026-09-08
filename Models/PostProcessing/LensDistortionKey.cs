@@ -49,11 +49,14 @@ namespace BH.SDK.Models.PostProcessing
 
         // Multiplier and centre are born null and read back as the neutrals in
         // PostProcessingRules.LensDistortion - see docs/NAMING.md.
+
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public LensDistortionKey()
         {
             Intensity = 0.5f;
             Scale = 1f;
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public LensDistortionKey(float intensity, IVector2 multiplier, IVector2 center, float scale,
             bool active, int frame, EaseType ease = Keyframe.DefaultEase) : base(active, frame, ease)
         {

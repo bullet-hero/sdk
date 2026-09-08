@@ -14,6 +14,7 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests
 {
+    /// <summary> Round trips of the two statistics documents, per-level and device-wide. </summary>
     [TestFixture]
     public class StatisticsSerializationTests
     {

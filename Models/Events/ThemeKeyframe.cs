@@ -23,10 +23,12 @@ namespace BH.SDK.Models.Events
         [JsonProperty(Names.ThemeId)]
         public ThemeId ThemeId { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public ThemeKeyframe()
         {
             ThemeId = ThemeId.Null;
         }
+        /// <summary> Built from its id, frame and default ease. </summary>
         public ThemeKeyframe(ThemeId themeId, int frame, EaseType ease = DefaultEase) : base(frame, ease)
         {
             ThemeId = themeId;

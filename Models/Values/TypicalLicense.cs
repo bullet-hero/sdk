@@ -21,15 +21,18 @@ namespace BH.SDK.Models.Values
         [JsonProperty(Names.LicenseType)]
         public TypicalLicenseType Type { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public TypicalLicense()
         {
             Type = TypicalLicenseType.CC_BY_NC_4_0;
         }
+        /// <summary> Built from its type. </summary>
         public TypicalLicense(TypicalLicenseType type)
         {
             Type = type;
         }
 
+        /// <summary> Which concrete form this is - the discriminator a converter writes and reads back. </summary>
         public LicenseType GetModelType() => LicenseType.Typical;
     }
 }

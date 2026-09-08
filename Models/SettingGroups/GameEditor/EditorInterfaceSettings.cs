@@ -75,10 +75,12 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
         [JsonProperty(Names.AutoOpen)]
         public bool SelectionAutoOpenActive { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public EditorInterfaceSettings()
         {
             ResetOwn();
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public EditorInterfaceSettings(float dirtyFieldDelay, AngleDisplayUnit rotationDisplayUnit,
             bool logValueClamps, bool renderInframes, bool linkColliderToShape,
             bool selectionAutoOpenActive)

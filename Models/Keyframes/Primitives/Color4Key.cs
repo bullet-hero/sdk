@@ -25,15 +25,18 @@ namespace BH.SDK.Models.Keyframes
         [JsonProperty(Names.Color)]
         public IColor4 Value { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public Color4Key()
         {
             Value = Color4Value.white;
         }
+        /// <summary> Built from its value, frame and default ease. </summary>
         public Color4Key(IColor4 value, int frame, EaseType ease = DefaultEase) : base(frame, ease)
         {
             Value = value;
         }
         
+        /// <summary> Which concrete form this is - the discriminator a converter writes and reads back. </summary>
         public Color4X4KeyType GetModelType() => Color4X4KeyType.Value;
     }
 }

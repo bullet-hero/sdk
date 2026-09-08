@@ -24,6 +24,7 @@ namespace BH.SDK.Roslyn.Model
     [Generator]
     public sealed class ModelGenerator : IIncrementalGenerator
     {
+        /// <summary> Builds the pipeline: find the marked types, turn each into a spec, emit from the spec alone. </summary>
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
             var models = context.SyntaxProvider.ForAttributeWithMetadataName(
@@ -396,15 +397,19 @@ namespace BH.SDK.Roslyn.Model
         /// the incremental cache instead of appearing only on a cold build. </summary>
         private sealed class ModelResult : System.IEquatable<ModelResult>
         {
+            /// <summary> One type's outcome: what to emit, or why nothing will be. </summary>
             public ModelResult(ModelSpec spec, ImmutableArray<Diagnostic> diagnostics)
             {
                 Spec = spec;
                 Diagnostics = diagnostics;
             }
 
+            /// <summary> What to emit, or null when the type was refused. </summary>
             public ModelSpec Spec { get; }
+            /// <summary> Why it was refused, where it was. </summary>
             public ImmutableArray<Diagnostic> Diagnostics { get; }
 
+            /// <summary> Compared by VALUE: an incremental generator that compares its specs by reference re-emits every model on every keystroke. </summary>
             public bool Equals(ModelResult other)
             {
                 if (other is null) return false;
@@ -416,8 +421,10 @@ namespace BH.SDK.Roslyn.Model
                 return true;
             }
 
+            /// <summary> The same, boxed. </summary>
             public override bool Equals(object obj) => obj is ModelResult other && Equals(other);
 
+            /// <summary> Compared by VALUE: an incremental generator that compares its specs by reference re-emits every model on every keystroke. </summary>
             public override int GetHashCode() => Spec?.GetHashCode() ?? 0;
         }
     }

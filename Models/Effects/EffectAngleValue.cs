@@ -26,16 +26,20 @@ namespace BH.SDK.Models.Effects
         [JsonProperty(Names.Angle)]
         public IFloat Angle { get; set; }
         
+        /// <summary> Which concrete form this is - the discriminator a converter writes and reads back. </summary>
         public EffectAngleType GetModelType() => EffectAngleType.Value;
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public EffectAngleValue()
         {
             Angle = new FloatValue(EffectRules.Angle.A_Default);
         }
+        /// <summary> Built from its angle. </summary>
         public EffectAngleValue(float angle)
         {
             Angle = new FloatValue(angle);
         }
+        /// <summary> Built from its angle. </summary>
         public EffectAngleValue(IFloat angle)
         {
             Angle = angle;

@@ -27,10 +27,12 @@ namespace BH.SDK.Models.Audio
         [JsonProperty(Names.Tracks)]
         public Dictionary<AudioId, LevelTrack> Tracks { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public AudioLevel()
         {
             Tracks = new Dictionary<AudioId, LevelTrack>();
         }
+        /// <summary> Built from its dictionary audio id and tracks. </summary>
         public AudioLevel(Dictionary<AudioId, LevelTrack> tracks)
         {
             Tracks = tracks;

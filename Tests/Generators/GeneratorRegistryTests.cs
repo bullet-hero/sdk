@@ -12,6 +12,9 @@ namespace BH.SDK.Tests.Generators
     // uniquely, and describes its own form completely. They cost nothing per generator and catch
     // the two mistakes that would otherwise only surface in a host's UI - a duplicate key silently
     // shadowing a generator, and a field the form renders in an unpredictable position.
+
+    /// <summary> The whole-system invariants: every shipped generator is discoverable, uniquely named, and
+    /// describes its own form completely - the two mistakes that would otherwise surface only in a host's UI. </summary>
     public class GeneratorRegistryTests
     {
         [Test]

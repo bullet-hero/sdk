@@ -58,6 +58,7 @@ namespace BH.SDK.Models
         [JsonProperty(Names.Hints)]
         public LevelHints Hints { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public Level()
         {
             Settings = new LevelSettings();
@@ -66,9 +67,11 @@ namespace BH.SDK.Models
             Resources = new LevelResources();
             Hints = new LevelHints();
         }
+        /// <summary> Built from its settings, game, audio and resources. </summary>
         public Level(LevelSettings settings, GameLevel game, AudioLevel audio, LevelResources resources)
             : this(settings, game, audio, resources, new LevelHints()) { }
 
+        /// <summary> Every member at once, in declaration order. </summary>
         public Level(LevelSettings settings, GameLevel game, AudioLevel audio, LevelResources resources,
             LevelHints hints)
         {

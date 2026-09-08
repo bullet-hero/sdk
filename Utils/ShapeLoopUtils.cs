@@ -36,6 +36,7 @@ namespace BH.SDK.Utils
         /// <summary> Circumradius of the box itself, i.e. the radius its four corners sit at. </summary>
         public const float BoxCornerRadius = 0.70710678f;
 
+        /// <summary> A full turn in radians, at double precision. </summary>
         public const double Tau = Math.PI * 2.0;
 
         // ANGLES ARE ALWAYS RELATIVE, never absolute, and this constant is why. A rim corner meant
@@ -127,6 +128,7 @@ namespace BH.SDK.Utils
 
         #region Transforms
 
+        /// <summary> The box a loop occupies, which is what fitting a shape into its rect needs. </summary>
         public static void GetBounds(IReadOnlyList<Vector2Value> loop,
             out Vector2Value min, out Vector2Value max)
         {
@@ -175,6 +177,7 @@ namespace BH.SDK.Utils
             return new Vector2Value((float)(x / loop.Count), (float)(y / loop.Count));
         }
 
+        /// <summary> A new loop shifted by an offset. </summary>
         public static List<Vector2Value> Translate(IReadOnlyList<Vector2Value> loop, Vector2Value offset)
         {
             var result = new List<Vector2Value>(loop.Count);

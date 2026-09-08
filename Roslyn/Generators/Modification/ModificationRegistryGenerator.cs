@@ -41,6 +41,7 @@ namespace BH.SDK.Roslyn.Modification
     [Generator]
     public sealed class ModificationRegistryGenerator : IIncrementalGenerator
     {
+        /// <summary> The marker that opts a type into the table. </summary>
         internal const string GenerateAttribute = "BH.SDK.Models.Attributes.GenerateModelAttribute";
 
         // The namespace every polymorphic model interface lives under, and the reason this is a
@@ -50,6 +51,7 @@ namespace BH.SDK.Roslyn.Modification
         // Values, Effects, Keyframes - are exactly the polymorphic families.
         private const string InterfaceRoot = "BH.SDK.Models.Interfaces";
 
+        /// <summary> Builds the pipeline: find the marked types, turn each into a spec, emit from the spec alone. </summary>
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
             var pairs = context.SyntaxProvider.ForAttributeWithMetadataName(
@@ -175,18 +177,23 @@ namespace BH.SDK.Roslyn.Modification
         /// <summary> One model and the family interfaces it implements. </summary>
         private readonly struct ImplementationSpec : System.IEquatable<ImplementationSpec>
         {
+            /// <summary> A type that implements none of the polymorphic families, and is therefore not in the table. </summary>
             public static readonly ImplementationSpec Empty =
                 new ImplementationSpec(null, ImmutableArray<string>.Empty);
 
+            /// <summary> One implementation and the families it belongs to. </summary>
             public ImplementationSpec(string type, ImmutableArray<string> interfaces)
             {
                 Type = type;
                 Interfaces = interfaces;
             }
 
+            /// <summary> The implementing type. </summary>
             public string Type { get; }
+            /// <summary> The families it implements. </summary>
             public ImmutableArray<string> Interfaces { get; }
 
+            /// <summary> Compared by VALUE: an incremental generator that compares its specs by reference re-emits every model on every keystroke. </summary>
             public bool Equals(ImplementationSpec other)
             {
                 if (!string.Equals(Type, other.Type, System.StringComparison.Ordinal)) return false;
@@ -201,8 +208,10 @@ namespace BH.SDK.Roslyn.Modification
                 return true;
             }
 
+            /// <summary> The same, boxed. </summary>
             public override bool Equals(object obj) => obj is ImplementationSpec other && Equals(other);
 
+            /// <summary> Compared by VALUE: an incremental generator that compares its specs by reference re-emits every model on every keystroke. </summary>
             public override int GetHashCode() => Type?.GetHashCode() ?? 0;
         }
     }

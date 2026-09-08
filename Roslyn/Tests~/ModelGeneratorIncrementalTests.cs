@@ -15,6 +15,8 @@ namespace BH.SDK.Roslyn.Tests
     // EquatableArray for the member list, since ImmutableArray compares by reference. These two
     // fixtures are what notice if a symbol ever creeps back in.
 
+    /// <summary> That the pipeline caches by VALUE - no ISymbol in the spec - or two hundred models re-emit on
+    /// every keystroke of every assembly referencing the SDK. </summary>
     [TestFixture]
     public class ModelGeneratorIncrementalTests
     {

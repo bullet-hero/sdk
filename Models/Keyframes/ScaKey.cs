@@ -25,10 +25,12 @@ namespace BH.SDK.Models.Keyframes
         [JsonProperty(Names.Vector2)]
         public IVector2 Scale { get; set; }
         
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public ScaKey()
         {
             Scale = new Vector2Value();
         }
+        /// <summary> Built from its scale, frame and default ease. </summary>
         public ScaKey(IVector2 scale, int frame, EaseType ease = DefaultEase) : base(frame, ease)
         {
             Scale = scale;

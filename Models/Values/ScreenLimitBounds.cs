@@ -27,7 +27,9 @@ namespace BH.SDK.Models.Values
         [JsonProperty(Names.MaxAspect)]
         public ScreenAspect MaxAspect { get; set; }
         
+        /// <summary> Which concrete form this is - the discriminator a converter writes and reads back. </summary>
         public ScreenLimitType GetModelType() => ScreenLimitType.Bounds;
+        /// <summary> True when this screen already matches, so nothing has to be letterboxed. </summary>
         public bool IsValid(float currentAspect)
         {
             var minAspect = MinAspect.GetAspect();
@@ -38,6 +40,7 @@ namespace BH.SDK.Models.Values
             
             return true;
         }
+        /// <summary> The aspect the level is actually framed at here; the bars are whatever is left. </summary>
         public float GetValid(float currentAspect)
         {
             var minAspect = MinAspect.GetAspect();
@@ -45,11 +48,13 @@ namespace BH.SDK.Models.Values
             return BHSDKMath.Clamp(currentAspect, minAspect, maxAspect);
         }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public ScreenLimitBounds()
         {
             MinAspect = new ScreenAspect();
             MaxAspect = new ScreenAspect();
         }
+        /// <summary> Built from its aspect and aspect. </summary>
         public ScreenLimitBounds(ScreenAspect minAspect, ScreenAspect maxAspect)
         {
             MinAspect = minAspect;

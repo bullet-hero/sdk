@@ -27,6 +27,9 @@ namespace BH.SDK.Tests.Generators
     //
     // Rounding is away-from-zero, which is why 3 -> 1.5 lands on 1 rather than 0 and why 4/60 and
     // 3/60 collide at 30 while 4 and 6 do not.
+
+    /// <summary> The one generator whose correctness is arithmetic, and whose failure is silent: a level that
+    /// still opens, still validates, and plays at the wrong speed. Mostly the packing policy for collided keys. </summary>
     public class FramerateRemapGeneratorTests
     {
         private const int Framerate = 60;

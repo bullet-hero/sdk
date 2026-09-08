@@ -41,6 +41,7 @@ namespace BH.SDK.Models.Values
         [JsonProperty(Names.ChannelA)]
         public float A { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public Color4Value()
         {
             R = ValueRules.MaxColor;
@@ -48,6 +49,7 @@ namespace BH.SDK.Models.Values
             B = ValueRules.MaxColor;
             A = ValueRules.MaxColor;
         }
+        /// <summary> Built from its r, g, b and a. </summary>
         public Color4Value(float r, float g, float b, float a)
         {
             R = r;
@@ -56,6 +58,7 @@ namespace BH.SDK.Models.Values
             A = a;
         }
 
+        /// <summary> Which concrete form this is - the discriminator a converter writes and reads back. </summary>
         public ColorType GetModelType() => ColorType.Value;
 
         /// <summary>

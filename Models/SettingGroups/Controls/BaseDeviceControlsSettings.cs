@@ -48,9 +48,11 @@ namespace BH.SDK.Models.SettingGroups.Controls
         [JsonProperty(Names.Smoothing)]
         public float Smoothing { get; set; }
 
+        /// <summary> Flip the horizontal axis. </summary>
         [JsonProperty(Names.InvertX)]
         public bool InvertX { get; set; }
 
+        /// <summary> Flip the vertical axis. </summary>
         [JsonProperty(Names.InvertY)]
         public bool InvertY { get; set; }
 
@@ -63,6 +65,7 @@ namespace BH.SDK.Models.SettingGroups.Controls
         [JsonIgnore]
         public abstract ControlDevice Device { get; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         protected BaseDeviceControlsSettings()
         {
             Active = true;
@@ -72,6 +75,7 @@ namespace BH.SDK.Models.SettingGroups.Controls
             InvertX = false;
             InvertY = false;
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         protected BaseDeviceControlsSettings(bool active, float sensitivity,
             float deadZone, float smoothing, bool invertX, bool invertY)
         {

@@ -28,13 +28,16 @@ namespace BH.SDK.Models.Effects
         [JsonProperty(Names.CurveY)]
         public CurveValue CurveY { get; set; }
         
+        /// <summary> Which concrete form this is - the discriminator a converter writes and reads back. </summary>
         public EffectScaleType GetModelType() => EffectScaleType.CurvesOverLife;
         
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public EffectScaleCurvesOverLife()
         {
             CurveX = EffectRules.GetCurve_Default();
             CurveY = EffectRules.GetCurve_Default();
         }
+        /// <summary> Built from its X and Y. </summary>
         public EffectScaleCurvesOverLife(CurveValue curveX, CurveValue curveY)
         {
             CurveX = curveX;

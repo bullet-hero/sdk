@@ -30,12 +30,14 @@ namespace BH.SDK.Models.SettingGroups
         [RuleInRange(0f, 1f)]
         public float UI { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public AudioSettings()
         {
             Volume = 1f;
             Game = 1f;
             UI = 1f;
         }
+        /// <summary> Built from its volume, game and ui. </summary>
         public AudioSettings(float volume, float game, float ui)
         {
             Volume = volume;

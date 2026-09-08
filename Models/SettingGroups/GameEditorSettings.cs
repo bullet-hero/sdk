@@ -77,6 +77,7 @@ namespace BH.SDK.Models.SettingGroups
         [JsonProperty(Names.Serialize)]
         public EditorSerializationSettings Serialization { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public GameEditorSettings()
         {
             Savings = new EditorSavingsSettings();
@@ -91,6 +92,7 @@ namespace BH.SDK.Models.SettingGroups
             Serialization = new EditorSerializationSettings();
         }
 
+        /// <summary> Every member at once, in declaration order. </summary>
         public GameEditorSettings(EditorSavingsSettings savings, EditorCameraSettings camera,
             EditorPlayerSettings player, EditorGridSettings grid, EditorEffectsSettings effects,
             EditorSelectionSettings selection,

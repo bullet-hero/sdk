@@ -21,18 +21,24 @@ namespace BH.SDK.Rules.Attributes
     [AttributeUsage(ClassTarget)]
     public class RuleAnyDeviceActiveAttribute : BaseObjectRuleAttribute
     {
+        /// <summary> <c>"rule_any_device_active"</c>, the key its message is looked up under. </summary>
         public override string RuleNameKey => "rule_any_device_active";
 
         // Warning, not Error: this is UserSettings, not a level. A player who turned every device off
         // did it to themselves and can turn one back on; nothing about the file is malformed.
+
+        /// <summary> A warning: the level still plays, but this is not what the author meant. </summary>
         public override RuleGroup Group => RuleGroup.Warning;
 
+        /// <summary> Sits on the controls settings tree, which is the only place the invariant is visible. </summary>
         protected override bool IsValidTypeInternal(Type type)
             => typeof(ControlsSettings).IsAssignableFrom(type);
 
+        /// <summary> Passes while at least one device is active. </summary>
         protected override bool IsValidInternal(object target, RuleContext context)
             => target is ControlsSettings settings && settings.HasActiveDevice();
 
+        /// <summary> Activates the first device in the authored priority order, or the first of the catalog when that order says nothing usable. </summary>
         protected override void FixInternal(object target, RuleContext context)
         {
             if (target is not ControlsSettings settings) return;

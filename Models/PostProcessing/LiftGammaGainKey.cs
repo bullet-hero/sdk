@@ -64,6 +64,7 @@ namespace BH.SDK.Models.PostProcessing
         [JsonProperty(Names.GainColor)]
         public IColor3 GainColor3 { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public LiftGammaGainKey()
         {
             Lift = false;
@@ -73,6 +74,7 @@ namespace BH.SDK.Models.PostProcessing
             Gain = false;
             GainColor3 = Color3Value.white;
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public LiftGammaGainKey(
             bool lift, IColor3 liftColor3,
             bool gamma, IColor3 gammaColor3,

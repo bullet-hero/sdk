@@ -19,6 +19,9 @@ namespace BH.SDK.Tests.Rules
     // path, and IN WHICH ORDER. Order is not cosmetic - RuleFixer repairs in reverse, and repairs
     // are not commutative.
 
+
+    /// <summary> Three small reports stated IN FULL, so a change to the walk's ORDER is read rather than merely
+    /// detected. Order is not cosmetic - repairs run in reverse and are not commutative. </summary>
     [TestFixture]
     public class ValidationParityTests
     {

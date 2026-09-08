@@ -11,6 +11,8 @@ namespace BH.SDK.Serialization.Serializers
     // document this project writes is compact. The mode that wrote an indented one described the
     // person saving rather than the level - nothing could recover the choice from a file - and
     // reading one by eye is what an editor's own formatter is for, on demand.
+
+    /// <summary> The one mapping between a format and the file extension it lives under. </summary>
     public static class SerializationTypeExtensions
     {
         private static readonly SerializationType[] Probe =
@@ -32,6 +34,7 @@ namespace BH.SDK.Serialization.Serializers
         /// <summary> Every live format, in the order a probe should try them. </summary>
         public static IReadOnlyList<SerializationType> ProbeOrder { get; } = Array.AsReadOnly(Probe);
 
+        /// <summary> The extension a file of this format is written with, dot included. </summary>
         public static string ToFileExtension(this SerializationType type)
         {
             return type switch
@@ -42,6 +45,7 @@ namespace BH.SDK.Serialization.Serializers
             };
         }
 
+        /// <summary> The format an extension names, case-insensitively; false when none does. </summary>
         public static bool TryFromFileExtension(string extension, out SerializationType type)
         {
             switch (extension.ToLowerInvariant())

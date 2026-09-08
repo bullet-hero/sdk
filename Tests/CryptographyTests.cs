@@ -14,6 +14,9 @@ namespace BH.SDK.Tests
     //
     //   A short input computed a negative array length and threw out of the crypto path, so "this
     //   file is not ours" arrived as "the cipher broke".
+
+    /// <summary> The raw AES primitive: that two encryptions of the same text differ, and that a short input is
+    /// refused as "not ours" rather than throwing out of the crypto path. </summary>
     public class CryptographyTests
     {
         [Test]

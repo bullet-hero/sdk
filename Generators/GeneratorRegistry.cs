@@ -64,9 +64,12 @@ namespace BH.SDK.Generators
         /// NameKey, so a host's list reads sensibly and is stable across runs. </summary>
         public static IReadOnlyList<IGenerator> All => Ordered;
 
+        /// <summary> One generator by its key; throws when nothing is registered under it. </summary>
         public static IGenerator Get(string nameKey) => ByKey[nameKey];
+        /// <summary> The same without throwing. </summary>
         public static bool TryGet(string nameKey, out IGenerator generator) => ByKey.TryGetValue(nameKey, out generator);
 
+        /// <summary> Every generator of one kind, in the order a host should list them. </summary>
         public static IEnumerable<IGenerator> OfKind(GeneratorKind kind)
         {
             foreach (var generator in Ordered)

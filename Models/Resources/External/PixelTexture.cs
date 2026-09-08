@@ -21,12 +21,14 @@ namespace BH.SDK.Models.Resources
         /// job (see DimensionalIndexer2). </summary>
         public Pixel[] Pixels;
 
+        /// <summary> Built from its width and height. </summary>
         public PixelTexture(int width, int height)
         {
             Width = width;
             Height = height;
             Pixels = new Pixel[width * height];
         }
+        /// <summary> Built from its width, height and pixels. </summary>
         public PixelTexture(int width, int height, Pixel[] pixels)
         {
             Width = width;
@@ -34,12 +36,17 @@ namespace BH.SDK.Models.Resources
             Pixels = pixels;
         }
 
+        /// <summary> The untyped spelling of <c>Copy</c>. </summary>
         public object Clone() => Copy();
+        /// <summary> A deep copy, sharing nothing mutable with this one. </summary>
         public PixelTexture Copy() => new(Width, Height, Pixels.CopyArrayUnmanaged());
 
+        /// <summary> The same, boxed. </summary>
         public override bool Equals(object obj) => obj is PixelTexture value && Equals(value);
+        /// <summary> Matches the equality above. </summary>
         public override int GetHashCode() => HashCode.Combine(Width, Height, Pixels.GetArrayHashCode());
 
+        /// <summary> Member by member. </summary>
         public bool Equals(PixelTexture other)
         {
             if (other is null) return false;

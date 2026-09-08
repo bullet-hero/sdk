@@ -42,8 +42,10 @@ namespace BH.SDK.Models.Effects
         [JsonProperty(Names.Spread)]
         public IEffectShapeSpread Spread { get; set; }
         
+        /// <summary> Which concrete form this is - the discriminator a converter writes and reads back. </summary>
         public EffectShapeType GetModelType() => EffectShapeType.Torus;
         
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public EffectShapeTorus()
         {
             MinorRadius = new FloatValue(EffectRules.Shape.TorusRadiusMinor_Default);
@@ -51,6 +53,7 @@ namespace BH.SDK.Models.Effects
             Arc = new FloatValue(EffectRules.Shape.Arc_Default);
             Spread = new EffectShapeSpreadRandom();
         }
+        /// <summary> Built from its minor, major, arc and spread. </summary>
         public EffectShapeTorus(float radiusMinor, float radiusMajor, float arc, IEffectShapeSpread spread)
         {
             MinorRadius = new FloatValue(radiusMinor);
@@ -58,6 +61,7 @@ namespace BH.SDK.Models.Effects
             Arc = new FloatValue(arc);
             Spread = spread;
         }
+        /// <summary> Built from its minor, major, arc and spread. </summary>
         public EffectShapeTorus(IFloat radiusMinor, IFloat radiusMajor, IFloat arc, IEffectShapeSpread spread)
         {
             MinorRadius = radiusMinor;

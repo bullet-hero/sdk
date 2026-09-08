@@ -23,12 +23,15 @@ namespace BH.SDK.Models.Values
         [JsonProperty(Names.ThemeIndex)]
         public int ThemeColorIndex { get; set; }
 
+        /// <summary> Which concrete form this is - the discriminator a converter writes and reads back. </summary>
         public ColorType GetModelType() => ColorType.ThemeRef;
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public Color3ThemeRef()
         {
             ThemeColorIndex = ValueRules.MinThemeIndex;
         }
+        /// <summary> Built from its color index. </summary>
         public Color3ThemeRef(int themeColorIndex)
         {
             ThemeColorIndex = themeColorIndex;

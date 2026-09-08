@@ -22,14 +22,19 @@ namespace BH.SDK.Serialization.Serializers
     // all. The number 1 is retired and never reissued, so an old settings file holding it lands on
     // an undefined value that RuleEnumValid repairs to Json, rather than silently meaning something
     // new.
+
+    /// <summary> Which wire format a document was written with. </summary>
     public enum SerializationType : byte
     {
+        /// <summary> Text, readable and diffable. The default everywhere, and what a hand-made folder carries. </summary>
         Json = 0,
         // 1 was Bson, 2 was JsonPretty.
 
         // Appended, never squeezed in, and a retired member's number is never reissued - the rule
         // TextureSizeLimit's rungs already keep and for the same reason: a member's NUMBER is what
         // a settings file on somebody's disk holds, so renumbering silently reinterprets it.
+
+        /// <summary> The binary form of the same data, read by generated code - forty times faster on a large level. </summary>
         Blob = 3,
     }
 }

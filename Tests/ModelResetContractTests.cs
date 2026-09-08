@@ -39,6 +39,9 @@ namespace BH.SDK.Tests
     // That is also why the generated Reset() builds a FRESH instance instead of copying from one
     // shared prototype - a prototype would hand every reset the same id.
 
+
+    /// <summary> That Reset really means "back to what the constructor built", swept over every model - the
+    /// precondition the generated Reset relies on, since it assigns from a fresh prototype rather than literals. </summary>
     public class ModelResetContractTests
     {
         // Below this, the reflection filter has stopped matching and the sweep passes vacuously.

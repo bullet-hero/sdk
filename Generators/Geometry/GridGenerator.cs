@@ -9,8 +9,10 @@ namespace BH.SDK.Generators.Geometry
     /// </summary>
     public class GridGenerator : BaseSpawnGenerator<GridGenerator.Parameters>
     {
+        /// <summary> <c>"gen_geometry_grid"</c>, the key a host lists this generator under. </summary>
         public override string NameKey => "gen_geometry_grid";
 
+        /// <summary> The order, labels and ranges a host lays its form out with. </summary>
         public override GeneratorHints Hints { get; } = new GeneratorHints.Builder()
             .Section(GeneratorSections.Main, SpawnParameters.MainFields)
             .Section(GeneratorSections.Main, nameof(Parameters.Columns), nameof(Parameters.Rows),
@@ -27,6 +29,7 @@ namespace BH.SDK.Generators.Geometry
             .Range(nameof(SpawnParameters.Size), ValueRules.MinSca, ValueRules.MaxSca)
             .Build();
 
+        /// <summary> Writes this run's objects into the scope. </summary>
         protected override void Generate(GeneratorContext context, Parameters parameters)
         {
             var columns = Count(parameters.Columns);
@@ -49,6 +52,7 @@ namespace BH.SDK.Generators.Geometry
             }
         }
 
+        /// <summary> What this run would add, answered before it runs. </summary>
         protected override GeneratorCost EstimateTyped(GeneratorContext context, Parameters parameters)
         {
             var objects = Count(parameters.Columns) * Count(parameters.Rows);
@@ -60,14 +64,27 @@ namespace BH.SDK.Generators.Geometry
 
         private static int Count(int value) => value < 1 ? 1 : value;
 
+        /// <summary> The grid's extent and spacing. Public mutable fields, like every parameters class here - a
+        /// form binds to them and a preset serializes from them. </summary>
         public class Parameters : SpawnParameters
         {
+            /// <summary> How many columns the grid has. </summary>
             public int Columns = 4;
+
+            /// <summary> How many rows. </summary>
             public int Rows = 4;
+
+            /// <summary> Gap between neighbouring cells. </summary>
             public float SpacingX = 2f;
+            /// <summary> The vertical gap. </summary>
             public float SpacingY = 2f;
+
+            /// <summary> Where the grid is placed. </summary>
             public float OriginX;
+            /// <summary> Its vertical half. </summary>
             public float OriginY;
+
+            /// <summary> Treat the origin as the grid's centre rather than its first cell. </summary>
             public bool Centered = true;
         }
     }

@@ -75,6 +75,7 @@ namespace BH.SDK.Models.SettingGroups
         [JsonProperty(Names.Display)]
         public DisplayGraphicsSettings Display { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public GraphicsSettings()
         {
             FpsTarget = FramerateTarget.ScreenHz;
@@ -87,6 +88,7 @@ namespace BH.SDK.Models.SettingGroups
             Display = new DisplayGraphicsSettings();
         }
 
+        /// <summary> Every member at once, in declaration order. </summary>
         public GraphicsSettings(FramerateTarget framerateTarget, int fixedFramerate,
             AudioGraphicsSettings audio, EffectsGraphicsSettings effects,
             PostProcessingGraphicsSettings postProcessing, AntiAliasingGraphicsSettings antiAliasing,

@@ -14,8 +14,10 @@ namespace BH.SDK.Services.Controls
     /// </summary>
     public static class ControlDeviceCatalog
     {
+        /// <summary> What a device's own localization key starts with. </summary>
         public const string NameKeyPrefix = "control_device_";
 
+        /// <summary> Every device the format knows, whatever the running platform can reach. </summary>
         public static readonly ControlDevice[] Devices =
         {
             ControlDevice.KeyboardMouse,
@@ -24,6 +26,7 @@ namespace BH.SDK.Services.Controls
             ControlDevice.DeviceGyro,
         };
 
+        /// <summary> How many there are. </summary>
         public static int DeviceCount => Devices.Length;
 
         private static readonly ControlDeviceInfo[] Infos =
@@ -34,6 +37,7 @@ namespace BH.SDK.Services.Controls
             new(ControlDevice.DeviceGyro, ControlModeMask.All, true, NameKeyPrefix + "device_gyro"),
         };
 
+        /// <summary> What one device supports. </summary>
         public static ControlDeviceInfo Get(ControlDevice device)
         {
             var index = (int)device;
@@ -41,8 +45,10 @@ namespace BH.SDK.Services.Controls
                 : throw new ArgumentOutOfRangeException(nameof(device), device, "Unknown control device");
         }
 
+        /// <summary> Which steering modes it can drive. </summary>
         public static ControlModeMask GetSupportedModes(ControlDevice device) => Get(device).SupportedModes;
 
+        /// <summary> Whether it can drive one particular mode. </summary>
         public static bool Supports(ControlDevice device, ControlMode mode) => Get(device).Supports(mode);
     }
 }

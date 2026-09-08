@@ -7,11 +7,15 @@ using UnityEngine.Jobs;
 
 namespace BH.SDK.Transforms
 {
+    /// <summary> A 2D transform laid out for the job system: position, layer, rotation and scale in a fixed
+    /// 32 bytes, so an array of them is blittable. </summary>
     [Serializable]
     [StructLayout(LayoutKind.Explicit, Size = ByteSize)]
     public struct Transform2D
     {
         // size = 32 bytes, elements size = 24 bytes, padding = 8 bytes
+
+        /// <summary> Fixed size, so an array of these is blittable for the job system. </summary>
         public const int ByteSize = 32;
         
         [FieldOffset(00)] public float2 position; // local position
@@ -19,8 +23,10 @@ namespace BH.SDK.Transforms
         [FieldOffset(12)] public float  rotation; // local radians
         [FieldOffset(16)] public float2 scale; // local scale
 
+        /// <summary> Half the scale, which is what most corner maths needs. </summary>
         public float2 HalfScale => scale * 0.5f;
 
+        /// <summary> A transform on the default layer. </summary>
         public Transform2D(float2 position, float rotation, float2 scale)
         {
             this.position = position;
@@ -28,6 +34,7 @@ namespace BH.SDK.Transforms
             this.rotation = rotation;
             this.scale = scale;
         }
+        /// <summary> A transform with its own layer. </summary>
         public Transform2D(float2 position, float layer, float rotation, float2 scale)
         {
             this.position = position;
@@ -36,6 +43,7 @@ namespace BH.SDK.Transforms
             this.layer = layer;
         }
 
+        /// <summary> The transform as one matrix. </summary>
         public float4x4 TRS()
         {
             math.sincos(rotation, out var sin, out var cos);
@@ -52,6 +60,7 @@ namespace BH.SDK.Transforms
             return trs;
         }
 
+        /// <summary> Composes this against its parent IN PLACE - which is where a layer stops being relative and becomes absolute. </summary>
         public void Apply(Transform2D parent)
         {
             scale *= parent.scale;
@@ -82,6 +91,7 @@ namespace BH.SDK.Transforms
         // Regular transforms is not InstanceTransform, ApplyTo functions like TRS - applied with pivot
         // because for them pivot is always in center (0.5, 0.5)
         
+        /// <summary> Writes it onto a job's transform handle. </summary>
         public void ApplyTo(TransformHandle handle)
         {
             var pos = new Vector3(position.x, position.y, layer);
@@ -91,6 +101,7 @@ namespace BH.SDK.Transforms
             handle.localScale = sca;
             handle.SetLocalPositionAndRotation(pos, rot);
         }
+        /// <summary> Writes it onto a job's transform access. </summary>
         public void ApplyTo(TransformAccess access)
         {
             var pos = new Vector3(position.x, position.y, layer);

@@ -34,6 +34,7 @@ namespace BH.SDK.Models.Statistics
         [JsonProperty(Names.AppSeconds)]
         public double TotalAppSeconds { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public ProfileStatistics()
         {
             FirstPlayedUtc = default;

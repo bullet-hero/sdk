@@ -41,12 +41,14 @@ namespace BH.SDK.Models.PostProcessing
         
         // Filter (player choose in settings: high - Gaussian, mid - Dual, low - Kawase)
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public BloomKey()
         {
             Intensity = 0.5f;
             Scatter = 0.5f;
             Color4 = Color4Value.red;
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public BloomKey(float intensity, float scatter, IColor4 color4,
             bool active, int frame, EaseType ease = Keyframe.DefaultEase) : base(active, frame, ease)
         {

@@ -26,10 +26,12 @@ namespace BH.SDK.Models.Keyframes
         [JsonProperty(Names.ScreenLimit)]
         public IScreenLimit ScreenLimit { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public ScreenLimitKey()
         {
             ScreenLimit = new ScreenLimitNone();
         }
+        /// <summary> Built from its limit, frame and default ease. </summary>
         public ScreenLimitKey(IScreenLimit screenLimit, int frame, EaseType ease = DefaultEase) : base(frame, ease)
         {
             ScreenLimit = screenLimit;

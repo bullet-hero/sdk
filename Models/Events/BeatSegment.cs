@@ -78,6 +78,7 @@ namespace BH.SDK.Models.Events
         [JsonProperty(Names.Color)]
         public Color4Value Color4 { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public BeatSegment()
         {
             Span = new FrameSpan();
@@ -87,6 +88,7 @@ namespace BH.SDK.Models.Events
             Name = string.Empty;
             Color4 = new Color4Value();
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public BeatSegment(FrameSpan span, float bpm, float offset, int beatsPerBar,
             string name, Color4Value color4)
         {

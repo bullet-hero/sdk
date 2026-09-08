@@ -53,6 +53,7 @@ namespace BH.SDK.Generators.Spawn
             return obj;
         }
 
+        /// <summary> Adds a position keyframe, converting the ABSOLUTE frame the caller thinks in into the local one the format stores. </summary>
         protected static void AddPosition(ShapeObject obj, float x, float y, int frame,
             EaseType ease = FrameRules.DefaultEase)
         {
@@ -66,14 +67,17 @@ namespace BH.SDK.Generators.Spawn
             obj.Rotations.Add(new AngleKey(new FloatValue(ToRadians(degrees)), LocalFrame(obj, frame), ease));
         }
 
+        /// <summary> Degrees as radians. Placement maths reads better in degrees; the format stores radians, and this is where that crossing happens. </summary>
         protected static float ToRadians(float degrees) => (float)(degrees * (Math.PI / 180.0));
 
+        /// <summary> Adds a size keyframe, on the same frame terms. </summary>
         protected static void AddSize(ShapeObject obj, IVector2 size, int frame,
             EaseType ease = FrameRules.DefaultEase)
         {
             obj.Sizes.Add(new ScaKey(size?.Copy() ?? new Vector2Value(1f, 1f), LocalFrame(obj, frame), ease));
         }
 
+        /// <summary> The same from two plain numbers. </summary>
         protected static void AddSize(ShapeObject obj, float width, float height, int frame,
             EaseType ease = FrameRules.DefaultEase)
         {
@@ -90,6 +94,7 @@ namespace BH.SDK.Generators.Spawn
             AddSize(obj, width, height, obj.Span.StartFrame);
         }
 
+        /// <summary> Adds a colour keyframe, on the same frame terms. </summary>
         protected static void AddColor(ShapeObject obj, IColor4 color, int frame,
             EaseType ease = FrameRules.DefaultEase)
         {
@@ -97,6 +102,7 @@ namespace BH.SDK.Generators.Spawn
                 LocalFrame(obj, frame), ease));
         }
 
+        /// <summary> The same with the opacity given separately. </summary>
         protected static void AddColor(ShapeObject obj, IColor4 color, float alpha, int frame,
             EaseType ease = FrameRules.DefaultEase)
         {
@@ -119,6 +125,8 @@ namespace BH.SDK.Generators.Spawn
 
         // Degrees in, unit vector out. System.Math is the only trigonometry available here - the
         // core SDK asmdef has noEngineReferences, so there is no Mathf.
+
+        /// <summary> A heading in degrees as a unit vector. </summary>
         protected static void Direction(float degrees, out float x, out float y)
         {
             var radians = degrees * (Math.PI / 180.0);
@@ -126,6 +134,7 @@ namespace BH.SDK.Generators.Spawn
             y = (float)Math.Sin(radians);
         }
 
+        /// <summary> Straight interpolation, so placement maths needs no engine. </summary>
         protected static float Lerp(float from, float to, float t) => from + (to - from) * t;
 
         /// <summary> Even split of [0,1] across count steps: 0 for a single item (which then sits at
@@ -146,6 +155,8 @@ namespace BH.SDK.Generators.Spawn
         // a bullet whose lifetime got truncated to a single frame carries one position key instead
         // of two, and an estimate that ignored that would drift from reality by exactly the amount
         // the clamp removed.
+
+        /// <summary> A frame held inside the run's own window. </summary>
         protected static int ClampFrame(GeneratorContext context, int frame)
             => frame < context.Span.StartFrame ? context.Span.StartFrame
                 : frame > context.Span.LastFrame ? context.Span.LastFrame : frame;

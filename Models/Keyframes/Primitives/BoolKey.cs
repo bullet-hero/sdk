@@ -24,11 +24,13 @@ namespace BH.SDK.Models.Keyframes
         [JsonProperty(Names.Bool)]
         public bool Value { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public BoolKey()
         {
             Frame = FrameRules.MinFrame;
             Value = false;
         }
+        /// <summary> Built from its value and frame. </summary>
         public BoolKey(bool value, int frame)
         {
             Frame = frame;

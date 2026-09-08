@@ -7,6 +7,10 @@ namespace BH.SDK.Versions
     // Scans this assembly once for every [DataVersion]-tagged type  and every IMigration implementer,
     // then answers the two questions the old service never solved together: version -> concrete Type,
     // and old instance -> latest instance (by walking registered migration steps)
+
+    /// <summary> Answers the two questions a versioned format asks: which type a version names, and how an old
+    /// instance walks up to today's. Built once, by scanning this assembly for <c>[DataVersion]</c> and every
+    /// <see cref="IMigration"/>, so registering either is declaring it and nothing more. </summary>
     public static class VersionedTypeRegistry
     {
         private static readonly Dictionary<string, Dictionary<(int major, int minor), Type>> Types = new();
@@ -49,8 +53,10 @@ namespace BH.SDK.Versions
         private static bool IsNewer(DataVersionAttribute candidate, DataVersionAttribute current) =>
             candidate.Major != current.Major ? candidate.Major > current.Major : candidate.Minor > current.Minor;
 
+        /// <summary> True when a type is a versioning boundary and therefore gets its own envelope. </summary>
         public static bool CanConvert(Type type) => type.GetCustomAttribute<DataVersionAttribute>() != null;
 
+        /// <summary> Which domain a type belongs to; throws when it is not a boundary at all. </summary>
         public static string GetDomain(Type type)
         {
             var attribute = type.GetCustomAttribute<DataVersionAttribute>();
@@ -58,6 +64,8 @@ namespace BH.SDK.Versions
                 throw new ArgumentException($"Type '{type}' has no [DataVersion] attribute", nameof(type));
             return attribute.Domain;
         }
+
+        /// <summary> Refuses a type that carries no <c>[DataVersion]</c>, before anything is read on its behalf. </summary>
         public static void ThrowIfNoDomain(Type type)
         {
             var attribute = type.GetCustomAttribute<DataVersionAttribute>();
@@ -65,12 +73,14 @@ namespace BH.SDK.Versions
                 throw new ArgumentException($"Type '{type}' has no [DataVersion] attribute", nameof(type));
         }
 
+        /// <summary> The newest generation this build knows for a domain - what everything is migrated towards. </summary>
         public static DataVersionAttribute GetLatestAttribute(string domain)
         {
             if (LatestAttributes.TryGetValue(domain, out var attribute)) return attribute;
             throw new NotSupportedException($"Unknown data domain: '{domain}'");
         }
 
+        /// <summary> The snapshot class one version names, so a file can be read as the shape it was written in. </summary>
         public static Type Resolve(string domain, int major, int minor)
         {
             if (Types.TryGetValue(domain, out var versions) && versions.TryGetValue((major, minor), out var type))
@@ -78,6 +88,8 @@ namespace BH.SDK.Versions
             throw new NotSupportedException($"Unsupported version {major}.{minor} for domain '{domain}'");
         }
 
+        /// <summary> Walks the registered steps from the version a file claimed up to today's, one at a time.
+        /// A missing step throws rather than being skipped - a half-migrated document is worse than a refusal. </summary>
         public static object UpgradeToLatest(string domain, object instance, int fromMajor, int fromMinor)
         {
             if (instance == null) return null;

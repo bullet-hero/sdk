@@ -15,6 +15,8 @@ namespace BH.SDK.Tests.Rules
     {
         // nameof has to be qualified: a class-level attribute sits outside the class body, so its
         // own members are not in scope there. Same applies to every real model in Models/.
+
+        /// <summary> Two floats that must stay in order. </summary>
         [RuleContainer]
         [RulePropertyOrder(nameof(FloatPairModel.Min), nameof(FloatPairModel.Max))]
         private class FloatPairModel
@@ -23,6 +25,7 @@ namespace BH.SDK.Tests.Rules
             public float Max { get; set; } = 1f;
         }
 
+        /// <summary> Two frame numbers that must stay in order. </summary>
         [RuleContainer]
         [RulePropertyOrder(nameof(FramePairModel.StartFrame), nameof(FramePairModel.EndFrame))]
         private class FramePairModel
@@ -31,6 +34,7 @@ namespace BH.SDK.Tests.Rules
             public int EndFrame { get; set; } = 10;
         }
 
+        /// <summary> Two independent ordered pairs on one model. </summary>
         [RuleContainer]
         [RulePropertyOrder(nameof(TwoPairModel.MinR), nameof(TwoPairModel.MaxR))]
         [RulePropertyOrder(nameof(TwoPairModel.MinG), nameof(TwoPairModel.MaxG))]
@@ -42,6 +46,7 @@ namespace BH.SDK.Tests.Rules
             public float MaxG { get; set; } = 1f;
         }
 
+        /// <summary> Names a partner property that does not exist, so the DECLARATION is what must be refused. </summary>
         [RuleContainer]
         [RulePropertyOrder(nameof(MissingPropertyModel.Min), "NoSuchProperty")]
         private class MissingPropertyModel
@@ -49,6 +54,7 @@ namespace BH.SDK.Tests.Rules
             public float Min { get; set; }
         }
 
+        /// <summary> Names a partner of another type, which cannot be compared. </summary>
         [RuleContainer]
         [RulePropertyOrder(nameof(MismatchedTypesModel.Low), nameof(MismatchedTypesModel.High))]
         private class MismatchedTypesModel

@@ -23,10 +23,12 @@ namespace BH.SDK.Models.PostProcessing
         [JsonProperty(Names.Intensity)]
         public float Intensity { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public DigitalGlitchKey()
         {
             Intensity = 0.1f;
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public DigitalGlitchKey(float intensity,
             bool active, int frame, EaseType ease = Keyframe.DefaultEase) : base(active, frame, ease)
         {

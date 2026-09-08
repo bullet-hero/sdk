@@ -9,6 +9,9 @@ namespace BH.SDK.Tests.Generators
     // generator whose whole estimate is zero, so a generator writing something GeneratorCost cannot
     // measure is not "estimated wrong", it is unusable. That makes it worth pinning here rather than
     // leaving it to whoever next opens the generators panel.
+
+    /// <summary> That a generator whose whole estimate is legitimately zero still declares itself runnable - a
+    /// host greys out the ones that do not, so this failure looks like the generator being permanently off. </summary>
     public class AllowsEmptyRunTests
     {
         [Test]

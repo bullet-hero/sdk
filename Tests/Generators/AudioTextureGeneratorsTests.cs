@@ -19,6 +19,9 @@ namespace BH.SDK.Tests.Generators
     // tests double as the contract test for ExternalAnalysis: given the inputs a host would supply,
     // each generator has to produce exactly the content it promised - and given none, it has to
     // produce nothing rather than inventing some.
+
+    /// <summary> The generators that need data the SDK cannot produce itself: given a host's inputs they must
+    /// produce exactly what they promised, and given none they must produce nothing rather than inventing some. </summary>
     public class AudioTextureGeneratorsTests
     {
         private const int Start = 0;

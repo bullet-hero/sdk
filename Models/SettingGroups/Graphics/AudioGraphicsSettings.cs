@@ -55,6 +55,7 @@ namespace BH.SDK.Models.SettingGroups.Graphics
         [JsonProperty(Names.ScrubTime)]
         public float ScrubTime { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public AudioGraphicsSettings()
         {
             Render = true;
@@ -65,6 +66,7 @@ namespace BH.SDK.Models.SettingGroups.Graphics
             UseScrub = true;
             ScrubTime = 0.1f;
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public AudioGraphicsSettings(bool render, bool renderEffects, float resyncJumpTime,
             float syncDeadZone, float pitchCorrection, bool useScrub, float scrubTime) : base(render)
         {

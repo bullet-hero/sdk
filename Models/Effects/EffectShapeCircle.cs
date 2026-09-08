@@ -52,8 +52,10 @@ namespace BH.SDK.Models.Effects
         [JsonProperty(Names.Spread)]
         public IEffectShapeSpread Spread { get; set; }
         
+        /// <summary> Which concrete form this is - the discriminator a converter writes and reads back. </summary>
         public EffectShapeType GetModelType() => EffectShapeType.Circle;
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public EffectShapeCircle()
         {
             Radius = new FloatValue(EffectRules.Shape.CircleRadius_Default);
@@ -62,6 +64,7 @@ namespace BH.SDK.Models.Effects
             Arc = new FloatValue(EffectRules.Shape.Arc_Default);
             Spread = new EffectShapeSpreadRandom();
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public EffectShapeCircle(IFloat radius, IFloat aspect, IFloat thickness, IFloat arc, IEffectShapeSpread spread)
         {
             Radius = radius;

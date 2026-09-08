@@ -26,6 +26,7 @@ namespace BH.SDK.Models.SettingGroups.Controls
     public sealed partial class TouchscreenControlsSettings : BaseDeviceControlsSettings,
         IModel<TouchscreenControlsSettings>, IMoveable<TouchscreenControlsSettings>
     {
+        /// <summary> Which of the three steering modes the screen drives. </summary>
         [RuleEnumValid(TouchscreenControlMode.Relative)]
         [JsonProperty(Names.Mode)]
         public TouchscreenControlMode Mode { get; set; }
@@ -36,6 +37,7 @@ namespace BH.SDK.Models.SettingGroups.Controls
         [JsonProperty(Names.FingerOffsetX)]
         public float FingerOffsetX { get; set; }
 
+        /// <summary> How far above the finger the avatar is held, so a hand does not cover what it is dodging. </summary>
         [RuleInRange(ControlsRules.MinFingerOffset, ControlsRules.MaxFingerOffset)]
         [JsonProperty(Names.FingerOffsetY)]
         public float FingerOffsetY { get; set; }
@@ -45,9 +47,11 @@ namespace BH.SDK.Models.SettingGroups.Controls
         [JsonProperty(Names.DashOnSecondFinger)]
         public bool DashOnSecondFinger { get; set; }
 
+        /// <summary> Trigger a dash by tapping twice, rather than only with the on-screen button. </summary>
         [JsonProperty(Names.DashOnDoubleTap)]
         public bool DashOnDoubleTap { get; set; }
 
+        /// <summary> How close together those two taps have to be. </summary>
         [RuleInRange(ControlsRules.MinDoubleTapTime, ControlsRules.MaxDoubleTapTime)]
         [JsonProperty(Names.DoubleTapTime)]
         public float DoubleTapTime { get; set; }
@@ -63,10 +67,13 @@ namespace BH.SDK.Models.SettingGroups.Controls
         [JsonProperty(Names.Handedness)]
         public Handedness Handedness { get; set; }
 
+        /// <summary> Where the on-screen stick sits. </summary>
         [RuleEnumValid(ScreenAnchor.BottomLeft)]
         [JsonProperty(Names.JoystickAnchor)]
         public ScreenAnchor JoystickAnchor { get; set; }
 
+        /// <summary> How large it is drawn - measured against the SHORT screen axis, so turning the phone does
+        /// not balloon it. </summary>
         [RuleInRange(ControlsRules.MinControlSize, ControlsRules.MaxControlSize)]
         [JsonProperty(Names.JoystickSize)]
         public float JoystickSize { get; set; }
@@ -81,10 +88,12 @@ namespace BH.SDK.Models.SettingGroups.Controls
         [JsonProperty(Names.JoystickDynamicOrigin)]
         public bool JoystickDynamicOrigin { get; set; }
 
+        /// <summary> Where the on-screen dash button sits. </summary>
         [RuleEnumValid(ScreenAnchor.BottomRight)]
         [JsonProperty(Names.DashButtonAnchor)]
         public ScreenAnchor DashButtonAnchor { get; set; }
 
+        /// <summary> How large that button is drawn. </summary>
         [RuleInRange(ControlsRules.MinControlSize, ControlsRules.MaxControlSize)]
         [JsonProperty(Names.DashButtonSize)]
         public float DashButtonSize { get; set; }
@@ -94,14 +103,18 @@ namespace BH.SDK.Models.SettingGroups.Controls
         [JsonProperty(Names.DashButtonIcon)]
         public int DashButtonIcon { get; set; }
 
+        /// <summary> This device's own mode as the device-independent one; the two enums line up by convention. </summary>
         public override ControlMode GeneralMode => (ControlMode)Mode;
+        /// <summary> Which device these settings are for. </summary>
         public override ControlDevice Device => ControlDevice.Touchscreen;
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public TouchscreenControlsSettings()
         {
             ResetOwn();
             DeadZone = ControlsRules.DefaultTouchDeadZone;
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public TouchscreenControlsSettings(bool active, float sensitivity,
             float deadZone, float smoothing, bool invertX, bool invertY, TouchscreenControlMode mode,
             float fingerOffsetX, float fingerOffsetY, bool dashOnSecondFinger, bool dashOnDoubleTap,

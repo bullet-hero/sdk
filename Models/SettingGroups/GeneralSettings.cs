@@ -58,6 +58,7 @@ namespace BH.SDK.Models.SettingGroups
         [JsonProperty(Names.Language)]
         public string Language { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public GeneralSettings()
         {
             ShowAllFoundContent = false;
@@ -66,6 +67,7 @@ namespace BH.SDK.Models.SettingGroups
             Language = string.Empty;
         }
 
+        /// <summary> Every member at once, in declaration order. </summary>
         public GeneralSettings(bool showAllFoundContent, int resourceParallelLoadCount,
             float resourceWebTimeout, string language)
         {

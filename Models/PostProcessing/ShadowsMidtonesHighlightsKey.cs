@@ -84,12 +84,15 @@ namespace BH.SDK.Models.PostProcessing
         // The three colours and the two limit pairs are born null - 180 of this key's 238 default
         // bytes - and read back as the neutrals PostProcessingRules.ShadowsMidtonesHighlights names.
         // See docs/NAMING.md; compression rather than a third state.
+
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public ShadowsMidtonesHighlightsKey()
         {
             Shadows = false;
             Midtones = false;
             Highlights = false;
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public ShadowsMidtonesHighlightsKey(
             bool shadows, IColor3 shadowsColor3,
             bool midtones, IColor3 midtonesColor3, 

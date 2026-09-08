@@ -26,6 +26,7 @@ namespace BH.SDK.Services.Package
         /// <summary> True when SourcePath is an absolute path rather than a store path. </summary>
         public readonly bool IsExternal;
 
+        /// <summary> Built from its path, path and external. </summary>
         public PackageFile(string packagePath, string sourcePath, bool isExternal)
         {
             PackagePath = packagePath;
@@ -33,6 +34,7 @@ namespace BH.SDK.Services.Package
             IsExternal = isExternal;
         }
 
+        /// <summary> One line, for a log. </summary>
         public override string ToString() => IsExternal
             ? $"{PackagePath} <- {SourcePath} (collected)"
             : PackagePath;
@@ -41,6 +43,7 @@ namespace BH.SDK.Services.Package
     /// <summary> Everything an export decided, before it writes anything. </summary>
     public sealed class LevelPackagePlan
     {
+        /// <summary> Every member at once, in declaration order. </summary>
         public LevelPackagePlan(Level level, LevelMeta meta, IReadOnlyList<PackageFile> files,
             InteropReport report, int droppedFileCount)
         {

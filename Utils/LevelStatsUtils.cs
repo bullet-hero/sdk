@@ -16,8 +16,11 @@ namespace BH.SDK.Utils
 
         /// <summary> Objects carrying no payload of their own - parents, anchors, pivots. </summary>
         public readonly int Transforms;
+        /// <summary> How many shape objects the level holds. </summary>
         public readonly int Shapes;
+        /// <summary> How many text objects. </summary>
         public readonly int Texts;
+        /// <summary> How many effect objects the level holds. </summary>
         public readonly int Effects;
 
         /// <summary> Prefab PLACEMENTS. Their materialized contents are counted as the ordinary
@@ -27,6 +30,7 @@ namespace BH.SDK.Utils
         /// <summary> Keyframes across every track of every object in the scope. </summary>
         public readonly int Keyframes;
 
+        /// <summary> Every member at once, in declaration order. </summary>
         public LevelObjectStats(int total, int transforms, int shapes, int texts, int effects,
             int prefabs, int keyframes)
         {
@@ -43,17 +47,25 @@ namespace BH.SDK.Utils
     /// <summary> How many user-defined resources a level carries, per collection. </summary>
     public readonly struct LevelResourceStats
     {
+        /// <summary> How many images. </summary>
         public readonly int Textures;
+        /// <summary> How many fonts. </summary>
         public readonly int Fonts;
+        /// <summary> How many audio files. </summary>
         public readonly int Audios;
+        /// <summary> How many shapes the level authored itself. </summary>
         public readonly int CompositeShapes;
+        /// <summary> How many themes. </summary>
         public readonly int Themes;
+        /// <summary> How many effect resources it carries. </summary>
         public readonly int Effects;
+        /// <summary> How many prefab templates the level carries. </summary>
         public readonly int Prefabs;
 
         /// <summary> Every collection summed - what "this level carries N resources" means. </summary>
         public int Total => Textures + Fonts + Audios + CompositeShapes + Themes + Effects + Prefabs;
 
+        /// <summary> Every member at once, in declaration order. </summary>
         public LevelResourceStats(int textures, int fonts, int audios, int compositeShapes,
             int themes, int effects, int prefabs)
         {
@@ -70,12 +82,15 @@ namespace BH.SDK.Utils
     /// <summary> A whole level's authored size: its objects, its scheduled audio, its resources. </summary>
     public readonly struct LevelStats
     {
+        /// <summary> What the level's objects add up to. </summary>
         public readonly LevelObjectStats Objects;
+        /// <summary> What its resources add up to. </summary>
         public readonly LevelResourceStats Resources;
 
         /// <summary> Scheduled audio tracks (Level.Audio), unrelated to how many play at once. </summary>
         public readonly int AudioTracks;
 
+        /// <summary> Built from its objects, resources and tracks. </summary>
         public LevelStats(LevelObjectStats objects, LevelResourceStats resources, int audioTracks)
         {
             Objects = objects;

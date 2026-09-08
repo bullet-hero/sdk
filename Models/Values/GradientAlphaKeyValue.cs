@@ -25,11 +25,13 @@ namespace BH.SDK.Models.Values
         [JsonProperty(Names.TimeShort)]
         public float Time { get; set; }
         
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public GradientAlphaKeyValue()
         {
             Alpha = ValueRules.FloatOne;
             Time = ValueRules.FloatZero;
         }
+        /// <summary> Built from its alpha and time. </summary>
         public GradientAlphaKeyValue(float alpha, float time)
         {
             Alpha = alpha;

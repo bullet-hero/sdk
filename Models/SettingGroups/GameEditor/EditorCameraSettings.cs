@@ -62,10 +62,12 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
         [JsonProperty(Names.ZoomToMouse)]
         public bool ZoomToMouse { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public EditorCameraSettings()
         {
             ResetOwn();
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public EditorCameraSettings(float minSize, float maxSize, bool invert, float moveSensitivityX,
             float moveSensitivityY, float wheelMultiplier, bool zoomToMouse)
         {

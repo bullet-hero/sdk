@@ -8,6 +8,9 @@ namespace BH.SDK.Tests.Generators
 {
     // The only shipped generator so far, and the reference implementation of the contract - if
     // something here needs a special case, the contract is wrong, not this class.
+
+    /// <summary> The reference implementation of the generator contract - if something here needs a special
+    /// case, the contract is wrong rather than this class. </summary>
     public class EmptyLevelGeneratorTests
     {
         [Test]

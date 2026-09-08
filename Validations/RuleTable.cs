@@ -38,6 +38,7 @@ namespace BH.SDK.Validations
         /// <summary> The rules on each property, by the same ordinal. </summary>
         public readonly BasePropertyRuleAttribute[][] Rules;
 
+        /// <summary> The whole-object rules written on this type. </summary>
         public readonly BaseObjectRuleAttribute[] ObjectRules;
 
         // WHETHER EVERY RULE ON A PROPERTY ANSWERED IsValidType ONCE, AT BUILD. That check is a
@@ -50,10 +51,14 @@ namespace BH.SDK.Validations
         // property down. Where one did fail, Check takes the original loop verbatim - the same
         // throw, at the same node, with the same path in the message, and with the same subtlety
         // that an earlier failing rule breaks the loop before a later misapplied one is reached.
+
+        /// <summary> Whether each property rule may sit where it does - asked once per type, not per value. </summary>
         public readonly bool[] RulesTypeChecked;
 
+        /// <summary> The same answer for the object rules. </summary>
         public readonly bool ObjectRulesTypeChecked;
 
+        /// <summary> The type this table describes. </summary>
         public readonly Type Type;
 
         private RuleTable(Type type, PropertyInfo[] properties, BasePropertyRuleAttribute[][] rules,

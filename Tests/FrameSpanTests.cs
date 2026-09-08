@@ -13,6 +13,9 @@ namespace BH.SDK.Tests
     // of the anchor flags into the sign bits and the bias-by-one duration are internal details, so
     // they are checked through the public surface only.
 
+
+    /// <summary> That no representable FrameSpan can violate its two invariants or the half-open convention.
+    /// The sign-bit anchors and the biased duration are internal, so they are only reached through the surface. </summary>
     public class FrameSpanTests
     {
         [Test]

@@ -32,10 +32,12 @@ namespace BH.SDK.Models.Keyframes
         [JsonProperty(Names.Force)]
         public IVector2 Force { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public Velocity()
         {
             Force = new Vector2Value();
         }
+        /// <summary> Built from its force, frame and default ease. </summary>
         public Velocity(IVector2 force, int frame, EaseType ease = DefaultEase) : base(frame, ease)
         {
             Force = force;

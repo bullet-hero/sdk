@@ -5,25 +5,32 @@ using System.Reflection;
 
 namespace BH.SDK.Rules.Attributes
 {
+    /// <summary> A collection whose items must not repeat - either whole, or by one named property of each. </summary>
     [AttributeUsage(PropertyTarget)]
     public class RuleCollectionUniqueAttribute : BasePropertyRuleAttribute
     {
+        /// <summary> <c>"rule_collection_unique"</c>, the key its message is looked up under. </summary>
         public override string RuleNameKey => "rule_collection_unique";
 
+        /// <summary> Which property of an item decides identity; empty means the item itself does. </summary>
         public string ItemPropertyName { get; set; }
 
+        /// <summary> Takes nothing; the defaults apply. </summary>
         public RuleCollectionUniqueAttribute()
         {
             ItemPropertyName = string.Empty;
         }
+        /// <summary> Takes which property of an item decides the answer. </summary>
         public RuleCollectionUniqueAttribute(string itemPropertyName)
         {
             ItemPropertyName = itemPropertyName;
         }
 
+        /// <summary> Applies to any collection. </summary>
         protected override bool IsValidTypeInternal(PropertyInfo property)
             => typeof(ICollection).IsAssignableFrom(property.PropertyType);
         
+        /// <summary> Passes when no two items share the value uniqueness is judged by. </summary>
         protected override bool IsValidInternal(object value, RuleContext context)
         {
             if (value is not ICollection collection) return false;
@@ -57,6 +64,7 @@ namespace BH.SDK.Rules.Attributes
             return true;
         }
 
+        /// <summary> Drops the later duplicates, back to front so the indices stay valid. </summary>
         protected override void FixInternal(object target, PropertyInfo property, RuleContext context)
         {
             var value = property.GetValue(target);

@@ -17,6 +17,7 @@ namespace BH.SDK.Models.Effects
     {
         // None, inherit TRS from RectObject
         
+        /// <summary> Which concrete form this is - the discriminator a converter writes and reads back. </summary>
         public EffectShapeType GetModelType() => EffectShapeType.Point;
         
         // ReSharper disable once BaseObjectGetHashCodeCallInGetHashCode

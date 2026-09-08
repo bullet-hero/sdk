@@ -1,5 +1,7 @@
 ﻿namespace BH.SDK.Models.Enums
 {
+    /// <summary> The curve a keyframe is blended into from the one before it. Grouped by family below, and
+    /// <c>Constant</c> is the one that blends nothing at all - the value snaps on arrival. </summary>
     public enum EaseType : byte
     {
         Linear = 0, Constant = 1, // core

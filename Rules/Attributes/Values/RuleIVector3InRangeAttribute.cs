@@ -7,26 +7,47 @@ using BH.SDK.Utils;
 
 namespace BH.SDK.Rules.Attributes
 {
+    /// <summary> An authored 3D vector bounded on every axis, in every form of it. </summary>
     [AttributeUsage(PropertyTarget)]
     public class RuleIVector3InRangeAttribute : BasePropertyRuleAttribute
     {
+        /// <summary> <c>"rule_ivector3_in_range"</c>, the key its message is looked up under. </summary>
         public override string RuleNameKey => "rule_ivector3_in_range";
 
         // always include
+
+        /// <summary> Lower bound on the X axis. </summary>
         public float MinX { get; set; }
+
+        /// <summary> Upper bound on the X axis. </summary>
         public float MaxX { get; set; }
+
+        /// <summary> Lower bound on the Y axis. </summary>
         public float MinY { get; set; }
+
+        /// <summary> Upper bound on the Y axis. </summary>
         public float MaxY { get; set; }
+
+        /// <summary> Lower bound on the Z axis. </summary>
         public float MinZ { get; set; }
+
+        /// <summary> Upper bound on the Z axis. </summary>
         public float MaxZ { get; set; }
         
+        /// <summary> Width of the range on the X axis. </summary>
         public float DiffX => MaxX - MinX;
+        /// <summary> Width of the range on the Y axis. </summary>
         public float DiffY => MaxY - MinY;
+        /// <summary> Width of the range on the Z axis. </summary>
         public float DiffZ => MaxZ - MinZ;
+        /// <summary> Half the width of the range on the X axis - the offset from its midpoint to either end. </summary>
         public float HalfDiffX => (MaxX - MinX) / 2f;
+        /// <summary> Half the width of the range on the Y axis - the offset from its midpoint to either end. </summary>
         public float HalfDiffY => (MaxY - MinY) / 2f;
+        /// <summary> Half the width of the range on the Z axis - the offset from its midpoint to either end. </summary>
         public float HalfDiffZ => (MaxZ - MinZ) / 2f;
 
+        /// <summary> Both bounds, as <c>float</c>. </summary>
         public RuleIVector3InRangeAttribute(float min, float max)
         {
             MinX = min;
@@ -36,6 +57,7 @@ namespace BH.SDK.Rules.Attributes
             MinZ = min;
             MaxZ = max;
         }
+        /// <summary> Takes the lower bound on X, the upper bound on X, the lower bound on Y, the upper bound on Y, the lower bound on Z and the upper bound on Z. </summary>
         public RuleIVector3InRangeAttribute(float minX, float maxX, float minY, float maxY, float minZ, float maxZ)
         {
             MinX = minX;
@@ -46,9 +68,11 @@ namespace BH.SDK.Rules.Attributes
             MaxZ = maxZ;
         }
 
+        /// <summary> Applies to authored 3D vector properties. </summary>
         protected override bool IsValidTypeInternal(PropertyInfo property)
             => typeof(IVector3).IsAssignableFrom(property.PropertyType);
 
+        /// <summary> Passes when every point the value can produce lies inside the bounds on every axis. </summary>
         protected override bool IsValidInternal(object value, RuleContext context)
         {
             if (value is not IVector3 vec) return false;
@@ -97,6 +121,7 @@ namespace BH.SDK.Rules.Attributes
             }
         }
 
+        /// <summary> Clamps each form of it into the box. </summary>
         protected override void FixInternal(object target, PropertyInfo property, RuleContext context)
         {
             var value = property.GetValue(target);

@@ -48,6 +48,7 @@ namespace BH.SDK.Models.Statistics
         [JsonProperty(Names.LastPlayedLevelId)]
         public LevelId LastPlayedLevelId { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public StreakStatistics()
         {
             CurrentClearStreak = 0;

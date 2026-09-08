@@ -37,9 +37,12 @@ namespace BH.SDK.Models.Values
         [JsonProperty(Names.CoordW)]
         public float W { get; set; }
 
+        /// <summary> All components zero. </summary>
         public static Vector4Value Zero => new(0.0f, 0.0f, 0.0f, 0.0f);
+        /// <summary> All components one. </summary>
         public static Vector4Value One => new(1.0f, 1.0f, 1.0f, 1.0f);
         
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public Vector4Value()
         {
             X = ValueRules.FloatZero;
@@ -47,6 +50,7 @@ namespace BH.SDK.Models.Values
             Z = ValueRules.FloatZero;
             W = ValueRules.FloatZero;
         }
+        /// <summary> Built from its x, y, z and w. </summary>
         public Vector4Value(float x, float y, float z, float w)
         {
             X = x;
@@ -55,6 +59,7 @@ namespace BH.SDK.Models.Values
             W = w;
         }
 
+        /// <summary> Which concrete form this is - the discriminator a converter writes and reads back. </summary>
         public VectorType GetModelType() => VectorType.Value;
     }
 }

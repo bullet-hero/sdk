@@ -28,6 +28,7 @@ namespace BH.SDK.Roslyn.Validation
         private const string Validatable = "global::BH.SDK.Validations.IValidatable";
         private const string Table = "global::BH.SDK.Validations.RuleTable";
 
+        /// <summary> The whole generated walk for one container, in GetProperties' order - which the report's own order depends on. </summary>
         public static string Emit(ValidationSpec spec)
         {
             var builder = new StringBuilder();

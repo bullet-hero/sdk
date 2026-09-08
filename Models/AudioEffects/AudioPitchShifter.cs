@@ -35,6 +35,7 @@ namespace BH.SDK.Models.AudioEffects
         [JsonProperty(Names.MaxChannels)]
         public float MaxChannels { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public AudioPitchShifter()
         {
             Pitch = AudioRules.PitchShifter.Pitch_Default;
@@ -42,6 +43,7 @@ namespace BH.SDK.Models.AudioEffects
             Overlap = AudioRules.PitchShifter.Overlap_Default;
             MaxChannels = AudioRules.PitchShifter.MaxChannels_Default;
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public AudioPitchShifter(float mixLevel, float pitch, float fftSize,
             float overlap, float maxChannels) : base(mixLevel)
         {

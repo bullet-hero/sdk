@@ -52,12 +52,15 @@ namespace BH.SDK.Services.Crypto
         /// <summary> Whether the message opened and verified. </summary>
         public bool IsOk => Result == PgpOpenResult.Ok;
 
+        /// <summary> The file opened, and this is what it was called inside. </summary>
         public static PgpOpenOutcome Opened(string innerFileName) =>
             new PgpOpenOutcome(PgpOpenResult.Ok, innerFileName);
 
+        /// <summary> It did not open, and this is why - a wrong passphrase and a damaged file are two answers. </summary>
         public static PgpOpenOutcome Failed(PgpOpenResult result) =>
             new PgpOpenOutcome(result, string.Empty);
 
+        /// <summary> One line, for a log. </summary>
         public override string ToString() => IsOk
             ? $"{Result} ('{InnerFileName}')"
             : Result.ToString();

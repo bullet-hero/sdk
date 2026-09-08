@@ -12,6 +12,7 @@ namespace BH.SDK.Tests.Rules
     {
         private const int MaxPath = 16;
 
+        /// <summary> A prefab-override key, whose object id and field path are both checked. </summary>
         [RuleContainer]
         private class Model
         {
@@ -19,6 +20,7 @@ namespace BH.SDK.Tests.Rules
             public ModificationKey Key { get; set; } = new(new ObjectId(1), "pos[0].v");
         }
 
+        /// <summary> A property of a type the rule does not apply to, so it must decline rather than refuse. </summary>
         [RuleContainer]
         private class WrongTypeModel
         {

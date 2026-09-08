@@ -3,6 +3,7 @@ using BH.SDK.Rules;
 
 namespace BH.SDK.Validations
 {
+    /// <summary> How thorough one analysis is, and how weak a finding may be before it stops being reported. </summary>
     [Serializable]
     public class RuleAnalyzerSettings
     {
@@ -33,14 +34,17 @@ namespace BH.SDK.Validations
         /// everything, which must produce an identical report. </summary>
         public bool useGeneratedWalk = true;
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public RuleAnalyzerSettings() { }
 
+        /// <summary> Built from its all property rules and all recursive rules. </summary>
         public RuleAnalyzerSettings(bool analyzeAllPropertyRules, bool analyzeAllRecursiveRules)
         {
             this.analyzeAllPropertyRules = analyzeAllPropertyRules;
             this.analyzeAllRecursiveRules = analyzeAllRecursiveRules;
         }
 
+        /// <summary> Every member at once, in declaration order. </summary>
         public RuleAnalyzerSettings(bool analyzeAllPropertyRules, bool analyzeAllRecursiveRules,
             RuleGroup weakestGroup)
         {

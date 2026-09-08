@@ -6,9 +6,12 @@ using BH.SDK.Serialization.Converters.Base;
 
 namespace BH.SDK.Serialization.Converters.CustomTypes
 {
+    /// <summary> Tags an effect's shape with which of its forms it is. </summary>
     public class EffectShapeConverter : JsonConverterCustomType<IEffectShape, EffectShapeType>
     {
+        /// <summary> Which form the value is, read off the value itself. </summary>
         public override EffectShapeType GetCustomType(IEffectShape value) => value.GetModelType();
+        /// <summary> The class each effect shape form is. </summary>
         public override Type GetType(EffectShapeType customType)
         {
             return customType switch

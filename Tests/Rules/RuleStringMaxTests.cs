@@ -9,6 +9,7 @@ namespace BH.SDK.Tests.Rules
     /// </summary>
     public class RuleStringMaxTests : BaseRuleTests
     {
+        /// <summary> A string with a length ceiling. </summary>
         [RuleContainer]
         private class Model
         {
@@ -16,6 +17,7 @@ namespace BH.SDK.Tests.Rules
             public string Value { get; set; } = string.Empty;
         }
 
+        /// <summary> A ceiling of zero, where only the empty string passes. </summary>
         [RuleContainer]
         private class ZeroModel
         {
@@ -23,6 +25,7 @@ namespace BH.SDK.Tests.Rules
             public string Value { get; set; } = string.Empty;
         }
 
+        /// <summary> A property of a type the rule does not apply to, so it must decline rather than refuse. </summary>
         [RuleContainer]
         private class WrongTypeModel
         {

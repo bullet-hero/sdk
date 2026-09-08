@@ -33,12 +33,14 @@ namespace BH.SDK.Models.Values
         [JsonProperty(Names.Step)]
         public float Step { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public FloatMinMaxStep()
         {
             Min = ValueRules.FloatZero;
             Max = ValueRules.FloatOne;
             Step = ValueRules.FloatOne;
         }
+        /// <summary> Built from its min, max and step. </summary>
         public FloatMinMaxStep(float min, float max, float step)
         {
             Min = min;
@@ -46,6 +48,7 @@ namespace BH.SDK.Models.Values
             Step = step;
         }
 
+        /// <summary> Which concrete form this is - the discriminator a converter writes and reads back. </summary>
         public FloatType GetModelType() => FloatType.RandomMinMaxStep;
     }
 }

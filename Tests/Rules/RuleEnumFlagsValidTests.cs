@@ -11,6 +11,7 @@ namespace BH.SDK.Tests.Rules
     /// </summary>
     public class RuleEnumFlagsValidTests : BaseRuleTests
     {
+        /// <summary> A flags enum with gaps between its bits. </summary>
         [Flags]
         private enum Sparse : ushort
         {
@@ -21,6 +22,8 @@ namespace BH.SDK.Tests.Rules
 
         // A signed underlying type with the sign bit declared: the case where reading the value as an
         // unsigned number without reinterpreting the bit pattern would overflow instead of comparing.
+
+        /// <summary> A flags enum on a signed backing type, where the top bit is the sign. </summary>
         [Flags]
         private enum Signed : int
         {
@@ -29,6 +32,7 @@ namespace BH.SDK.Tests.Rules
             Sign = 1 << 31,
         }
 
+        /// <summary> A flags property whose whole declared mask is legal. </summary>
         [RuleContainer]
         private class DescriptorModel
         {
@@ -36,6 +40,7 @@ namespace BH.SDK.Tests.Rules
             public ContentDescriptor Value { get; set; } = ContentDescriptor.None;
         }
 
+        /// <summary> A flags property over the sparse enum, where an unlisted bit must be refused. </summary>
         [RuleContainer]
         private class SparseModel
         {
@@ -43,6 +48,7 @@ namespace BH.SDK.Tests.Rules
             public Sparse Value { get; set; } = Sparse.None;
         }
 
+        /// <summary> A flags property over the signed enum. </summary>
         [RuleContainer]
         private class SignedModel
         {
@@ -50,6 +56,7 @@ namespace BH.SDK.Tests.Rules
             public Signed Value { get; set; } = Signed.None;
         }
 
+        /// <summary> An enum without the attribute, so the rule must refuse the declaration. </summary>
         [RuleContainer]
         private class NotFlagsModel
         {
@@ -57,6 +64,7 @@ namespace BH.SDK.Tests.Rules
             public AgeRating Value { get; set; } = AgeRating.Unrated;
         }
 
+        /// <summary> A property of a type the rule does not apply to, so it must decline rather than refuse. </summary>
         [RuleContainer]
         private class WrongTypeModel
         {

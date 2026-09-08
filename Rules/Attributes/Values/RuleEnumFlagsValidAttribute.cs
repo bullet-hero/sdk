@@ -19,12 +19,15 @@ namespace BH.SDK.Rules.Attributes
     [AttributeUsage(PropertyTarget)]
     public class RuleEnumFlagsValidAttribute : BasePropertyRuleAttribute
     {
+        /// <summary> <c>"rule_enum_flags_valid"</c>, the key its message is looked up under. </summary>
         public override string RuleNameKey => "rule_enum_flags_valid";
 
+        /// <summary> Applies to enum properties carrying the flags attribute. </summary>
         protected override bool IsValidTypeInternal(PropertyInfo property)
             => property.PropertyType.IsEnum
                && property.PropertyType.IsDefined(typeof(FlagsAttribute), false);
 
+        /// <summary> Passes when every set bit is one the enum declares. </summary>
         protected override bool IsValidInternal(object value, RuleContext context)
         {
             var type = value.GetType();
@@ -32,6 +35,7 @@ namespace BH.SDK.Rules.Attributes
             return (ToBits(value) & ~DeclaredBits(type)) == 0;
         }
 
+        /// <summary> Masks the undeclared bits off, keeping what the file did mean. </summary>
         protected override void FixInternal(object target, PropertyInfo property, RuleContext context)
         {
             var type = property.PropertyType;

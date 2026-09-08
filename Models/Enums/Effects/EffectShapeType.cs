@@ -1,5 +1,6 @@
 ﻿namespace BH.SDK.Models.Enums.Effects
 {
+    /// <summary> The volume an effect spawns its particles inside. </summary>
     public enum EffectShapeType : byte
     {
         Point = 0,

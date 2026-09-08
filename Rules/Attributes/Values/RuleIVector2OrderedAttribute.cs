@@ -24,11 +24,14 @@ namespace BH.SDK.Rules.Attributes
     [AttributeUsage(PropertyTarget)]
     public class RuleIVector2OrderedAttribute : BasePropertyRuleAttribute
     {
+        /// <summary> <c>"rule_ivector2_ordered"</c>, the key its message is looked up under. </summary>
         public override string RuleNameKey => "rule_ivector2_ordered";
 
+        /// <summary> Applies to authored 2D vector properties used as a low/high pair. </summary>
         protected override bool IsValidTypeInternal(PropertyInfo property)
             => typeof(IVector2).IsAssignableFrom(property.PropertyType);
 
+        /// <summary> Passes while X is at or below Y. </summary>
         protected override bool IsValidInternal(object value, RuleContext context)
         {
             if (value is not IVector2 vec) return false;
@@ -63,6 +66,8 @@ namespace BH.SDK.Rules.Attributes
 
         // Swap rather than clamp: an inverted pair is almost always the same two numbers in the
         // wrong order, and swapping keeps both authored values instead of collapsing the range.
+
+        /// <summary> Swaps the two, which keeps both numbers the author wrote. </summary>
         protected override void FixInternal(object target, PropertyInfo property, RuleContext context)
         {
             var value = property.GetValue(target);

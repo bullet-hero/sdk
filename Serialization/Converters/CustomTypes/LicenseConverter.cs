@@ -6,9 +6,12 @@ using BH.SDK.Serialization.Converters.Base;
 
 namespace BH.SDK.Serialization.Converters.CustomTypes
 {
+    /// <summary> Tags a licence with whether it is a named one or spelled out by hand. </summary>
     public class LicenseConverter : JsonConverterCustomType<ILicense, LicenseType>
     {
+        /// <summary> Which form the value is, read off the value itself. </summary>
         public override LicenseType GetCustomType(ILicense value) => value.GetModelType();
+        /// <summary> The class each licence form is. </summary>
         public override Type GetType(LicenseType customType)
         {
             return customType switch

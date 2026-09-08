@@ -21,6 +21,7 @@ namespace BH.SDK.Models.Objects
     [GenerateModel]
     public sealed partial class PrefabObject : RectObject, IModel<PrefabObject>, IUpdatable<PrefabObject>
     {
+        /// <summary> Which concrete form this is - the discriminator a converter writes and reads back. </summary>
         public override ObjectType GetModelType() => ObjectType.PrefabObject;
 
         // Deliberately NOT [RuleIPrimitiveGuidNotNull], unlike most IPrimitiveGuid properties here:
@@ -57,12 +58,14 @@ namespace BH.SDK.Models.Objects
         [JsonProperty(Names.Mod)]
         public Dictionary<ModificationKey, Modification> Modifications { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public PrefabObject()
         {
             PrefabId = PrefabId.Null;
             ObjectIds = new Dictionary<ObjectId, ObjectId>();
             Modifications = new Dictionary<ModificationKey, Modification>();
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public PrefabObject(ObjectId objectId, ObjectId parentObjectId, string name, bool active, FrameSpan span, int layer,
             List<PosKey> positions, List<AngleKey> rotations, List<ScaKey> scales, List<ScaKey> sizes,
             List<AlignmentKey> anchorsMin, List<AlignmentKey> anchorsMax, List<AlignmentKey> pivots,

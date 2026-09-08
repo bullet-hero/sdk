@@ -35,11 +35,13 @@ namespace BH.SDK.Models.Keyframes
         [JsonProperty(Names.Direction)]
         public TextFillDirection Direction { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public FillmentKey()
         {
             Value = TextRules.Fillment_Fallback;
             Direction = TextRules.FillDirection_Default;
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public FillmentKey(float value, int frame, TextFillDirection direction = TextRules.FillDirection_Default,
             EaseType ease = DefaultEase) : base(frame, ease)
         {

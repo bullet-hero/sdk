@@ -19,6 +19,9 @@ namespace BH.SDK.Tests.Rules
     // registry, for the same reason: a hand-kept list that has to be edited is what makes the
     // decision happen at all, and the diff is where it gets reviewed.
 
+
+    /// <summary> That every rule either states its own severity or is named here as deliberately Error - so adding
+    /// one fails this test until the decision has actually been made, and the diff is where it is reviewed. </summary>
     [TestFixture]
     public class RuleSeverityTests
     {

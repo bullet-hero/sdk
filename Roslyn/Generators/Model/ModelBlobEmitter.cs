@@ -19,6 +19,7 @@ namespace BH.SDK.Roslyn.Model
         private const string Blob = "global::BH.SDK.Serialization.Blob";
         private const string Primitives = Blob + ".BlobPrimitives";
 
+        /// <summary> Writes the binary Write/Read pair for one model. </summary>
         public static void Emit(StringBuilder builder, string indent, ModelSpec spec)
         {
             builder.Append(indent).AppendLine("#region Generated blob codec");
@@ -437,6 +438,7 @@ namespace BH.SDK.Roslyn.Model
             return type.EndsWith("[]") ? type.Substring(0, type.Length - 2) : type;
         }
 
+        /// <summary> The call that encodes one member's type, or null when nothing here can. </summary>
         public static string BlobDispatcher(string type)
             => "global::BH.SDK.Models.Generated." + SimpleName(type) + "Blob";
 

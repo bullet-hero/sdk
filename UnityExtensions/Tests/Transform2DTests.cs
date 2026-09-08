@@ -4,6 +4,8 @@ using Unity.Mathematics;
 
 namespace BH.SDK.UnityExtensions.Tests
 {
+    /// <summary> Composing a plain transform down a chain - position, rotation and scale, with and without a
+    /// rotated parent. </summary>
     public static class Transform2DTests
     {
         [Test]

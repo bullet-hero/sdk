@@ -15,6 +15,9 @@ namespace BH.SDK.Tests.Generators
     // entry shape and a run of this generator has no excuse to be irreversible. Writing to the
     // dictionary directly compiles and runs identically right up until someone presses Undo, which
     // is exactly the failure the reverting tests below exist to catch.
+
+    /// <summary> Undo, not the character sets - writing to the resource dictionary directly runs identically
+    /// right up until someone presses Undo. </summary>
     public class FontCacheGeneratorTests
     {
         private const int FrameDuration = 600;

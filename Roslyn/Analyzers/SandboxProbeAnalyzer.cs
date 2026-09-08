@@ -21,9 +21,11 @@ namespace BH.SDK.Roslyn
             isEnabledByDefault: true,
             description: "Fires on any type named *RoslynProbe, to prove the analyzer runs.");
 
+        /// <summary> Every diagnostic this analyzer can report. </summary>
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics
             => ImmutableArray.Create(Descriptor);
 
+        /// <summary> Registers the one syntax action, with generated code excluded and concurrency on. </summary>
         public override void Initialize(AnalysisContext context)
         {
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);

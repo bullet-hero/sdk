@@ -176,6 +176,7 @@ namespace BH.SDK.Models.Statistics
         [JsonIgnore]
         public bool Cleared => Clears > 0;
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public LevelStatistics()
         {
             LevelId = LevelId.Null;
@@ -203,6 +204,7 @@ namespace BH.SDK.Models.Statistics
             Editor = new LevelEditorStatistics();
         }
 
+        /// <summary> Built from its id. </summary>
         public LevelStatistics(LevelId levelId) : this()
         {
             LevelId = levelId;

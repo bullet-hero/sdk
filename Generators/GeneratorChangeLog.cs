@@ -26,8 +26,10 @@ namespace BH.SDK.Generators
     {
         private readonly List<IGeneratorChange> _changes = new();
 
+        /// <summary> How many edits the run made. </summary>
         public int Count => _changes.Count;
 
+        /// <summary> Records one edit. Internal: only the context may write to the journal. </summary>
         internal void Add(IGeneratorChange change) => _changes.Add(change);
 
         /// <summary> Whether this log already carries a before-copy for that object, so a second
@@ -52,24 +54,32 @@ namespace BH.SDK.Generators
             return ids.ToArray();
         }
 
+        /// <summary> Undoes every edit, newest first - the only order in which they compose. </summary>
         public void Revert()
         {
             for (var i = _changes.Count - 1; i >= 0; i--)
                 _changes[i].Revert();
         }
 
+        /// <summary> Redoes them, oldest first. </summary>
         public void Reapply()
         {
             for (var i = 0; i < _changes.Count; i++)
                 _changes[i].Reapply();
         }
 
+        /// <summary> One line, for a log. </summary>
         public override string ToString() => $"{_changes.Count} change(s)";
     }
 
+    /// <summary> One reversible edit a generator made. The journal replays these rather than snapshotting the
+    /// level, which is what makes a run undoable at the cost of the edit rather than of the whole level. </summary>
     internal interface IGeneratorChange
     {
+        /// <summary> Put the level back as it was before this edit. </summary>
         void Revert();
+
+        /// <summary> Put the edit back, using the same instances and the same ids as the first time. </summary>
         void Reapply();
     }
 
@@ -79,13 +89,17 @@ namespace BH.SDK.Generators
     // Reapply re-inserts the SAME instance under the SAME id instead of minting a fresh one, so redo
     // stays exact without the counter having to move at all.
 
+
+    /// <summary> An object the run added to a scope. </summary>
     internal sealed class ObjectCreated : IGeneratorChange
     {
         private readonly IObjectScope _scope;
         private readonly RectObject _instance;
 
+        /// <summary> The object this entry is about. </summary>
         public ObjectId Id { get; }
 
+        /// <summary> Records a creation, keeping the instance so redo can put the SAME one back under the same id. </summary>
         public ObjectCreated(IObjectScope scope, ObjectId id, RectObject instance)
         {
             _scope = scope;
@@ -93,7 +107,9 @@ namespace BH.SDK.Generators
             _instance = instance;
         }
 
+        /// <summary> Undoes this entry. </summary>
         public void Revert() => _scope.Objects.Remove(Id);
+        /// <summary> Redoes it. </summary>
         public void Reapply() => _scope.Objects[Id] = _instance;
     }
 
@@ -102,14 +118,17 @@ namespace BH.SDK.Generators
     // is the only snapshot that can describe every outcome. The after-copy is taken lazily, on the
     // first Revert, because it doesn't exist yet at Edit time.
 
+    /// <summary> An existing object the run replaced the contents of. </summary>
     internal sealed class ObjectEdited : IGeneratorChange
     {
         private readonly IObjectScope _scope;
         private readonly RectObject _before;
         private RectObject _after;
 
+        /// <summary> The object this entry is about. </summary>
         public ObjectId Id { get; }
 
+        /// <summary> Records an edit, keeping the whole object as it was. </summary>
         public ObjectEdited(IObjectScope scope, ObjectId id, RectObject before)
         {
             _scope = scope;
@@ -117,6 +136,7 @@ namespace BH.SDK.Generators
             _before = before;
         }
 
+        /// <summary> Undoes every edit, newest first - the only order in which they compose. </summary>
         public void Revert()
         {
             if (_scope.Objects.TryGetValue(Id, out var current))
@@ -124,18 +144,21 @@ namespace BH.SDK.Generators
             _scope.Objects[Id] = _before.Copy();
         }
 
+        /// <summary> Redoes them, oldest first. </summary>
         public void Reapply()
         {
             if (_after != null) _scope.Objects[Id] = _after.Copy();
         }
     }
 
+    /// <summary> An object the run removed, kept whole so redo can put the same instance back. </summary>
     internal sealed class ObjectDeleted : IGeneratorChange
     {
         private readonly IObjectScope _scope;
         private readonly ObjectId _id;
         private readonly RectObject _instance;
 
+        /// <summary> Records a deletion, keeping the instance whole. </summary>
         public ObjectDeleted(IObjectScope scope, ObjectId id, RectObject instance)
         {
             _scope = scope;
@@ -143,16 +166,20 @@ namespace BH.SDK.Generators
             _instance = instance;
         }
 
+        /// <summary> Undoes this entry. </summary>
         public void Revert() => _scope.Objects[_id] = _instance;
+        /// <summary> Redoes it. </summary>
         public void Reapply() => _scope.Objects.Remove(_id);
     }
 
+    /// <summary> A resource the run imported into the level. </summary>
     internal sealed class ResourceAdded<TId, TResource> : IGeneratorChange
     {
         private readonly Dictionary<TId, TResource> _target;
         private readonly TId _id;
         private readonly TResource _resource;
 
+        /// <summary> Records an imported resource. </summary>
         public ResourceAdded(Dictionary<TId, TResource> target, TId id, TResource resource)
         {
             _target = target;
@@ -160,7 +187,9 @@ namespace BH.SDK.Generators
             _resource = resource;
         }
 
+        /// <summary> Undoes this entry. </summary>
         public void Revert() => _target.Remove(_id);
+        /// <summary> Redoes it. </summary>
         public void Reapply() => _target[_id] = _resource;
     }
 
@@ -168,12 +197,14 @@ namespace BH.SDK.Generators
     // level's own Framerate/FrameDuration. It holds the writer rather than the owning object, so one
     // change type covers every such field without the journal knowing any of them by name.
 
+    /// <summary> A single property the run wrote, with the value it had before. </summary>
     internal sealed class ValueChanged<T> : IGeneratorChange
     {
         private readonly Action<T> _write;
         private readonly T _before;
         private readonly T _after;
 
+        /// <summary> Records one property write as the two values plus the setter, so it needs no reflection to undo. </summary>
         public ValueChanged(Action<T> write, T before, T after)
         {
             _write = write;
@@ -181,16 +212,20 @@ namespace BH.SDK.Generators
             _after = after;
         }
 
+        /// <summary> Undoes this entry. </summary>
         public void Revert() => _write(_before);
+        /// <summary> Redoes it. </summary>
         public void Reapply() => _write(_after);
     }
 
+    /// <summary> A resource the run dropped from the level. </summary>
     internal sealed class ResourceRemoved<TId, TResource> : IGeneratorChange
     {
         private readonly Dictionary<TId, TResource> _target;
         private readonly TId _id;
         private readonly TResource _resource;
 
+        /// <summary> Records a dropped resource, keeping it whole. </summary>
         public ResourceRemoved(Dictionary<TId, TResource> target, TId id, TResource resource)
         {
             _target = target;
@@ -198,7 +233,9 @@ namespace BH.SDK.Generators
             _resource = resource;
         }
 
+        /// <summary> Undoes this entry. </summary>
         public void Revert() => _target[_id] = _resource;
+        /// <summary> Redoes it. </summary>
         public void Reapply() => _target.Remove(_id);
     }
 
@@ -208,12 +245,14 @@ namespace BH.SDK.Generators
     // no enforced sort order (see the SDK's Keyframes section), so re-inserting at the end after an
     // undo would reorder a track the author never touched.
 
+    /// <summary> A level-global keyframe the run added - a camera, theme or post-processing key. </summary>
     internal sealed class LevelKeyAdded<TKey> : IGeneratorChange
     {
         private readonly List<TKey> _track;
         private readonly int _index;
         private readonly TKey _key;
 
+        /// <summary> Records an added level-global keyframe, with the index it went in at. </summary>
         public LevelKeyAdded(List<TKey> track, int index, TKey key)
         {
             _track = track;
@@ -221,16 +260,20 @@ namespace BH.SDK.Generators
             _key = key;
         }
 
+        /// <summary> Undoes this entry. </summary>
         public void Revert() => _track.RemoveAt(_index);
+        /// <summary> Redoes it. </summary>
         public void Reapply() => _track.Insert(_index, _key);
     }
 
+    /// <summary> A level-global keyframe the run removed. </summary>
     internal sealed class LevelKeyRemoved<TKey> : IGeneratorChange
     {
         private readonly List<TKey> _track;
         private readonly int _index;
         private readonly TKey _key;
 
+        /// <summary> Records a removed one, with the index it came out of. </summary>
         public LevelKeyRemoved(List<TKey> track, int index, TKey key)
         {
             _track = track;
@@ -238,7 +281,9 @@ namespace BH.SDK.Generators
             _key = key;
         }
 
+        /// <summary> Undoes this entry. </summary>
         public void Revert() => _track.Insert(_index, _key);
+        /// <summary> Redoes it. </summary>
         public void Reapply() => _track.RemoveAt(_index);
     }
 }

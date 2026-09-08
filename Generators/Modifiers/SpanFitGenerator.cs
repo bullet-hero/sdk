@@ -51,6 +51,7 @@ namespace BH.SDK.Generators.Modifiers
     /// </summary>
     public class SpanFitGenerator : BaseModifier<SpanFitGenerator.Parameters>
     {
+        /// <summary> <c>"mod_span_fit"</c>, the key a host lists this generator under. </summary>
         public override string NameKey => "mod_span_fit";
 
         // Whole-scope rather than the selection, same reasoning as mod_content_remover: "make the
@@ -61,6 +62,7 @@ namespace BH.SDK.Generators.Modifiers
         /// <summary> Nothing beyond a scope to run against. </summary>
         public override GeneratorRequirements Requirements => GeneratorRequirements.None;
 
+        /// <summary> The order, labels and ranges a host lays its form out with. </summary>
         public override GeneratorHints Hints { get; } = new GeneratorHints.Builder()
             .Section(GeneratorSections.Main, nameof(Parameters.Mode), nameof(Parameters.Invert))
             .Section(GeneratorSections.Additional, nameof(Parameters.Outside))
@@ -68,6 +70,7 @@ namespace BH.SDK.Generators.Modifiers
                 parameters => ((Parameters)parameters).Mode == SpanFitMode.ClampChildren)
             .Build();
 
+        /// <summary> Applies this run's edit. </summary>
         protected override void Generate(GeneratorContext context, Parameters parameters)
         {
             if (parameters.Mode == SpanFitMode.ExpandParents) ExpandParents(context, parameters);
@@ -76,6 +79,8 @@ namespace BH.SDK.Generators.Modifiers
 
         // Edits and deletes only. GeneratorCost describes what a run ADDS, and reporting anything
         // here would read as "this will add N", which is the opposite of what happens.
+
+        /// <summary> What this run would add, answered before it runs. </summary>
         protected override GeneratorCost EstimateTyped(GeneratorContext context, Parameters parameters)
             => GeneratorCost.Zero;
 
@@ -84,6 +89,8 @@ namespace BH.SDK.Generators.Modifiers
         // either way, and Delete removes content rather than resizing it. All three are legitimate -
         // "clean up everything that can no longer play" is the headline use case - which is why they
         // get a confirmation instead of a refusal.
+
+        /// <summary> True where these parameters would destroy or rewrite content the author did not point at. </summary>
         protected override bool IsDangerousTyped(GeneratorContext context, Parameters parameters)
             => parameters.Invert
                || CoversWholeTimeline(context)
@@ -308,6 +315,8 @@ namespace BH.SDK.Generators.Modifiers
         private static int Min(int a, int b) => a < b ? a : b;
         private static int Max(int a, int b) => a > b ? a : b;
 
+        /// <summary> Which side of a parent/child pair gives way, and over which part of the level. Public mutable
+        /// fields, like every parameters class here - a form binds to them and a preset serializes from them. </summary>
         public class Parameters
         {
             /// <summary> Cut the children down (the default, and the one that never grows anything),

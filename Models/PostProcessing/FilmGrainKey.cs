@@ -29,11 +29,13 @@ namespace BH.SDK.Models.PostProcessing
         [JsonProperty(Names.Intensity)]
         public float Intensity { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public FilmGrainKey()
         {
             Type = FilmGrainType.Medium1;
             Intensity = 1.0f;
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public FilmGrainKey(FilmGrainType type, float intensity,
             bool active, int frame, EaseType ease = Keyframe.DefaultEase) : base(active, frame, ease)
         {

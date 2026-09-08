@@ -43,10 +43,12 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
         [JsonProperty(Names.HistoryLength)]
         public int HistoryLength { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public EditorSavingsSettings()
         {
             ResetOwn();
         }
+        /// <summary> Built from its autosave, rate, autosave files and length. </summary>
         public EditorSavingsSettings(bool autosave, float autosaveRate, int maxAutosaveFiles, int historyLength)
         {
             Autosave = autosave;

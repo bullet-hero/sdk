@@ -11,6 +11,7 @@ namespace BH.SDK.Tests.Rules
     /// </summary>
     public class RuleCollectionUniqueTests : BaseRuleTests
     {
+        /// <summary> The property uniqueness is judged by. </summary>
         private class Key
         {
             public int Frame { get; set; }
@@ -24,6 +25,7 @@ namespace BH.SDK.Tests.Rules
             }
         }
 
+        /// <summary> Uniqueness judged by one named property of each item. </summary>
         [RuleContainer]
         private class ByPropertyModel
         {
@@ -31,6 +33,7 @@ namespace BH.SDK.Tests.Rules
             public List<Key> Value { get; set; } = new();
         }
 
+        /// <summary> Uniqueness judged by the items themselves. </summary>
         [RuleContainer]
         private class ByItselfModel
         {
@@ -38,6 +41,7 @@ namespace BH.SDK.Tests.Rules
             public List<int> Value { get; set; } = new();
         }
 
+        /// <summary> Names a property the item does not have, so the DECLARATION is what must be refused. </summary>
         [RuleContainer]
         private class MissingPropertyModel
         {
@@ -45,6 +49,7 @@ namespace BH.SDK.Tests.Rules
             public List<Key> Value { get; set; } = new();
         }
 
+        /// <summary> A property of a type the rule does not apply to, so it must decline rather than refuse. </summary>
         [RuleContainer]
         private class WrongTypeModel
         {

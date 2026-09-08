@@ -20,6 +20,7 @@ namespace BH.SDK.Tests.Rules
     /// </summary>
     public class RuleLevelFrameTests : BaseRuleTests
     {
+        /// <summary> A frame number, judged against the timeline its context carries rather than against a constant. </summary>
         [RuleContainer]
         private class FrameModel
         {

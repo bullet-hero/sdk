@@ -42,12 +42,14 @@ namespace BH.SDK.Models.SettingGroups.Graphics
         [JsonProperty(Names.HDR)]
         public bool HDR { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public AntiAliasingGraphicsSettings()
         {
             Type = AntiAliasingType.Msaa;
             MSAA = MsaaType.X2;
             HDR = false;
         }
+        /// <summary> Built from its type, msaa and hdr. </summary>
         public AntiAliasingGraphicsSettings(AntiAliasingType type, MsaaType msaa, bool hdr)
         {
             Type = type;

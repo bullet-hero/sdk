@@ -13,6 +13,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests
 {
+    /// <summary> Whole-document round trips through the serializer, and that every JSON this project writes is
+    /// compact. </summary>
     public class SerializationTests
     {
         // THERE IS ONLY ONE SHAPE OF JSON HERE. A second mode used to write the same document

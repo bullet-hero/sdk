@@ -23,6 +23,9 @@ namespace BH.SDK.Tests
     // values. The aggregate round trips below are the other half - those DO need real data, so they
     // go through MockData and check the values instead.
 
+
+    /// <summary> Update and Pull swept over every model: that Update leaves nothing aliased to its source, and
+    /// that Pull keeps the nested instances it already had - which is the entire reason it exists beside Update. </summary>
     public class ModelContractTests
     {
         // Below this, the reflection filter has stopped matching and the sweep is passing vacuously.

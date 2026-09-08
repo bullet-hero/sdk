@@ -25,11 +25,13 @@ namespace BH.SDK.Models.Values
         [JsonProperty(Names.TimeShort)]
         public float Time { get; set; }
         
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public GradientColorKeyValue()
         {
             Color4 = Color4Value.white;
             Time = ValueRules.FloatZero;
         }
+        /// <summary> Built from its 4 and time. </summary>
         public GradientColorKeyValue(Color4Value color4, float time)
         {
             Color4 = color4;

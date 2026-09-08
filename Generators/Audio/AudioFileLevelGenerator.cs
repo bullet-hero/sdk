@@ -28,17 +28,29 @@ namespace BH.SDK.Generators.Audio
     /// </summary>
     public class AudioFileLevelGenerator : BaseLevelGenerator<AudioFileLevelGenerator.Parameters>
     {
+        /// <summary> <c>"gen_level_audio_file"</c>, the key a host lists this generator under. </summary>
         public override string NameKey => "gen_level_audio_file";
 
         // Second: the one thing almost every level starts from is a track.
+
+        /// <summary> Where this sits in a host's list; lower comes first. </summary>
         public override int ListOrder => -10;
 
+        /// <summary> What must be true before a host offers this run. </summary>
         public override GeneratorRequirements Requirements => GeneratorRequirements.ExternalAnalysis;
 
+        /// <summary> The order, labels and ranges a host lays its form out with. </summary>
         public override GeneratorHints Hints { get; } = new GeneratorHints.Builder()
-            .Section(GeneratorSections.Main, nameof(Parameters.LevelName), nameof(Parameters.Framerate))
-            .Section(GeneratorSections.Additional, nameof(Parameters.LevelDescription),
-                nameof(Parameters.OffsetSeconds), nameof(Parameters.TailSeconds),
+            // TailSeconds is a MAIN field for the reason FrameDuration is one on gen_level_empty:
+            // the clip decides the length here and this is the only number an author adds to it,
+            // so between the two it is what "how much level appears" comes down to.
+            .Section(GeneratorSections.Main, nameof(Parameters.LevelName), nameof(Parameters.Framerate),
+                nameof(Parameters.TailSeconds))
+            // Additional is ordered by what a row DOES to the level, like every other level
+            // preset's: the number deciding where the song starts, then the prose, then the
+            // host-filled fields at the bottom.
+            .Section(GeneratorSections.Additional, nameof(Parameters.OffsetSeconds),
+                nameof(Parameters.LevelDescription),
                 nameof(Parameters.AudioPath), nameof(Parameters.UriType), nameof(Parameters.DurationSeconds))
             .Range(nameof(Parameters.Framerate), FrameRules.MinFramerate, FrameRules.MaxFramerate)
             .Range(nameof(Parameters.OffsetSeconds), AudioRules.MinOffsetTime, AudioRules.MaxOffsetTime)
@@ -54,6 +66,7 @@ namespace BH.SDK.Generators.Audio
             .Range(nameof(Parameters.DurationSeconds), 0f, 3600f)
             .Build();
 
+        /// <summary> Builds the level and its metadata together, so the two cannot disagree. </summary>
         protected override GeneratedLevel CreateTyped(Parameters parameters)
         {
             var framerate = Framerate(parameters.Framerate);
@@ -85,6 +98,7 @@ namespace BH.SDK.Generators.Audio
             return new GeneratedLevel(level, meta);
         }
 
+        /// <summary> What this run would add, answered before it runs. </summary>
         protected override GeneratorCost EstimateTyped(Parameters parameters)
             => new(0, 0, ResourceCount);
 
@@ -152,16 +166,27 @@ namespace BH.SDK.Generators.Audio
         // explicitly on top of them. A property would be invisible to the form builder (it reflects
         // over public fields), which would make Hints.Hidden on them meaningless and leave an author
         // no way to ever inspect what the host filled in.
+
+        /// <summary> Which file the level is built around, and how long its timeline ends up. Public mutable
+        /// fields, like every parameters class here - a form binds to them and a preset serializes from them. </summary>
         public class Parameters : IAudioFileInput
         {
+            /// <summary> Name the new level is created under. </summary>
             public IString LevelName = new StringValue();
+            /// <summary> Its description. </summary>
             public IString LevelDescription = new StringValue();
+            /// <summary> Frames per second the song's seconds are resolved into. </summary>
             public int Framerate = 60;
+            /// <summary> How far into the timeline the song starts. </summary>
             public float OffsetSeconds;
+            /// <summary> How much level is left after it ends. </summary>
             public float TailSeconds = 2f;
 
+            /// <summary> Where the file is; filled by the host, not by the author. </summary>
             public string AudioPath = string.Empty;
+            /// <summary> How that path is read - inside the level folder, or somewhere else on the device. </summary>
             public ResourceUriType UriType = ResourceUriType.LevelPath;
+            /// <summary> How long the clip is; filled by the host, and what the timeline length follows. </summary>
             public float DurationSeconds;
 
             string IAudioFileInput.AudioPath

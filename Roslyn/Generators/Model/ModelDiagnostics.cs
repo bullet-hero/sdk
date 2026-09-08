@@ -12,12 +12,14 @@ namespace BH.SDK.Roslyn.Model
     {
         private const string Category = "BH.SDK.Model";
 
+        /// <summary> BHS1001 - the type is not <c>partial</c>, so there is nowhere to write the generated half. </summary>
         public static readonly DiagnosticDescriptor NotPartial = new(
             "BHS1001",
             "A [GenerateModel] type must be partial",
             "'{0}' carries [GenerateModel] but is not declared partial, so nothing can be generated for it",
             Category, DiagnosticSeverity.Error, true);
 
+        /// <summary> BHS1002 - nothing to build a prototype from, which <c>Reset</c> assigns out of. </summary>
         public static readonly DiagnosticDescriptor NoParameterlessConstructor = new(
             "BHS1002",
             "A [GenerateModel] type needs a parameterless constructor",
@@ -25,6 +27,7 @@ namespace BH.SDK.Roslyn.Model
             "both build one, and Reset() takes its defaults from what that constructor writes",
             Category, DiagnosticSeverity.Error, true);
 
+        /// <summary> BHS1003 - a member the generator cannot encode. An ERROR naming the member, never a silent skip. </summary>
         public static readonly DiagnosticDescriptor UnsupportedMember = new(
             "BHS1003",
             "A model member the generator cannot express",
@@ -33,6 +36,7 @@ namespace BH.SDK.Roslyn.Model
             "generator knows",
             Category, DiagnosticSeverity.Error, true);
 
+        /// <summary> BHS1004 - the base type is not generated too, so the derived half would call bodies that do not exist. </summary>
         public static readonly DiagnosticDescriptor BaseNotGenerated = new(
             "BHS1004",
             "A [GenerateModel] type derives from a model that is not generated",
@@ -40,6 +44,7 @@ namespace BH.SDK.Roslyn.Model
             "halves of every generated body chain through base, so both ends have to be generated",
             Category, DiagnosticSeverity.Error, true);
 
+        /// <summary> BHS1006 - a struct, which cannot carry the contract's reference semantics. </summary>
         public static readonly DiagnosticDescriptor ValueTypeModel = new(
             "BHS1006",
             "[GenerateModel] does not cover a struct",
@@ -48,6 +53,7 @@ namespace BH.SDK.Roslyn.Model
             + "thing wearing the same name - write it by hand, as FrameSpan and ModificationKey do",
             Category, DiagnosticSeverity.Error, true);
 
+        /// <summary> BHS1008 - a polymorphic variant with no discriminator, so nothing could read it back. </summary>
         public static readonly DiagnosticDescriptor NoTypeTag = new(
             "BHS1008",
             "A polymorphic model needs a discriminator",
@@ -56,6 +62,7 @@ namespace BH.SDK.Roslyn.Model
             + "one, as every polymorphic value in this format has",
             Category, DiagnosticSeverity.Error, true);
 
+        /// <summary> BHS1007 - a discriminator outside what the wire format can hold. </summary>
         public static readonly DiagnosticDescriptor TagOutOfRange = new(
             "BHS1007",
             "A polymorphic tag does not fit in a byte",
@@ -63,6 +70,7 @@ namespace BH.SDK.Roslyn.Model
             + "with 0xFF reserved for null. A family with more than 255 members needs a wider tag",
             Category, DiagnosticSeverity.Error, true);
 
+        /// <summary> BHS1005 - the merge marker on a member that is not a dictionary. </summary>
         public static readonly DiagnosticDescriptor MergeOnNonDictionary = new(
             "BHS1005",
             "[GenerateModelMerge] applies to a dictionary only",

@@ -71,6 +71,7 @@ namespace BH.SDK.Models.Effects
         [JsonProperty(Names.ParticlePivot)]
         public Alignment ParticlePivot { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public EffectObjectCore()
         {
             Render = EffectRules.Core.Render_Default;
@@ -86,6 +87,7 @@ namespace BH.SDK.Models.Effects
                 EffectRules.Core.Pivot_Y_Default));
         }
 
+        /// <summary> Every member at once, in declaration order. </summary>
         public EffectObjectCore(bool render, bool loop, uint particleCount,
             IVector2 lifetimeBounds, TextureResourceId textureResourceId, ShapeId particleShapeId,
             Alignment particlePivot)

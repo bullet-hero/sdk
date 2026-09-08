@@ -12,6 +12,9 @@ namespace BH.SDK.Tests
     // The aggregate's own contract, separate from what its two members do: a hint is optional data,
     // so "a fresh level has an empty one" and "an empty one is what a level without hints reads as"
     // are the two facts everything downstream leans on.
+
+    /// <summary> The hints aggregate's own contract - that a fresh level carries an empty one, and that a level
+    /// without hints reads back as exactly that. </summary>
     [TestFixture]
     public class LevelHintsTests
     {

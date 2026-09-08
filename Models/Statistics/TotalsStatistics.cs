@@ -21,18 +21,22 @@ namespace BH.SDK.Models.Statistics
     [GenerateModel]
     public sealed partial class TotalsStatistics : IModel<TotalsStatistics>
     {
+        /// <summary> Runs started across every level. </summary>
         [RuleMinValue(StatisticsRules.MinCount)]
         [JsonProperty(Names.Attempts)]
         public int TotalAttempts { get; set; }
 
+        /// <summary> Runs finished. </summary>
         [RuleMinValue(StatisticsRules.MinCount)]
         [JsonProperty(Names.Clears)]
         public int TotalClears { get; set; }
 
+        /// <summary> Runs ended by running out of lives. </summary>
         [RuleMinValue(StatisticsRules.MinCount)]
         [JsonProperty(Names.Deaths)]
         public int TotalDeaths { get; set; }
 
+        /// <summary> Individual hits taken, whether or not they ended a run. </summary>
         [RuleMinValue(StatisticsRules.MinCount)]
         [JsonProperty(Names.Hits)]
         public int TotalHits { get; set; }
@@ -52,6 +56,7 @@ namespace BH.SDK.Models.Statistics
         [JsonProperty(Names.FramesSimulated)]
         public long TotalFramesSimulated { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public TotalsStatistics()
         {
             TotalAttempts = 0;

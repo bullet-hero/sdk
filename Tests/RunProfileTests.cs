@@ -4,6 +4,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests
 {
+    /// <summary> The key a statistics record is filed under, and why its speed is an int: a float would file two
+    /// runs shown as "1.00" under two different records, each claiming to be the best. </summary>
     [TestFixture]
     public class RunProfileTests
     {

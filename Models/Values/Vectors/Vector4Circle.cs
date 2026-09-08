@@ -42,6 +42,7 @@ namespace BH.SDK.Models.Values
         [JsonProperty(Names.Radius)]
         public float Radius { get; set; }
         
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public Vector4Circle()
         {
             X = ValueRules.FloatZero;
@@ -50,6 +51,7 @@ namespace BH.SDK.Models.Values
             W = ValueRules.FloatZero;
             Radius = ValueRules.FloatOne;
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public Vector4Circle(float x, float y, float z, float w, float radius)
         {
             X = x;
@@ -59,6 +61,7 @@ namespace BH.SDK.Models.Values
             Radius = radius;
         }
 
+        /// <summary> Which concrete form this is - the discriminator a converter writes and reads back. </summary>
         public VectorType GetModelType() => VectorType.RandomCircle;
     }
 }

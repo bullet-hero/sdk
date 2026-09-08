@@ -1,5 +1,6 @@
 ﻿namespace BH.SDK.Models.Enums.Values
 {
+    /// <summary> What a curve does past its last key. </summary>
     public enum CurveWrapMode : byte
     {
         Default = 0,

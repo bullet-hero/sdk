@@ -101,6 +101,7 @@ namespace BH.SDK.Models.Meta
         // scare in another. Per-resource ratings would also have to be guessed by whoever imported
         // the asset, and a guessed number folded into the level's own would make it meaningless.
         
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public ResourceMeta()
         {
             ResourceType = ResourceType.Bytes;
@@ -114,6 +115,7 @@ namespace BH.SDK.Models.Meta
             ResourcePermissions = new List<PermissionGrant>();
             ResourceHashes = new List<string>();
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public ResourceMeta(ResourceType resourceType, TypedResourceId resourceId, IString resourceTitle,
             IString resourceDescription, string resourceUrl, ILicense resourceLicense,
             List<IString> resourceSources, List<Author> resourceAuthors,

@@ -97,6 +97,7 @@ namespace BH.SDK.Models.Audio
         [JsonProperty(Names.Effects)]
         public LevelTrackEffects Effects { get; set; }
         
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public LevelTrack()
         {
             AudioId = AudioId.Null;
@@ -109,6 +110,7 @@ namespace BH.SDK.Models.Audio
             Name = string.Empty;
             Effects = new LevelTrackEffects();
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public LevelTrack(AudioId audioId, AudioResourceId audioResourceId, FrameSpan span,
             float offsetTime, float speed, float volume, int audioLayer, string name,
             LevelTrackEffects effects)

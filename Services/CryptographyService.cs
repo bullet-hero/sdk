@@ -19,12 +19,14 @@ namespace BH.SDK.Services
     /// <summary> Raw AES-256-CBC over bytes, keyed by a password through PBKDF2-SHA256. </summary>
     public class CryptographyService
     {
+        /// <summary> Which cipher a call uses; <c>None</c> passes the bytes through unchanged. </summary>
         public enum Algorithm
         {
             None = 0,
             AES = 1,
         }
 
+        /// <summary> Encrypts text, answering base64. </summary>
         public string Encrypt(string data, string password, Algorithm algorithm = Algorithm.AES)
         {
             var bytes = Encoding.UTF8.GetBytes(data);
@@ -33,6 +35,7 @@ namespace BH.SDK.Services
             var result = Encrypt(bytes, passwordBytes, algorithm);
             return Convert.ToBase64String(result);
         }
+        /// <summary> Decrypts that back. </summary>
         public string Decrypt(string data, string password, Algorithm algorithm = Algorithm.AES)
         {
             var bytes = Convert.FromBase64String(data);
@@ -41,6 +44,7 @@ namespace BH.SDK.Services
             var result = Decrypt(bytes, passwordBytes, algorithm);
             return Encoding.UTF8.GetString(result);
         }
+        /// <summary> Encrypts bytes. </summary>
         public byte[] Encrypt(byte[] data, byte[] password, Algorithm algorithm = Algorithm.AES)
         {
             return algorithm switch
@@ -50,6 +54,7 @@ namespace BH.SDK.Services
                 _ => throw new ArgumentOutOfRangeException(nameof(algorithm), algorithm, null)
             };
         }
+        /// <summary> Decrypts them back. </summary>
         public byte[] Decrypt(byte[] data, byte[] password, Algorithm algorithm)
         {
             return algorithm switch
@@ -62,11 +67,16 @@ namespace BH.SDK.Services
         
         // Game Encryption
         
+        /// <summary> AES key length, 256 bits. </summary>
         public const int KeySize = 32; // 256 bit
+        /// <summary> Initialisation vector length, 128 bits. Drawn fresh per call. </summary>
         public const int IvSize = 16; // 128 bit
+        /// <summary> Salt length, 256 bits. Also drawn fresh per call. </summary>
         public const int SaltSize = 32; // 256 bit
+        /// <summary> How many PBKDF2 rounds a password is stretched over. </summary>
         public const int Iterations = 100_000; // Rfc2898DeriveBytes iterations
 
+        /// <summary> The cipher itself: salt and IV drawn fresh, then written ahead of the ciphertext. </summary>
         public byte[] EncryptAES(byte[] bytes, byte[] passwordBytes)
         {
             var salt = GetRandomBytes(SaltSize);
@@ -89,6 +99,7 @@ namespace BH.SDK.Services
             
             return memoryStream.ToArray();
         }
+        /// <summary> Reads those back off the front and decrypts the rest. </summary>
         public byte[] DecryptAES(byte[] bytes, byte[] passwordBytes)
         {
             if (bytes == null) throw new ArgumentNullException(nameof(bytes));

@@ -48,6 +48,7 @@ namespace BH.SDK.Validations
         private readonly RuleAnalyzer _reflective;
         private readonly bool _useGenerated;
 
+        /// <summary> How thorough this walk is. </summary>
         public RuleAnalyzerSettings Settings => _settings;
 
         /// <summary> The findings so far, in the order they were reported. </summary>
@@ -56,6 +57,7 @@ namespace BH.SDK.Validations
         /// <summary> How deep the walk currently is; one entry per property, index or key. </summary>
         public int Depth => _trace.Count;
 
+        /// <summary> Built from its reflective and settings. </summary>
         public RuleWalk(RuleAnalyzer reflective, RuleAnalyzerSettings settings)
         {
             _reflective = reflective;
@@ -214,6 +216,7 @@ namespace BH.SDK.Validations
             else DescendOne(property, value, context);
         }
 
+        /// <summary> Walks into a list, recording the index in the trace. </summary>
         public void DescendList(PropertyInfo property, IList list, RuleContext context)
         {
             for (var i = 0; i < list.Count; i++)
@@ -232,6 +235,7 @@ namespace BH.SDK.Validations
         // vanish). Anything a key needs checking for - above all whether it agrees with its value's
         // own id - is relational, and belongs to the graph pass rather than here.
 
+        /// <summary> Walks into a dictionary, recording the key in the trace. </summary>
         public void DescendDictionary(PropertyInfo property, IDictionary dictionary, RuleContext context)
         {
             foreach (DictionaryEntry entry in dictionary)
@@ -242,6 +246,7 @@ namespace BH.SDK.Validations
             }
         }
 
+        /// <summary> Walks into an array, recording the index in the trace. </summary>
         public void DescendArray(PropertyInfo property, Array array, RuleContext context)
         {
             for (var i = 0; i < array.Length; i++)
@@ -252,6 +257,7 @@ namespace BH.SDK.Validations
             }
         }
 
+        /// <summary> Walks into a single value - the ONE point a generated walk and the reflective one meet. </summary>
         public void DescendOne(PropertyInfo property, object value, RuleContext context)
         {
             _trace.Add(new RulePath(property));

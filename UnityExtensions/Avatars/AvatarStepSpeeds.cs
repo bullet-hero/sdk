@@ -31,6 +31,7 @@ namespace BH.SDK.Avatars
         /// <see cref="AvatarMovement.GetSpeedScale"/>. </summary>
         public readonly float Scale;
 
+        /// <summary> The four numbers a step is driven by, passed in rather than read from a setting. </summary>
         public AvatarStepSpeeds(float moveSpeed, float dashSpeed, float knockoutSpeed, float scale)
         {
             MoveSpeed = moveSpeed;

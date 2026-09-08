@@ -16,8 +16,10 @@ namespace BH.SDK.Generators.Bullets
     /// </summary>
     public class BulletHomingGenerator : BaseSpawnGenerator<BulletHomingGenerator.Parameters>
     {
+        /// <summary> <c>"gen_bullet_homing"</c>, the key a host lists this generator under. </summary>
         public override string NameKey => "gen_bullet_homing";
 
+        /// <summary> The order, labels and ranges a host lays its form out with. </summary>
         public override GeneratorHints Hints { get; } = new GeneratorHints.Builder()
             .Section(GeneratorSections.Main, SpawnParameters.MainFields)
             .Section(GeneratorSections.Main, nameof(Parameters.BurstCount), nameof(Parameters.Speed),
@@ -47,6 +49,7 @@ namespace BH.SDK.Generators.Bullets
             .Range(nameof(SpawnParameters.Size), ValueRules.MinSca, ValueRules.MaxSca)
             .Build();
 
+        /// <summary> Writes this run's objects into the scope. </summary>
         protected override void Generate(GeneratorContext context, Parameters parameters)
         {
             var burst = Burst(parameters.BurstCount);
@@ -103,6 +106,8 @@ namespace BH.SDK.Generators.Bullets
         // Walks the same simulation as Generate, minus the writes: the number of baked keys depends
         // on frame rounding and on the duplicate-frame skips above, so counting it any other way
         // would be a guess.
+
+        /// <summary> What this run would add, answered before it runs. </summary>
         protected override GeneratorCost EstimateTyped(GeneratorContext context, Parameters parameters)
         {
             var burst = Burst(parameters.BurstCount);
@@ -166,20 +171,45 @@ namespace BH.SDK.Generators.Bullets
         private static int Steps(int value)
             => value < MinSteps ? MinSteps : value > MaxSteps ? MaxSteps : value;
 
+        /// <summary> What the burst chases and how tightly it curves. Public mutable fields, like every parameters
+        /// class here - a form binds to them and a preset serializes from them. </summary>
         public class Parameters : SpawnParameters
         {
+            /// <summary> How many bullets the burst holds. </summary>
             public int BurstCount = 6;
+
+            /// <summary> Angle the burst fans out over, centred on the launch angle. </summary>
             public float Spread = 90f;
+
+            /// <summary> Direction the burst leaves the origin in, in degrees. </summary>
             public float LaunchAngle = 90f;
+
+            /// <summary> Where the burst starts. </summary>
             public float OriginX;
+            /// <summary> Its vertical half. </summary>
             public float OriginY = 6f;
+
+            /// <summary> The point the bullets curve towards. </summary>
             public float TargetX;
+            /// <summary> Its vertical half. </summary>
             public float TargetY = -6f;
+
+            /// <summary> How fast a bullet travels along its pursuit curve. </summary>
             public float Speed = 1.2f;
+
+            /// <summary> How sharply a bullet may turn toward the target - low values overshoot and curve back. </summary>
             public float TurnRate = 12f;
+
+            /// <summary> How long each bullet lives. </summary>
             public int TravelFrames = 90;
+
+            /// <summary> Delay between one bullet leaving and the next. </summary>
             public int StaggerFrames = 0;
+
+            /// <summary> How many position keyframes the curve is baked into - the pursuit is sampled, not simulated. </summary>
             public int Steps = 12;
+
+            /// <summary> Rotate each bullet to point along its own path. </summary>
             public bool FaceTravel = true;
         }
     }

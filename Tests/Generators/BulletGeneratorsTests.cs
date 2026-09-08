@@ -13,6 +13,9 @@ namespace BH.SDK.Tests.Generators
     // Bullet generators differ from the geometry ones in one way that matters: their output lives
     // in TIME, so the interesting failures are about frames - a bullet outliving its window, two
     // keys landing on the same frame, a stagger that silently does nothing.
+
+    /// <summary> The generators whose output lives in TIME - so the failures worth catching are about frames: a
+    /// bullet outliving its window, two keys on one frame, a stagger that silently does nothing. </summary>
     public class BulletGeneratorsTests
     {
         private const int Start = 0;

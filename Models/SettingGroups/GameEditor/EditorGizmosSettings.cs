@@ -28,10 +28,12 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
         [JsonProperty(Names.Scale)]
         public float Scale { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public EditorGizmosSettings()
         {
             ResetOwn();
         }
+        /// <summary> Built from its scale. </summary>
         public EditorGizmosSettings(float scale)
         {
             Scale = scale;

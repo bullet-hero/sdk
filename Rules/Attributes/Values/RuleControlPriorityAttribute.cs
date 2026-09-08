@@ -23,16 +23,21 @@ namespace BH.SDK.Rules.Attributes
     [AttributeUsage(PropertyTarget)]
     public class RuleControlPriorityAttribute : BasePropertyRuleAttribute
     {
+        /// <summary> <c>"rule_control_priority"</c>, the key its message is looked up under. </summary>
         public override string RuleNameKey => "rule_control_priority";
 
         // Warning, not Error: a broken permutation makes one device unreachable or listed twice. The
         // game runs and the other devices steer; this is a settings file describing preferences,
         // not a level describing content.
+
+        /// <summary> A warning: the level still plays, but this is not what the author meant. </summary>
         public override RuleGroup Group => RuleGroup.Warning;
 
+        /// <summary> Applies to the control-device priority array. </summary>
         protected override bool IsValidTypeInternal(PropertyInfo property)
             => property.PropertyType == typeof(ControlDevice[]);
 
+        /// <summary> Passes when the array names every device exactly once. </summary>
         protected override bool IsValidInternal(object value, RuleContext context)
         {
             if (value is not ControlDevice[] priority) return false;
@@ -47,6 +52,7 @@ namespace BH.SDK.Rules.Attributes
             return true;
         }
 
+        /// <summary> Rebuilds it - the authored order first, then whatever the catalog has that the file left out. </summary>
         protected override void FixInternal(object target, PropertyInfo property, RuleContext context)
         {
             var authored = property.GetValue(target) as ControlDevice[];

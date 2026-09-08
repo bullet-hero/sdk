@@ -30,6 +30,7 @@ namespace BH.SDK.Tests.Rules
 
         private const string PoolFieldName = "_nextObjectsPool";
 
+        /// <summary> A model with one bounded number, small enough that many analyses of it exercise the buffer pool rather than the rule. </summary>
         [RuleContainer]
         private class RangeModel
         {

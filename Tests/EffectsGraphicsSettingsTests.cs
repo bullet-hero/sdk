@@ -12,6 +12,9 @@ namespace BH.SDK.Tests
     // them falls back to the shipped defaults rather than to zero - a zero budget would stall every
     // effect replay instead of merely making it coarse.
 
+
+    /// <summary> The two effect step budgets: round trip, equality, and an older settings file falling back to
+    /// the shipped defaults rather than to a zero that would stall every replay. </summary>
     public class EffectsGraphicsSettingsTests
     {
         // A settings group carries no [DataVersion] - only the GameSettings root does - so it is

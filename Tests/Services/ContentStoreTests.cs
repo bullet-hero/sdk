@@ -17,6 +17,9 @@ namespace BH.SDK.Tests.Services
     // The escape case is the load-bearing one. "Rooted by construction" is the property the archive
     // layer's tar-slip defence rests on: it validates entry names, but what actually stops a
     // traversal is that no store can address anything outside its root, whatever name it is handed.
+
+    /// <summary> One case set run through BOTH stores, so "the test double IS a store" is a checked claim - and
+    /// the escape case, which is what the archive layer's traversal defence actually rests on. </summary>
     public class ContentStoreTests
     {
         private const string Memory = "memory";

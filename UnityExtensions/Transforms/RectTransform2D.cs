@@ -7,19 +7,30 @@ using UnityEngine.Jobs;
 
 namespace BH.SDK.Transforms
 {
+    /// <summary> A 2D transform with a rect: anchors, pivot and size on top of <see cref="Transform2D"/>'s own
+    /// members. Composing one against its parent is where a layer becomes absolute. </summary>
     [Serializable]
     public struct RectTransform2D
     {
-        public float2 position; // anchored position (offset from anchor point)
-        public float layer; // position z
-        public float rotation; // radians
-        public float2 scale; // additional local scale
+        /// <summary> Anchored position - the offset from the anchor point, not from the origin. </summary>
+        public float2 position;
+        /// <summary> Draw order, which is the Z of the position. PARENT-RELATIVE until Apply composes it. </summary>
+        public float layer;
+        /// <summary> Rotation in RADIANS, which is what the format stores. </summary>
+        public float rotation;
+        /// <summary> Local scale applied on top of the size. </summary>
+        public float2 scale;
+        /// <summary> Logical size of the rect, before scale. </summary>
         [Space]
-        public float2 size; // logical size of the rect
-        public float2 anchorMin; // normalized anchor point (0..1), center is (0.5, 0.5)
-        public float2 anchorMax; // normalized anchor point (0..1), center is (0.5, 0.5)
-        public float2 pivot; // normalized pivot (0..1), center is (0.5, 0.5)
+        public float2 size;
+        /// <summary> Lower anchor, normalized 0-1; the centre is (0.5, 0.5). </summary>
+        public float2 anchorMin;
+        /// <summary> Upper anchor, on the same terms. Equal to the lower one for a fixed-size rect. </summary>
+        public float2 anchorMax;
+        /// <summary> The point rotation and scale act around, normalized 0-1. </summary>
+        public float2 pivot;
 
+        /// <summary> Both anchor points as one value. </summary>
         public float2 Anchors
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -28,42 +39,51 @@ namespace BH.SDK.Transforms
             set => anchorMin = anchorMax = value;
         }
 
+        /// <summary> Width over height of the rect. </summary>
         public float Aspect
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => FullSize.x / FullSize.y;
         }
+        /// <summary> The size after scale. </summary>
         public float2 FullSize
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => size * scale;
         }
+        /// <summary> Half the logical size. </summary>
         public float2 HalfSize
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => size * 0.5f;
         }
+        /// <summary> Half the scale. </summary>
         public float2 HalfScale
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => scale * 0.5f;
         }
+        /// <summary> Half the scaled size, which is what corner maths needs. </summary>
         public float2 HalfFullSize
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => FullSize * 0.5f;
         }
+        /// <summary> Position with the layer as its third component. </summary>
         public float3 Position3D
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => new(position.x, position.y, layer);
         }
         
+        /// <summary> What an object with nothing authored looks like. </summary>
         public static RectTransform2D Default => new(TransformDefaults.Position, TransformDefaults.Layer, TransformDefaults.Rotation,
             TransformDefaults.Size, TransformDefaults.Scale, TransformDefaults.AnchorMin, TransformDefaults.AnchorMax, TransformDefaults.Pivot);
+        /// <summary> The same but with no size, for a transform used purely as a pivot. </summary>
         public static RectTransform2D Zero => new(TransformDefaults.Position, TransformDefaults.Layer, TransformDefaults.Rotation,
             float2.zero, TransformDefaults.Scale, TransformDefaults.AnchorMin, TransformDefaults.AnchorMax, TransformDefaults.Pivot);
         
+        /// <summary> Position only; everything else defaults. </summary>
         public RectTransform2D(float2 position)
         {
             this.position = position;
@@ -75,6 +95,7 @@ namespace BH.SDK.Transforms
             anchorMax = TransformDefaults.AnchorMax;
             pivot = TransformDefaults.Pivot;
         }
+        /// <summary> Position and rotation. </summary>
         public RectTransform2D(float2 position, float rotation)
         {
             this.position = position;
@@ -86,6 +107,7 @@ namespace BH.SDK.Transforms
             anchorMax = TransformDefaults.AnchorMax;
             pivot = TransformDefaults.Pivot;
         }
+        /// <summary> Position, rotation and size. </summary>
         public RectTransform2D(float2 position, float rotation, float2 size)
         {
             this.position = position;
@@ -97,6 +119,7 @@ namespace BH.SDK.Transforms
             anchorMax = TransformDefaults.AnchorMax;
             pivot = TransformDefaults.Pivot;
         }
+        /// <summary> Position, rotation, size and scale. </summary>
         public RectTransform2D(float2 position, float rotation, float2 size, float2 scale)
         {
             this.position = position;
@@ -108,6 +131,7 @@ namespace BH.SDK.Transforms
             anchorMax = TransformDefaults.AnchorMax;
             pivot = TransformDefaults.Pivot;
         }
+        /// <summary> Everything but the anchors and the pivot, which take their defaults. </summary>
         public RectTransform2D(float2 position, float layer, float rotation, float2 size, float2 scale)
         {
             this.position = position;
@@ -119,6 +143,7 @@ namespace BH.SDK.Transforms
             anchorMax = TransformDefaults.AnchorMax;
             pivot = TransformDefaults.Pivot;
         }
+        /// <summary> Every component spelled out. </summary>
         public RectTransform2D(float2 position, float layer, float rotation, float2 size, float2 scale,
             float2 anchorMin, float2 anchorMax, float2 pivot)
         {
@@ -131,6 +156,7 @@ namespace BH.SDK.Transforms
             this.anchorMax = anchorMax;
             this.pivot = pivot;
         }
+        /// <summary> Read back off a Unity transform - the layer is inverted by default, since a larger layer draws in FRONT here and further away there. </summary>
         public RectTransform2D(Transform transform, bool invertLayer = true)
         {
             var pos = transform.localPosition;
@@ -145,6 +171,7 @@ namespace BH.SDK.Transforms
             anchorMax = TransformDefaults.AnchorMax;
             pivot = TransformDefaults.Pivot;
         }
+        /// <summary> The same for a rect transform, anchors and pivot included. </summary>
         public RectTransform2D(RectTransform rectTransform, bool invertLayer = true)
         {
             var pos = rectTransform.anchoredPosition3D;
@@ -263,12 +290,14 @@ namespace BH.SDK.Transforms
             return position - pivotPoint + alignmentPoint; // apply both pos
         }
 
+        /// <summary> The rect it covers, unrotated. </summary>
         public Rect GetRect()
         {
             var offset = -pivot * size;
             return new Rect(offset.x, offset.y, size.x, size.y);
         }
 
+        /// <summary> Its four corners, rotation applied - written into the caller's array so nothing allocates. </summary>
         public void GetCorners(NativeArray<float2> corners)
         {
             if (!corners.IsCreated || corners.Length < 4)
@@ -288,6 +317,7 @@ namespace BH.SDK.Transforms
         // Regular transforms is not InstanceTransform, ApplyTo functions like TRS - applied with pivot
         // because for them pivot is always in center (0.5, 0.5)
 
+        /// <summary> Writes it onto a Unity transform. </summary>
         public void ApplyTo(Transform transform)
         {
             var fullSize = FullSize;
@@ -302,6 +332,7 @@ namespace BH.SDK.Transforms
             transform.localScale = sca;
             transform.SetLocalPositionAndRotation(pos, rot);
         }
+        /// <summary> Writes it onto a job's transform handle. </summary>
         public void ApplyTo(TransformHandle handle)
         {
             var fullSize = FullSize;
@@ -316,6 +347,7 @@ namespace BH.SDK.Transforms
             handle.localScale = sca;
             handle.SetLocalPositionAndRotation(pos, rot);
         }
+        /// <summary> Writes it onto a job's transform access. </summary>
         public void ApplyTo(TransformAccess access)
         {
             var fullSize = FullSize;
@@ -330,6 +362,7 @@ namespace BH.SDK.Transforms
             access.localScale = sca;
             access.SetLocalPositionAndRotation(pos, rot);
         }
+        /// <summary> Writes it onto a Unity rect transform, anchors and pivot included. </summary>
         public void ApplyTo(RectTransform rectTransform)
         {
             rectTransform.localPosition = new Vector3(position.x, position.y, layer);
@@ -341,6 +374,7 @@ namespace BH.SDK.Transforms
             rectTransform.anchorMax = new Vector2(anchorMax.x, anchorMax.y);
             rectTransform.pivot = new Vector2(pivot.x, pivot.y);
         }
+        /// <summary> Frames a camera with it - the size becomes the orthographic view, optionally the aspect too. </summary>
         public void ApplyTo(Camera camera, bool setAspect = false)
         {
             var fullSize = FullSize;

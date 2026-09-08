@@ -24,14 +24,17 @@ namespace BH.SDK.Models.Statistics
     [GenerateModel]
     public sealed partial class EditorTotalsStatistics : IModel<EditorTotalsStatistics>
     {
+        /// <summary> How many levels this device has authored. </summary>
         [RuleMinValue(StatisticsRules.MinCount)]
         [JsonProperty(Names.LevelsCreated)]
         public int LevelsCreated { get; set; }
 
+        /// <summary> How many it has removed. </summary>
         [RuleMinValue(StatisticsRules.MinCount)]
         [JsonProperty(Names.LevelsDeleted)]
         public int LevelsDeleted { get; set; }
 
+        /// <summary> How many objects have been placed across all of them. </summary>
         [RuleMinValue(StatisticsRules.MinCount)]
         [JsonProperty(Names.ObjectsCreated)]
         public int ObjectsCreated { get; set; }
@@ -51,6 +54,7 @@ namespace BH.SDK.Models.Statistics
         [JsonProperty(Names.TotalResources)]
         public int TotalResources { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public EditorTotalsStatistics()
         {
             LevelsCreated = 0;

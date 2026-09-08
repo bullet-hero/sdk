@@ -9,6 +9,7 @@ namespace BH.SDK.Tests.Rules
     /// </summary>
     public class RuleInRangeTests : BaseRuleTests
     {
+        /// <summary> The rule on an int. </summary>
         [RuleContainer]
         private class IntModel
         {
@@ -16,6 +17,7 @@ namespace BH.SDK.Tests.Rules
             public int Value { get; set; }
         }
 
+        /// <summary> The rule on an int with an explicit repair value, rather than the nearer bound. </summary>
         [RuleContainer]
         private class IntDefaultModel
         {
@@ -23,6 +25,7 @@ namespace BH.SDK.Tests.Rules
             public int Value { get; set; } = 7;
         }
 
+        /// <summary> The rule on a float. </summary>
         [RuleContainer]
         private class FloatModel
         {
@@ -30,6 +33,7 @@ namespace BH.SDK.Tests.Rules
             public float Value { get; set; } = 0.5f;
         }
 
+        /// <summary> The rule on an sbyte. </summary>
         [RuleContainer]
         private class SByteModel
         {
@@ -37,6 +41,7 @@ namespace BH.SDK.Tests.Rules
             public sbyte Value { get; set; }
         }
 
+        /// <summary> The rule on a short. </summary>
         [RuleContainer]
         private class ShortModel
         {
@@ -44,6 +49,7 @@ namespace BH.SDK.Tests.Rules
             public short Value { get; set; }
         }
 
+        /// <summary> The rule on a ushort. </summary>
         [RuleContainer]
         private class UShortModel
         {
@@ -51,6 +57,7 @@ namespace BH.SDK.Tests.Rules
             public ushort Value { get; set; } = 1;
         }
 
+        /// <summary> The rule on a uint. </summary>
         [RuleContainer]
         private class UIntModel
         {
@@ -58,6 +65,7 @@ namespace BH.SDK.Tests.Rules
             public uint Value { get; set; } = 1u;
         }
 
+        /// <summary> The rule on a double. </summary>
         [RuleContainer]
         private class DoubleModel
         {
@@ -65,6 +73,7 @@ namespace BH.SDK.Tests.Rules
             public double Value { get; set; } = 0.5d;
         }
 
+        /// <summary> A property of a type the rule does not apply to, so it must decline rather than refuse. </summary>
         [RuleContainer]
         private class WrongTypeModel
         {

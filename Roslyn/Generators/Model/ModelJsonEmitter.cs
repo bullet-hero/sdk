@@ -27,6 +27,8 @@ namespace BH.SDK.Roslyn.Model
         private const string Writer = "global::Newtonsoft.Json.JsonWriter";
         private const string Reader = "global::Newtonsoft.Json.JsonReader";
 
+        /// <summary> Writes the JSON WriteJson/ReadJson pair for one model, reproducing the existing format byte
+        /// for byte. </summary>
         public static void Emit(StringBuilder builder, string indent, ModelSpec spec)
         {
             builder.Append(indent).AppendLine("#region Generated json codec");
@@ -436,6 +438,7 @@ namespace BH.SDK.Roslyn.Model
 
         #region Naming
 
+        /// <summary> The call that encodes one member's type, or null when nothing here can. </summary>
         public static string JsonDispatcher(string type)
             => "global::BH.SDK.Models.Generated." + SimpleName(type) + "Json";
 

@@ -34,6 +34,10 @@ namespace BH.SDK.Tests.Rules
     // ForAttributeWithMetadataName matches DECLARED attributes only, so a container that inherits
     // its marker is invisible to ValidationGenerator and silently keeps the reflective walk.
 
+
+    /// <summary> Which types the walk actually reaches, asserted rather than assumed - a model reachable from a
+    /// root without the marker takes its whole subtree out of validation silently. [RuleContainer] is
+    /// INHERITED, which is the fact reading the sources for a declared attribute gets wrong. </summary>
     [TestFixture]
     public class RuleContainerCoverageTests
     {

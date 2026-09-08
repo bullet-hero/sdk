@@ -15,6 +15,9 @@ namespace BH.SDK.Tests.Generators
     // Modifiers are the half of the contract nothing exercised until now: Requirements.Selection,
     // context.Edit's whole-object snapshot, and a run whose GeneratorCost is legitimately zero
     // because it adds nothing while changing plenty.
+
+    /// <summary> The half of the contract nothing else exercises: a selection requirement, a whole-object edit
+    /// snapshot, and a run whose cost is legitimately zero because it adds nothing while changing plenty. </summary>
     public class ModifierGeneratorsTests
     {
         private static Level CreateLevel(int framerate = 60)

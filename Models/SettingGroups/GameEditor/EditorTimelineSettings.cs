@@ -63,11 +63,13 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
         [JsonProperty(Names.TimeFormat)]
         public TimelineTimeFormat TimeFormat { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public EditorTimelineSettings()
         {
             ResetOwn();
         }
 
+        /// <summary> Every member at once, in declaration order. </summary>
         public EditorTimelineSettings(float snapThresholdPx, float edgeHandlePx, bool globalLoop,
             bool localLoop, TimelineTimeFormat timeFormat)
         {

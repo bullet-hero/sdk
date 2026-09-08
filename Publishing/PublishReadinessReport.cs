@@ -15,6 +15,7 @@ namespace BH.SDK.Publishing
     /// <summary> Everything one publish check found, and how complete that check was. </summary>
     public readonly struct PublishReadinessReport
     {
+        /// <summary> Everything the publish check found. </summary>
         public readonly List<PublishIssue> Issues;
 
         /// <summary> Whether the level file was available. False means the resource-coverage and
@@ -34,6 +35,7 @@ namespace BH.SDK.Publishing
         /// and not for another. </summary>
         public readonly string ProfileKey;
 
+        /// <summary> Every member at once, in declaration order. </summary>
         public PublishReadinessReport(List<PublishIssue> issues, bool levelInspected,
             bool payloadInspected, bool inputsComplete, string profileKey)
         {
@@ -44,6 +46,7 @@ namespace BH.SDK.Publishing
             ProfileKey = profileKey;
         }
 
+        /// <summary> How many findings there are. </summary>
         public int Count => Issues?.Count ?? 0;
 
         /// <summary> Something the service refuses outright - what a client blocks the upload on. </summary>
@@ -58,12 +61,15 @@ namespace BH.SDK.Publishing
         /// cannot be known to fit a service that bounds sizes. </summary>
         public bool IsReady => InputsComplete && !HasErrors && !NeedsManualReview;
 
+        /// <summary> The findings that stop a publish. </summary>
         public IEnumerable<PublishIssue> Errors
             => Issues?.Where(issue => issue.Group == RuleGroup.Error) ?? Enumerable.Empty<PublishIssue>();
 
+        /// <summary> The findings a person has to look at but that block nothing. </summary>
         public IEnumerable<PublishIssue> Reviews
             => Issues?.Where(issue => issue.Group == RuleGroup.Warning) ?? Enumerable.Empty<PublishIssue>();
 
+        /// <summary> One line, for a log. </summary>
         public override string ToString()
         {
             var scope = InputsComplete ? "full" : LevelInspected ? "partial" : "meta-only";

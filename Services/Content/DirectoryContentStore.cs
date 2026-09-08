@@ -26,6 +26,7 @@ namespace BH.SDK.Services.Content
         private readonly DirectoryInfo _root;
         private readonly string _rootFullPath;
 
+        /// <summary> Built from its root and null. </summary>
         public DirectoryContentStore(DirectoryInfo root, string name = null)
         {
             _root = root ?? throw new ArgumentNullException(nameof(root));
@@ -40,20 +41,24 @@ namespace BH.SDK.Services.Content
             Name = string.IsNullOrEmpty(name) ? root.Name : name;
         }
 
+        /// <summary> Built from its path and null. </summary>
         public DirectoryContentStore(string rootPath, string name = null)
             : this(new DirectoryInfo(rootPath), name) { }
 
+        /// <summary> What this store is called in a message; never part of a path. </summary>
         public string Name { get; }
 
         /// <summary> The directory this store is rooted at. For a host that has to name it. </summary>
         public DirectoryInfo Root => _root;
 
+        /// <summary> Whether anything is stored under that path. </summary>
         public ValueTask<bool> ExistsAsync(string path, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
             return new ValueTask<bool>(File.Exists(Resolve(path, nameof(path))));
         }
 
+        /// <summary> Every path under a prefix, relative to the root. </summary>
         public ValueTask<IReadOnlyList<string>> ListAsync(string prefix, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
@@ -84,6 +89,7 @@ namespace BH.SDK.Services.Content
             return new ValueTask<IReadOnlyList<string>>(results);
         }
 
+        /// <summary> Reads one entry. </summary>
         public ValueTask<Stream> OpenReadAsync(string path, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
@@ -97,6 +103,7 @@ namespace BH.SDK.Services.Content
             return new ValueTask<Stream>(stream);
         }
 
+        /// <summary> Writes one entry, creating whatever it needs on the way. </summary>
         public ValueTask<Stream> OpenWriteAsync(string path, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
@@ -110,6 +117,7 @@ namespace BH.SDK.Services.Content
             return new ValueTask<Stream>(stream);
         }
 
+        /// <summary> Removes one entry; a missing one is not an error. </summary>
         public ValueTask DeleteAsync(string path, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
@@ -119,6 +127,7 @@ namespace BH.SDK.Services.Content
             return default;
         }
 
+        /// <summary> How many bytes one entry holds. </summary>
         public ValueTask<long> GetLengthAsync(string path, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();

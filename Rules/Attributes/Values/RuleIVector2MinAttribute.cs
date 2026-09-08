@@ -7,29 +7,39 @@ using BH.SDK.Utils;
 
 namespace BH.SDK.Rules.Attributes
 {
+    /// <summary> An authored 2D vector with a per-axis floor, in every form of it. </summary>
     [AttributeUsage(PropertyTarget)]
     public class RuleIVector2MinAttribute : BasePropertyRuleAttribute
     {
+        /// <summary> <c>"rule_ivector2_min"</c>, the key its message is looked up under. </summary>
         public override string RuleNameKey => "rule_ivector2_min";
 
         // always include
+
+        /// <summary> Lower bound on the X axis. </summary>
         public float MinX { get; set; }
+
+        /// <summary> Lower bound on the Y axis. </summary>
         public float MinY { get; set; }
         
+        /// <summary> One bound, applied to every axis. </summary>
         public RuleIVector2MinAttribute(float min)
         {
             MinX = min;
             MinY = min;
         }
+        /// <summary> Takes the lower bound on X and the lower bound on Y. </summary>
         public RuleIVector2MinAttribute(float minX, float minY)
         {
             MinX = minX;
             MinY = minY;
         }
 
+        /// <summary> Applies to authored 2D vector properties. </summary>
         protected override bool IsValidTypeInternal(PropertyInfo property)
             => typeof(IVector2).IsAssignableFrom(property.PropertyType);
 
+        /// <summary> Passes when both axes are at or above their bounds. </summary>
         protected override bool IsValidInternal(object value, RuleContext context)
         {
             if (value is not IVector2 vec) return false;
@@ -68,6 +78,7 @@ namespace BH.SDK.Rules.Attributes
             }
         }
 
+        /// <summary> Clamps each form of it up to them. </summary>
         protected override void FixInternal(object target, PropertyInfo property, RuleContext context)
         {
             var value = property.GetValue(target);

@@ -11,6 +11,9 @@ namespace BH.SDK.Tests
     // asserted here is exactly that claim, not the trigonometry: every generator's output must be
     // inside the authored box, within both caps, and already sanitized (running Sanitize again must
     // find nothing left to change).
+
+    /// <summary> That a caller can write plain trigonometry and get geometry the FORMAT accepts: inside the
+    /// authored box, within both caps, and already sanitized. </summary>
     public class ShapeSynthUtilsTests
     {
         private static ShapeId Id => ShapeId.NewGuid();

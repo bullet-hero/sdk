@@ -15,6 +15,7 @@ namespace BH.SDK.Tests.Rules
     /// </summary>
     public class RuleParentObjectIdValidTests : BaseRuleTests
     {
+        /// <summary> A parent reference, which must name an object that exists in the same scope. </summary>
         [RuleContainer]
         private class ParentModel
         {

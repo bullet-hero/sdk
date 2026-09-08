@@ -30,18 +30,22 @@ namespace BH.SDK.Models.Effects
         [JsonProperty(Names.Speed)]
         public IFloat Speed { get; set; }
         
+        /// <summary> Which concrete form this is - the discriminator a converter writes and reads back. </summary>
         public EffectShapeSpreadType GetModelType() => EffectShapeSpreadType.Loop;
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public EffectShapeSpreadLoop()
         {
             Spread = new FloatValue(EffectRules.ShapeSpread.Spread_Default);
             Speed = new FloatValue(EffectRules.ShapeSpread.Speed_Default);
         }
+        /// <summary> Built from its spread and speed. </summary>
         public EffectShapeSpreadLoop(float spread, float speed)
         {
             Spread = new FloatValue(spread);
             Speed = new FloatValue(speed);
         }
+        /// <summary> Built from its spread and speed. </summary>
         public EffectShapeSpreadLoop(IFloat spread, IFloat speed)
         {
             Spread = spread;

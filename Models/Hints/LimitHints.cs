@@ -68,6 +68,7 @@ namespace BH.SDK.Models.Hints
         public bool HasValue => Instances > 0 || ShapesOpaque > 0 || ShapesTransparent > 0
                                 || Effects > 0 || Texts > 0 || Tracks > 0;
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public LimitHints()
         {
             Instances = 0;
@@ -77,6 +78,7 @@ namespace BH.SDK.Models.Hints
             Texts = 0;
             Tracks = 0;
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public LimitHints(int instances, int shapesOpaque, int shapesTransparent,
             int effects, int texts, int tracks)
         {
@@ -88,6 +90,7 @@ namespace BH.SDK.Models.Hints
             Tracks = tracks;
         }
 
+        /// <summary> One line, for a log. </summary>
         public override string ToString() =>
             $"instances:{Instances}, shapes_opaque:{ShapesOpaque}, " +
             $"shapes_transparent:{ShapesTransparent}, effects:{Effects}, " +

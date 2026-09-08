@@ -6,9 +6,12 @@ using BH.SDK.Serialization.Converters.Base;
 
 namespace BH.SDK.Serialization.Converters.CustomTypes
 {
+    /// <summary> Tags an effect's colour with which of its forms it is. </summary>
     public class EffectColorConverter : JsonConverterCustomType<IEffectColor, EffectColorType>
     {
+        /// <summary> Which form the value is, read off the value itself. </summary>
         public override EffectColorType GetCustomType(IEffectColor value) => value.GetModelType();
+        /// <summary> The class each effect colour form is. </summary>
         public override Type GetType(EffectColorType customType)
         {
             return customType switch

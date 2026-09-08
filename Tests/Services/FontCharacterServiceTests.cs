@@ -13,6 +13,9 @@ namespace BH.SDK.Tests.Services
     // The set this builds is trusted blindly by every reader, so what matters here is not that it is
     // "roughly right" but that it is exactly reproducible: same level in, same string out, byte for
     // byte, or a re-save churns the file and a foreign tool's set disagrees with the editor's.
+
+    /// <summary> That the character set is exactly reproducible - same level in, same string out - or a re-save
+    /// churns the file and a foreign tool's set disagrees with the editor's. </summary>
     public class FontCharacterServiceTests
     {
         private static readonly FontResourceId FontA = new(1);

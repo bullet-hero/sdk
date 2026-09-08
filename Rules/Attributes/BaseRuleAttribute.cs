@@ -16,7 +16,10 @@ namespace BH.SDK.Rules.Attributes
     /// <summary> Base of every declarative rule, of either kind. </summary>
     public abstract class BaseRuleAttribute : Attribute
     {
+        /// <summary> Where an object rule may be written. </summary>
         public const AttributeTargets ClassTarget = AttributeTargets.Class;
+
+        /// <summary> Where a property rule may be written. </summary>
         public const AttributeTargets PropertyTarget = AttributeTargets.Property;
 
         // Abstract rather than "virtual => GetType().Name" on purpose. A consumer that shows issues
@@ -32,7 +35,10 @@ namespace BH.SDK.Rules.Attributes
         /// playable but wrong, Advice means cosmetic. Drives RuleAnalyzerSettings' severity filter. </summary>
         public virtual RuleGroup Group => RuleGroup.Error;
 
+        /// <summary> False for a rule that only carries a repair, so nothing is ever reported for it. </summary>
         public virtual bool HasIsValid => true;
+
+        /// <summary> False for a rule whose violation is a content decision the author has to make. </summary>
         public virtual bool HasFix => true;
     }
 }

@@ -16,11 +16,14 @@ namespace BH.SDK.Rules.Attributes
     [AttributeUsage(PropertyTarget)]
     public class RuleCollectionNoNullItemsAttribute : BasePropertyRuleAttribute
     {
+        /// <summary> <c>"rule_collection_no_null_items"</c>, the key its message is looked up under. </summary>
         public override string RuleNameKey => "rule_collection_no_null_items";
 
+        /// <summary> Applies to any collection. </summary>
         protected override bool IsValidTypeInternal(PropertyInfo property)
             => typeof(ICollection).IsAssignableFrom(property.PropertyType);
 
+        /// <summary> Passes when no entry is null. </summary>
         protected override bool IsValidInternal(object value, RuleContext context)
         {
             if (value is not ICollection collection) return false;
@@ -36,6 +39,8 @@ namespace BH.SDK.Rules.Attributes
         // would invent content the author never wrote - and for an index-addressed collection like
         // ThemeData.Matrix it would silently shift every slot after it, so the count rule that
         // pairs with this one is what restores the length afterwards.
+
+        /// <summary> Removes the null entries, back to front so the indices stay valid. </summary>
         protected override void FixInternal(object target, PropertyInfo property, RuleContext context)
         {
             if (property.GetValue(target) is not IList list || list.IsReadOnly) return;

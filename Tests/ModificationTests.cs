@@ -6,6 +6,7 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests
 {
+    /// <summary> Reading and writing a field addressed by a path string, including into a list. </summary>
     public class ModificationTests
     {
         [Test]
@@ -104,6 +105,7 @@ namespace BH.SDK.Tests
             Assert.AreNotEqual(null, path2);
         }
         
+        /// <summary> A fixture model with plain and nested properties for a path to walk into. </summary>
         public class Model1
         {
             [JsonProperty("prop1")]
@@ -131,6 +133,7 @@ namespace BH.SDK.Tests
             }
         }
 
+        /// <summary> The nested half of <see cref="Model1"/>, including a list a path can index. </summary>
         public class Model2
         {
             [JsonProperty("prop1")]

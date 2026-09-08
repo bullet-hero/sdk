@@ -34,10 +34,13 @@ namespace BH.SDK.Generators.Textures
         // TextureObject -> ShapeObject rename left it alone on purpose, since renaming it would
         // silently break every saved reference for no gain. Do not "fix" it to match the class.
 
+        /// <summary> <c>"gen_texture_objects"</c>, the key a host lists this generator under. </summary>
         public override string NameKey => "gen_texture_objects";
 
+        /// <summary> What must be true before a host offers this run. </summary>
         public override GeneratorRequirements Requirements => GeneratorRequirements.ExternalAnalysis;
 
+        /// <summary> The order, labels and ranges a host lays its form out with. </summary>
         public override GeneratorHints Hints { get; } = new GeneratorHints.Builder()
             .Section(GeneratorSections.Main, SpawnParameters.MainFields)
             .Section(GeneratorSections.Main, nameof(Parameters.Source), nameof(Parameters.TargetWidth),
@@ -62,6 +65,7 @@ namespace BH.SDK.Generators.Textures
             .Range(nameof(SpawnParameters.Size), ValueRules.MinSca, ValueRules.MaxSca)
             .Build();
 
+        /// <summary> Writes this run's objects into the scope. </summary>
         protected override void Generate(GeneratorContext context, Parameters parameters)
         {
             var runs = BuildRuns(parameters);
@@ -91,6 +95,7 @@ namespace BH.SDK.Generators.Textures
             }
         }
 
+        /// <summary> What this run would add, answered before it runs. </summary>
         protected override GeneratorCost EstimateTyped(GeneratorContext context, Parameters parameters)
         {
             var runs = BuildRuns(parameters);
@@ -100,11 +105,16 @@ namespace BH.SDK.Generators.Textures
         /// <summary> One merged horizontal run of same-coloured pixels. </summary>
         private new readonly struct Run
         {
+            /// <summary> Where the run starts on its row. </summary>
             public readonly int X;
+            /// <summary> Which row it is on. </summary>
             public readonly int Y;
+            /// <summary> How many pixels of one colour it covers. </summary>
             public readonly int Length;
+            /// <summary> That colour. </summary>
             public readonly Pixel Color;
 
+            /// <summary> One horizontal stretch of a single colour, which becomes one object. </summary>
             public Run(int x, int y, int length, Pixel color)
             {
                 X = x;
@@ -242,24 +252,36 @@ namespace BH.SDK.Generators.Textures
 
         private static float Clamp01(float value) => value < 0f ? 0f : value > 1f ? 1f : value;
 
+        /// <summary> Which image is traced, how far it is downsampled, and what counts as transparent. Public
+        /// mutable fields, like every parameters class here - a form binds to them and a preset serializes from them. </summary>
         public class Parameters : SpawnParameters, IPixelTextureInput
         {
             /// <summary> Zero means "the source image's own size", capped at 256. </summary>
             public int TargetWidth = 64;
+            /// <summary> How far the image is downsampled before it is traced. </summary>
             public int TargetHeight = 64;
+            /// <summary> How large one pixel becomes in the level. </summary>
             public float PixelSize = 0.25f;
+            /// <summary> Where the image is placed. </summary>
             public float OriginX;
+            /// <summary> Its vertical half. </summary>
             public float OriginY;
+            /// <summary> How transparent a pixel has to be before it is skipped entirely. </summary>
             public float AlphaThreshold = 0.05f;
+            /// <summary> Merges neighbouring pixels of one colour into a single rectangle, which is most of what keeps the object count down. </summary>
             public bool MergeRuns = true;
+            /// <summary> Writes colours as theme references rather than as literals. </summary>
             public bool UseThemeRef;
+            /// <summary> Which theme those references resolve against. </summary>
             public ThemeId Theme = ThemeId.Null;
 
+            /// <summary> Which image is traced. </summary>
             public TextureResourceId Source = TextureResourceId.Null;
 
             // NOT named Texture, even though the interface member is: SpawnParameters already has a
             // Texture (the image each block draws), and a form reflects fields by NAME - a shadowing
             // field makes one of the two unreachable and every hint keyed "Texture" hit both.
+
             /// <summary> The decoded source image, filled by the host. </summary>
             public PixelTexture Image;
 

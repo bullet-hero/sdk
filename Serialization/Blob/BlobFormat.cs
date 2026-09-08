@@ -29,6 +29,7 @@ namespace BH.SDK.Serialization.Blob
         /// <summary> magic + generation + flags + length + hash. </summary>
         public const int HeaderLength = 4 + 2 + 2 + 8 + 8;
 
+        /// <summary> Lays the header down in the order a reader checks it. </summary>
         public static void WriteHeader(ref BlobWriter writer, int payloadLength, ulong hash)
         {
             writer.WriteUInt(Magic);

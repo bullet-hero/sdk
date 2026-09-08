@@ -23,10 +23,12 @@ namespace BH.SDK.Models.SettingGroups.Controls
     public sealed partial class GamepadControlsSettings : BaseDeviceControlsSettings,
         IModel<GamepadControlsSettings>, IMoveable<GamepadControlsSettings>
     {
+        /// <summary> Which of the three steering modes the pad drives. </summary>
         [RuleEnumValid(GamepadControlMode.Direction)]
         [JsonProperty(Names.Mode)]
         public GamepadControlMode Mode { get; set; }
 
+        /// <summary> Which stick moves the avatar; the other one is free. </summary>
         [RuleEnumValid(MotionStick.Both)]
         [JsonProperty(Names.MotionStick)]
         public MotionStick MotionStick { get; set; }
@@ -43,13 +45,17 @@ namespace BH.SDK.Models.SettingGroups.Controls
         [JsonProperty(Names.DashButtons)]
         public GamepadButtonMask DashButtons { get; set; }
 
+        /// <summary> This device's own mode as the device-independent one; the two enums line up by convention. </summary>
         public override ControlMode GeneralMode => (ControlMode)Mode;
+        /// <summary> Which device these settings are for. </summary>
         public override ControlDevice Device => ControlDevice.Gamepad;
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public GamepadControlsSettings()
         {
             ResetOwn();
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public GamepadControlsSettings(bool active, float sensitivity,
             float deadZone, float smoothing, bool invertX, bool invertY, GamepadControlMode mode,
             MotionStick motionStick, float responseCurve, GamepadButtonMask dashButtons)

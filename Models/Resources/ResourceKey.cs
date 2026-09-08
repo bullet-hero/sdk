@@ -29,11 +29,13 @@ namespace BH.SDK.Models.Resources
         [JsonProperty(Names.Uri)]
         public string Uri { get; set; }
         
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public ResourceKey()
         {
             UriType = ResourceUriType.Undefined;
             Uri = string.Empty;
         }
+        /// <summary> Built from its type and uri. </summary>
         public ResourceKey(ResourceUriType uriType, string uri)
         {
             UriType = uriType;

@@ -12,6 +12,9 @@ namespace BH.SDK.Tests
     // ClipboardData is a serialization root like Level or Prefab, and it is the only one whose whole
     // point is leaving the process as text (the editor puts it on the system clipboard), so a
     // round trip is not a nicety here - it is the feature.
+
+    /// <summary> ClipboardData's round trip, which for this root is the feature rather than a nicety - its whole
+    /// purpose is leaving the process as text. </summary>
     public class ClipboardDataTests
     {
         private static ClipboardData CreateTestClipboard()

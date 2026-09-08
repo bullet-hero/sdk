@@ -30,6 +30,7 @@ namespace BH.SDK.Models.Resources
         /// <summary> Alpha channel, 0-255. </summary>
         [FieldOffset(3)] public byte a;
 
+        /// <summary> Built from its r, g, b and a. </summary>
         public Pixel(byte r, byte g, byte b, byte a)
         {
             this = default;
@@ -38,12 +39,14 @@ namespace BH.SDK.Models.Resources
             this.b = b;
             this.a = a;
         }
+        /// <summary> Built from its rgba. </summary>
         public Pixel(int rgba)
         {
             this = default;
             this.rgba = rgba;
         }
 
+        /// <summary> Blends two pixels, clamping the factor to 0-1. </summary>
         public static Pixel Lerp(in Pixel a, in Pixel b, float t)
         {
             t = BHSDKMath.Clamp01(t);
@@ -55,6 +58,7 @@ namespace BH.SDK.Models.Resources
                 a = (byte)(a.a + (b.a - a.a) * t)
             };
         }
+        /// <summary> The same without that clamp. </summary>
         public static Pixel LerpUnclamped(Pixel a, Pixel b, float t)
         {
             return new Pixel
@@ -66,6 +70,7 @@ namespace BH.SDK.Models.Resources
             };
         }
 
+        /// <summary> One channel by index, in R, G, B, A order. </summary>
         public byte this[int index]
         {
             readonly get
@@ -92,20 +97,28 @@ namespace BH.SDK.Models.Resources
             }
         }
 
+        /// <summary> Matches the equality above. </summary>
         public readonly override int GetHashCode() => rgba.GetHashCode();
 
+        /// <summary> The untyped spelling of <c>Copy</c>. </summary>
         public object Clone() => Copy();
+        /// <summary> A deep copy, sharing nothing mutable with this one. </summary>
         public Pixel Copy() => new(r, g, b, a);
 
+        /// <summary> The same, boxed. </summary>
         public readonly override bool Equals(object other) => other is Pixel value && Equals(value);
+        /// <summary> Member by member. </summary>
         public readonly bool Equals(Pixel other) => rgba == other.rgba;
         
+        /// <summary> One line, for a log. </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly override string ToString() => ToString(null, null);
         
+        /// <summary> One line, with the channels formatted as asked. </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly string ToString(string format) => ToString(format, null);
         
+        /// <summary> The same, honouring a culture. </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly string ToString(string format, IFormatProvider formatProvider)
         {

@@ -21,10 +21,12 @@ namespace BH.SDK.Models.AudioEffects
         [JsonProperty(Names.CutoffFreq)]
         public float CutoffFreq { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public AudioHighpass()
         {
             CutoffFreq = AudioRules.Highpass.CutoffFreq_Default;
         }
+        /// <summary> Built from its level and freq. </summary>
         public AudioHighpass(float mixLevel, float cutoffFreq) : base(mixLevel)
         {
             CutoffFreq = cutoffFreq;

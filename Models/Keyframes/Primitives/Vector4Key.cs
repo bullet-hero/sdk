@@ -23,10 +23,12 @@ namespace BH.SDK.Models.Keyframes
         [JsonProperty(Names.Vector4)]
         public IVector4 Value { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public Vector4Key()
         {
             Value = new Vector4Value();
         }
+        /// <summary> Built from its value, frame and default ease. </summary>
         public Vector4Key(IVector4 value, int frame, EaseType ease = DefaultEase) : base(frame, ease)
         {
             Value = value;

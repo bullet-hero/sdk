@@ -35,8 +35,10 @@ namespace BH.SDK.Models.Effects
         [JsonProperty(Names.Spread)]
         public IEffectShapeSpread Spread { get; set; }
         
+        /// <summary> Which concrete form this is - the discriminator a converter writes and reads back. </summary>
         public EffectShapeType GetModelType() => EffectShapeType.Line;
         
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public EffectShapeLine()
         {
             Start = new Vector2Value(
@@ -47,6 +49,7 @@ namespace BH.SDK.Models.Effects
                 EffectRules.Shape.LineEnd_Y_Default);
             Spread = new EffectShapeSpreadRandom();
         }
+        /// <summary> Built from its start, end and spread. </summary>
         public EffectShapeLine(IVector2 start, IVector2 end, IEffectShapeSpread spread)
         {
             Start = start;

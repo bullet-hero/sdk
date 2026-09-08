@@ -85,6 +85,7 @@ namespace BH.SDK.Models.SettingGroups.Graphics
         public bool HasResolution() =>
             ResolutionWidth > NativeResolution && ResolutionHeight > NativeResolution;
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public DisplayGraphicsSettings()
         {
             WindowMode = WindowMode.FullScreenWindow;
@@ -94,6 +95,7 @@ namespace BH.SDK.Models.SettingGroups.Graphics
             VSync = VSyncMode.Off;
         }
 
+        /// <summary> Every member at once, in declaration order. </summary>
         public DisplayGraphicsSettings(WindowMode windowMode, int resolutionWidth,
             int resolutionHeight, float renderScale, VSyncMode vSync)
         {

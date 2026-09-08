@@ -24,10 +24,12 @@ namespace BH.SDK.Models.Keyframes
         [JsonProperty(Names.Int)]
         public IInt Layer { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public LayerKey()
         {
             Layer = new IntValue();
         }
+        /// <summary> Built from its value, frame and default ease. </summary>
         public LayerKey(IInt value, int frame, EaseType ease = DefaultEase) : base(frame, ease)
         {
             Layer = value;

@@ -17,6 +17,7 @@ namespace BH.SDK.Tests.Rules
     /// </summary>
     public class RuleShapeGeometryTests : BaseRuleTests
     {
+        /// <summary> A model carrying real indexed geometry. </summary>
         [RuleContainer]
         [RuleShapeGeometry]
         private class GeometryModel : IShapeGeometry
@@ -25,6 +26,7 @@ namespace BH.SDK.Tests.Rules
             public List<int> Indices { get; set; } = new();
         }
 
+        /// <summary> A model that does not implement the geometry contract at all. </summary>
         [RuleContainer]
         [RuleShapeGeometry]
         private class NotGeometryModel

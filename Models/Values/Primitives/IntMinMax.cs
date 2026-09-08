@@ -28,17 +28,20 @@ namespace BH.SDK.Models.Values
         [JsonProperty(Names.Max)]
         public int Max { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public IntMinMax()
         {
             Min = ValueRules.IntZero;
             Max = ValueRules.IntOne;
         }
+        /// <summary> Built from its min and max. </summary>
         public IntMinMax(int min, int max)
         {
             Min = min;
             Max = max;
         }
 
+        /// <summary> Which concrete form this is - the discriminator a converter writes and reads back. </summary>
         public IntType GetModelType() => IntType.RandomMinMax;
     }
 }

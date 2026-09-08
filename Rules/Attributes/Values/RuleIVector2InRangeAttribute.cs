@@ -7,22 +7,37 @@ using BH.SDK.Utils;
 
 namespace BH.SDK.Rules.Attributes
 {
+    /// <summary> An authored 2D vector bounded on both axes, in every form of it. </summary>
     [AttributeUsage(PropertyTarget)]
     public class RuleIVector2InRangeAttribute : BasePropertyRuleAttribute
     {
+        /// <summary> <c>"rule_ivector2_in_range"</c>, the key its message is looked up under. </summary>
         public override string RuleNameKey => "rule_ivector2_in_range";
 
         // always include
+
+        /// <summary> Lower bound on the X axis. </summary>
         public float MinX { get; set; }
+
+        /// <summary> Upper bound on the X axis. </summary>
         public float MaxX { get; set; }
+
+        /// <summary> Lower bound on the Y axis. </summary>
         public float MinY { get; set; }
+
+        /// <summary> Upper bound on the Y axis. </summary>
         public float MaxY { get; set; }
         
+        /// <summary> Width of the range on the X axis. </summary>
         public float DiffX => MaxX - MinX;
+        /// <summary> Width of the range on the Y axis. </summary>
         public float DiffY => MaxY - MinY;
+        /// <summary> Half the width of the range on the X axis - the offset from its midpoint to either end. </summary>
         public float HalfDiffX => (MaxX - MinX) / 2f;
+        /// <summary> Half the width of the range on the Y axis - the offset from its midpoint to either end. </summary>
         public float HalfDiffY => (MaxY - MinY) / 2f;
 
+        /// <summary> Both bounds, as <c>float</c>. </summary>
         public RuleIVector2InRangeAttribute(float min, float max)
         {
             MinX = min;
@@ -30,6 +45,7 @@ namespace BH.SDK.Rules.Attributes
             MinY = min;
             MaxY = max;
         }
+        /// <summary> Takes the lower bound on X, the upper bound on X, the lower bound on Y and the upper bound on Y. </summary>
         public RuleIVector2InRangeAttribute(float minX, float maxX, float minY, float maxY)
         {
             MinX = minX;
@@ -38,9 +54,11 @@ namespace BH.SDK.Rules.Attributes
             MaxY = maxY;
         }
 
+        /// <summary> Applies to authored 2D vector properties. </summary>
         protected override bool IsValidTypeInternal(PropertyInfo property)
             => typeof(IVector2).IsAssignableFrom(property.PropertyType);
 
+        /// <summary> Passes when every point the value can produce lies inside the bounds on both axes. </summary>
         protected override bool IsValidInternal(object value, RuleContext context)
         {
             if (value is not IVector2 vec) return false;
@@ -83,6 +101,7 @@ namespace BH.SDK.Rules.Attributes
             }
         }
 
+        /// <summary> Clamps each form of it into the box. </summary>
         protected override void FixInternal(object target, PropertyInfo property, RuleContext context)
         {
             var value = property.GetValue(target);

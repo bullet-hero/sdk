@@ -36,12 +36,14 @@ namespace BH.SDK.Models.Values
         [JsonProperty(Names.ChannelB)]
         public float B { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public Color3Value()
         {
             R = ValueRules.MaxColor;
             G = ValueRules.MaxColor;
             B = ValueRules.MaxColor;
         }
+        /// <summary> Built from its r, g and b. </summary>
         public Color3Value(float r, float g, float b)
         {
             R = r;
@@ -49,9 +51,12 @@ namespace BH.SDK.Models.Values
             B = b;
         }
 
+        /// <summary> Which concrete form this is - the discriminator a converter writes and reads back. </summary>
         public ColorType GetModelType() => ColorType.Value;
 
+        /// <summary> Opaque white. </summary>
         public static Color3Value white => new(1f, 1f, 1f);
+        /// <summary> Opaque black. </summary>
         public static Color3Value black => new(0f, 0f, 0f);
     }
 }

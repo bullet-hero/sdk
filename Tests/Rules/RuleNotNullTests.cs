@@ -12,11 +12,13 @@ namespace BH.SDK.Tests.Rules
     /// </summary>
     public class RuleNotNullTests : BaseRuleTests
     {
+        /// <summary> An interface a property can be typed as, which a repair cannot construct directly. </summary>
         private interface IPayload
         {
             int Number { get; }
         }
 
+        /// <summary> The one implementation of it. </summary>
         private class Payload : IPayload
         {
             public int Number { get; }
@@ -31,6 +33,7 @@ namespace BH.SDK.Tests.Rules
             }
         }
 
+        /// <summary> A plain reference property. </summary>
         [RuleContainer]
         private class ReferenceModel
         {
@@ -38,6 +41,7 @@ namespace BH.SDK.Tests.Rules
             public Payload Value { get; set; } = new();
         }
 
+        /// <summary> A string, repaired to empty rather than left null. </summary>
         [RuleContainer]
         private class StringModel
         {
@@ -45,6 +49,7 @@ namespace BH.SDK.Tests.Rules
             public string Value { get; set; } = "text";
         }
 
+        /// <summary> A list, repaired to an empty one. </summary>
         [RuleContainer]
         private class ListModel
         {
@@ -52,6 +57,7 @@ namespace BH.SDK.Tests.Rules
             public List<int> Value { get; set; } = new();
         }
 
+        /// <summary> An array, repaired to an empty one. </summary>
         [RuleContainer]
         private class ArrayModel
         {
@@ -59,6 +65,7 @@ namespace BH.SDK.Tests.Rules
             public int[] Value { get; set; } = Array.Empty<int>();
         }
 
+        /// <summary> A property typed as the interface, where the repair has to pick an implementation. </summary>
         [RuleContainer]
         private class InterfaceModel
         {
@@ -66,6 +73,7 @@ namespace BH.SDK.Tests.Rules
             public IPayload Value { get; set; } = new Payload();
         }
 
+        /// <summary> A property whose type has no parameterless constructor. </summary>
         [RuleContainer]
         private class ConstructArgsModel
         {
@@ -73,6 +81,7 @@ namespace BH.SDK.Tests.Rules
             public IPayload Value { get; set; } = new Payload(42);
         }
 
+        /// <summary> A nullable value type, where null is a real state rather than a missing reference. </summary>
         [RuleContainer]
         private class NullableModel
         {
@@ -80,6 +89,7 @@ namespace BH.SDK.Tests.Rules
             public int? Value { get; set; } = 0;
         }
 
+        /// <summary> A property of a type the rule does not apply to, so it must decline rather than refuse. </summary>
         [RuleContainer]
         private class WrongTypeModel
         {

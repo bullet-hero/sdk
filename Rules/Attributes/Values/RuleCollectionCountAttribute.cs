@@ -5,24 +5,31 @@ using BH.SDK.Utils;
 
 namespace BH.SDK.Rules.Attributes
 {
+    /// <summary> A collection that must hold exactly this many items, repaired by trimming or padding it. </summary>
     [AttributeUsage(PropertyTarget)]
     public class RuleCollectionCountAttribute : BasePropertyRuleAttribute
     {
+        /// <summary> <c>"rule_collection_count"</c>, the key its message is looked up under. </summary>
         public override string RuleNameKey => "rule_collection_count";
 
+        /// <summary> The exact length required. </summary>
         public int Count { get; set; }
 
+        /// <summary> Takes the exact length required. </summary>
         public RuleCollectionCountAttribute(int count)
         {
             Count = count;
         }
 
+        /// <summary> Applies to any collection. </summary>
         protected override bool IsValidTypeInternal(PropertyInfo property)
             => typeof(ICollection).IsAssignableFrom(property.PropertyType);
 
+        /// <summary> Passes when the collection holds exactly Count items. </summary>
         protected override bool IsValidInternal(object value, RuleContext context)
             => value is ICollection col && col.Count == Count;
 
+        /// <summary> Trims or pads it to Count; an array is replaced, since it cannot be resized. </summary>
         protected override void FixInternal(object target, PropertyInfo property, RuleContext context)
         {
             var value = property.GetValue(target);

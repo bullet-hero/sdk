@@ -10,6 +10,7 @@ namespace BH.SDK.Tests.Rules
     /// </summary>
     public class RuleCollectionNoNullItemsTests : BaseRuleTests
     {
+        /// <summary> A collection element. </summary>
         private class Item
         {
             public int Number { get; set; }
@@ -21,6 +22,7 @@ namespace BH.SDK.Tests.Rules
             }
         }
 
+        /// <summary> A list that may not hold a null entry. </summary>
         [RuleContainer]
         private class Model
         {
@@ -28,6 +30,7 @@ namespace BH.SDK.Tests.Rules
             public List<Item> Value { get; set; } = new();
         }
 
+        /// <summary> A property of a type the rule does not apply to, so it must decline rather than refuse. </summary>
         [RuleContainer]
         private class WrongTypeModel
         {

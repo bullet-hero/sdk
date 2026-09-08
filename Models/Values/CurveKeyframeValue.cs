@@ -57,6 +57,7 @@ namespace BH.SDK.Models.Values
         [JsonProperty(Names.OutWeight)]
         public float OutWeight { get; set; }
         
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public CurveKeyframeValue()
         {
             Time = ValueRules.FloatZero;
@@ -68,6 +69,7 @@ namespace BH.SDK.Models.Values
             InWeight = ValueRules.FloatZero;
             OutWeight = ValueRules.FloatZero;
         }
+        /// <summary> Built from its time and value. </summary>
         public CurveKeyframeValue(float time, float value)
         {
             Time = time;
@@ -79,6 +81,7 @@ namespace BH.SDK.Models.Values
             InWeight = ValueRules.FloatZero;
             OutWeight = ValueRules.FloatZero;
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public CurveKeyframeValue(float time, float value, 
             float inTangent, float outTangent, float inWeight, float outWeight)
         {
@@ -91,6 +94,7 @@ namespace BH.SDK.Models.Values
             InWeight = inWeight;
             OutWeight = outWeight;
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public CurveKeyframeValue(float time, float value,
             CurveWeightedMode weightedMode, CurveTangentMode tangentMode,
             float inTangent, float outTangent, float inWeight, float outWeight)

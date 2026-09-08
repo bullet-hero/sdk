@@ -1,5 +1,6 @@
 namespace BH.SDK.Rules
 {
+    /// <summary> How badly a validation finding matters, and therefore whether a level can still be played. </summary>
     public enum RuleGroup : byte
     {
         /// <summary>Can't summary this issue</summary>

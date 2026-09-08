@@ -22,6 +22,9 @@ namespace BH.SDK.Tests.Services
     // S2KWorkBytes is turned down to its floor throughout: what is under test is the format, and the
     // work factor is a parameter of it. One test runs at the shipped default so that number is not
     // untested either.
+
+    /// <summary> The OpenPGP layer, and chiefly the Cyrillic passphrase: every ASCII test passes under either
+    /// BouncyCastle overload, and the wrong one makes a Russian author's export unopenable in gpg. </summary>
     public class PgpSymmetricServiceTests
     {
         private const int FastS2K = 1024;

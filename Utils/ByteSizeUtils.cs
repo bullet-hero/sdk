@@ -16,8 +16,13 @@ namespace BH.SDK.Utils
     /// <summary> Human-readable byte counts. </summary>
     public static class ByteSizeUtils
     {
+        /// <summary> Binary kilobyte - 1024 bytes, as a file browser counts. </summary>
         public const long Kilobyte = 1024L;
+
+        /// <summary> Binary megabyte. </summary>
         public const long Megabyte = Kilobyte * 1024L;
+
+        /// <summary> Binary gigabyte. </summary>
         public const long Gigabyte = Megabyte * 1024L;
 
         /// <summary> "12.4 MB", "900 KB", "512 B". Negative counts read as zero - a size that could

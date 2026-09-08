@@ -11,6 +11,7 @@ namespace BH.SDK.Tests.Rules
     /// </summary>
     public class RuleControlPriorityTests : BaseRuleTests
     {
+        /// <summary> A control-device priority list, which must name every device exactly once. </summary>
         [RuleContainer]
         private class PriorityModel
         {
@@ -18,6 +19,7 @@ namespace BH.SDK.Tests.Rules
             public ControlDevice[] Priority { get; set; } = ControlDeviceCatalog.Devices;
         }
 
+        /// <summary> A property of a type the rule does not apply to, so it must decline rather than refuse. </summary>
         [RuleContainer]
         private class WrongTypeModel
         {

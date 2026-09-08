@@ -18,10 +18,12 @@ namespace BH.SDK.Models.SettingGroups.Graphics
         [JsonProperty(Names.Render)]
         public bool Render { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         protected BaseGraphicsSettings()
         {
             Render = true;
         }
+        /// <summary> Built from its render. </summary>
         protected BaseGraphicsSettings(bool render)
         {
             Render = render;

@@ -9,6 +9,7 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests
 {
+    /// <summary> The statistics models' own boilerplate: defaults, Reset, Copy, Pull and equality. </summary>
     [TestFixture]
     public class StatisticsModelTests
     {

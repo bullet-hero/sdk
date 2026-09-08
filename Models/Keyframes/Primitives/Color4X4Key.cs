@@ -41,6 +41,7 @@ namespace BH.SDK.Models.Keyframes
         [JsonProperty(Names.ColorTR)]
         public IColor4 Color4TR { get; set; }
         
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public Color4X4Key()
         {
             Color4BL = Color4Value.white;
@@ -48,6 +49,7 @@ namespace BH.SDK.Models.Keyframes
             Color4TL = Color4Value.white;
             Color4TR = Color4Value.white;
         }
+        /// <summary> Built from its value, frame and default ease. </summary>
         public Color4X4Key(IColor4 value, int frame, EaseType ease = DefaultEase) : base(frame, ease)
         {
             Color4BL = value.Copy();
@@ -55,6 +57,7 @@ namespace BH.SDK.Models.Keyframes
             Color4TL = value.Copy();
             Color4TR = value.Copy();
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public Color4X4Key(IColor4 color4BL, IColor4 color4BR, IColor4 color4TL, IColor4 color4TR,
             int frame, EaseType ease = DefaultEase) : base(frame, ease)
         {
@@ -64,6 +67,7 @@ namespace BH.SDK.Models.Keyframes
             Color4TR = color4TR;
         }
         
+        /// <summary> Which concrete form this is - the discriminator a converter writes and reads back. </summary>
         public Color4X4KeyType GetModelType() => Color4X4KeyType.BariCentrical;
     }
 }

@@ -17,14 +17,18 @@ namespace BH.SDK.Rules.Attributes
     [AttributeUsage(PropertyTarget)]
     public class RuleObjectIdValidAttribute : BasePropertyRuleAttribute
     {
+        /// <summary> <c>"rule_object_id_valid"</c>, the key its message is looked up under. </summary>
         public override string RuleNameKey => "rule_object_id_valid";
 
+        /// <summary> Applies to object id properties. </summary>
         protected override bool IsValidTypeInternal(PropertyInfo property)
             => typeof(ObjectId).IsAssignableFrom(property.PropertyType);
 
+        /// <summary> Passes on an id inside the range this scope hands out. </summary>
         protected override bool IsValidInternal(object value, RuleContext context)
             => value is ObjectId objectId && objectId.IsValid();
 
+        /// <summary> Writes the first id of that range. </summary>
         protected override void FixInternal(object target, PropertyInfo property, RuleContext context)
         {
             if (property.GetValue(target) is not ObjectId objectId) return;

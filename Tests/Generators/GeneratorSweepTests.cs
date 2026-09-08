@@ -27,6 +27,9 @@ namespace BH.SDK.Tests.Generators
     // Each property is one test looping over the registry rather than a [TestCaseSource] case per
     // generator, so the whole sweep also runs under a plain reflective runner (no NUnit engine) -
     // which is what makes it verifiable outside a live Unity Editor.
+
+    /// <summary> One sweep over every registered scope generator at its own defaults: honest estimate, output
+    /// inside the given window, exact undo, and a level the format accepts. Registering a generator adds coverage. </summary>
     public class GeneratorSweepTests
     {
         private const int WindowStart = 30;

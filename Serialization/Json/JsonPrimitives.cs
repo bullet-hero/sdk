@@ -25,6 +25,7 @@ namespace BH.SDK.Serialization.Json
     {
         #region FrameSpan
 
+        /// <summary> Two numbers, each negated when its own edge is anchored - the shape already on disk. </summary>
         public static void Write(JsonWriter writer, FrameSpan value)
         {
             writer.WriteStartArray();
@@ -35,6 +36,7 @@ namespace BH.SDK.Serialization.Json
             writer.WriteEndArray();
         }
 
+        /// <summary> Unpacks that pair, leniently: a damaged one costs the author an object, not the level. </summary>
         public static FrameSpan ReadFrameSpan(JsonReader reader)
         {
             if (reader.TokenType != JsonToken.StartArray)
@@ -76,6 +78,7 @@ namespace BH.SDK.Serialization.Json
 
         #region ModificationKey
 
+        /// <summary> The template object it addresses plus the field path. </summary>
         public static void Write(JsonWriter writer, ModificationKey value)
         {
             writer.WriteStartObject();
@@ -86,6 +89,7 @@ namespace BH.SDK.Serialization.Json
             writer.WriteEndObject();
         }
 
+        /// <summary> Rebuilds the key through its constructor, since its properties are get-only. </summary>
         public static ModificationKey ReadModificationKey(JsonReader reader)
         {
             var objectId = ObjectId.Null;
@@ -115,6 +119,7 @@ namespace BH.SDK.Serialization.Json
 
         #region RunProfile
 
+        /// <summary> The four numbers a run is filed under: lives, speed, checkpoints, bot. </summary>
         public static void Write(JsonWriter writer, RunProfile value)
         {
             writer.WriteStartObject();
@@ -129,6 +134,7 @@ namespace BH.SDK.Serialization.Json
             writer.WriteEndObject();
         }
 
+        /// <summary> Rebuilds the profile through its constructor, since its properties are get-only. </summary>
         public static RunProfile ReadRunProfile(JsonReader reader)
         {
             var lives = 0;
@@ -162,8 +168,10 @@ namespace BH.SDK.Serialization.Json
 
         #region Pixel
 
+        /// <summary> One int, not four bytes - an image-sized array cannot afford four calls per pixel. </summary>
         public static void Write(JsonWriter writer, Pixel value) => writer.WriteValue(value.rgba);
 
+        /// <summary> Reads the packed int back. </summary>
         public static Pixel ReadPixel(JsonReader reader) => new Pixel { rgba = Convert.ToInt32(reader.Value) };
 
         #endregion
@@ -173,6 +181,8 @@ namespace BH.SDK.Serialization.Json
         // A Guid arrives as a string from a text reader and as an already-boxed Guid from a binary
         // one - the split PrimitiveGuidConverter has carried since BSON existed. Kept because a
         // JsonReader is not necessarily a JsonTextReader.
+
+        /// <summary> Accepts the textual form a file carries, and a null as the empty guid. </summary>
         public static Guid ReadGuid(JsonReader reader)
         {
             switch (reader.Value)
@@ -183,6 +193,7 @@ namespace BH.SDK.Serialization.Json
             }
         }
 
+        /// <summary> Accepts both what a reader already parsed into a date and the string form. </summary>
         public static DateTime ReadDateTime(JsonReader reader)
         {
             switch (reader.Value)
@@ -202,12 +213,14 @@ namespace BH.SDK.Serialization.Json
 
         #region System.Version
 
+        /// <summary> A version as its textual form. </summary>
         public static void WriteVersion(JsonWriter writer, Version value)
         {
             if (value is null) writer.WriteNull();
             else writer.WriteValue(value.ToString());
         }
 
+        /// <summary> Parses that form back, refusing anything that is not one. </summary>
         public static Version ReadVersion(JsonReader reader)
         {
             if (reader.TokenType == JsonToken.Null) return null;

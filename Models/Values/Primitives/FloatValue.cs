@@ -22,15 +22,18 @@ namespace BH.SDK.Models.Values
         [JsonProperty(Names.ValueShort)]
         public float Value { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public FloatValue()
         {
             Value = ValueRules.FloatZero;
         }
+        /// <summary> Built from its value. </summary>
         public FloatValue(float value)
         {
             Value = value;
         }
 
+        /// <summary> Which concrete form this is - the discriminator a converter writes and reads back. </summary>
         public FloatType GetModelType() => FloatType.Value;
     }
 }

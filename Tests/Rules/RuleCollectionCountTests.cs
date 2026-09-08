@@ -10,11 +10,13 @@ namespace BH.SDK.Tests.Rules
     /// </summary>
     public class RuleCollectionCountTests : BaseRuleTests
     {
+        /// <summary> A collection element. </summary>
         private class Item
         {
             public int Number { get; set; }
         }
 
+        /// <summary> The rule on a List property. </summary>
         [RuleContainer]
         private class ListModel
         {
@@ -22,6 +24,7 @@ namespace BH.SDK.Tests.Rules
             public List<int> Value { get; set; } = new() { 1, 2, 3 };
         }
 
+        /// <summary> The rule on a list of reference-typed items, which a repair has to construct. </summary>
         [RuleContainer]
         private class ReferenceListModel
         {
@@ -29,6 +32,7 @@ namespace BH.SDK.Tests.Rules
             public List<Item> Value { get; set; } = new() { new Item(), new Item(), new Item() };
         }
 
+        /// <summary> The rule on an array, which is fixed-size and therefore repaired by replacement. </summary>
         [RuleContainer]
         private class ArrayModel
         {
@@ -36,6 +40,7 @@ namespace BH.SDK.Tests.Rules
             public int[] Value { get; set; } = { 1, 2, 3 };
         }
 
+        /// <summary> A property of a type the rule does not apply to, so it must decline rather than refuse. </summary>
         [RuleContainer]
         private class WrongTypeModel
         {

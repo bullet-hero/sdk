@@ -36,11 +36,13 @@ namespace BH.SDK.Models.SettingGroups
         [JsonProperty(Names.Keys)]
         public Dictionary<string, string> Overrides { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public KeybindingsSettings()
         {
             Overrides = new Dictionary<string, string>();
         }
 
+        /// <summary> Built from its dictionary and overrides. </summary>
         public KeybindingsSettings(Dictionary<string, string> overrides)
         {
             Overrides = overrides;

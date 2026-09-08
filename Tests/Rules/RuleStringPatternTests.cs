@@ -10,6 +10,7 @@ namespace BH.SDK.Tests.Rules
     /// </summary>
     public class RuleStringPatternTests : BaseRuleTests
     {
+        /// <summary> A language tag, which has a shape rather than a length. </summary>
         [RuleContainer]
         private class LanguageModel
         {
@@ -17,6 +18,7 @@ namespace BH.SDK.Tests.Rules
             public string Value { get; set; } = ValueRules.DefaultLanguageCode;
         }
 
+        /// <summary> The rule with no pattern given. </summary>
         [RuleContainer]
         private class DefaultModel
         {
@@ -24,6 +26,7 @@ namespace BH.SDK.Tests.Rules
             public string Value { get; set; } = ValueRules.DefaultLanguageCode;
         }
 
+        /// <summary> A property of a type the rule does not apply to, so it must decline rather than refuse. </summary>
         [RuleContainer]
         private class WrongTypeModel
         {

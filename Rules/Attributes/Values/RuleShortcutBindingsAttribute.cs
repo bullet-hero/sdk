@@ -32,16 +32,21 @@ namespace BH.SDK.Rules.Attributes
     [AttributeUsage(PropertyTarget)]
     public class RuleShortcutBindingsAttribute : BasePropertyRuleAttribute
     {
+        /// <summary> <c>"rule_shortcut_bindings"</c>, the key its message is looked up under. </summary>
         public override string RuleNameKey => "rule_shortcut_bindings";
 
         // Warning, not Error, and the Fix is why: dropping a malformed entry hands the shortcut back to
         // its shipped default, so nothing stops working. It is a settings file that lost one
         // rebinding, not a file that cannot be used.
+
+        /// <summary> A warning: the level still plays, but this is not what the author meant. </summary>
         public override RuleGroup Group => RuleGroup.Warning;
 
+        /// <summary> Applies to the keybinding override map. </summary>
         protected override bool IsValidTypeInternal(PropertyInfo property)
             => typeof(IDictionary).IsAssignableFrom(property.PropertyType);
 
+        /// <summary> Passes when every value is in canonical shortcut form. </summary>
         protected override bool IsValidInternal(object value, RuleContext context)
         {
             if (value is not IDictionary dictionary) return false;
@@ -51,6 +56,7 @@ namespace BH.SDK.Rules.Attributes
             return true;
         }
 
+        /// <summary> Drops the entries that are not, so the shipped default takes over for those. </summary>
         protected override void FixInternal(object target, PropertyInfo property, RuleContext context)
         {
             if (property.GetValue(target) is not IDictionary dictionary) return;

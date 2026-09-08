@@ -31,6 +31,8 @@ namespace BH.SDK.Models.SettingGroups.Controls
         [JsonProperty(Names.CursorVisible)]
         public bool CursorVisible { get; set; }
 
+        /// <summary> How large the inframe cursor is drawn - it is a real world-space object, so it letterboxes
+        /// and scales with the level. </summary>
         [RuleInRange(ControlsRules.MinCursorScale, ControlsRules.MaxCursorScale)]
         [JsonProperty(Names.CursorScale)]
         public float CursorScale { get; set; }
@@ -48,6 +50,7 @@ namespace BH.SDK.Models.SettingGroups.Controls
         [JsonProperty(Names.CursorReturn)]
         public bool CursorReturn { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public CommonControlsSettings()
         {
             Selection = DeviceSelection.Auto;
@@ -57,6 +60,7 @@ namespace BH.SDK.Models.SettingGroups.Controls
             CursorRecenter = true;
             CursorReturn = false;
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public CommonControlsSettings(DeviceSelection selection, ControlDevice manualDevice,
             bool cursorVisible, float cursorScale, bool cursorRecenter, bool cursorReturn)
         {

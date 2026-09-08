@@ -99,6 +99,7 @@ namespace BH.SDK.Models.Game
         [JsonProperty(Names.Speed)]
         public List<FloatKey> Speeds { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public PlayerEvents()
         {
             Velocities = new List<Velocity>();
@@ -109,6 +110,7 @@ namespace BH.SDK.Models.Game
             Sizes = new List<FloatKey>();
             Speeds = new List<FloatKey>();
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public PlayerEvents(List<Velocity> velocities, List<VelocityPoint> velocityPoints,
             List<BoolKey> visibles, List<BoolKey> controls, List<BoolKey> collisions,
             List<FloatKey> sizes, List<FloatKey> speeds)

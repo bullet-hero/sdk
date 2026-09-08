@@ -94,10 +94,15 @@ namespace BH.SDK.Generators
         public string SectionOf(string field)
             => Sections.TryGetValue(field, out var section) ? section : GeneratorSections.Default;
 
+        /// <summary> The bounds a host should clamp one field to, where any were declared. </summary>
         public bool TryGetRange(string field, out GeneratorRange range) => Ranges.TryGetValue(field, out range);
+        /// <summary> The increment one field's control should move by. </summary>
         public bool TryGetStep(string field, out float step) => Steps.TryGetValue(field, out step);
+        /// <summary> The localization key one field is labelled with, where it is not just its own name. </summary>
         public bool TryGetLabel(string field, out string label) => Labels.TryGetValue(field, out label);
+        /// <summary> The unit shown beside one field. </summary>
         public bool TryGetUnit(string field, out string unit) => Units.TryGetValue(field, out unit);
+        /// <summary> The fixed set one field is chosen from, where it is not a free number. </summary>
         public bool TryGetChoices(string field, out IReadOnlyList<GeneratorChoice> choices)
             => Choices.TryGetValue(field, out choices);
 
@@ -123,6 +128,7 @@ namespace BH.SDK.Generators
             private readonly Dictionary<string, IReadOnlyList<GeneratorChoice>> _choices = new();
             private readonly HashSet<string> _readOnly = new();
 
+            /// <summary> The order fields are laid out in; anything unnamed follows in declaration order. </summary>
             public Builder Order(params string[] fields)
             {
                 _order.AddRange(fields);
@@ -138,36 +144,43 @@ namespace BH.SDK.Generators
                 foreach (var field in fields) _sections[field] = section;
                 return this;
             }
+            /// <summary> Labels one field with a localization key. </summary>
             public Builder Label(string field, string labelKey)
             {
                 _labels[field] = labelKey;
                 return this;
             }
+            /// <summary> Bounds one field. </summary>
             public Builder Range(string field, float min, float max)
             {
                 _ranges[field] = new GeneratorRange(min, max);
                 return this;
             }
+            /// <summary> Gives one field's control an increment. </summary>
             public Builder Step(string field, float step)
             {
                 _steps[field] = step;
                 return this;
             }
+            /// <summary> Names the unit one field is measured in. </summary>
             public Builder Unit(string field, string unit)
             {
                 _units[field] = unit;
                 return this;
             }
+            /// <summary> Shows one field only while the predicate holds of the parameters - which is how a form hides what a mode does not use. </summary>
             public Builder VisibleWhen(string field, Func<object, bool> predicate)
             {
                 _visible[field] = predicate;
                 return this;
             }
+            /// <summary> Keeps one field out of the form entirely. </summary>
             public Builder Hidden(string field)
             {
                 _visible[field] = _ => false;
                 return this;
             }
+            /// <summary> Turns one field into a fixed set of choices rather than a free number. </summary>
             public Builder Choice(string field, params GeneratorChoice[] choices)
             {
                 _choices[field] = choices;
@@ -182,6 +195,7 @@ namespace BH.SDK.Generators
                 return this;
             }
 
+            /// <summary> Freezes the hints; the builder is not reused afterwards. </summary>
             public GeneratorHints Build()
                 => new(_order, _sections, _labels, _ranges, _steps, _units, _visible, _choices, _readOnly);
         }
@@ -207,18 +221,24 @@ namespace BH.SDK.Generators
     /// <summary> Inclusive numeric bounds for one parameter field. </summary>
     public readonly struct GeneratorRange
     {
+        /// <summary> Lowest value the field accepts. </summary>
         public readonly float Min;
+        /// <summary> Highest. </summary>
         public readonly float Max;
 
+        /// <summary> Both bounds. </summary>
         public GeneratorRange(float min, float max)
         {
             Min = min;
             Max = max;
         }
 
+        /// <summary> The value held inside the range. </summary>
         public float Clamp(float value) => value < Min ? Min : value > Max ? Max : value;
+        /// <summary> The same for an int field. </summary>
         public int Clamp(int value) => value < Min ? (int)Min : value > Max ? (int)Max : value;
 
+        /// <summary> One line, for a log. </summary>
         public override string ToString() => $"[{Min}, {Max}]";
     }
 
@@ -226,15 +246,19 @@ namespace BH.SDK.Generators
     /// with (never a display string: localization is a host concern, see GeneratorTextService). </summary>
     public readonly struct GeneratorChoice
     {
+        /// <summary> The number this choice stands for. </summary>
         public readonly int Value;
+        /// <summary> The localization key it is shown as. </summary>
         public readonly string LabelKey;
 
+        /// <summary> One choice: what it means and what it reads as. </summary>
         public GeneratorChoice(int value, string labelKey)
         {
             Value = value;
             LabelKey = labelKey;
         }
 
+        /// <summary> One line, for a log. </summary>
         public override string ToString() => $"{LabelKey}={Value}";
     }
 }

@@ -6,24 +6,32 @@ using BH.SDK.Models.Values;
 
 namespace BH.SDK.Rules.Attributes
 {
+    /// <summary> An authored string value with a length ceiling, applied to every language it carries. </summary>
     [AttributeUsage(PropertyTarget)]
     public class RuleIStringMaxAttribute : BasePropertyRuleAttribute
     {
+        /// <summary> <c>"rule_istring_max"</c>, the key its message is looked up under. </summary>
         public override string RuleNameKey => "rule_istring_max";
 
         // Warning, for RuleStringMax's reason: cosmetic, and repaired only by truncating authored text.
+
+        /// <summary> A warning: the level still plays, but this is not what the author meant. </summary>
         public override RuleGroup Group => RuleGroup.Warning;
 
+        /// <summary> The longest the string may be. </summary>
         public int MaxLength { get; set; }
 
+        /// <summary> Takes the length ceiling. </summary>
         public RuleIStringMaxAttribute(int maxLength)
         {
             MaxLength = maxLength;
         }
 
+        /// <summary> Applies to authored string properties. </summary>
         protected override bool IsValidTypeInternal(PropertyInfo property)
             => typeof(IString).IsAssignableFrom(property.PropertyType);
         
+        /// <summary> Passes when every language's text is within the length ceiling. </summary>
         protected override bool IsValidInternal(object value, RuleContext context)
         {
             if (value is not IString str) return false;
@@ -49,6 +57,7 @@ namespace BH.SDK.Rules.Attributes
             }
         }
 
+        /// <summary> Truncates each of them, so a localized value keeps every language it had. </summary>
         protected override void FixInternal(object target, PropertyInfo property, RuleContext context)
         {
             var value = property.GetValue(target);

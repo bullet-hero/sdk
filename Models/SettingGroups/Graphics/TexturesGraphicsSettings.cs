@@ -63,6 +63,7 @@ namespace BH.SDK.Models.SettingGroups.Graphics
         [JsonProperty(Names.Quality)]
         public TextureCompressionQuality CompressionQuality { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public TexturesGraphicsSettings()
         {
             Compression = TextureCompressionMode.Auto;
@@ -72,6 +73,7 @@ namespace BH.SDK.Models.SettingGroups.Graphics
             CompressionQuality = TextureCompressionQuality.Auto;
         }
 
+        /// <summary> Every member at once, in declaration order. </summary>
         public TexturesGraphicsSettings(TextureCompressionMode compression,
             TextureSizeLimit sizeLimit, TextureMipmapMode mipmaps, TextureFilterMode filtering,
             TextureCompressionQuality compressionQuality)

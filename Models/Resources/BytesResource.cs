@@ -24,13 +24,16 @@ namespace BH.SDK.Models.Resources
         [JsonProperty(Names.ByteResourceId)]
         public BytesResourceId ByteResourceId { get; set; }
 
+        /// <summary> Which kind of resource this is. </summary>
         [JsonProperty(Names.Type)]
         public override ResourceType Type => ResourceType.Bytes;
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public BytesResource()
         {
             ByteResourceId = BytesResourceId.Null;
         }
+        /// <summary> Built from its resource id and sources. </summary>
         public BytesResource(BytesResourceId byteResourceId, List<ResourceKey> sources) : base(sources)
         {
             ByteResourceId = byteResourceId;

@@ -17,8 +17,10 @@ namespace BH.SDK.Generators.Bullets
     /// </summary>
     public class BulletLaserSweepGenerator : BaseSpawnGenerator<BulletLaserSweepGenerator.Parameters>
     {
+        /// <summary> <c>"gen_bullet_laser_sweep"</c>, the key a host lists this generator under. </summary>
         public override string NameKey => "gen_bullet_laser_sweep";
 
+        /// <summary> The order, labels and ranges a host lays its form out with. </summary>
         public override GeneratorHints Hints { get; } = new GeneratorHints.Builder()
             .Section(GeneratorSections.Main, SpawnParameters.MainFields)
             .Section(GeneratorSections.Main, nameof(Parameters.Length), nameof(Parameters.Width),
@@ -45,6 +47,7 @@ namespace BH.SDK.Generators.Bullets
             .Range(nameof(SpawnParameters.Size), ValueRules.MinSca, ValueRules.MaxSca)
             .Build();
 
+        /// <summary> Writes this run's objects into the scope. </summary>
         protected override void Generate(GeneratorContext context, Parameters parameters)
         {
             var warnFrames = Frames(parameters.WarnFrames, 0);
@@ -74,6 +77,7 @@ namespace BH.SDK.Generators.Bullets
                 PlaceBeam(fire, parameters, parameters.EndAngle, fire.Span.LastFrame, parameters.Ease);
         }
 
+        /// <summary> What this run would add, answered before it runs. </summary>
         protected override GeneratorCost EstimateTyped(GeneratorContext context, Parameters parameters)
         {
             var warnFrames = Frames(parameters.WarnFrames, 0);
@@ -112,18 +116,40 @@ namespace BH.SDK.Generators.Bullets
 
         private static int Frames(int value, int minimum) => value < minimum ? minimum : value;
 
+        /// <summary> How long the warning lasts and which arc the beam sweeps through. Public mutable fields, like
+        /// every parameters class here - a form binds to them and a preset serializes from them. </summary>
         public class Parameters : SpawnParameters
         {
+            /// <summary> How far the beam reaches from its origin. </summary>
             public float Length = 40f;
+
+            /// <summary> Width of the firing beam, which is the one carrying the collider. </summary>
             public float Width = 2f;
+
+            /// <summary> Width of the warning beam, which is harmless. </summary>
             public float WarnWidth = 0.3f;
+
+            /// <summary> Angle the sweep begins at. </summary>
             public float StartAngle;
+
+            /// <summary> Angle it ends at. </summary>
             public float EndAngle = 90f;
+
+            /// <summary> The point the beam pivots around. </summary>
             public float OriginX;
+            /// <summary> Its vertical half. </summary>
             public float OriginY;
+
+            /// <summary> How long the warning is shown before the beam fires. </summary>
             public int WarnFrames = 45;
+
+            /// <summary> How long the firing beam lasts. </summary>
             public int FireFrames = 60;
+
+            /// <summary> How visible the warning beam is. </summary>
             public float WarnAlpha = 0.35f;
+
+            /// <summary> Curve the sweep follows between the two angles. </summary>
             public EaseType Ease = EaseType.Linear;
         }
     }

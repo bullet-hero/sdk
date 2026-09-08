@@ -13,6 +13,9 @@ namespace BH.SDK.Tests
     // origin, hence no migration), and that the hand-written IModel<T> boilerplate actually accounts
     // for the new fields - that is the exact place in this codebase where a copy-paste omission
     // compiles and then silently makes two different checkpoints compare equal.
+
+    /// <summary> Checkpoint's respawn position and space: that an older file still reads as World at the origin,
+    /// and that the hand-written model boilerplate accounts for both new fields. </summary>
     public class CheckpointTests
     {
         [Test]

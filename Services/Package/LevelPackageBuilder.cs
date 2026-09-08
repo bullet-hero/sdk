@@ -147,6 +147,9 @@ namespace BH.SDK.Services.Package
         // level: which SOURCES have already been taken (so one file referenced twice is packed once
         // and both keys point at the same copy) and which NAMES are taken (so two different songs
         // both called "song.ogg" do not become one).
+
+        /// <summary> What one composition walk accumulates: the entries found, and the rewrites a collected
+        /// out-of-folder resource needs. </summary>
         private sealed class WalkContext
         {
             private readonly IContentStore _store;
@@ -159,6 +162,7 @@ namespace BH.SDK.Services.Package
             private readonly HashSet<string> _takenNames = new HashSet<string>(StringComparer.Ordinal);
             private readonly HashSet<string> _packedStorePaths = new HashSet<string>(StringComparer.Ordinal);
 
+            /// <summary> Built from its store, report and token. </summary>
             public WalkContext(IContentStore store, InteropReport report, CancellationToken token)
             {
                 _store = store;
@@ -166,11 +170,13 @@ namespace BH.SDK.Services.Package
                 _token = token;
             }
 
+            /// <summary> What the package will hold, in the order it was collected. </summary>
             public List<PackageFile> Files { get; } = new List<PackageFile>();
 
             /// <summary> Whether this path in the level's own folder is already being packed. </summary>
             public bool IsPackedFromStore(string storePath) => _packedStorePaths.Contains(storePath);
 
+            /// <summary> Decides what happens to one resource reference: packed, collected in, left as a URL, or reported missing. </summary>
             public async Task RouteAsync(ResourceKey key, string path)
             {
                 if (key == null || string.IsNullOrEmpty(key.Uri)) return;

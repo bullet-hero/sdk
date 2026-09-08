@@ -22,6 +22,9 @@ namespace BH.SDK.Tests.Services
     //   the whole class of triangulation bugs this generator can have - a folded ribbon, a wedge
     //   spanning a pinch point, a rim clipped to the wrong sector - because every one of them shows
     //   up as area counted twice or not at all, while the picture still looks plausible.
+
+    /// <summary> The two invariants nobody can check by eye across five hundred entries: an id means one thing
+    /// forever, and a shape plus its inverse tile the sector they were cut from. </summary>
     public class ShapeCatalogServiceTests
     {
         private static List<ShapeParameters> Catalog => ShapeCatalogService.EnumerateCatalog().ToList();

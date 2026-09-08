@@ -22,6 +22,9 @@ namespace BH.SDK.Tests
     // constructor. It had gone stale in the way such lists do - three Color3 variants and both
     // keyframe families were absent - and the failure was invisible: a prefab override addressed at
     // one of them resolved to no registered property and was dropped without a word.
+
+    /// <summary> The compile-time implementation table checked against reflection - the one thing a test may scan
+    /// for that the library itself may not, since IL2CPP strips what nothing references statically. </summary>
     public class ModificationRegistryTests
     {
         private const string InterfaceRoot = "BH.SDK.Models.Interfaces";

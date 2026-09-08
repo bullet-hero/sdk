@@ -24,15 +24,18 @@ namespace BH.SDK.Models.Keyframes
         [JsonProperty(Names.Float)]
         public IFloat Value { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public FontSizeKey()
         {
             Value = new FloatValue(TextRules.FontSize_Fallback);
         }
+        /// <summary> Built from its value, frame and default ease. </summary>
         public FontSizeKey(IFloat value, int frame, EaseType ease = DefaultEase) : base(frame, ease)
         {
             Value = value;
         }
 
+        /// <summary> Which concrete form this is - the discriminator a converter writes and reads back. </summary>
         public FontSizeKeyType GetModelType() => FontSizeKeyType.Value;
     }
 }

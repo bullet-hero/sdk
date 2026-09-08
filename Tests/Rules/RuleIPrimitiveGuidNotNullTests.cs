@@ -12,6 +12,7 @@ namespace BH.SDK.Tests.Rules
     /// </summary>
     public class RuleIPrimitiveGuidNotNullTests : BaseRuleTests
     {
+        /// <summary> The model the rule under test sits on. </summary>
         [RuleContainer]
         private class Model
         {
@@ -19,6 +20,7 @@ namespace BH.SDK.Tests.Rules
             public ThemeId Value { get; set; } = new(Guid.NewGuid());
         }
 
+        /// <summary> A property of a type the rule does not apply to, so it must decline rather than refuse. </summary>
         [RuleContainer]
         private class WrongTypeModel
         {

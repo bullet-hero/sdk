@@ -21,20 +21,26 @@ namespace BH.SDK.Rules.Attributes
     [AttributeUsage(PropertyTarget)]
     public class RuleCollectionSortedAttribute : BasePropertyRuleAttribute
     {
+        /// <summary> <c>"rule_collection_sorted"</c>, the key its message is looked up under. </summary>
         public override string RuleNameKey => "rule_collection_sorted";
 
+        /// <summary> Which property of an item decides the answer; empty means the item itself does. </summary>
         public string ItemPropertyName { get; set; }
 
+        /// <summary> Takes which property of an item decides the answer. </summary>
         public RuleCollectionSortedAttribute(string itemPropertyName)
         {
             ItemPropertyName = itemPropertyName;
         }
 
+        /// <summary> Advice: nothing is wrong, it could just be tidier. </summary>
         public override RuleGroup Group => RuleGroup.Advice;
 
+        /// <summary> Applies to any collection. </summary>
         protected override bool IsValidTypeInternal(PropertyInfo property)
             => typeof(ICollection).IsAssignableFrom(property.PropertyType);
 
+        /// <summary> Passes when the items are in ascending order of the named key. </summary>
         protected override bool IsValidInternal(object value, RuleContext context)
         {
             if (value is not ICollection collection) return false;
@@ -57,6 +63,7 @@ namespace BH.SDK.Rules.Attributes
             return true;
         }
 
+        /// <summary> Sorts them by that key, keeping every item. </summary>
         protected override void FixInternal(object target, PropertyInfo property, RuleContext context)
         {
             if (property.GetValue(target) is not IList list || list.IsReadOnly) return;

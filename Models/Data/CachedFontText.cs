@@ -42,11 +42,13 @@ namespace BH.SDK.Models.Data
         [JsonProperty(Names.Chars)]
         public IString Characters { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public CachedFontText()
         {
             FontResourceId = FontResourceId.Default;
             Characters = new StringValue();
         }
+        /// <summary> Built from its resource id and characters. </summary>
         public CachedFontText(FontResourceId fontResourceId, IString characters)
         {
             FontResourceId = fontResourceId;

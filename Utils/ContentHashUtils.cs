@@ -22,6 +22,7 @@ namespace BH.SDK.Utils
     /// <summary> Content digests for resource files. </summary>
     public static class ContentHashUtils
     {
+        /// <summary> What every digest this project writes begins with, so the algorithm is stated in the value. </summary>
         public const string Sha256Prefix = "sha256:";
 
         /// <summary> Length of a "sha256:" value - the prefix plus 64 hex characters. </summary>

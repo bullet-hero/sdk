@@ -11,8 +11,10 @@ namespace BH.SDK.Generators.Bullets
     /// </summary>
     public class BulletSpiralGenerator : BaseSpawnGenerator<BulletSpiralGenerator.Parameters>
     {
+        /// <summary> <c>"gen_bullet_spiral"</c>, the key a host lists this generator under. </summary>
         public override string NameKey => "gen_bullet_spiral";
 
+        /// <summary> The order, labels and ranges a host lays its form out with. </summary>
         public override GeneratorHints Hints { get; } = new GeneratorHints.Builder()
             .Section(GeneratorSections.Main, SpawnParameters.MainFields)
             .Section(GeneratorSections.Main, nameof(Parameters.Count), nameof(Parameters.AngularStep),
@@ -38,6 +40,7 @@ namespace BH.SDK.Generators.Bullets
             .Range(nameof(SpawnParameters.Size), ValueRules.MinSca, ValueRules.MaxSca)
             .Build();
 
+        /// <summary> Writes this run's objects into the scope. </summary>
         protected override void Generate(GeneratorContext context, Parameters parameters)
         {
             var count = Count(parameters.Count);
@@ -67,6 +70,7 @@ namespace BH.SDK.Generators.Bullets
             }
         }
 
+        /// <summary> What this run would add, answered before it runs. </summary>
         protected override GeneratorCost EstimateTyped(GeneratorContext context, Parameters parameters)
         {
             var count = Count(parameters.Count);
@@ -92,18 +96,40 @@ namespace BH.SDK.Generators.Bullets
         private static int Travel(int value) => value < 1 ? 1 : value;
         private static int Stagger(int value) => value < 0 ? 0 : value;
 
+        /// <summary> Where the spray starts and how far each shot is turned from the last. Public mutable fields,
+        /// like every parameters class here - a form binds to them and a preset serializes from them. </summary>
         public class Parameters : SpawnParameters
         {
+            /// <summary> How many bullets are fired. </summary>
             public int Count = 24;
+
+            /// <summary> How far each shot is turned from the one before it - what makes the spray read as rotating. </summary>
             public float AngularStep = 17f;
+
+            /// <summary> Angle the first shot leaves at. </summary>
             public float StartAngle;
+
+            /// <summary> Distance from the centre a bullet starts at. </summary>
             public float RadiusStart = 0.5f;
+
+            /// <summary> Distance it travels out to. </summary>
             public float RadiusEnd = 12f;
+
+            /// <summary> The point everything is fired from. </summary>
             public float CenterX;
+            /// <summary> Its vertical half. </summary>
             public float CenterY;
+
+            /// <summary> How long one bullet lives. </summary>
             public int TravelFrames = 90;
+
+            /// <summary> Delay between one shot and the next. </summary>
             public int StaggerFrames = 3;
+
+            /// <summary> Curve a bullet travels along. </summary>
             public EaseType Ease = EaseType.Linear;
+
+            /// <summary> Rotate each bullet to point away from the centre. </summary>
             public bool FaceOutward = true;
         }
     }

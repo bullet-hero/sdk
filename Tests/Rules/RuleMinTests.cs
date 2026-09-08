@@ -12,6 +12,7 @@ namespace BH.SDK.Tests.Rules
     /// </summary>
     public class RuleMinTests : BaseRuleTests
     {
+        /// <summary> The rule on an int. </summary>
         [RuleContainer]
         private class IntModel
         {
@@ -19,6 +20,7 @@ namespace BH.SDK.Tests.Rules
             public int Value { get; set; } = 10;
         }
 
+        /// <summary> The rule on an int with an explicit repair value, rather than the nearer bound. </summary>
         [RuleContainer]
         private class IntDefaultModel
         {
@@ -26,6 +28,7 @@ namespace BH.SDK.Tests.Rules
             public int Value { get; set; } = 42;
         }
 
+        /// <summary> The rule on a float. </summary>
         [RuleContainer]
         private class FloatModel
         {
@@ -33,6 +36,7 @@ namespace BH.SDK.Tests.Rules
             public float Value { get; set; } = 1.5f;
         }
 
+        /// <summary> The rule on a byte. </summary>
         [RuleContainer]
         private class ByteModel
         {
@@ -40,6 +44,7 @@ namespace BH.SDK.Tests.Rules
             public byte Value { get; set; } = 5;
         }
 
+        /// <summary> The rule on a uint. </summary>
         [RuleContainer]
         private class UIntModel
         {
@@ -47,6 +52,7 @@ namespace BH.SDK.Tests.Rules
             public uint Value { get; set; } = 5u;
         }
 
+        /// <summary> The rule on a long. </summary>
         [RuleContainer]
         private class LongModel
         {
@@ -54,6 +60,7 @@ namespace BH.SDK.Tests.Rules
             public long Value { get; set; } = 5L;
         }
 
+        /// <summary> The rule on a double. </summary>
         [RuleContainer]
         private class DoubleModel
         {
@@ -61,6 +68,7 @@ namespace BH.SDK.Tests.Rules
             public double Value { get; set; } = 1.5d;
         }
 
+        /// <summary> A property of a type the rule does not apply to, so it must decline rather than refuse. </summary>
         [RuleContainer]
         private class WrongTypeModel
         {

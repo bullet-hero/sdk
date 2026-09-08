@@ -43,11 +43,13 @@ namespace BH.SDK.Models.Keyframes
         [JsonProperty(Names.Max)]
         public IFloat MaxValue { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public AutoFontSizeKey()
         {
             MinValue = new FloatValue(TextRules.AutoFontSize_Min_Default);
             MaxValue = new FloatValue(TextRules.AutoFontSize_Max_Default);
         }
+        /// <summary> Built from its value, value, frame and default ease. </summary>
         public AutoFontSizeKey(IFloat minValue, IFloat maxValue, int frame, EaseType ease = DefaultEase)
             : base(frame, ease)
         {
@@ -55,6 +57,7 @@ namespace BH.SDK.Models.Keyframes
             MaxValue = maxValue;
         }
 
+        /// <summary> Which concrete form this is - the discriminator a converter writes and reads back. </summary>
         public FontSizeKeyType GetModelType() => FontSizeKeyType.Auto;
     }
 }

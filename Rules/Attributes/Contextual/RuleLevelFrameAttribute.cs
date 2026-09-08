@@ -20,16 +20,21 @@ namespace BH.SDK.Rules.Attributes
     [AttributeUsage(PropertyTarget)]
     public class RuleLevelFrameAttribute : BasePropertyRuleAttribute
     {
+        /// <summary> <c>"rule_level_frame"</c>, the key its message is looked up under. </summary>
         public override string RuleNameKey => "rule_level_frame";
 
         // Warning, not Error: a frame past its scope's timeline is not broken data, it is content that
         // never plays. The level runs, and what the author authored past the end simply does not
         // appear - which is exactly the difference this severity is for.
+
+        /// <summary> A warning: the level still plays, but this is not what the author meant. </summary>
         public override RuleGroup Group => RuleGroup.Warning;
 
+        /// <summary> Applies to int properties. </summary>
         protected override bool IsValidTypeInternal(PropertyInfo property)
             => typeof(int).IsAssignableFrom(property.PropertyType);
 
+        /// <summary> Passes when the frame is on the timeline the CONTEXT carries - a prefab template's own length inside one, the level's outside. </summary>
         protected override bool IsValidInternal(object value, RuleContext context)
         {
             if (value is not int frame || frame < FrameRules.MinFrame) return false;
@@ -38,6 +43,7 @@ namespace BH.SDK.Rules.Attributes
             return frame < context.FrameDuration;
         }
 
+        /// <summary> Clamps into that timeline; with no scope to ask, only the floor applies. </summary>
         protected override void FixInternal(object target, PropertyInfo property, RuleContext context)
         {
             if (property.GetValue(target) is not int frame) return;

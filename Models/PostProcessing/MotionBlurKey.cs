@@ -27,10 +27,12 @@ namespace BH.SDK.Models.PostProcessing
         
         // Clamp (0.2f, predefined)
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public MotionBlurKey()
         {
             Intensity = 1f;
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public MotionBlurKey(float intensity, 
             bool active, int frame, EaseType ease = Keyframe.DefaultEase) : base(active, frame, ease)
         {

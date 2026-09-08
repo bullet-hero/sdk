@@ -15,6 +15,7 @@ namespace BH.SDK.Tests.Rules
     /// </summary>
     public class RuleIPrimitiveIntTests : BaseRuleTests
     {
+        /// <summary> An id wrapper that must be set at all. </summary>
         [RuleContainer]
         private class NotNullModel
         {
@@ -22,6 +23,7 @@ namespace BH.SDK.Tests.Rules
             public ObjectId Value { get; set; } = new(1);
         }
 
+        /// <summary> An id wrapper with a floor, which is how one id range is told from another. </summary>
         [RuleContainer]
         private class MinModel
         {
@@ -29,6 +31,7 @@ namespace BH.SDK.Tests.Rules
             public ObjectId Value { get; set; } = new(1);
         }
 
+        /// <summary> An id wrapper with a ceiling. </summary>
         [RuleContainer]
         private class MaxModel
         {
@@ -36,6 +39,7 @@ namespace BH.SDK.Tests.Rules
             public ObjectId Value { get; set; } = new(-1);
         }
 
+        /// <summary> A property of a type the rule does not apply to, so it must decline rather than refuse. </summary>
         [RuleContainer]
         private class WrongTypeModel
         {

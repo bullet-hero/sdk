@@ -26,11 +26,16 @@ namespace BH.SDK.Utils
     /// </summary>
     public static class ShortcutSyntax
     {
+        /// <summary> Separates one shortcut's alternates. </summary>
         public const char AlternateSeparator = '|';
+        /// <summary> Separates a modifier from what follows it. </summary>
         public const char ModifierSeparator = '+';
 
+        /// <summary> The control modifier, always first and always lowercase. </summary>
         public const string Ctrl = "ctrl";
+        /// <summary> The shift modifier, always second. </summary>
         public const string Shift = "shift";
+        /// <summary> The alt modifier, always third. </summary>
         public const string Alt = "alt";
 
         /// <summary> The value meaning "this shortcut answers to nothing". </summary>

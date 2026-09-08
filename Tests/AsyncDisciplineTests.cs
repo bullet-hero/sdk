@@ -31,6 +31,9 @@ namespace BH.SDK.Tests
     // Scope: `Tests/` folders only. Production code is free to block - `FileLoaderService` does it
     // inside a thread-pool delegate on purpose, which is safe precisely because it is not the main
     // thread.
+
+    /// <summary> Reads the test sources and refuses any blocking wait on a task. The deadlock it guards
+    /// against cannot be caught at runtime - it freezes the Editor at zero CPU. </summary>
     public class AsyncDisciplineTests
     {
         // Every test folder in the repository, found from this file rather than hardcoded, so a new
@@ -46,6 +49,7 @@ namespace BH.SDK.Tests
             "Assets/Code/Services/GameEditor/Tests",
             "Assets/Code/Services/Game/Tests",
             "Assets/Code/Services/Root/Tests",
+            "Assets/Code/Specifics/Shared/Tests",
             "Assets/Plugins/BulletHeroSDK/Tests",
             "Assets/Plugins/BulletHeroSDK/UnityExtensions/Tests",
         };
@@ -53,6 +57,7 @@ namespace BH.SDK.Tests
         // The file that documents the trap is allowed to name it; so is this one.
         private static readonly string[] Exempt = { "AsyncAssert.cs", "AsyncDisciplineTests.cs" };
 
+        /// <summary> One forbidden call, and the message printed when a source line matches it. </summary>
         private sealed class Rule
         {
             public readonly string Name;

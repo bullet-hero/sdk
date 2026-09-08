@@ -25,6 +25,7 @@ namespace BH.SDK.Avatars
         /// <summary> When it happened, on the level clock. </summary>
         public readonly float Time;
 
+        /// <summary> A moment on the clock the caller supplies - which is what lets the game and the bake share one implementation. </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public TimePoint(float time) => Time = time;
 

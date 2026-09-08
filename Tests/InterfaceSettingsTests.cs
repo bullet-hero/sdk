@@ -15,6 +15,9 @@ namespace BH.SDK.Tests
     // written before it simply has no key, and Newtonsoft leaves the constructor's false in place.
     // That claim is what the deserialization case below pins.
 
+
+    /// <summary> The interface group, and chiefly that OpenMenuOnLose's false default survives a settings file
+    /// written before the key existed - which is what let it ship without a version bump. </summary>
     public class InterfaceSettingsTests
     {
         [Test]

@@ -13,8 +13,10 @@ namespace BH.SDK.Generators.Geometry
     /// </summary>
     public class PolygonGenerator : BaseSpawnGenerator<PolygonGenerator.Parameters>
     {
+        /// <summary> <c>"gen_geometry_polygon"</c>, the key a host lists this generator under. </summary>
         public override string NameKey => "gen_geometry_polygon";
 
+        /// <summary> The order, labels and ranges a host lays its form out with. </summary>
         public override GeneratorHints Hints { get; } = new GeneratorHints.Builder()
             .Section(GeneratorSections.Main, SpawnParameters.MainFields)
             .Section(GeneratorSections.Main, nameof(Parameters.Sides), nameof(Parameters.Radius),
@@ -33,6 +35,7 @@ namespace BH.SDK.Generators.Geometry
             .Range(nameof(SpawnParameters.Size), ValueRules.MinSca, ValueRules.MaxSca)
             .Build();
 
+        /// <summary> Writes this run's objects into the scope. </summary>
         protected override void Generate(GeneratorContext context, Parameters parameters)
         {
             var sides = Sides(parameters.Sides);
@@ -66,6 +69,7 @@ namespace BH.SDK.Generators.Geometry
             }
         }
 
+        /// <summary> What this run would add, answered before it runs. </summary>
         protected override GeneratorCost EstimateTyped(GeneratorContext context, Parameters parameters)
         {
             var sides = Sides(parameters.Sides);
@@ -87,14 +91,28 @@ namespace BH.SDK.Generators.Geometry
         private static int Sides(int value) => value < MinSides ? MinSides : value;
         private static int PointsPerEdge(int value) => value < 1 ? 1 : value;
 
+        /// <summary> How many sides, how large, and whether the edges are drawn or only the corners. Public mutable
+        /// fields, like every parameters class here - a form binds to them and a preset serializes from them. </summary>
         public class Parameters : SpawnParameters
         {
+            /// <summary> How many sides the polygon has. </summary>
             public int Sides = 6;
+
+            /// <summary> Distance from the centre to a corner. </summary>
             public float Radius = 5f;
+
+            /// <summary> Rotation of the whole polygon. </summary>
             public float Rotation;
+
+            /// <summary> Where it is centred. </summary>
             public float CenterX;
+            /// <summary> Its vertical half. </summary>
             public float CenterY;
+
+            /// <summary> Spread objects along the edges to draw the outline, rather than one per corner. </summary>
             public bool AsOutline;
+
+            /// <summary> How many objects each edge gets when the outline is drawn. </summary>
             public int PointsPerEdge = 4;
         }
     }

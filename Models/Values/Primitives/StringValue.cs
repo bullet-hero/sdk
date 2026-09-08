@@ -22,15 +22,18 @@ namespace BH.SDK.Models.Values
         [JsonProperty(Names.ValueShort)]
         public string Value { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public StringValue()
         {
             Value = string.Empty;
         }
+        /// <summary> Built from its value. </summary>
         public StringValue(string value)
         {
             Value = value;
         }
 
+        /// <summary> Which concrete form this is - the discriminator a converter writes and reads back. </summary>
         public StringType GetModelType() => StringType.Value;
     }
 }

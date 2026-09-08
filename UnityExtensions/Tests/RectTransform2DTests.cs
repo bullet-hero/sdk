@@ -4,6 +4,8 @@ using Unity.Mathematics;
 
 namespace BH.SDK.UnityExtensions.Tests
 {
+    /// <summary> Composing a rect transform against its parent: anchors, pivot, size, and where a layer becomes
+    /// absolute. </summary>
     public static class RectTransform2DTests
     {
         [Test]

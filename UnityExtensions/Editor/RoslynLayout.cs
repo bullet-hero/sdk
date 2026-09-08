@@ -18,16 +18,20 @@ namespace BH.SDK.Editor
     /// <summary> Filesystem layout of the SDK's Roslyn components. </summary>
     internal static class RoslynLayout
     {
-        /// <summary> File name (no extension) of the asmdef declaring this assembly. </summary>
         // Used by the FALLBACK lookup only. It is the asmdef's own file name, which is not the same
         // string as the namespace or the rootNamespace - getting those two confused is exactly what
         // made the first version of this class report "cannot locate the SDK" from every menu item.
+
+        /// <summary> File name (no extension) of the asmdef declaring this assembly. </summary>
         private const string SelfAsmdefFileName = "BH.SDK.UnityExtensions.Editor";
 
         /// <summary> Assembly name of the shipping analyzer. NOT the asmdef's - see the csproj. </summary>
         public const string ArtifactAssemblyName = "BH.SDK.Roslyn";
 
+        /// <summary> The built analyzer's file name - the only thing Unity actually loads. </summary>
         public const string ArtifactFileName = ArtifactAssemblyName + ".dll";
+
+        /// <summary> The project the build shells out to. </summary>
         public const string ProjectFileName = ArtifactAssemblyName + ".csproj";
 
         /// <summary> Asset label Unity reads to treat a .dll as an analyzer. Case sensitive. </summary>
@@ -90,14 +94,20 @@ namespace BH.SDK.Editor
         /// <summary> This file's path, stamped in by the compiler. </summary>
         private static string ThisFilePath([CallerFilePath] string path = null) => path;
 
+        /// <summary> Where the analyzer's SOURCES live - not the artifact, which sits a level up. </summary>
         public static string RoslynAssetPath => $"{SdkRootAssetPath}/Roslyn";
+
+        /// <summary> The compiler references, installed rather than committed. </summary>
         public static string ReferencesAssetPath => $"{RoslynAssetPath}/Refs";
+
+        /// <summary> The project file, as an asset path. </summary>
         public static string ProjectFileAssetPath => $"{RoslynAssetPath}/{ProjectFileName}";
 
-        /// <summary> The artifact lives in the SDK ROOT, and that is what gives it its scope. </summary>
         // Unity hands an analyzer to the asmdef owning its folder and to every assembly referencing
         // that asmdef - measured, not assumed. Inside Roslyn/ it would belong to
         // BH.SDK.Roslyn.Sources, which nothing references, and would analyze nothing at all.
+
+        /// <summary> The artifact lives in the SDK ROOT, and that is what gives it its scope. </summary>
         public static string ArtifactAssetPath => $"{SdkRootAssetPath}/{ArtifactFileName}";
 
         /// <summary> MSBuild output, behind a tilde so Unity never imports it. </summary>
@@ -112,8 +122,10 @@ namespace BH.SDK.Editor
         public static string BundledDotnetPath
             => $"{EditorApplication.applicationContentsPath}/DotNetSdk/dotnet.exe";
 
+        /// <summary> The folder holding Assets, with forward slashes throughout. </summary>
         public static string ProjectRoot => Path.GetDirectoryName(Application.dataPath)!.Replace('\\', '/');
 
+        /// <summary> An asset path as one the dotnet build can open. </summary>
         public static string ToAbsolute(string assetPath) => $"{ProjectRoot}/{assetPath}";
     }
 }

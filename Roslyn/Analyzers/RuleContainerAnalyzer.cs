@@ -7,6 +7,8 @@ using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace BH.SDK.Roslyn
 {
+    /// <summary> Refuses a <c>[RuleContainer]</c> that is not <c>partial</c>: without the keyword the generator
+    /// cannot write its walk, and the type silently becomes the slowest kind of node on a level's load path. </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public class RuleContainerAnalyzer : DiagnosticAnalyzer
     {
@@ -35,9 +37,11 @@ namespace BH.SDK.Roslyn
         private static readonly DiagnosticDescriptor StructRule = new(DiagnosticId + ".Struct", StructTitle,
             StructMessageFormat, Category, DiagnosticSeverity.Error, true, description: StructDescription);
 
+        /// <summary> Every diagnostic this analyzer can report. </summary>
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics
             => ImmutableArray.Create(Rule, StructRule);
 
+        /// <summary> Registers the one syntax action, with generated code excluded and concurrency on. </summary>
         public override void Initialize(AnalysisContext context)
         {
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);

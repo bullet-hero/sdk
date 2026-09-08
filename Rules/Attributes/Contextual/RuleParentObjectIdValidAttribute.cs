@@ -18,14 +18,18 @@ namespace BH.SDK.Rules.Attributes
     [AttributeUsage(PropertyTarget)]
     public class RuleParentObjectIdValidAttribute : BasePropertyRuleAttribute
     {
+        /// <summary> <c>"rule_parent_object_id_valid"</c>, the key its message is looked up under. </summary>
         public override string RuleNameKey => "rule_parent_object_id_valid";
 
+        /// <summary> Applies to object id properties. </summary>
         protected override bool IsValidTypeInternal(PropertyInfo property)
             => typeof(ObjectId).IsAssignableFrom(property.PropertyType);
 
+        /// <summary> Passes on an id this scope may actually be parented to - which excludes the level-runtime parents inside a prefab template. </summary>
         protected override bool IsValidInternal(object value, RuleContext context)
             => value is ObjectId objectId && IsAllowed(objectId, context);
 
+        /// <summary> Unsets the reference rather than guessing a parent. </summary>
         protected override void FixInternal(object target, PropertyInfo property, RuleContext context)
         {
             if (property.GetValue(target) is not ObjectId objectId) return;

@@ -11,6 +11,9 @@ namespace BH.SDK.Tests.Generators
     // GeneratorSweepTests already proves the properties every generator shares. What is left per
     // generator is its actual geometry - the part a sweep cannot check, and the part an author
     // notices immediately when it is wrong.
+
+    /// <summary> What the sweep cannot check and an author notices immediately: the actual geometry each
+    /// placement generator produces. </summary>
     public class GeometryGeneratorsTests
     {
         private static Level CreateLevel()

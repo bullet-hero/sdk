@@ -23,6 +23,7 @@ namespace BH.SDK.Generators
             _state = seed == 0 ? 0x9E3779B9u : seed;
         }
 
+        /// <summary> The next number of the xorshift sequence - hand-written, so the same seed gives the same level on every runtime. </summary>
         public uint NextUInt()
         {
             _state ^= _state << 13;
@@ -44,6 +45,7 @@ namespace BH.SDK.Generators
             return min + (int)(NextUInt() % (uint)(max - min));
         }
 
+        /// <summary> One bit of it. </summary>
         public bool NextBool() => (NextUInt() & 1u) == 1u;
     }
 }

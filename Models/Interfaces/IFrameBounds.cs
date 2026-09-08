@@ -15,6 +15,7 @@ namespace BH.SDK.Models.Interfaces
     /// <summary> Implemented by whatever owns a lifetime on a timeline: objects and audio tracks. </summary>
     public interface IFrameBounds
     {
+        /// <summary> The frames it covers, half-open: <c>[Start, Start + Duration)</c>. </summary>
         [JsonProperty(Names.SpanShort)]
         public FrameSpan Span { get; set; }
     }

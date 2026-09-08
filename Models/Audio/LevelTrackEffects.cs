@@ -98,6 +98,7 @@ namespace BH.SDK.Models.Audio
         [JsonProperty(Names.ParamEQ)]
         public AudioParamEQ ParamEQ { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public LevelTrackEffects()
         {
             Volumes = new List<FloatKey>();
@@ -115,6 +116,7 @@ namespace BH.SDK.Models.Audio
             // question - an effect an author dialled in and then switched off keeps its object and
             // its settings.
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public LevelTrackEffects(List<FloatKey> volumes, List<FloatKey> stereoPans, bool active, 
             AudioLowpass lowpass, AudioHighpass highpass, AudioEcho echo, AudioReverb reverb, 
             AudioChorus chorus, AudioPitchShifter pitchShifter, AudioDistortion distortion, 

@@ -12,11 +12,15 @@ namespace BH.SDK.Generators
     /// </summary>
     public class EmptyLevelGenerator : BaseLevelGenerator<EmptyLevelGenerator.Parameters>
     {
+        /// <summary> <c>"gen_level_empty"</c>, the key a host lists this generator under. </summary>
         public override string NameKey => "gen_level_empty";
 
         // First in the list: the level everything else is a shortcut to.
+
+        /// <summary> Where this sits in a host's list; lower comes first. </summary>
         public override int ListOrder => -20;
 
+        /// <summary> The order, labels and ranges a host lays its form out with. </summary>
         public override GeneratorHints Hints => HintsValue;
 
         private static readonly GeneratorHints HintsValue = new GeneratorHints.Builder()
@@ -29,6 +33,7 @@ namespace BH.SDK.Generators
             .Unit(nameof(Parameters.Framerate), "fps")
             .Build();
 
+        /// <summary> Builds the level and its metadata together, so the two cannot disagree. </summary>
         protected override GeneratedLevel CreateTyped(Parameters parameters)
         {
             var level = new Level();
@@ -51,9 +56,13 @@ namespace BH.SDK.Generators
         /// </summary>
         public class Parameters
         {
+            /// <summary> Name the new level is created under. </summary>
             public IString LevelName = new StringValue();
+            /// <summary> Its description. </summary>
             public IString LevelDescription = new StringValue();
+            /// <summary> Frames per second the timeline is measured in. </summary>
             public int Framerate = DefaultFramerate;
+            /// <summary> How many frames long it is. </summary>
             public int FrameDuration = DefaultFramerate * DefaultSeconds;
 
             private const int DefaultFramerate = 60;

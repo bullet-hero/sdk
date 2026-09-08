@@ -58,11 +58,13 @@ namespace BH.SDK.Models.Hints
         [JsonIgnore]
         public bool HasValue => (Limits?.HasValue ?? false) || FontCharacters is { Count: > 0 };
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public LevelHints()
         {
             Limits = new LimitHints();
             FontCharacters = new Dictionary<FontResourceId, CachedFontText>();
         }
+        /// <summary> Built from its limits, dictionary font resource id and characters. </summary>
         public LevelHints(LimitHints limits, Dictionary<FontResourceId, CachedFontText> fontCharacters)
         {
             Limits = limits;

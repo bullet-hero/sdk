@@ -8,8 +8,10 @@ namespace BH.SDK.Generators.Geometry
     /// </summary>
     public class RadialGenerator : BaseSpawnGenerator<RadialGenerator.Parameters>
     {
+        /// <summary> <c>"gen_geometry_radial"</c>, the key a host lists this generator under. </summary>
         public override string NameKey => "gen_geometry_radial";
 
+        /// <summary> The order, labels and ranges a host lays its form out with. </summary>
         public override GeneratorHints Hints { get; } = new GeneratorHints.Builder()
             .Section(GeneratorSections.Main, SpawnParameters.MainFields)
             .Section(GeneratorSections.Main, nameof(Parameters.Count), nameof(Parameters.Radius))
@@ -27,6 +29,7 @@ namespace BH.SDK.Generators.Geometry
             .Range(nameof(SpawnParameters.Size), ValueRules.MinSca, ValueRules.MaxSca)
             .Build();
 
+        /// <summary> Writes this run's objects into the scope. </summary>
         protected override void Generate(GeneratorContext context, Parameters parameters)
         {
             var count = Count(parameters.Count);
@@ -54,6 +57,7 @@ namespace BH.SDK.Generators.Geometry
             }
         }
 
+        /// <summary> What this run would add, answered before it runs. </summary>
         protected override GeneratorCost EstimateTyped(GeneratorContext context, Parameters parameters)
         {
             var count = Count(parameters.Count);
@@ -69,14 +73,28 @@ namespace BH.SDK.Generators.Geometry
 
         private static int Count(int value) => value < 1 ? 1 : value;
 
+        /// <summary> Which arc is covered, at what radius, and whether objects face the centre. Public mutable
+        /// fields, like every parameters class here - a form binds to them and a preset serializes from them. </summary>
         public class Parameters : SpawnParameters
         {
+            /// <summary> How many objects are placed. </summary>
             public int Count = 12;
+
+            /// <summary> Distance from the centre. </summary>
             public float Radius = 5f;
+
+            /// <summary> Angle the first object sits at. </summary>
             public float StartAngle;
+
+            /// <summary> How much of the circle is covered - a full turn is a ring, less is an arc. </summary>
             public float Arc = 360f;
+
+            /// <summary> Where the circle is centred. </summary>
             public float CenterX;
+            /// <summary> Its vertical half. </summary>
             public float CenterY;
+
+            /// <summary> Rotate each object to point at the centre. </summary>
             public bool FaceCenter;
         }
     }

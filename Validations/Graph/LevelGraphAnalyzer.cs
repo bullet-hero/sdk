@@ -22,6 +22,7 @@ namespace BH.SDK.Validations.Graph
     /// </summary>
     public class LevelGraphAnalyzer
     {
+        /// <summary> Every relational finding a whole level has - the ones a single property could never see. </summary>
         public List<GraphIssue> Analyze(Level level)
         {
             var result = new List<GraphIssue>();

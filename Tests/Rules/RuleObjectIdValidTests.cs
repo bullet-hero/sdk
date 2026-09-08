@@ -14,6 +14,7 @@ namespace BH.SDK.Tests.Rules
     /// </summary>
     public class RuleObjectIdValidTests : BaseRuleTests
     {
+        /// <summary> An object id, judged against the range its scope owns. </summary>
         [RuleContainer]
         private class IdModel
         {

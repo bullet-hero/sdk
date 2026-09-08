@@ -26,22 +26,27 @@ namespace BH.SDK.Models.Statistics
     [GenerateModel]
     public sealed partial class DeviceTimeStatistics : IModel<DeviceTimeStatistics>
     {
+        /// <summary> Real seconds played with keyboard and mouse steering. </summary>
         [RuleInRange(StatisticsRules.MinSeconds, StatisticsRules.MaxSeconds)]
         [JsonProperty(Names.KeyboardMouseSeconds)]
         public double KeyboardMouseSeconds { get; set; }
 
+        /// <summary> Real seconds played with the touchscreen steering. </summary>
         [RuleInRange(StatisticsRules.MinSeconds, StatisticsRules.MaxSeconds)]
         [JsonProperty(Names.TouchscreenSeconds)]
         public double TouchscreenSeconds { get; set; }
 
+        /// <summary> Real seconds played with a gamepad steering. </summary>
         [RuleInRange(StatisticsRules.MinSeconds, StatisticsRules.MaxSeconds)]
         [JsonProperty(Names.GamepadSeconds)]
         public double GamepadSeconds { get; set; }
 
+        /// <summary> Real seconds played with the motion sensor steering. </summary>
         [RuleInRange(StatisticsRules.MinSeconds, StatisticsRules.MaxSeconds)]
         [JsonProperty(Names.DeviceGyroSeconds)]
         public double DeviceGyroSeconds { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public DeviceTimeStatistics()
         {
             KeyboardMouseSeconds = 0.0;
@@ -63,6 +68,7 @@ namespace BH.SDK.Models.Statistics
             }
         }
 
+        /// <summary> The seconds recorded for one device. </summary>
         public double Get(ControlDevice device) => device switch
         {
             ControlDevice.KeyboardMouse => KeyboardMouseSeconds,

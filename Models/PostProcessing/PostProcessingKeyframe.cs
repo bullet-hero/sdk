@@ -33,12 +33,14 @@ namespace BH.SDK.Models.PostProcessing
         [JsonProperty(Names.Ease)]
         public EaseType Ease { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public PostProcessingKeyframe()
         {
             Active = PostProcessingRules.ActiveDefault;
             Frame = Keyframe.DefaultFrame;
             Ease = Keyframe.DefaultEase;
         }
+        /// <summary> Built from its active, frame and keyframe default ease. </summary>
         public PostProcessingKeyframe(bool active, int frame, EaseType ease = Keyframe.DefaultEase)
         {
             Active = active;

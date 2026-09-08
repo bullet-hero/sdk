@@ -33,10 +33,12 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
         [JsonProperty(Names.ActiveDefault)]
         public bool ActiveDefault { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public EditorEffectsSettings()
         {
             ResetOwn();
         }
+        /// <summary> Built from its default. </summary>
         public EditorEffectsSettings(bool activeDefault)
         {
             ActiveDefault = activeDefault;

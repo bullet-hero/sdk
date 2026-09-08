@@ -29,15 +29,18 @@ namespace BH.SDK.Models.Values
         [JsonProperty(Names.Source)]
         public NoLicenseSourceType Source { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public NoSpecifiedLicense()
         {
             Source = NoLicenseSourceType.Undefined;
         }
+        /// <summary> Built from its source. </summary>
         public NoSpecifiedLicense(NoLicenseSourceType source)
         {
             Source = source;
         }
 
+        /// <summary> Which concrete form this is - the discriminator a converter writes and reads back. </summary>
         public LicenseType GetModelType() => LicenseType.NoSpecified;
     }
 }

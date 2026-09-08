@@ -9,6 +9,9 @@ namespace BH.SDK.Tests
     // those types' own doc comments) - this test suite exercises the shared shape (Null/IsEnabled/
     // NewGuid/string constructor/equality) so a future change to one is easy to cross-check against
     // the others.
+
+    /// <summary> The id shape ShapeId shares with ThemeId and EffectId - null, enabled, minting, parsing and
+    /// equality - so a change to one is easy to cross-check against the others. </summary>
     public class ShapeIdTests
     {
         [Test]

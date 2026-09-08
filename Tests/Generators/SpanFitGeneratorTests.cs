@@ -14,6 +14,10 @@ namespace BH.SDK.Tests.Generators
     // deliberately rather than turned into a one-frame ghost by accident, that a root object stays
     // untouched because nothing bounds it, and that a prefab placement's materialized children are
     // never orphaned from the remap table pointing at them.
+
+    /// <summary> What the removed repair rule never had to answer: that a fit holds all the way down a chain,
+    /// that a child playing nowhere is dealt with deliberately, and that a placement's children stay in the
+    /// remap table. </summary>
     public class SpanFitGeneratorTests
     {
         private const int FrameDuration = 600;

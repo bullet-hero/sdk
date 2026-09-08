@@ -1,5 +1,6 @@
 ﻿namespace BH.SDK.Models.Enums.Settings
 {
+    /// <summary> Which framerate policy applies, globally or to one level. </summary>
     public enum FramerateTarget
     {
         /// <summary>

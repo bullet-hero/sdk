@@ -23,13 +23,16 @@ namespace BH.SDK.Models.Resources
         [JsonProperty(Names.TextResourceId)]
         public TextResourceId TextResourceId { get; set; }
 
+        /// <summary> Which kind of resource this is. </summary>
         [JsonProperty(Names.Type)]
         public override ResourceType Type => ResourceType.Text;
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public TextResource()
         {
             TextResourceId = TextResourceId.Null;
         }
+        /// <summary> Built from its resource id and sources. </summary>
         public TextResource(TextResourceId textResourceId, List<ResourceKey> sources) : base(sources)
         {
             TextResourceId = textResourceId;

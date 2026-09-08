@@ -25,12 +25,15 @@ namespace BH.SDK.Utils
         private const ulong Prime4 = 9650029242287828579UL;
         private const ulong Prime5 = 2870177450012600261UL;
 
+        /// <summary> The digest of a whole buffer. </summary>
         public static ulong Compute(byte[] data, ulong seed = 0)
             => data is null ? Compute(ReadOnlySpan<byte>.Empty, seed) : Compute(data.AsSpan(), seed);
 
+        /// <summary> The digest of a window of one. </summary>
         public static ulong Compute(byte[] data, int offset, int length, ulong seed = 0)
             => Compute(data.AsSpan(offset, length), seed);
 
+        /// <summary> The digest of a span, without copying it. </summary>
         public static ulong Compute(ReadOnlySpan<byte> data, ulong seed = 0)
         {
             var length = data.Length;

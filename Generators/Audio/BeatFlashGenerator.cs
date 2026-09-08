@@ -19,11 +19,14 @@ namespace BH.SDK.Generators.Audio
     /// </summary>
     public class BeatFlashGenerator : BaseContentGenerator<BeatFlashGenerator.Parameters>
     {
+        /// <summary> <c>"gen_beat_flash"</c>, the key a host lists this generator under. </summary>
         public override string NameKey => "gen_beat_flash";
 
+        /// <summary> What must be true before a host offers this run. </summary>
         public override GeneratorRequirements Requirements =>
             GeneratorRequirements.LevelScope | GeneratorRequirements.ExternalAnalysis;
 
+        /// <summary> The order, labels and ranges a host lays its form out with. </summary>
         public override GeneratorHints Hints { get; } = new GeneratorHints.Builder()
             .Section(GeneratorSections.Main, nameof(Parameters.BaseZoom), nameof(Parameters.ZoomPunch),
                 nameof(Parameters.DecayFrames))
@@ -41,6 +44,7 @@ namespace BH.SDK.Generators.Audio
             .Hidden(nameof(Parameters.BeatFrames))
             .Build();
 
+        /// <summary> Writes this run's objects into the scope. </summary>
         protected override void Generate(GeneratorContext context, Parameters parameters)
         {
             var camera = context.Game.CameraEvents;
@@ -84,6 +88,8 @@ namespace BH.SDK.Generators.Audio
         // GeneratorCost counts what a run ADDS. Keys that ClearRange removes are not subtracted -
         // an estimate is what the author is about to gain, and "8 keys, and by the way 5 disappear"
         // is two different questions.
+
+        /// <summary> What this run would add, answered before it runs. </summary>
         protected override GeneratorCost EstimateTyped(GeneratorContext context, Parameters parameters)
         {
             if (context?.Game == null) return GeneratorCost.Zero;
@@ -152,19 +158,28 @@ namespace BH.SDK.Generators.Audio
 
         private static int Decay(int value) => value < 1 ? 1 : value;
 
+        /// <summary> Which beats are punched and how hard. Public mutable fields, like every parameters class
+        /// here - a form binds to them and a preset serializes from them. </summary>
         public class Parameters : IBeatFramesInput
         {
+            /// <summary> The zoom the camera rests at between beats. </summary>
             public float BaseZoom = ValueRules.DefaultZoom;
+            /// <summary> How far it punches in on one. </summary>
             public float ZoomPunch = 1.5f;
+            /// <summary> How long it takes to settle back. </summary>
             public int DecayFrames = 8;
+            /// <summary> Whether the punch is accompanied by a shake. </summary>
             public bool Shake = true;
+            /// <summary> How hard. </summary>
             public float ShakeIntensity = 0.5f;
+            /// <summary> How fast. </summary>
             public float ShakeSpeed = 20f;
 
             /// <summary> Wipes every camera zoom/shake key inside the run's window first. Undoable
             /// like everything else - the removed keys live on in the change log. </summary>
             public bool ClearRange;
 
+            /// <summary> Which frames are beats; filled by the host from the level's beat map, or from its markers. </summary>
             public int[] BeatFrames = Array.Empty<int>();
 
             int[] IBeatFramesInput.BeatFrames

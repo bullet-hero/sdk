@@ -10,11 +10,13 @@ namespace BH.SDK.Tests.Rules
     /// </summary>
     public class RuleCollectionMinCountTests : BaseRuleTests
     {
+        /// <summary> A collection element. </summary>
         private class Item
         {
             public int Number { get; set; }
         }
 
+        /// <summary> An element with no parameterless constructor, so a collection of them cannot be padded. </summary>
         private class NoDefaultCtorItem
         {
             public int Number { get; }
@@ -25,6 +27,7 @@ namespace BH.SDK.Tests.Rules
             }
         }
 
+        /// <summary> The rule on a List property. </summary>
         [RuleContainer]
         private class ListModel
         {
@@ -32,6 +35,7 @@ namespace BH.SDK.Tests.Rules
             public List<int> Value { get; set; } = new() { 1, 2 };
         }
 
+        /// <summary> The rule on a list of reference-typed items, which a repair has to construct. </summary>
         [RuleContainer]
         private class ReferenceListModel
         {
@@ -39,6 +43,7 @@ namespace BH.SDK.Tests.Rules
             public List<Item> Value { get; set; } = new() { new Item(), new Item() };
         }
 
+        /// <summary> A short list whose element cannot be constructed - the shortfall is reported rather than repaired. </summary>
         [RuleContainer]
         private class UnconstructableModel
         {
@@ -50,6 +55,7 @@ namespace BH.SDK.Tests.Rules
             };
         }
 
+        /// <summary> A property of a type the rule does not apply to, so it must decline rather than refuse. </summary>
         [RuleContainer]
         private class WrongTypeModel
         {

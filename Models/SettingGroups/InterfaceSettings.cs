@@ -92,6 +92,7 @@ namespace BH.SDK.Models.SettingGroups
         [JsonProperty(Names.ShowGameInterface)]
         public bool ShowGameInterface { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public InterfaceSettings()
         {
             OpenMenuOnLose = false;
@@ -110,6 +111,8 @@ namespace BH.SDK.Models.SettingGroups
         // taking the object-initializer route in Copy instead. They are defaulted here as well as
         // in the parameterless constructor, so the two agree - a value built through this one and
         // a freshly defaulted one have to compare equal.
+
+        /// <summary> Every member at once, in declaration order. </summary>
         public InterfaceSettings(bool openMenuOnLose, bool statsActive,
             float statsAlignmentX, float statsAlignmentY, MenuBackgroundKind menuBackground,
             ScreenOrientationLock screenOrientation)

@@ -24,14 +24,17 @@ namespace BH.SDK.Serialization.Converters
     /// <summary> Routes a model to the codec BH.SDK.Roslyn wrote for it. </summary>
     public sealed class GeneratedModelConverter : JsonConverter
     {
+        /// <summary> One answer for every generated model - two hundred entries in the router's list would undo what it exists for. </summary>
         public override bool CanConvert(Type objectType) => typeof(IJsonModel).IsAssignableFrom(objectType);
 
+        /// <summary> Writes through the model's own generated codec. </summary>
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
             if (value is null) writer.WriteNull();
             else ((IJsonModel)value).WriteJson(writer);
         }
 
+        /// <summary> Reads through it, over a fresh instance. </summary>
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue,
             JsonSerializer serializer)
         {

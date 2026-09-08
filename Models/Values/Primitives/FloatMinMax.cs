@@ -28,17 +28,20 @@ namespace BH.SDK.Models.Values
         [JsonProperty(Names.Max)]
         public float Max { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public FloatMinMax()
         {
             Min = ValueRules.FloatZero;
             Max = ValueRules.FloatOne;
         }
+        /// <summary> Built from its min and max. </summary>
         public FloatMinMax(float min, float max)
         {
             Min = min;
             Max = max;
         }
 
+        /// <summary> Which concrete form this is - the discriminator a converter writes and reads back. </summary>
         public FloatType GetModelType() => FloatType.RandomMinMax;
     }
 }

@@ -18,6 +18,8 @@ namespace BH.SDK.Models.Resources
     [GenerateModel]
     public abstract partial class Resource : IModel<Resource>
     {
+        /// <summary> How many fallback places ONE asset may be fetched from, tried in order. Small on purpose -
+        /// each is a load attempt the player waits through. </summary>
         public const int MaxSourcesCount = 4;
 
         /// <summary> Where to look for the asset, in order - a local path, a URL, an addressable key.
@@ -36,10 +38,12 @@ namespace BH.SDK.Models.Resources
         [JsonProperty(Names.Type)]
         public abstract ResourceType Type { get; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         protected Resource()
         {
             Sources = new List<ResourceKey>();
         }
+        /// <summary> Built from its sources. </summary>
         protected Resource(List<ResourceKey> sources)
         {
             Sources = sources;

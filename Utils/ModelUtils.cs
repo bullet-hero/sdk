@@ -9,16 +9,20 @@ using BH.SDK.Validations;
 
 namespace BH.SDK.Utils
 {
+    /// <summary> Conversions between the model types that keep meeting each other - pixels and colours, values
+    /// and their primitives - plus the formatting a validation finding is printed with. </summary>
     public static class ModelUtils
     {
         private const float ByteMaxValue = byte.MaxValue;
         
+        /// <summary> A byte pixel as the authored 0-1 colour a level stores. </summary>
         public static Color4Value ToColorValue(this Pixel pixel) => new(
             pixel.r / ByteMaxValue, 
             pixel.g / ByteMaxValue, 
             pixel.b / ByteMaxValue, 
             pixel.a / ByteMaxValue);
         
+        /// <summary> The other way round. </summary>
         public static Pixel ToPixel(this Color4Value color4Value) => new(
             (byte)(color4Value.R * ByteMaxValue),
             (byte)(color4Value.G * ByteMaxValue),
@@ -86,6 +90,8 @@ namespace BH.SDK.Utils
             array.CopyTo(copyArray, 0);
             return copyArray;
         }
+
+        /// <summary> A new list holding copies, not the same instances. </summary>
         public static List<T> CopyList<T>(this List<T> list) where T : ICopyable<T>
         {
             var copyList = new List<T>(list.Count);
@@ -93,6 +99,8 @@ namespace BH.SDK.Utils
                 copyList.Add(item.Copy());
             return copyList;
         }
+
+        /// <summary> A new dictionary, copying values that know how and taking the rest as they are. </summary>
         public static Dictionary<TKey, TValue> CopyDictionary<TKey, TValue>(this Dictionary<TKey, TValue> dictionary)
             where TKey : unmanaged where TValue : ICopyable<TValue>
         {
@@ -101,6 +109,8 @@ namespace BH.SDK.Utils
                 copyDictionary.Add(key, value.Copy());
             return copyDictionary;
         }
+
+        /// <summary> A new dictionary of values that need no copying - a shallow copy IS a deep one there. </summary>
         public static Dictionary<TKey, TValue> CopyDictionaryUnmanaged<TKey, TValue>(this Dictionary<TKey, TValue> dictionary)
             where TKey : unmanaged where TValue : unmanaged
         {
@@ -109,6 +119,8 @@ namespace BH.SDK.Utils
                 copyDictionary.Add(key, value);
             return copyDictionary;
         }
+
+        /// <summary> A new dictionary holding copies of every value. </summary>
         public static Dictionary<TKey, TValue> CopyDictionaryManaged<TKey, TValue>(this Dictionary<TKey, TValue> dictionary)
             where TKey : ICopyable<TKey> where TValue : ICopyable<TValue>
         {
@@ -180,6 +192,7 @@ namespace BH.SDK.Utils
             Dictionary<TKey, TValue> source) where TValue : class, IModel<TValue>
             => target.PullDictionary(source, PullFrom);
 
+        /// <summary> Element-by-element equality, which an array does not have on its own. </summary>
         public static bool ArrayEquals<T>(this T[] array, T[] other)
         {
             if (array is null || other is null) return false;
@@ -188,6 +201,8 @@ namespace BH.SDK.Utils
             var result = array.SequenceEqual(other);
             return result;
         }
+
+        /// <summary> Element-by-element equality, which a list does not have on its own. </summary>
         public static bool ListEquals<T>(this List<T> list, List<T> other)
         {
             if (list is null || other is null) return false;
@@ -196,6 +211,8 @@ namespace BH.SDK.Utils
             var result = list.SequenceEqual(other);
             return result;
         }
+
+        /// <summary> Entry-by-entry equality, order-independent. </summary>
         public static bool DictionaryEquals<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, Dictionary<TKey, TValue> other)
         {
             if (dictionary is null || other is null) return false;
@@ -212,6 +229,7 @@ namespace BH.SDK.Utils
             return true;
         }
         
+        /// <summary> A hash over the contents, matching <see cref="ArrayEquals"/>. </summary>
         public static int GetArrayHashCode<T>(this T[] array)
         {
             if (array is null) return 0;
@@ -223,6 +241,8 @@ namespace BH.SDK.Utils
                 return hash;
             }
         }
+
+        /// <summary> A hash over the contents, matching <see cref="ListEquals"/>. </summary>
         public static int GetListHashCode<T>(this List<T> list)
         {
             if (list is null) return 0;
@@ -240,6 +260,7 @@ namespace BH.SDK.Utils
         // placement in a HashSet. Entry hashes are summed instead: a Dictionary's enumeration order
         // is not part of its value, and the keys are unique, so no two entries can trade places.
 
+        /// <summary> A hash over the entries, order-independent to match <see cref="DictionaryEquals"/>. </summary>
         public static int GetDictionaryHashCode<TKey, TValue>(this Dictionary<TKey, TValue> dictionary)
         {
             if (dictionary is null) return 0;
@@ -255,6 +276,7 @@ namespace BH.SDK.Utils
             }
         }
         
+        /// <summary> A validation trace as the dotted, indexed path a person reads. </summary>
         public static string GetPath(this List<RulePath> trace)
         {
             if (trace.Count == 0) return string.Empty;
@@ -262,6 +284,8 @@ namespace BH.SDK.Utils
             trace.BuildTracePath(builder);
             return builder.ToString();
         }
+
+        /// <summary> The same, written into a builder the caller already has. </summary>
         public static void BuildTracePath(this List<RulePath> trace, StringBuilder builder)
         {
             if (trace.Count == 0) return;

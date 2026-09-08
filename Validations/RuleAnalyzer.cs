@@ -31,6 +31,8 @@ namespace BH.SDK.Validations
     // reached from, and WalkNode below is what it falls back to when a value has no generated walk
     // of its own. The two are mutually recursive through that one point on purpose.
 
+    /// <summary> Walks a model graph and reports every rule it violates. Everything decided once per TYPE lives
+    /// here; everything belonging to one call lives on the walk it hands out. </summary>
     public class RuleAnalyzer
     {
         private readonly Dictionary<Type, PropertyEntry[]> _typesCache = new(32);
@@ -38,6 +40,7 @@ namespace BH.SDK.Validations
         private readonly Dictionary<Type, bool> _containerCache = new(64);
         private readonly Stack<List<(object, PropertyEntry)>> _nextObjectsPool;
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public RuleAnalyzer()
         {
             _nextObjectsPool = new Stack<List<(object, PropertyEntry)>>(16);
@@ -107,6 +110,7 @@ namespace BH.SDK.Validations
         // a dead prefix. It lives on the walk now, and the walk dies with the call - so an aborted
         // analysis leaves nothing behind to clear. RuleAnalyzerPoolTests still pins the outcome.
 
+        /// <summary> Every rule violated anywhere in that object's graph. </summary>
         public List<RuleIssue> Analyze(object obj, RuleAnalyzerSettings settings)
         {
             var walk = new RuleWalk(this, settings);
@@ -242,7 +246,10 @@ namespace BH.SDK.Validations
         /// decided once per type rather than once per instance. </summary>
         private readonly struct PropertyEntry
         {
+            /// <summary> The property this entry describes. </summary>
             public readonly PropertyInfo Property;
+
+            /// <summary> The rules written on it, resolved once per type rather than once per instance. </summary>
             public readonly BasePropertyRuleAttribute[] Rules;
 
             /// <summary> Can a [RuleContainer] be reached through this property's value? </summary>
@@ -252,6 +259,7 @@ namespace BH.SDK.Validations
             /// </summary>
             public readonly bool TypeChecked;
 
+            /// <summary> Every member at once, in declaration order. </summary>
             public PropertyEntry(PropertyInfo property, BasePropertyRuleAttribute[] rules,
                 bool walkable, bool typeChecked)
             {

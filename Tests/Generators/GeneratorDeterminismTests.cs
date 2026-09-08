@@ -11,6 +11,9 @@ namespace BH.SDK.Tests.Generators
     // anything if it holds across runtimes - which is why GeneratorRandom is a hand-written
     // xorshift32 rather than System.Random. These tests pin both halves: the RNG's own sequence,
     // and the fact that a generator actually routes its randomness through it.
+
+    /// <summary> "Same seed, same level", across runtimes: the hand-written xorshift's own sequence, and the
+    /// fact that a generator actually routes its randomness through it. </summary>
     public class GeneratorDeterminismTests
     {
         private static Level CreateLevel()

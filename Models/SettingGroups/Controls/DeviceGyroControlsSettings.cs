@@ -25,10 +25,12 @@ namespace BH.SDK.Models.SettingGroups.Controls
     public sealed partial class DeviceGyroControlsSettings : BaseDeviceControlsSettings,
         IModel<DeviceGyroControlsSettings>, IMoveable<DeviceGyroControlsSettings>
     {
+        /// <summary> Which of the three steering modes the sensor drives. </summary>
         [RuleEnumValid(DeviceGyroControlMode.Direction)]
         [JsonProperty(Names.Mode)]
         public DeviceGyroControlMode Mode { get; set; }
 
+        /// <summary> Which two rotation axes become the two screen axes. </summary>
         [RuleEnumValid(GyroAxisMapping.RollPitch)]
         [JsonProperty(Names.AxisMapping)]
         public GyroAxisMapping AxisMapping { get; set; }
@@ -43,6 +45,7 @@ namespace BH.SDK.Models.SettingGroups.Controls
         [JsonProperty(Names.TiltCenterX)]
         public float TiltCenterX { get; set; }
 
+        /// <summary> The tilt treated as neutral, so a phone held at an angle still rests at the centre. </summary>
         [RuleInRange(ControlsRules.MinTiltCenter, ControlsRules.MaxTiltCenter)]
         [JsonProperty(Names.TiltCenterY)]
         public float TiltCenterY { get; set; }
@@ -52,25 +55,32 @@ namespace BH.SDK.Models.SettingGroups.Controls
         [JsonProperty(Names.MaxTiltAngle)]
         public float MaxTiltAngle { get; set; }
 
+        /// <summary> How dash is triggered - the sensor itself has no buttons. </summary>
         [RuleEnumValid(GyroDashSource.AnyScreenTap)]
         [JsonProperty(Names.DashSource)]
         public GyroDashSource DashSource { get; set; }
 
+        /// <summary> Where the on-screen dash button sits, when there is one. </summary>
         [RuleEnumValid(ScreenAnchor.BottomRight)]
         [JsonProperty(Names.DashButtonAnchor)]
         public ScreenAnchor DashButtonAnchor { get; set; }
 
+        /// <summary> How large that button is drawn. </summary>
         [RuleInRange(ControlsRules.MinControlSize, ControlsRules.MaxControlSize)]
         [JsonProperty(Names.DashButtonSize)]
         public float DashButtonSize { get; set; }
 
+        /// <summary> This device's own mode as the device-independent one; the two enums line up by convention. </summary>
         public override ControlMode GeneralMode => (ControlMode)Mode;
+        /// <summary> Which device these settings are for. </summary>
         public override ControlDevice Device => ControlDevice.DeviceGyro;
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public DeviceGyroControlsSettings()
         {
             ResetOwn();
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public DeviceGyroControlsSettings(bool active, float sensitivity,
             float deadZone, float smoothing, bool invertX, bool invertY, DeviceGyroControlMode mode,
             GyroAxisMapping axisMapping, bool calibrateOnStart, float tiltCenterX, float tiltCenterY,

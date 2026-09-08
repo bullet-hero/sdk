@@ -78,10 +78,12 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
         [JsonProperty(Names.PickInvisibleAABB)]
         public bool PickInvisibleAABB { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public EditorSelectionSettings()
         {
             ResetOwn();
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public EditorSelectionSettings(bool multiRequiresHold, float longPressDelay,
             float longPressMoveThreshold, bool previewColliderOnSelect, float colliderOpacitySelection,
             float colliderOpacityView, bool pickInvisibleAABB)

@@ -37,13 +37,20 @@ namespace BH.SDK.Services.Shapes
     {
         #region Id layout
 
+        /// <summary> Where the thickness nibble sits in the id. </summary>
         public const int ThicknessShift = 0;
+        /// <summary> Where the slice nibble sits. </summary>
         public const int SliceShift = 4;
+        /// <summary> Where the variant nibble sits. </summary>
         public const int VariantShift = 8;
+        /// <summary> Where the form byte sits. </summary>
         public const int FormShift = 12;
+        /// <summary> Where the flags sit - above every axis, so a new axis stays free. </summary>
         public const int FlagsShift = 20;
 
+        /// <summary> One axis worth of bits. </summary>
         public const int NibbleMask = 0xF;
+        /// <summary> The form's two nibbles. </summary>
         public const int FormMask = 0xFF;
 
         /// <summary> The one flag the flags nibble currently carries. </summary>
@@ -108,6 +115,7 @@ namespace BH.SDK.Services.Shapes
                 yield return (ShapeSlice.Eighth, ShapeSliceVariant.Primary);
         }
 
+        /// <summary> Every thickness rung, in the order the catalog enumerates them. </summary>
         public static readonly ShapeThickness[] Thicknesses =
         {
             ShapeThickness.Filled, ShapeThickness.T2, ShapeThickness.T4,
@@ -159,6 +167,7 @@ namespace BH.SDK.Services.Shapes
                | ((int)parameters.Slice << SliceShift)
                | ((int)parameters.Thickness << ThicknessShift);
 
+        /// <summary> The packed id those parameters describe - which is what makes an id decodable rather than a position in a list. </summary>
         public static ShapeId ToShapeId(ShapeParameters parameters)
             => new(GuidHelper.FromIntAtEnd(Encode(parameters)));
 

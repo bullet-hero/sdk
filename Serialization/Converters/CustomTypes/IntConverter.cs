@@ -6,9 +6,12 @@ using BH.SDK.Serialization.Converters.Base;
 
 namespace BH.SDK.Serialization.Converters.CustomTypes
 {
+    /// <summary> Tags an authored int with whether it is plain or one of the random forms. </summary>
     public class IntConverter : JsonConverterCustomType<IInt, IntType>
     {
+        /// <summary> Which form the value is, read off the value itself. </summary>
         public override IntType GetCustomType(IInt value) => value.GetModelType();
+        /// <summary> The class each int form is. </summary>
         public override Type GetType(IntType customType)
         {
             return customType switch

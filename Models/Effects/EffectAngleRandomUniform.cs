@@ -30,18 +30,22 @@ namespace BH.SDK.Models.Effects
         [JsonProperty(Names.AngleB)]
         public IFloat AngleB { get; set; }
 
+        /// <summary> Which concrete form this is - the discriminator a converter writes and reads back. </summary>
         public EffectAngleType GetModelType() => EffectAngleType.RandomUniform;
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public EffectAngleRandomUniform()
         {
             AngleA = new FloatValue(EffectRules.Angle.A_Default);
             AngleB = new FloatValue(EffectRules.Angle.B_Default);
         }
+        /// <summary> Built from its A and B. </summary>
         public EffectAngleRandomUniform(float angleA, float angleB)
         {
             AngleA = new FloatValue(angleA);
             AngleB = new FloatValue(angleB);
         }
+        /// <summary> Built from its A and B. </summary>
         public EffectAngleRandomUniform(IFloat angleA, IFloat angleB)
         {
             AngleA = angleA;

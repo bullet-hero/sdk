@@ -12,8 +12,11 @@ namespace BH.SDK.Models.Interfaces
     //
     // FrameDuration is a COUNT, matching FrameSpan.FrameDuration: a timeline of N holds frames
     // [0, N), so the last playable frame is N - 1 and N itself is the end boundary, not a frame.
+
+    /// <summary> Owns a timeline of its own, and knows how long it is. </summary>
     public interface IFrameDuration
     {
+        /// <summary> How many frames the timeline holds - a count, so the last playable frame is one less. </summary>
         [RuleMinValue(FrameRules.MinFrameDuration)]
         [JsonProperty(Names.FrameDurationShort)]
         public int FrameDuration { get; set; }

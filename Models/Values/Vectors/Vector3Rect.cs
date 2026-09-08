@@ -49,6 +49,7 @@ namespace BH.SDK.Models.Values
         [JsonProperty(Names.MaxZ)]
         public float MaxZ { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public Vector3Rect()
         {
             MinX = ValueRules.FloatZero;
@@ -59,6 +60,7 @@ namespace BH.SDK.Models.Values
             MaxY = ValueRules.FloatOne;
             MaxZ = ValueRules.FloatOne;
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public Vector3Rect(float minX, float minY, float minZ, float maxX, float maxY, float maxZ)
         {
             MinX = minX;
@@ -70,6 +72,7 @@ namespace BH.SDK.Models.Values
             MaxZ = maxZ;
         }
 
+        /// <summary> Which concrete form this is - the discriminator a converter writes and reads back. </summary>
         public VectorType GetModelType() => VectorType.RandomRect;
     }
 }

@@ -16,6 +16,9 @@ namespace BH.SDK.Tests
     // to ask whether one was authored, the same never-a-literal discipline LevelRules.IsValidSeed
     // keeps for the seed.
 
+
+    /// <summary> The desktop display group: that its defaults are what the game already did, that an older
+    /// settings file reads back as exactly those, and that a zero resolution is a sentinel rather than a size. </summary>
     public class DisplayGraphicsSettingsTests
     {
         private static DisplayGraphicsSettings Authored() =>

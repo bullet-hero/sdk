@@ -65,6 +65,8 @@ namespace BH.SDK.Models.Statistics
         // Public and parameterless because RuleContainerAnalyzer requires it of every
         // [RuleContainer] class: several Fix paths construct property types through
         // Activator.CreateInstance.
+
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public BestRun()
         {
             Progress = 0f;
@@ -77,6 +79,7 @@ namespace BH.SDK.Models.Statistics
             TimeUtc = default;
         }
 
+        /// <summary> Every member at once, in declaration order. </summary>
         public BestRun(float progress, int frame, int hits, int dashes, int livesLeft,
             int seed, Version levelVersion, DateTime timeUtc)
         {

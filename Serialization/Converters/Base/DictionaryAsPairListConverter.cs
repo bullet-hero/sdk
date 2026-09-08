@@ -11,14 +11,19 @@ namespace BH.SDK.Serialization.Converters.Base
     // string-key dictionary serialization, which throws for value-type keys like ObjectId that have
     // no working TypeConverter. Closed-generic instances are registered directly in
     // SerializationService.GetConverters() - no per-usage subclass needed.
+
+    /// <summary> Writes a dictionary as an array of key/value pairs, for the case where the key cannot be
+    /// recovered from the value. </summary>
     public class DictionaryAsPairListConverter<TKey, TValue> : JsonConverter<Dictionary<TKey, TValue>>
     {
+        /// <summary> One entry on the wire. </summary>
         private struct Pair
         {
             [JsonProperty(Names.KeyShort)] public TKey K;
             [JsonProperty(Names.ValueShort)] public TValue V;
         }
 
+        /// <summary> Writes an array of key/value pairs, since the key cannot be recovered from the value. </summary>
         public override void WriteJson(JsonWriter writer, Dictionary<TKey, TValue> value, JsonSerializer serializer)
         {
             var list = new List<Pair>(value.Count);
@@ -26,6 +31,7 @@ namespace BH.SDK.Serialization.Converters.Base
                 list.Add(new Pair { K = pair.Key, V = pair.Value });
             serializer.Serialize(writer, list);
         }
+        /// <summary> Rebuilds the dictionary from those pairs, refusing a duplicate key. </summary>
         public override Dictionary<TKey, TValue> ReadJson(JsonReader reader, Type objectType,
             Dictionary<TKey, TValue> existingValue, bool hasExistingValue, JsonSerializer serializer)
         {

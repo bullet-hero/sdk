@@ -7,17 +7,28 @@ using BH.SDK.Utils;
 
 namespace BH.SDK.Rules.Attributes
 {
+    /// <summary> An authored 4D vector with a per-axis floor, in every form of it. </summary>
     [AttributeUsage(PropertyTarget)]
     public class RuleIVector4MinAttribute : BasePropertyRuleAttribute
     {
+        /// <summary> <c>"rule_ivector4_min"</c>, the key its message is looked up under. </summary>
         public override string RuleNameKey => "rule_ivector4_min";
 
         // always include
+
+        /// <summary> Lower bound on the X axis. </summary>
         public float MinX { get; set; }
+
+        /// <summary> Lower bound on the Y axis. </summary>
         public float MinY { get; set; }
+
+        /// <summary> Lower bound on the Z axis. </summary>
         public float MinZ { get; set; }
+
+        /// <summary> Lower bound on the W component. </summary>
         public float MinW { get; set; }
 
+        /// <summary> One bound, applied to every axis. </summary>
         public RuleIVector4MinAttribute(float min)
         {
             MinX = min;
@@ -25,6 +36,7 @@ namespace BH.SDK.Rules.Attributes
             MinZ = min;
             MinW = min;
         }
+        /// <summary> Takes the lower bound on X, the lower bound on Y, the lower bound on Z and the lower bound on W. </summary>
         public RuleIVector4MinAttribute(float minX, float minY, float minZ, float minW)
         {
             MinX = minX;
@@ -33,9 +45,11 @@ namespace BH.SDK.Rules.Attributes
             MinW = minW;
         }
 
+        /// <summary> Applies to authored 4D vector properties. </summary>
         protected override bool IsValidTypeInternal(PropertyInfo property)
             => typeof(IVector4).IsAssignableFrom(property.PropertyType);
 
+        /// <summary> Passes when every component is at or above its bound. </summary>
         protected override bool IsValidInternal(object value, RuleContext context)
         {
             if (value is not IVector4 vec) return false;
@@ -82,6 +96,7 @@ namespace BH.SDK.Rules.Attributes
             }
         }
 
+        /// <summary> Clamps each form of it up to them. </summary>
         protected override void FixInternal(object target, PropertyInfo property, RuleContext context)
         {
             var value = property.GetValue(target);

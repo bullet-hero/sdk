@@ -20,6 +20,9 @@ namespace BH.SDK.Tests.Services
     // What the caps are for is stated where they are checked: a gzip bomb is a few kilobytes that
     // expands to whatever the reader will hold, and on the server this reader is what stands between
     // an upload and the disk.
+
+    /// <summary> The archive layer, including hostile archives built by hand out of raw ustar headers - the
+    /// writer refuses to produce one, and on a server this reader is what stands between an upload and the disk. </summary>
     public class TarGzServiceTests
     {
         private static async Task<MemoryContentStore> CreateSourceStore()
@@ -250,6 +253,9 @@ namespace BH.SDK.Tests.Services
         // A minimal ustar writer. Deliberately independent of the library under test, so an archive
         // this produces is evidence about the READER rather than about the pair agreeing with each
         // other - which is what an adversarial fixture has to be.
+
+        /// <summary> Writes tar headers field by field, exactly as <c>tar</c> would, so an attack can be built that
+        /// the writer under test would never emit. </summary>
         private static class TarFixture
         {
             private const int BlockSize = 512;

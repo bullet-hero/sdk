@@ -30,22 +30,26 @@ namespace BH.SDK.Models.Keyframes
         [JsonProperty(Names.ColorRight)]
         public IColor4 Color4Right { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public ColorHorizontalKey()
         {
             Color4Left = Color4Value.white;
             Color4Right = Color4Value.white;
         }
+        /// <summary> Built from its 4, frame and default ease. </summary>
         public ColorHorizontalKey(IColor4 color4, int frame, EaseType ease = DefaultEase) : base(frame, ease)
         {
             Color4Left = color4.Copy();
             Color4Right = color4.Copy();
         }
+        /// <summary> Built from its 4 left, 4 right, frame and default ease. </summary>
         public ColorHorizontalKey(IColor4 color4Left, IColor4 color4Right, int frame, EaseType ease = DefaultEase) : base(frame, ease)
         {
             Color4Left = color4Left;
             Color4Right = color4Right;
         }
         
+        /// <summary> Which concrete form this is - the discriminator a converter writes and reads back. </summary>
         public Color4X4KeyType GetModelType() => Color4X4KeyType.Horizontal;
     }
 }

@@ -17,6 +17,7 @@ namespace BH.SDK.Models.SettingGroups.Controls
     public sealed partial class KeyboardMouseControlsSettings : BaseDeviceControlsSettings,
         IModel<KeyboardMouseControlsSettings>, IMoveable<KeyboardMouseControlsSettings>
     {
+        /// <summary> Which of the three steering modes the pair drives. </summary>
         [RuleEnumValid(KeyboardMouseControlMode.Absolute)]
         [JsonProperty(Names.Mode)]
         public KeyboardMouseControlMode Mode { get; set; }
@@ -26,13 +27,16 @@ namespace BH.SDK.Models.SettingGroups.Controls
         [JsonProperty(Names.RequireHold)]
         public bool RequireHold { get; set; }
 
+        /// <summary> Which button has to be held for the relative modes to track the mouse. </summary>
         [RuleEnumValid(MouseButton.Left)]
         [JsonProperty(Names.HoldButton)]
         public MouseButton HoldButton { get; set; }
 
+        /// <summary> Trigger a dash by clicking twice, rather than only by its own key. </summary>
         [JsonProperty(Names.DashOnDoubleClick)]
         public bool DashOnDoubleClick { get; set; }
 
+        /// <summary> How close together those two clicks have to be. </summary>
         [RuleInRange(ControlsRules.MinDoubleClickTime, ControlsRules.MaxDoubleClickTime)]
         [JsonProperty(Names.DoubleClickTime)]
         public float DoubleClickTime { get; set; }
@@ -62,13 +66,17 @@ namespace BH.SDK.Models.SettingGroups.Controls
         [JsonProperty(Names.CursorHideRelative)]
         public bool CursorHideRelative { get; set; }
 
+        /// <summary> This device's own mode as the device-independent one; the two enums line up by convention. </summary>
         public override ControlMode GeneralMode => (ControlMode)Mode;
+        /// <summary> Which device these settings are for. </summary>
         public override ControlDevice Device => ControlDevice.KeyboardMouse;
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public KeyboardMouseControlsSettings()
         {
             ResetOwn();
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public KeyboardMouseControlsSettings(bool active, float sensitivity,
             float deadZone, float smoothing, bool invertX, bool invertY, KeyboardMouseControlMode mode,
             bool requireHold, MouseButton holdButton, bool dashOnDoubleClick,

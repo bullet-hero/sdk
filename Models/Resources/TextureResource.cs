@@ -64,9 +64,11 @@ namespace BH.SDK.Models.Resources
         [JsonProperty(Names.Wrap)]
         public TextureWrapKind Wrap { get; set; }
 
+        /// <summary> Which kind of resource this is. </summary>
         [JsonProperty(Names.Type)]
         public override ResourceType Type => ResourceType.Texture;
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public TextureResource()
         {
             TextureResourceId = TextureResourceId.Null;
@@ -77,6 +79,7 @@ namespace BH.SDK.Models.Resources
             Wrap = TextureWrapKind.Clamp;
         }
 
+        /// <summary> Built from its resource id and sources. </summary>
         public TextureResource(TextureResourceId textureResourceId, List<ResourceKey> sources) : base(sources)
         {
             TextureResourceId = textureResourceId;
@@ -87,6 +90,7 @@ namespace BH.SDK.Models.Resources
             Wrap = TextureWrapKind.Clamp;
         }
 
+        /// <summary> Every member at once, in declaration order. </summary>
         public TextureResource(TextureResourceId textureResourceId, Vector4Value textureResourceUV,
             List<ResourceKey> sources) : base(sources)
         {
@@ -97,6 +101,7 @@ namespace BH.SDK.Models.Resources
             Wrap = TextureWrapKind.Clamp;
         }
 
+        /// <summary> Every member at once, in declaration order. </summary>
         public TextureResource(TextureResourceId textureResourceId, Vector4Value textureResourceUV,
             TextureKind kind, TextureAlpha alpha, TextureWrapKind wrap, List<ResourceKey> sources)
             : base(sources)

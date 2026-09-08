@@ -28,8 +28,10 @@ namespace BH.SDK.Generators.Geometry
     /// </summary>
     public class FractalGenerator : BaseSpawnGenerator<FractalGenerator.Parameters>
     {
+        /// <summary> <c>"gen_geometry_fractal"</c>, the key a host lists this generator under. </summary>
         public override string NameKey => "gen_geometry_fractal";
 
+        /// <summary> The order, labels and ranges a host lays its form out with. </summary>
         public override GeneratorHints Hints { get; } = new GeneratorHints.Builder()
             .Section(GeneratorSections.Main, SpawnParameters.MainFields)
             .Section(GeneratorSections.Main, nameof(Parameters.Type), nameof(Parameters.Depth),
@@ -54,6 +56,7 @@ namespace BH.SDK.Generators.Geometry
             .Range(nameof(SpawnParameters.Size), ValueRules.MinSca, ValueRules.MaxSca)
             .Build();
 
+        /// <summary> Writes this run's objects into the scope. </summary>
         protected override void Generate(GeneratorContext context, Parameters parameters)
         {
             var depth = Depth(parameters.Depth);
@@ -73,6 +76,7 @@ namespace BH.SDK.Generators.Geometry
             }
         }
 
+        /// <summary> What this run would add, answered before it runs. </summary>
         protected override GeneratorCost EstimateTyped(GeneratorContext context, Parameters parameters)
         {
             var depth = Depth(parameters.Depth);
@@ -231,16 +235,34 @@ namespace BH.SDK.Generators.Geometry
             return result;
         }
 
+        /// <summary> Which figure is drawn and how deep the recursion goes. Public mutable fields, like every
+        /// parameters class here - a form binds to them and a preset serializes from them. </summary>
         public class Parameters : SpawnParameters
         {
+            /// <summary> Which figure is drawn. </summary>
             public FractalType Type = FractalType.Koch;
+
+            /// <summary> How many times the figure is subdivided - object count grows fast with it. </summary>
             public int Depth = 3;
+
+            /// <summary> Overall size of the figure. </summary>
             public float Scale = 6f;
+
+            /// <summary> Thickness of the segments it is drawn out of. </summary>
             public float Thickness = 0.2f;
+
+            /// <summary> Rotation of the whole figure. </summary>
             public float Rotation;
+
+            /// <summary> Where the figure is centred. </summary>
             public float CenterX;
+            /// <summary> Its vertical half. </summary>
             public float CenterY;
+
+            /// <summary> Angle a branch leaves its parent at, for the branching figures. </summary>
             public float BranchAngle = 30f;
+
+            /// <summary> How much shorter each branch is than the one it grew from. </summary>
             public float BranchScale = 0.7f;
         }
     }

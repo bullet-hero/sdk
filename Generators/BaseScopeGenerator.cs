@@ -12,13 +12,17 @@ namespace BH.SDK.Generators
     /// </summary>
     public abstract class BaseScopeGenerator<TParams> : IScopeGenerator where TParams : class, new()
     {
+        /// <summary> Stable identifier of this generator, shaped as a localization key. </summary>
         public abstract string NameKey { get; }
+        /// <summary> Which list a host shows it in. </summary>
         public abstract GeneratorKind Kind { get; }
 
         /// <inheritdoc/>
         public virtual int ListOrder => 0;
 
+        /// <summary> What must be true before a host offers this run. Nothing, by default. </summary>
         public virtual GeneratorRequirements Requirements => GeneratorRequirements.None;
+        /// <summary> How a host should lay the parameters out. Empty means declaration order. </summary>
         public virtual GeneratorHints Hints => GeneratorHints.Empty;
 
         /// <summary> True for every Modifier by default - editing and deleting what already exists is
@@ -26,7 +30,9 @@ namespace BH.SDK.Generators
         /// measure overrides this; one that simply produced nothing this time must not. </summary>
         public virtual bool AllowsEmptyRun => Kind == GeneratorKind.Modifier;
 
+        /// <summary> The parameters class a host builds its form out of, by reflection. </summary>
         public Type ParametersType => typeof(TParams);
+        /// <summary> A fresh parameters object at its defaults. </summary>
         public object CreateDefaultParameters() => CreateDefaults();
 
         /// <summary> Override to seed non-default values; the field initializers of TParams cover
@@ -36,6 +42,8 @@ namespace BH.SDK.Generators
         // The grouping container is the context's object, not the generator's, so it is added here
         // rather than in every EstimateTyped - and only when the run produces something, matching
         // GeneratorContext's lazy creation (a run that creates nothing creates no container either).
+
+        /// <summary> What the run would add, before it runs - which is what a host refuses on. </summary>
         public GeneratorCost Estimate(GeneratorContext context, object parameters)
         {
             var cost = EstimateTyped(context, Cast(parameters));
@@ -44,6 +52,7 @@ namespace BH.SDK.Generators
                 : cost;
         }
 
+        /// <summary> Whether these parameters would destroy or rewrite content the author did not point at. </summary>
         public bool IsDangerous(GeneratorContext context, object parameters)
             => IsDangerousTyped(context, Cast(parameters));
 
@@ -52,6 +61,7 @@ namespace BH.SDK.Generators
         /// objects is never dangerous on its own: it is one undo away. </summary>
         protected virtual bool IsDangerousTyped(GeneratorContext context, TParams parameters) => false;
 
+        /// <summary> Runs the generator and hands back what it created and the journal that undoes it. </summary>
         public GeneratorResult Run(GeneratorContext context, object parameters)
         {
             if (context == null) throw new ArgumentNullException(nameof(context));

@@ -17,25 +17,32 @@ namespace BH.SDK.Rules.Attributes
     [AttributeUsage(PropertyTarget)]
     public class RuleFiniteNumberAttribute : BasePropertyRuleAttribute
     {
+        /// <summary> <c>"rule_finite_number"</c>, the key its message is looked up under. </summary>
         public override string RuleNameKey => "rule_finite_number";
 
+        /// <summary> What a repair writes instead of the nearer bound, when a bound is not the right answer. </summary>
         public object DefaultValue { get; set; }
 
+        /// <summary> Takes nothing; the defaults apply. </summary>
         public RuleFiniteNumberAttribute() { }
 
+        /// <summary> What a repair writes, as <c>float</c>. </summary>
         public RuleFiniteNumberAttribute(float defaultValue)
         {
             DefaultValue = defaultValue;
         }
 
+        /// <summary> What a repair writes, as <c>double</c>. </summary>
         public RuleFiniteNumberAttribute(double defaultValue)
         {
             DefaultValue = defaultValue;
         }
 
+        /// <summary> Applies to float and double properties. </summary>
         protected override bool IsValidTypeInternal(PropertyInfo property)
             => property.PropertyType == typeof(float) || property.PropertyType == typeof(double);
 
+        /// <summary> Passes on a real number - NaN and both infinities fail. </summary>
         protected override bool IsValidInternal(object value, RuleContext context) => value switch
         {
             float f => !float.IsNaN(f) && !float.IsInfinity(f),
@@ -43,6 +50,7 @@ namespace BH.SDK.Rules.Attributes
             _ => false,
         };
 
+        /// <summary> Writes DefaultValue, or zero: there is no bound here to clamp against, and zero is the one value such a field can always hold. </summary>
         protected override void FixInternal(object target, PropertyInfo property, RuleContext context)
         {
             var value = property.GetValue(target);

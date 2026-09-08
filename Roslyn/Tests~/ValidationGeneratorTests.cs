@@ -15,6 +15,8 @@ namespace BH.SDK.Roslyn.Tests
     // findings under the wrong paths, in the wrong order, handed to a RuleFixer whose repairs are
     // not commutative.
 
+    /// <summary> The generated rule walk: that every <c>[RuleContainer]</c> gets one, and that it descends the
+    /// same way the reflective walk it replaced did. </summary>
     [TestFixture]
     public class ValidationGeneratorTests
     {

@@ -19,6 +19,7 @@ namespace BH.SDK.Services.Controls
     /// </summary>
     public readonly struct ControlDeviceInfo
     {
+        /// <summary> The device this describes. </summary>
         public readonly ControlDevice Device;
 
         /// <summary> Modes this device implements at all. A mode outside this set is not offered in
@@ -31,6 +32,7 @@ namespace BH.SDK.Services.Controls
         /// <summary> Localization key of the device's player-facing name. </summary>
         public readonly string NameKey;
 
+        /// <summary> Every member at once, in declaration order. </summary>
         public ControlDeviceInfo(ControlDevice device, ControlModeMask supportedModes,
             bool needsCursor, string nameKey)
         {
@@ -40,8 +42,10 @@ namespace BH.SDK.Services.Controls
             NameKey = nameKey;
         }
 
+        /// <summary> Whether this device can drive that mode. </summary>
         public bool Supports(ControlMode mode) => (SupportedModes & ToMask(mode)) != 0;
 
+        /// <summary> One mode as the single-bit mask the set is built from. </summary>
         public static ControlModeMask ToMask(ControlMode mode) => mode switch
         {
             ControlMode.Absolute => ControlModeMask.Absolute,

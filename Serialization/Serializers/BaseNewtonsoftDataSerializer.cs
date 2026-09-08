@@ -14,20 +14,29 @@ namespace BH.SDK.Serialization.Serializers
     // same VersionedEnvelopeConverter chain) works unchanged for both JSON and BSON. Only the raw
     // reader/writer over the byte stream differs per format, which is what subclasses supply.
     // See VERSION-UPDATE.md, "Format-agnosticism".
+
+    /// <summary> The envelope half every Newtonsoft-backed format shares; a subclass supplies only the
+    /// reader and writer over the bytes. </summary>
     public abstract class BaseNewtonsoftDataSerializer : IDataSerializer
     {
         private readonly JsonSerializer _serializer;
 
+        /// <summary> Takes the serializer carrying the whole converter stack. </summary>
         protected BaseNewtonsoftDataSerializer(JsonSerializer serializer)
         {
             _serializer = serializer;
         }
 
+        /// <summary> Which format this writes. </summary>
         public abstract SerializationType Type { get; }
 
+        /// <summary> The writer this format lays bytes down through. </summary>
         protected abstract JsonWriter CreateWriter(Stream stream);
+
+        /// <summary> The reader this format takes bytes back through. </summary>
         protected abstract JsonReader CreateReader(Stream stream);
 
+        /// <summary> Writes one envelope, refusing a payload whose own <c>[DataVersion]</c> does not match what it claims. </summary>
         public byte[] SerializeEnvelope(string domain, EnvelopeData data)
         {
             if (data.RawPayload == null) return Array.Empty<byte>();

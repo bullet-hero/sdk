@@ -217,12 +217,18 @@ namespace BH.SDK.Services.Package
                    || string.Equals(stem, FileNames.MetadataFileBaseName, StringComparison.Ordinal);
         }
 
+        /// <summary> Where a package's level document turned out to be, and in which format - including whether it
+        /// arrived encrypted. </summary>
         private readonly struct DocumentLocation
         {
+            /// <summary> Where the document turned out to be. </summary>
             public readonly string Path;
+            /// <summary> Which format it is in. </summary>
             public readonly SerializationType Format;
+            /// <summary> Whether it arrived encrypted. </summary>
             public readonly bool IsProtected;
 
+            /// <summary> Built from its path, format and protected. </summary>
             public DocumentLocation(string path, SerializationType format, bool isProtected)
             {
                 Path = path;
@@ -230,6 +236,7 @@ namespace BH.SDK.Services.Package
                 IsProtected = isProtected;
             }
 
+            /// <summary> True when the package carried one at all. </summary>
             public bool Found => !string.IsNullOrEmpty(Path);
         }
     }

@@ -87,11 +87,13 @@ namespace BH.SDK.Generators.Modifiers
         /// are, what frame each sits on, how to move it, and how to drop it. </summary>
         public readonly struct Track
         {
+            /// <summary> How many keyframes the track holds. </summary>
             public readonly int Count;
             private readonly Func<int, int> _frameAt;
             private readonly Action<int, int> _setFrameAt;
             private readonly Action<int> _removeAt;
 
+            /// <summary> One track seen through two delegates, so a modifier retimes any of them without knowing its element type. </summary>
             public Track(int count, Func<int, int> frameAt, Action<int, int> setFrameAt, Action<int> removeAt)
             {
                 Count = count;
@@ -100,7 +102,9 @@ namespace BH.SDK.Generators.Modifiers
                 _removeAt = removeAt;
             }
 
+            /// <summary> The frame one keyframe sits on. </summary>
             public int FrameAt(int index) => _frameAt(index);
+            /// <summary> Moves it. </summary>
             public void SetFrameAt(int index, int frame) => _setFrameAt(index, frame);
 
             /// <summary> Drops one key. Count is a snapshot taken when the track was handed over, so

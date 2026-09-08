@@ -3,6 +3,7 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests
 {
+    /// <summary> Variable substitution into a template, including a variable resolved only when reached. </summary>
     public class TextFormatTests
     {
         [Test]

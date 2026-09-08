@@ -17,6 +17,9 @@ namespace BH.SDK.Roslyn.Tests
     // generator has to be visible. A stub keeps that signal alive. The cost is drift, and it is
     // paid for on the other side: BH.SDK.Tests exercises the generator against the REAL types.
 
+
+    /// <summary> Builds a real compilation from strings and runs generators over it - the whole rig, plus the
+    /// stubbed model API a generated model is written against. </summary>
     internal static class GeneratorHarness
     {
         /// <summary> The subset of the SDK's model API a generated model is written against. </summary>

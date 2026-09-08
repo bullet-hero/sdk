@@ -67,6 +67,7 @@ namespace BH.SDK.Models.Game
         [JsonProperty(Names.Themes)]
         public List<ThemeKeyframe> Themes { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public GameEvents()
         {
             Markers = new List<Marker>();
@@ -76,6 +77,7 @@ namespace BH.SDK.Models.Game
             Backgrounds = new List<Color3Key>();
             Themes = new List<ThemeKeyframe>();
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public GameEvents(List<Marker> markers, List<BeatSegment> beats, List<Checkpoint> checkpoints,
             List<ScreenLimitKey> screenLimits, List<Color3Key> backgrounds, List<ThemeKeyframe> themes)
         {

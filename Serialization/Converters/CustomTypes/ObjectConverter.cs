@@ -5,9 +5,12 @@ using BH.SDK.Serialization.Converters.Base;
 
 namespace BH.SDK.Serialization.Converters.CustomTypes
 {
+    /// <summary> Tags a level object with which kind it is - shape, text, prefab placement, empty. </summary>
     public class ObjectConverter : JsonConverterCustomType<RectObject, ObjectType>
     {
+        /// <summary> Which form the value is, read off the value itself. </summary>
         public override ObjectType GetCustomType(RectObject value) => value.GetModelType();
+        /// <summary> The class each object form is. </summary>
         public override Type GetType(ObjectType customType)
         {
             return customType switch

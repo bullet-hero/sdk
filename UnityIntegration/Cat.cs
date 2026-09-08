@@ -5,8 +5,11 @@ using UnityEngine;
 
 namespace BH.SDK
 {
+    /// <summary> Logging that works with and without an engine: Unity's console under BHSDK_UNITY, the process
+    /// console otherwise. The SDK's only logger, since it must also run as a plain library. </summary>
     public static class Cat
     {
+        /// <summary> An ordinary line. </summary>
         public static void Meow(object message)
         {
 #if BHSDK_UNITY
@@ -15,6 +18,8 @@ namespace BH.SDK
             Console.WriteLine(message);
 #endif
         }
+
+        /// <summary> An ordinary line, formatted only if it is going to be written. </summary>
         public static void MeowFormat(string format, params object[] args)
         {
 #if BHSDK_UNITY
@@ -23,6 +28,8 @@ namespace BH.SDK
             Console.WriteLine(format, args);
 #endif
         }
+
+        /// <summary> Something worth noticing that changed nothing. </summary>
         public static void MeowWarn(object message)
         {
 #if BHSDK_UNITY
@@ -31,6 +38,8 @@ namespace BH.SDK
             Console.WriteLine($"[WARN] {message}");
 #endif
         }
+
+        /// <summary> The same, formatted. </summary>
         public static void MeowWarnFormat(string format, params object[] args)
         {
 #if BHSDK_UNITY
@@ -39,6 +48,8 @@ namespace BH.SDK
             Console.WriteLine($"[WARN] {string.Format(format, args)}");
 #endif
         }
+
+        /// <summary> Something that went wrong. </summary>
         public static void MeowError(object message)
         {
 #if BHSDK_UNITY
@@ -47,6 +58,8 @@ namespace BH.SDK
             Console.WriteLine($"[ERROR] {message}");
 #endif
         }
+
+        /// <summary> The same, formatted. </summary>
         public static void MeowErrorFormat(string format, params object[] args)
         {
 #if BHSDK_UNITY
@@ -55,6 +68,8 @@ namespace BH.SDK
             Console.WriteLine($"[ERROR] {string.Format(format, args)}");
 #endif
         }
+
+        /// <summary> An exception with its stack, where the engine's console can expand it. </summary>
         public static void MeowException(Exception exception)
         {
 #if BHSDK_UNITY

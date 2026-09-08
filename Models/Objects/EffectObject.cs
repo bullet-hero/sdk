@@ -21,6 +21,7 @@ namespace BH.SDK.Models.Objects
     [GenerateModel]
     public sealed partial class EffectObject : RectObject, IModel<EffectObject>, IUpdatable<EffectObject>
     {
+        /// <summary> Which concrete form this is - the discriminator a converter writes and reads back. </summary>
         public override ObjectType GetModelType() => ObjectType.EffectObject;
 
         /// <summary> Which EffectData of Level.Resources.Effects to play. Several objects sharing one
@@ -28,10 +29,12 @@ namespace BH.SDK.Models.Objects
         [JsonProperty(Names.EffectId)]
         public EffectId EffectId { get; set; }
         
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public EffectObject()
         {
             EffectId = EffectId.Null;
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public EffectObject(ObjectId objectId, ObjectId parentObjectId, string name, bool active, FrameSpan span, int layer, List<PosKey> positions, List<AngleKey> rotations, List<ScaKey> scales, List<ScaKey> sizes,
             List<AlignmentKey> anchorsMin, List<AlignmentKey> anchorsMax, List<AlignmentKey> pivots, EffectId effectId)
             : base(objectId, parentObjectId, name, active, span, layer,

@@ -85,6 +85,7 @@ namespace BH.SDK.Models.AudioEffects
         [JsonProperty(Names.LFRef)]
         public float LFReference { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public AudioReverb()
         {
             DryLevel = AudioRules.Reverb.DryLevel_Default;
@@ -102,6 +103,7 @@ namespace BH.SDK.Models.AudioEffects
             HFReference = AudioRules.Reverb.HFReference_Default;
             LFReference = AudioRules.Reverb.LFReference_Default; 
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public AudioReverb(float mixLevel, float dryLevel, float room, float roomHF, float roomLF, 
             float decayTime, float decayHFRatio, float reflections, float reflectDelay, float reverb,
             float reverbDelay, float diffusion, float density, float hfReference, float lfReference)

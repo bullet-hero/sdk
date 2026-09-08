@@ -8,6 +8,7 @@ namespace BH.SDK.Tests.Rules
     /// </summary>
     public class RuleMaxTests : BaseRuleTests
     {
+        /// <summary> The rule on an int. </summary>
         [RuleContainer]
         private class IntModel
         {
@@ -15,6 +16,7 @@ namespace BH.SDK.Tests.Rules
             public int Value { get; set; } = 10;
         }
 
+        /// <summary> The rule on an int with an explicit repair value, rather than the nearer bound. </summary>
         [RuleContainer]
         private class IntDefaultModel
         {
@@ -22,6 +24,7 @@ namespace BH.SDK.Tests.Rules
             public int Value { get; set; } = -3;
         }
 
+        /// <summary> The rule on a float. </summary>
         [RuleContainer]
         private class FloatModel
         {
@@ -29,6 +32,7 @@ namespace BH.SDK.Tests.Rules
             public float Value { get; set; } = 1.5f;
         }
 
+        /// <summary> The rule on a byte. </summary>
         [RuleContainer]
         private class ByteModel
         {
@@ -36,6 +40,7 @@ namespace BH.SDK.Tests.Rules
             public byte Value { get; set; } = 5;
         }
 
+        /// <summary> The rule on a ulong. </summary>
         [RuleContainer]
         private class ULongModel
         {
@@ -43,6 +48,7 @@ namespace BH.SDK.Tests.Rules
             public ulong Value { get; set; } = 5UL;
         }
 
+        /// <summary> A property of a type the rule does not apply to, so it must decline rather than refuse. </summary>
         [RuleContainer]
         private class WrongTypeModel
         {

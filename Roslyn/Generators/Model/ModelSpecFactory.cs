@@ -9,14 +9,19 @@ namespace BH.SDK.Roslyn.Model
     /// diagnostics saying why it cannot. </summary>
     internal static class ModelSpecFactory
     {
+        /// <summary> The marker that opts a type in. </summary>
         public const string GenerateAttribute = "BH.SDK.Models.Attributes.GenerateModelAttribute";
+        /// <summary> The marker that leaves one member out of every generated body. </summary>
         public const string IgnoreAttribute = "BH.SDK.Models.Attributes.GenerateModelIgnoreAttribute";
+        /// <summary> The marker that merges a dictionary rather than replacing it. </summary>
         public const string MergeAttribute = "BH.SDK.Models.Attributes.GenerateModelMergeAttribute";
+        /// <summary> The marker naming the key a keyed collection is matched by. </summary>
         public const string KeyedAttribute = "BH.SDK.Models.Attributes.GenerateModelKeyedAttribute";
 
         /// <summary> A type with no GetModelType() cannot be a polymorphic value. </summary>
         public const int NoTypeTag = -1;
 
+        /// <summary> Reads one marked type into a spec, or refuses it with the diagnostic naming what stopped it. </summary>
         public static ModelSpec Create(INamedTypeSymbol type, TypeDeclarationSyntax declaration,
             List<Diagnostic> diagnostics)
         {
@@ -514,6 +519,7 @@ namespace BH.SDK.Roslyn.Model
 
         #region Names
 
+        /// <summary> A type as the fully qualified name generated code has to spell it with. </summary>
         public static string Qualified(ITypeSymbol type) =>
             type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 

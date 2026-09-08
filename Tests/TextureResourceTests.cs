@@ -18,6 +18,9 @@ namespace BH.SDK.Tests
     // The additive-default property is pinned too. All three default to their zero value, which is
     // why LevelResources needed no migration and stays at (1, 0) - a level written before any of
     // them reads back as Auto/Auto/Clamp, which IS the behaviour it already had.
+
+    /// <summary> The three authored fields on TextureResource, each hand-written into six places - and that all
+    /// three defaulting to their zero value is why the resources domain needed no migration. </summary>
     public class TextureResourceTests
     {
         private static TextureResource Authored()

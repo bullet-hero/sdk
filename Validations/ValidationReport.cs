@@ -13,17 +13,23 @@ namespace BH.SDK.Validations
     /// </summary>
     public readonly struct ValidationReport
     {
+        /// <summary> Everything the declarative rules found. </summary>
         public readonly List<RuleIssue> RuleIssues;
+
+        /// <summary> Everything the relational pass found. </summary>
         public readonly List<GraphIssue> GraphIssues;
 
+        /// <summary> Built from its issues and issues. </summary>
         public ValidationReport(List<RuleIssue> ruleIssues, List<GraphIssue> graphIssues)
         {
             RuleIssues = ruleIssues;
             GraphIssues = graphIssues;
         }
 
+        /// <summary> True when nothing was reported at all. </summary>
         public bool IsValid => Count == 0;
 
+        /// <summary> How many findings there are altogether. </summary>
         public int Count => (RuleIssues?.Count ?? 0) + (GraphIssues?.Count ?? 0);
 
         /// <summary> Whether anything found makes the level unplayable, as opposed to merely wrong
@@ -32,6 +38,7 @@ namespace BH.SDK.Validations
             (RuleIssues?.Any(issue => issue.Rule.Group == RuleGroup.Error) ?? false)
             || (GraphIssues?.Any(issue => issue.Group == RuleGroup.Error) ?? false);
 
+        /// <summary> One line, for a log. </summary>
         public override string ToString()
         {
             if (IsValid) return "Valid";

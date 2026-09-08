@@ -17,18 +17,24 @@ namespace BH.SDK.Generators.Utility
     /// </summary>
     public class CapacityHintGenerator : BaseContentGenerator<CapacityHintGenerator.Parameters>
     {
+        /// <summary> <c>"gen_capacity_hint"</c>, the key a host lists this generator under. </summary>
         public override string NameKey => "gen_capacity_hint";
 
+        /// <summary> What must be true before a host offers this run. </summary>
         public override GeneratorRequirements Requirements => GeneratorRequirements.LevelScope;
 
+        /// <summary> No hints - the form takes the fields in declaration order. </summary>
         public override GeneratorHints Hints => GeneratorHints.Empty;
 
         // Limits is a bare field on LevelHints, so there is nothing here for GeneratorCost to
         // count and the estimate is permanently Zero. Without this the host's "a run that would add
         // nothing is refused" rule leaves the button disabled forever - the one generator whose whole
         // job is invisible to the cost model.
+
+        /// <summary> True: this run writes something GeneratorCost cannot measure, so a zero estimate is not an empty run. </summary>
         public override bool AllowsEmptyRun => true;
 
+        /// <summary> Writes this run's objects into the scope. </summary>
         protected override void Generate(GeneratorContext context, Parameters parameters)
         {
             if (context?.Hints == null) return;
@@ -44,6 +50,7 @@ namespace BH.SDK.Generators.Utility
             context.Hints.Limits = LevelCapacityUtils.GetPeakUsage(level);
         }
 
+        /// <summary> What this run would add, answered before it runs. </summary>
         protected override GeneratorCost EstimateTyped(GeneratorContext context, Parameters parameters)
             => GeneratorCost.Zero;
 

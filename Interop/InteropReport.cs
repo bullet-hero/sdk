@@ -32,6 +32,7 @@ namespace BH.SDK.Interop
         /// <summary> True when something could not be read at all. </summary>
         public bool HasFailure => Worst >= InteropSeverity.Failed;
 
+        /// <summary> Records one finding, folding it into an identical earlier one rather than repeating it. </summary>
         public void Add(InteropSeverity severity, string code, string message, string path = null)
         {
             if (_byCode.TryGetValue(code, out var existing))
@@ -46,18 +47,23 @@ namespace BH.SDK.Interop
             if (severity > Worst) Worst = severity;
         }
 
+        /// <summary> Something the author should know that cost nothing. </summary>
         public void Info(string code, string message, string path = null)
             => Add(InteropSeverity.Info, code, message, path);
 
+        /// <summary> Something that crossed, but not exactly. </summary>
         public void Approximated(string code, string message, string path = null)
             => Add(InteropSeverity.Approximated, code, message, path);
 
+        /// <summary> Something this build cannot convert yet, but could. </summary>
         public void Deferred(string code, string message, string path = null)
             => Add(InteropSeverity.Deferred, code, message, path);
 
+        /// <summary> Something that did not cross at all. </summary>
         public void Dropped(string code, string message, string path = null)
             => Add(InteropSeverity.Dropped, code, message, path);
 
+        /// <summary> Something that stopped the conversion. </summary>
         public void Failed(string code, string message, string path = null)
             => Add(InteropSeverity.Failed, code, message, path);
 
@@ -90,6 +96,7 @@ namespace BH.SDK.Interop
             }
         }
 
+        /// <summary> Every finding, worst first - what a host shows the author after a conversion. </summary>
         public override string ToString()
         {
             if (_issues.Count == 0) return "Conversion clean - nothing lost.";

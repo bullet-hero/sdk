@@ -25,17 +25,20 @@ namespace BH.SDK.Models.Effects
         [JsonProperty(Names.Size)]
         public IVector2 Size { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public EffectShapeRectangle()
         {
             Size = new Vector2Value(
                 EffectRules.Shape.BoxSize_X_Default,
                 EffectRules.Shape.BoxSize_Y_Default);
         }
+        /// <summary> Built from its size. </summary>
         public EffectShapeRectangle(IVector2 size)
         {
             Size = size;
         }
 
+        /// <summary> Which concrete form this is - the discriminator a converter writes and reads back. </summary>
         public EffectShapeType GetModelType() => EffectShapeType.Rectangle;
     }
 }

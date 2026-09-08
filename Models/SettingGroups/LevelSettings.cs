@@ -68,9 +68,12 @@ namespace BH.SDK.Models.SettingGroups
         [JsonProperty(Names.Orientation)]
         public LevelOrientation Orientation { get; set; }
 
+        /// <summary> The next unused id in this scope, consuming it. </summary>
         public ObjectId GetNextObjectId() => new(ObjectIdCounter++);
+        /// <summary> The next unused id in this scope, consuming it. </summary>
         public AudioId GetNextAudioId() => new(AudioIdCounter++);
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public LevelSettings()
         {
             Fps = 60;
@@ -80,6 +83,7 @@ namespace BH.SDK.Models.SettingGroups
             Seed = LevelRules.NullSeed;
             Orientation = LevelOrientation.Horizontal;
         }
+        /// <summary> Built from its framerate, duration, id counter and id counter. </summary>
         public LevelSettings(int framerate, int frameDuration, int objectIdCounter, int audioIdCounter)
         {
             Fps = framerate;

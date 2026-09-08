@@ -55,6 +55,7 @@ namespace BH.SDK.Models.Statistics
         [JsonIgnore]
         public bool HasValue => EditorOpens > 0;
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public LevelEditorStatistics()
         {
             EditorOpens = 0;

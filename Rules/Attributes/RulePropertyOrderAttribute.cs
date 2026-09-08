@@ -21,17 +21,23 @@ namespace BH.SDK.Rules.Attributes
     [AttributeUsage(ClassTarget, AllowMultiple = true)]
     public class RulePropertyOrderAttribute : BaseObjectRuleAttribute
     {
+        /// <summary> <c>"rule_property_order"</c>, the key its message is looked up under. </summary>
         public override string RuleNameKey => "rule_property_order";
 
+        /// <summary> The property that must hold the smaller value. </summary>
         public string LowPropertyName { get; }
+
+        /// <summary> The property that must hold the larger one. </summary>
         public string HighPropertyName { get; }
 
+        /// <summary> Takes the property holding the smaller value and the property holding the larger one. </summary>
         public RulePropertyOrderAttribute(string lowPropertyName, string highPropertyName)
         {
             LowPropertyName = lowPropertyName;
             HighPropertyName = highPropertyName;
         }
 
+        /// <summary> Sits on a type declaring both of the named properties, of one comparable type. </summary>
         protected override bool IsValidTypeInternal(Type type)
         {
             var low = Find(type, LowPropertyName);
@@ -41,6 +47,7 @@ namespace BH.SDK.Rules.Attributes
                    && typeof(IComparable).IsAssignableFrom(low.PropertyType);
         }
 
+        /// <summary> Passes while the low property is at or below the high one. </summary>
         protected override bool IsValidInternal(object target, RuleContext context)
         {
             var type = target.GetType();
@@ -55,6 +62,8 @@ namespace BH.SDK.Rules.Attributes
         // Swap, not clamp. An inverted pair is nearly always the same two authored numbers entered
         // the wrong way round, and swapping preserves both; clamping one onto the other would
         // silently collapse the range to a point and lose whichever value was "wrong".
+
+        /// <summary> Swaps the two values, which is the only repair that keeps both numbers the author wrote. </summary>
         protected override void FixInternal(object target, RuleContext context)
         {
             var type = target.GetType();

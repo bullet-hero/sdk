@@ -57,6 +57,7 @@ namespace BH.SDK.Models.Statistics
             }
         }
 
+        /// <summary> The seconds recorded for one screen. </summary>
         public double Get(ScreenTimeKind kind) => kind switch
         {
             ScreenTimeKind.Menu => MenuSeconds,
@@ -66,6 +67,7 @@ namespace BH.SDK.Models.Statistics
             _ => 0.0,
         };
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public ScreenTimeStatistics()
         {
             MenuSeconds = 0.0;

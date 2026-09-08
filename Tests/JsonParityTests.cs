@@ -21,6 +21,9 @@ namespace BH.SDK.Tests
     // is the only proof that a level written by this build is the file the last one wrote. READING
     // is compared through Level.Equals over the whole graph, on bytes neither path produced.
 
+
+    /// <summary> The generated JSON path against the reflective one: writing compared byte for byte, reading
+    /// compared through Level.Equals on bytes neither path produced. </summary>
     [TestFixture]
     public class JsonParityTests
     {

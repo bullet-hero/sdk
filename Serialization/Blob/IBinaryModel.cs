@@ -37,6 +37,7 @@ namespace BH.SDK.Serialization.Blob
     /// <summary> System.Version, as the text it round-trips through exactly. </summary>
     public static class BlobVersions
     {
+        /// <summary> A version as its four components, so an envelope's tag survives a round trip. </summary>
         public static Version Read(ref BlobReader reader)
         {
             var text = reader.ReadString();

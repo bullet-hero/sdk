@@ -18,6 +18,7 @@ namespace BH.SDK.Tests.Rules
     /// </summary>
     public class RuleIVector3RangeTests : BaseRuleTests
     {
+        /// <summary> A 3D vector bounded on every axis. </summary>
         [RuleContainer]
         private class InRangeModel
         {
@@ -25,6 +26,7 @@ namespace BH.SDK.Tests.Rules
             public IVector3 Value { get; set; } = new Vector3Value(0f, 0f, 0f);
         }
 
+        /// <summary> A 3D vector with a floor. </summary>
         [RuleContainer]
         private class MinModel
         {
@@ -32,6 +34,7 @@ namespace BH.SDK.Tests.Rules
             public IVector3 Value { get; set; } = new Vector3Value(1f, 1f, 1f);
         }
 
+        /// <summary> A 3D vector with a ceiling. </summary>
         [RuleContainer]
         private class MaxModel
         {
@@ -39,6 +42,7 @@ namespace BH.SDK.Tests.Rules
             public IVector3 Value { get; set; } = new Vector3Value(0f, 0f, 0f);
         }
 
+        /// <summary> A property of a type the rule does not apply to, so it must decline rather than refuse. </summary>
         [RuleContainer]
         private class WrongTypeModel
         {

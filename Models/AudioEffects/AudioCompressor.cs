@@ -35,6 +35,7 @@ namespace BH.SDK.Models.AudioEffects
         [JsonProperty(Names.MakeUpGain)]
         public float MakeUpGain { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public AudioCompressor()
         {
             Threshold = AudioRules.Compressor.Threshold_Default;
@@ -42,6 +43,7 @@ namespace BH.SDK.Models.AudioEffects
             Release = AudioRules.Compressor.Release_Default;
             MakeUpGain = AudioRules.Compressor.MakeUpGain_Default;
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public AudioCompressor(float mixLevel, float threshold,
             float attack, float release, float makeUpGain) : base(mixLevel)
         {

@@ -23,12 +23,15 @@ namespace BH.SDK.Models.Effects
         [JsonProperty(Names.Curve)]
         public CurveValue Curve { get; set; }
 
+        /// <summary> Which concrete form this is - the discriminator a converter writes and reads back. </summary>
         public EffectAngleType GetModelType() => EffectAngleType.CurvesOverLife;
         
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public EffectAngleCurvesOverLife()
         {
             Curve = EffectRules.GetCurve_Default();
         }
+        /// <summary> Built from its curve. </summary>
         public EffectAngleCurvesOverLife(CurveValue curve)
         {
             Curve = curve;

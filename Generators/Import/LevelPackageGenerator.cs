@@ -40,14 +40,19 @@ namespace BH.SDK.Generators.Import
         // is resolved once per instance. Static, so importing twice does not build it twice.
         private static readonly SerializationService Serialization = new SerializationService();
 
+        /// <summary> <c>"gen_level_package"</c>, the key a host lists this generator under. </summary>
         public override string NameKey => "gen_level_package";
 
         // Ahead of the foreign-format import at 10: this reads the project's own packages, which is
         // the commoner answer to "I was sent a level".
+
+        /// <summary> Where this sits in a host's list; lower comes first. </summary>
         public override int ListOrder => 9;
 
+        /// <summary> What must be true before a host offers this run. </summary>
         public override GeneratorRequirements Requirements => GeneratorRequirements.ExternalAnalysis;
 
+        /// <summary> The order, labels and ranges a host lays its form out with. </summary>
         public override GeneratorHints Hints => HintsValue;
 
         private static readonly GeneratorHints HintsValue = new GeneratorHints.Builder()
@@ -72,6 +77,7 @@ namespace BH.SDK.Generators.Import
         /// not part of GeneratedLevel because that struct is the format's, not this import's. </summary>
         public InteropReport LastReport { get; private set; }
 
+        /// <summary> Builds the level and its metadata together, so the two cannot disagree. </summary>
         protected override GeneratedLevel CreateTyped(Parameters parameters)
         {
             var report = new InteropReport();
@@ -159,6 +165,8 @@ namespace BH.SDK.Generators.Import
 
         // The level's real cost is only known once its document is read, and reading it twice is
         // cheap next to showing the author a number that has nothing to do with their package.
+
+        /// <summary> What this run would add, answered before it runs. </summary>
         protected override GeneratorCost EstimateTyped(Parameters parameters)
         {
             if (parameters.LevelBytes == null || parameters.LevelBytes.Length == 0) return GeneratorCost.Zero;
@@ -186,6 +194,8 @@ namespace BH.SDK.Generators.Import
 
         private static GeneratedLevel Empty() => new GeneratedLevel(new Level(), new LevelMeta());
 
+        /// <summary> Which package the host opened, and the passphrase when it is protected. Public mutable fields,
+        /// like every parameters class here - a form binds to them and a preset serializes from them. </summary>
         public class Parameters : ILevelPackageInput
         {
             /// <summary> Give the imported level an id of its own, so it cannot overwrite a level
@@ -199,11 +209,17 @@ namespace BH.SDK.Generators.Import
             /// new level's folder. </summary>
             public bool ImportResources = true;
 
+            /// <summary> The level document as it came out of the package. </summary>
             public byte[] LevelBytes = Array.Empty<byte>();
+            /// <summary> Which format those bytes are in. </summary>
             public SerializationType LevelFormat = SerializationType.Json;
+            /// <summary> The metadata document, where the package carried one. </summary>
             public byte[] MetaBytes;
+            /// <summary> Which format that one is in. </summary>
             public SerializationType MetaFormat = SerializationType.Json;
+            /// <summary> Where the package came from, for the report. </summary>
             public string SourcePath = string.Empty;
+            /// <summary> What else the package held, so the import can tell a missing resource from one it never had. </summary>
             public string[] ResourceFileNames = Array.Empty<string>();
 
             byte[] ILevelPackageInput.LevelBytes

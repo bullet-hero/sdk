@@ -29,6 +29,9 @@ namespace BH.SDK.Tests.Services
     //
     // And the live model must come out untouched. An export is not an edit, and the rewriting above
     // is exactly the kind of thing that is invisible until somebody saves afterwards.
+
+    /// <summary> The four routes a resource reference can take out of a level, including the one that matters
+    /// most in practice: a song outside the level folder, collected in with its key rewritten. </summary>
     public class LevelPackageBuilderTests
     {
         private DirectoryInfo _tempDirectory;

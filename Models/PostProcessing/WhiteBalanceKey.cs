@@ -29,11 +29,13 @@ namespace BH.SDK.Models.PostProcessing
         [JsonProperty(Names.Tint)]
         public float Tint { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public WhiteBalanceKey()
         {
             Temperature = 0f;
             Tint = 0f;
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public WhiteBalanceKey(float temperature, float tint,
             bool active, int frame, EaseType ease = Keyframe.DefaultEase) : base(active, frame, ease)
         {

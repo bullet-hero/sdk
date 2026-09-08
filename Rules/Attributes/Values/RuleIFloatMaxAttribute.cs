@@ -7,22 +7,29 @@ using BH.SDK.Utils;
 
 namespace BH.SDK.Rules.Attributes
 {
+    /// <summary> An authored float value with an upper bound, in every form of it. </summary>
     [AttributeUsage(PropertyTarget)]
     public class RuleIFloatMaxAttribute : BasePropertyRuleAttribute
     {
+        /// <summary> <c>"rule_ifloat_max"</c>, the key its message is looked up under. </summary>
         public override string RuleNameKey => "rule_ifloat_max";
 
         // always include
+
+        /// <summary> Upper bound. </summary>
         public float Max { get; set; }
         
+        /// <summary> The bound, as <c>float</c>. </summary>
         public RuleIFloatMaxAttribute(float max)
         {
             Max = max;
         }
 
+        /// <summary> Applies to authored float properties. </summary>
         protected override bool IsValidTypeInternal(PropertyInfo property)
             => typeof(IFloat).IsAssignableFrom(property.PropertyType);
         
+        /// <summary> Passes when every number the value can produce is at or below the bound. </summary>
         protected override bool IsValidInternal(object value, RuleContext context)
         {
             if (value is not IFloat flt) return false;
@@ -51,6 +58,7 @@ namespace BH.SDK.Rules.Attributes
             }
         }
 
+        /// <summary> Clamps each form of it down to the bound. </summary>
         protected override void FixInternal(object target, PropertyInfo property, RuleContext context)
         {
             var value = property.GetValue(target);

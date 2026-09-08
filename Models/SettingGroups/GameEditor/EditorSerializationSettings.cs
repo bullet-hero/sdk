@@ -37,10 +37,12 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
         [JsonProperty(Names.Resources)]
         public SerializationType ResourcesMode { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public EditorSerializationSettings()
         {
             ResetOwn();
         }
+        /// <summary> Built from its mode and mode. </summary>
         public EditorSerializationSettings(SerializationType levelMode, SerializationType resourcesMode)
         {
             LevelMode = levelMode;

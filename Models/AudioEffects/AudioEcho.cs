@@ -42,6 +42,7 @@ namespace BH.SDK.Models.AudioEffects
         [JsonProperty(Names.WetMix)]
         public float WetMix { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public AudioEcho()
         {
             Delay = AudioRules.Echo.Delay_Default;
@@ -50,6 +51,7 @@ namespace BH.SDK.Models.AudioEffects
             DryMix = AudioRules.Echo.DryMix_Default;
             WetMix = AudioRules.Echo.WetMix_Default;
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public AudioEcho(float mixLevel, float delay, float decay,
             float maxChannels, float dryMix, float wetMix) : base(mixLevel)
         {

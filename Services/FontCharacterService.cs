@@ -131,6 +131,8 @@ namespace BH.SDK.Services
             // can be read in. Missing it is invisible until the effect actually runs, at which point
             // the hidden characters render as boxes - the one moment the author is looking straight
             // at them.
+
+            /// <summary> Folds one text object's characters into the set. </summary>
             public void Add(TextObject textObject)
             {
                 Add(textObject.Text);
@@ -167,6 +169,7 @@ namespace BH.SDK.Services
                 }
             }
 
+            /// <summary> The set as the string a level stores - sorted, so a re-save does not churn the file. </summary>
             public IString ToValue()
             {
                 if (_perLanguage.Count == 0)

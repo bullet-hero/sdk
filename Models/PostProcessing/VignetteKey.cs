@@ -57,12 +57,15 @@ namespace BH.SDK.Models.PostProcessing
         // Colour and centre are born null - "the author never touched this" - and read back as the
         // neutrals PostProcessingRules now names. See docs/NAMING.md; this is compression rather
         // than a third state, since the neutral is also a legal authored value.
+
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public VignetteKey()
         {
             Intensity = 0.3f;
             Smoothness = 0.5f;
             Rounded = false;
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public VignetteKey(IColor3 color3, IVector2 center, float intensity, float smoothness, bool rounded,
             bool active, int frame, EaseType ease = Keyframe.DefaultEase) : base(active, frame, ease)
         {

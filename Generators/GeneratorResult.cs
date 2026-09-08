@@ -25,10 +25,12 @@ namespace BH.SDK.Generators
         /// <summary> Findings for this run, if the host asked for any. Default (empty) otherwise. </summary>
         public readonly ValidationReport Report;
 
+        /// <summary> What a run produced, with no validation report. </summary>
         public GeneratorResult(ObjectId[] createdIds, GeneratorChangeLog log)
             : this(createdIds, log, default)
         {
         }
+        /// <summary> The same, with one. </summary>
         public GeneratorResult(ObjectId[] createdIds, GeneratorChangeLog log, ValidationReport report)
         {
             CreatedIds = createdIds ?? Array.Empty<ObjectId>();
@@ -36,8 +38,10 @@ namespace BH.SDK.Generators
             Report = report;
         }
 
+        /// <summary> The same result carrying a report a host ran separately. </summary>
         public GeneratorResult WithReport(ValidationReport report) => new(CreatedIds, Log, report);
 
+        /// <summary> One line, for a log. </summary>
         public override string ToString() => $"{CreatedIds?.Length ?? 0} created, {Log}";
     }
 }

@@ -30,11 +30,13 @@ namespace BH.SDK.Models.Keyframes
         [JsonProperty(Names.Offset)]
         public Vector2Value Offset { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public UVKey()
         {
             Tiling = new Vector2Value(ValueRules.DefaultUvX, ValueRules.DefaultUvY);
             Offset = new Vector2Value(ValueRules.DefaultUvZ, ValueRules.DefaultUvW);
         }
+        /// <summary> Built from its tilling, offset, frame and default ease. </summary>
         public UVKey(Vector2Value tilling, Vector2Value offset, int frame, EaseType ease = DefaultEase) : base(frame, ease)
         {
             Tiling = tilling;

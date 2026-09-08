@@ -34,15 +34,19 @@ namespace BH.SDK.Models.Values
         // shipping it. A level that wants vertical authors a vertical ratio, which has always been
         // legal data (MinAspect* is 1, so ScreenAspect(9, 16) validates).
 
+        /// <summary> Width over height, or zero where either is unset. </summary>
         public float GetAspect() => IsValid() ? Width / (float)Height : 0f;
 
+        /// <summary> True when both halves were authored. </summary>
         public bool IsValid() => Width != 0f && Height != 0f;
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public ScreenAspect()
         {
             Width = ValueRules.DefaultAspectWidth;
             Height = ValueRules.DefaultAspectHeight;
         }
+        /// <summary> Built from its width and height. </summary>
         public ScreenAspect(int width, int height)
         {
             Width = width;

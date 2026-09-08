@@ -52,8 +52,10 @@ namespace BH.SDK.Models.Effects
         [JsonProperty(Names.Spread)]
         public IEffectShapeSpread Spread { get; set; }
         
+        /// <summary> Which concrete form this is - the discriminator a converter writes and reads back. </summary>
         public EffectShapeType GetModelType() => EffectShapeType.Cone;
         
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public EffectShapeCone()
         {
             TopRadius = new FloatValue(EffectRules.Shape.ConeTopRadius_Default);
@@ -62,6 +64,7 @@ namespace BH.SDK.Models.Effects
             Height = new FloatValue(EffectRules.Shape.ConeHeight_Default);
             Spread = new EffectShapeSpreadRandom();
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public EffectShapeCone(IFloat topRadius, IFloat baseRadius, IFloat arc, IFloat height, IEffectShapeSpread spread)
         {
             TopRadius = topRadius;

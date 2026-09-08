@@ -87,6 +87,8 @@ namespace BH.SDK.Models.Effects
         // Unlike LevelTrackEffects this is COMPRESSION rather than a third state: 0 gravity is both
         // the neutral and a legal authored value, so absent and zero behave identically. What it
         // buys is that an effect only carries the forces it actually uses.
+
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public EffectObjectForces()
         {
         }
@@ -123,6 +125,7 @@ namespace BH.SDK.Models.Effects
                 EffectRules.Forces.LinearForce_Y_Default),
         };
 
+        /// <summary> Every member at once, in declaration order. </summary>
         public EffectObjectForces(IFloat startGravityMin, IFloat startGravityMax, 
             IVector2 startVelocityMin, IVector2 startVelocityMax, 
             IFloat startAngularVelocityMin, IFloat startAngularVelocityMax, 

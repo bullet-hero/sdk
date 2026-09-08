@@ -36,12 +36,14 @@ namespace BH.SDK.Models.Values
         [JsonProperty(Names.PostWrapMode)]
         public CurveWrapMode PostWrapMode { get; set; }
         
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public CurveValue()
         {
             KeyFrames = new List<CurveKeyframeValue>();
             PreWrapMode = CurveWrapMode.Default;
             PostWrapMode = CurveWrapMode.Default;
         }
+        /// <summary> Built from its frames, wrap mode and wrap mode. </summary>
         public CurveValue(List<CurveKeyframeValue> keyFrames, CurveWrapMode preWrapMode, CurveWrapMode postWrapMode)
         {
             KeyFrames = keyFrames;

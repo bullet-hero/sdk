@@ -32,12 +32,14 @@ namespace BH.SDK.Models.Statistics
         [JsonProperty(Names.Deaths)]
         public int Deaths { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public CheckpointDeaths()
         {
             Frame = 0;
             Deaths = 0;
         }
 
+        /// <summary> Built from its frame and deaths. </summary>
         public CheckpointDeaths(int frame, int deaths)
         {
             Frame = frame;

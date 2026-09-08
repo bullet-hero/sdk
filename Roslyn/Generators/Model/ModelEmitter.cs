@@ -21,6 +21,7 @@ namespace BH.SDK.Roslyn.Model
         private const string Utils = "global::BH.SDK.Utils.ModelUtils";
         private const string Comparer = "global::System.Collections.Generic.EqualityComparer";
 
+        /// <summary> The whole generated file for one model: the contract's seven bodies plus both codecs. </summary>
         public static string Emit(ModelSpec spec)
         {
             var builder = new StringBuilder();

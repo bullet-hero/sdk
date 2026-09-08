@@ -19,10 +19,12 @@ namespace BH.SDK.Models.AudioEffects
         [JsonProperty(Names.LevelShort)]
         public float Level { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public AudioDistortion()
         {
             Level = AudioRules.Distortion.Level_Default;
         }
+        /// <summary> Built from its level and level. </summary>
         public AudioDistortion(float mixLevel, float level) : base(mixLevel)
         {
             Level = level;

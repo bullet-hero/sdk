@@ -35,6 +35,10 @@ namespace BH.SDK.Tests
     // .PullFrom is the path that gets it right, and the no-op is what makes a wrong call harmless
     // instead of half-applied.
 
+
+    /// <summary> That Update and Pull are OVERLOADS down a hierarchy while Copy is virtual, and that a
+    /// polymorphic value handed a sibling implementation does nothing - both documented behaviour, both invisible
+    /// from the class alone. </summary>
     public class ModelHierarchyTests
     {
         #region Fixtures

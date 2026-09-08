@@ -21,12 +21,6 @@ namespace BH.SDK.Models.Objects
     // 3. Modification works only for prefab scope where it's located.
     // No deep inheritance of changes
 
-    /// <summary>
-    /// One per-placement field override: "in this PrefabObject, that object's that field is this
-    /// value instead". Re-applied on top of a fresh template copy after every materialize/resync,
-    /// which is what lets a placement diverge from its template without breaking the link.
-    /// </summary>
-    [RuleContainer]
     // ONE OF THE THREE MODELS THE GENERATOR DOES NOT COVER, and the reason is Value. Copying it is
     // not an assignment (a whole-track override stores a List<TKeyframe>, which would alias) and
     // comparing it is not object.Equals (a List has no value equality), so both bodies below are
@@ -37,6 +31,13 @@ namespace BH.SDK.Models.Objects
     // every [RuleContainer], and opting out of ModelGenerator says nothing about that one. There is
     // no third state - a container either gets a generated walk or stays the slowest kind of node on
     // a level's load path - so BHS1101 is an error and this word is how it is answered.
+
+    /// <summary>
+    /// One per-placement field override: "in this PrefabObject, that object's that field is this
+    /// value instead". Re-applied on top of a fresh template copy after every materialize/resync,
+    /// which is what lets a placement diverge from its template without breaking the link.
+    /// </summary>
+    [RuleContainer]
     public sealed partial class Modification : IModel<Modification>, Serialization.Blob.IBinaryModel, Serialization.Json.IJsonModel
     {
         // WHICH object (inner/template ObjectId) and WHICH field (Path) this override applies to -
@@ -71,21 +72,25 @@ namespace BH.SDK.Models.Objects
             _ => value,
         };
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public Modification()
         {
             Key = new ModificationKey(ObjectId.Null, string.Empty);
             Value = null;
         }
+        /// <summary> Built from its id, path and value. </summary>
         public Modification(ObjectId objectId, string path, object value)
         {
             Key = new ModificationKey(objectId, path);
             Value = value;
         }
+        /// <summary> Built from its key and value. </summary>
         public Modification(ModificationKey key, object value)
         {
             Key = key;
             Value = value;
         }
+        /// <summary> Back to the values the constructor writes. </summary>
         public void Reset()
         {
             var key = Key;
@@ -94,9 +99,12 @@ namespace BH.SDK.Models.Objects
             Value = null;
         }
 
+        /// <summary> The untyped spelling of <c>Copy</c>. </summary>
         public object Clone() => Copy();
+        /// <summary> A deep copy, sharing nothing mutable with this one. </summary>
         public Modification Copy() => new(Key.Copy(), CopyValue());
 
+        /// <summary> A copy of the overriding value - an assignment would alias a whole-track override's list. </summary>
         public object CopyValue()
         {
             if (Value == null) return null;
@@ -118,21 +126,26 @@ namespace BH.SDK.Models.Objects
             return Value;
         }
 
+        /// <summary> Becomes the source, replacing everything this instance held. </summary>
         public void Update(Modification src)
         {
             Key = src.Key.Copy();
             Value = src.CopyValue();
         }
 
+        /// <summary> Takes the source's contents in place, so nothing pointing inside this instance is invalidated. </summary>
         public void Pull(Modification src)
         {
             Key = src.Key.Copy();
             Value = src.CopyValue();
         }
 
+        /// <summary> The same, boxed. </summary>
         public override bool Equals(object obj) => obj is Modification value && Equals(value);
+        /// <summary> Matches the equality above. </summary>
         public override int GetHashCode() => HashCode.Combine(Key, Value);
 
+        /// <summary> Member by member. </summary>
         public bool Equals(Modification other)
         {
             if (other is null) return false;
@@ -162,6 +175,7 @@ namespace BH.SDK.Models.Objects
 
         private static readonly Serialization.SerializationService JsonForValue = new();
 
+        /// <summary> Appends this override to a .blob payload. </summary>
         public void Write(ref Serialization.Blob.BlobWriter writer)
         {
             Serialization.Blob.BlobPrimitives.Write(ref writer, Key);
@@ -171,6 +185,7 @@ namespace BH.SDK.Models.Objects
             writer.WriteString(text.ToString());
         }
 
+        /// <summary> Reads one back over this instance. </summary>
         public void Read(ref Serialization.Blob.BlobReader reader)
         {
             Key = Serialization.Blob.BlobPrimitives.ReadModificationKey(ref reader);
@@ -195,6 +210,7 @@ namespace BH.SDK.Models.Objects
         // what makes it identical to what the reflective path wrote - including the JToken a
         // non-scalar comes back as.
 
+        /// <summary> Writes this override as JSON. </summary>
         public void WriteJson(JsonWriter writer)
         {
             writer.WriteStartObject();
@@ -205,9 +221,11 @@ namespace BH.SDK.Models.Objects
             writer.WriteEndObject();
         }
 
+        /// <summary> Reads one back over this instance. </summary>
         public void ReadJson(JsonReader reader)
             => Serialization.Json.JsonModels.ReadObject(reader, this);
 
+        /// <summary> Reads one named member, so a subclass can extend the shape without restating the loop. </summary>
         public bool ReadJsonMember(JsonReader reader, string name)
         {
             switch (name)

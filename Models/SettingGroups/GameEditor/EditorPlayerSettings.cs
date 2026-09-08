@@ -67,11 +67,13 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
         [JsonProperty(Names.BotDebugReach)]
         public bool BotDebugReach { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public EditorPlayerSettings()
         {
             ResetOwn();
         }
 
+        /// <summary> Every member at once, in declaration order. </summary>
         public EditorPlayerSettings(bool activeDefault, bool resetGizmos, bool botControl,
             bool botDebug, bool botDebugGrid, bool botDebugTarget, bool botDebugReach)
         {

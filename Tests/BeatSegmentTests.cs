@@ -9,6 +9,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests
 {
+    /// <summary> A beat segment's own contract: its span, its tempo fields, and the anchors it strips because a
+    /// segment has no parent to follow. </summary>
     [TestFixture]
     public class BeatSegmentTests
     {

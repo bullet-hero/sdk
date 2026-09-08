@@ -5,8 +5,12 @@ using UnityEngine;
 
 namespace BH.SDK
 {
+    /// <summary> The model questions that need an engine to answer - resolving a framerate target against the
+    /// screen it will actually run on. </summary>
     public static class ModelExtensions
     {
+        /// <summary> The framerate this actually runs at, resolving Default against its parent and then against the
+        /// screen. </summary>
         public static int GetFramerate(this IFrameable frameable, IFrameable parentFrameable = null)
         {
             while (true)
@@ -38,6 +42,7 @@ namespace BH.SDK
             }
         }
         
+        /// <summary> One frame of that framerate, in seconds. </summary>
         public static float GetDeltaTime(this IFrameable frameable, IFrameable parentFrameable = null)
         {
             while (true)

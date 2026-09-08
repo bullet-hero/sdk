@@ -15,6 +15,9 @@ namespace BH.SDK.Tests
     // The model is aliased because NUnit's own [Author] attribute is on every method here, and a
     // plain `using` of its namespace would make the name ambiguous between the two.
 
+
+    /// <summary> MetaAuthor's optional credit: that an empty one is a real value rather than a null, and that a
+    /// record written before the field reads back as one. </summary>
     public class AuthorTests
     {
         private static MetaAuthor Authored() => new(new StringValue("vertoker"),

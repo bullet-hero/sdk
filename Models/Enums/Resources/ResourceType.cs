@@ -1,5 +1,6 @@
 ﻿namespace BH.SDK.Models.Enums.Resources
 {
+    /// <summary> What a level resource becomes once loaded. </summary>
     public enum ResourceType : byte
     {
         Bytes = 0, // byte[]

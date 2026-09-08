@@ -61,9 +61,13 @@ namespace BH.SDK.Publishing
         [JsonProperty(Names.Note)]
         public string Note { get; set; }
 
+        /// <summary> How many domains one trusted source may cover. </summary>
         public const int MaxDomains = 16;
+
+        /// <summary> How many licences it may be trusted for. </summary>
         public const int MaxLicenses = 32;
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public TrustedSource()
         {
             Key = string.Empty;
@@ -74,6 +78,7 @@ namespace BH.SDK.Publishing
             Licenses = new List<TypicalLicenseType>();
             Note = string.Empty;
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public TrustedSource(string key, string title, string url, List<string> domains,
             SourceTrust trust, List<TypicalLicenseType> licenses, string note)
         {

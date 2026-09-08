@@ -8,6 +8,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests
 {
+    /// <summary> Where beats actually fall: rounding from a segment's own start rather than accumulating, and
+    /// what a subdivision does to the answer. </summary>
     [TestFixture]
     public class BeatMathTests
     {

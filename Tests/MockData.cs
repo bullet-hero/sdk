@@ -42,6 +42,9 @@ namespace BH.SDK.Tests
     // asserts is both detected and auto-fixable by RuleFixer; broadening them risks introducing an
     // issue RuleFixer can't resolve, which isn't worth the coverage gain for a fixture whose whole
     // point is to be minimal and wrong in one specific way.
+
+    /// <summary> The shared fixture factory for the whole suite. Read the header above before adding one: the
+    /// valid fixtures must stay rule-clean and the invalid ones must each encode exactly one repairable violation. </summary>
     public static class MockData
     {
         #region Actual Version

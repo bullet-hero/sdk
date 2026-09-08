@@ -19,6 +19,7 @@ namespace BH.SDK.Serialization.Blob
     /// <summary> A .blob payload could not be read. Always caught at the envelope. </summary>
     public sealed class BlobFormatException : Exception
     {
+        /// <summary> Takes what to tell the caller; the envelope turns it into "this file could not be read". </summary>
         public BlobFormatException(string message) : base(message) { }
     }
 
@@ -29,6 +30,7 @@ namespace BH.SDK.Serialization.Blob
         private readonly int _end;
         private int _position;
 
+        /// <summary> Reads a window of a buffer, so an envelope can hand over its payload without copying it. </summary>
         public BlobReader(byte[] buffer, int offset, int length)
         {
             _buffer = buffer ?? throw new BlobFormatException("no payload");
@@ -38,22 +40,27 @@ namespace BH.SDK.Serialization.Blob
             _end = offset + length;
         }
 
+        /// <summary> Reads a whole buffer. </summary>
         public BlobReader(byte[] buffer) : this(buffer, 0, buffer?.Length ?? 0) { }
 
         /// <summary> Bytes left. Every collection compares its own count against this BEFORE
         /// allocating, so a corrupt length costs an exception rather than a gigabyte. </summary>
         public int Remaining => _end - _position;
 
+        /// <summary> How far into the window the reader has got. </summary>
         public int Position => _position;
 
+        /// <summary> Reads a single byte. </summary>
         public byte ReadByte()
         {
             Ensure(1);
             return _buffer[_position++];
         }
 
+        /// <summary> Reads one byte, where anything but zero is true. </summary>
         public bool ReadBool() => ReadByte() != 0;
 
+        /// <summary> Reads a little-endian 16-bit integer. </summary>
         public short ReadShort()
         {
             Ensure(2);
@@ -62,6 +69,7 @@ namespace BH.SDK.Serialization.Blob
             return value;
         }
 
+        /// <summary> Reads a little-endian unsigned 16-bit integer. </summary>
         public ushort ReadUShort()
         {
             Ensure(2);
@@ -70,6 +78,7 @@ namespace BH.SDK.Serialization.Blob
             return value;
         }
 
+        /// <summary> Reads a little-endian 32-bit integer. </summary>
         public int ReadInt()
         {
             Ensure(4);
@@ -78,6 +87,7 @@ namespace BH.SDK.Serialization.Blob
             return value;
         }
 
+        /// <summary> Reads a little-endian unsigned 32-bit integer. </summary>
         public uint ReadUInt()
         {
             Ensure(4);
@@ -86,6 +96,7 @@ namespace BH.SDK.Serialization.Blob
             return value;
         }
 
+        /// <summary> Reads a little-endian 64-bit integer. </summary>
         public long ReadLong()
         {
             Ensure(8);
@@ -94,6 +105,7 @@ namespace BH.SDK.Serialization.Blob
             return value;
         }
 
+        /// <summary> Reads a little-endian unsigned 64-bit integer. </summary>
         public ulong ReadULong()
         {
             Ensure(8);
@@ -102,10 +114,13 @@ namespace BH.SDK.Serialization.Blob
             return value;
         }
 
+        /// <summary> Reads a float as the 32-bit pattern it is, so no decimal formatting is involved. </summary>
         public float ReadFloat() => BitConverter.Int32BitsToSingle(ReadInt());
 
+        /// <summary> Reads a double as its 64-bit pattern. </summary>
         public double ReadDouble() => BitConverter.Int64BitsToDouble(ReadLong());
 
+        /// <summary> Read back as ticks plus its kind, so a UTC stamp does not come back as local time. </summary>
         public DateTime ReadDateTime()
         {
             var ticks = ReadLong();
@@ -114,6 +129,7 @@ namespace BH.SDK.Serialization.Blob
             return new DateTime(ticks, DateTimeKind.Utc);
         }
 
+        /// <summary> Sixteen raw bytes, never the textual form. </summary>
         public Guid ReadGuid()
         {
             Ensure(16);
@@ -126,6 +142,7 @@ namespace BH.SDK.Serialization.Blob
 #endif
         }
 
+        /// <summary> UTF-8 behind a length prefix, where <see cref="BlobWriter.NullLength"/> means null rather than empty. </summary>
         public string ReadString()
         {
             var count = ReadInt();
@@ -150,6 +167,7 @@ namespace BH.SDK.Serialization.Blob
             return count;
         }
 
+        /// <summary> A fresh array of exactly <paramref name="count"/> bytes, refused when the window is shorter. </summary>
         public byte[] ReadBytes(int count)
         {
             Ensure(count);

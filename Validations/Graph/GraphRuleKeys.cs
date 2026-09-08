@@ -15,6 +15,7 @@ namespace BH.SDK.Validations.Graph
     /// <summary> Localization-key names for every <see cref="GraphRule"/>. </summary>
     public static class GraphRuleKeys
     {
+        /// <summary> The localization key naming a finding, so it survives a rename and can be translated. </summary>
         public static string GetKey(this GraphRule rule)
         {
             return rule switch

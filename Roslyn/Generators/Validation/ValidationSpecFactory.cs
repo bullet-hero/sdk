@@ -10,6 +10,7 @@ namespace BH.SDK.Roslyn.Validation
     /// diagnostics saying why it cannot. </summary>
     internal static class ValidationSpecFactory
     {
+        /// <summary> The marker that opts a type in - INHERITED, which is why declared attributes alone are not enough. </summary>
         public const string ContainerAttribute = "BH.SDK.Rules.Attributes.RuleContainerAttribute";
 
         private const string PropertyRuleBase = "BH.SDK.Rules.Attributes.BasePropertyRuleAttribute";
@@ -20,6 +21,7 @@ namespace BH.SDK.Roslyn.Validation
         private const string ListType = "System.Collections.Generic.List<T>";
         private const string DictionaryType = "System.Collections.Generic.Dictionary<TKey, TValue>";
 
+        /// <summary> Reads one container into a spec, or refuses it with the diagnostic naming what stopped it. </summary>
         public static ValidationSpec Create(INamedTypeSymbol type, TypeDeclarationSyntax declaration,
             List<Diagnostic> diagnostics)
         {

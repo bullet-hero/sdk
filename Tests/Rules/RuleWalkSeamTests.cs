@@ -32,6 +32,10 @@ namespace BH.SDK.Tests.Rules
     //   is expected to be the same object for every node of a type, which fresh attribute instances
     //   would break.
 
+
+    /// <summary> The executable specification of what the validation generator must emit: a hand-written walk beside
+    /// a structurally identical reflective model, producing the same findings, in the same order, with the
+    /// same traces. </summary>
     [TestFixture]
     public class RuleWalkSeamTests
     {
@@ -74,6 +78,7 @@ namespace BH.SDK.Tests.Rules
         // exists to keep honest: implementing the interface by hand opts a type out of the container
         // check entirely.
 
+        /// <summary> A model with no generated walk, reached through reflection. </summary>
         [RuleContainer]
         private class Reflective
         {
@@ -86,6 +91,7 @@ namespace BH.SDK.Tests.Rules
             public List<Reflective> Children { get; set; } = new();
         }
 
+        /// <summary> The same model hand-written exactly as the generator is specified to emit it. </summary>
         [RuleContainer]
         private class Generated : IValidatable
         {

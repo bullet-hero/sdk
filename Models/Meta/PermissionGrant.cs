@@ -60,6 +60,7 @@ namespace BH.SDK.Models.Meta
         [JsonProperty(Names.ProofText)]
         public string ProofText { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public PermissionGrant()
         {
             Grantor = new Author();
@@ -69,6 +70,7 @@ namespace BH.SDK.Models.Meta
             ProofUrl = string.Empty;
             ProofText = string.Empty;
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public PermissionGrant(Author grantor, PermissionScope scope,
             DateTime grantedAt, DateTime expiresAt, string proofUrl, string proofText)
         {

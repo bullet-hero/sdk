@@ -11,6 +11,9 @@ namespace BH.SDK.Tests.Rules
     // metadata is exactly the half a publish check is about. Every test here is ultimately about
     // that: the metadata is validated, with or without a level beside it.
 
+
+    /// <summary> The publish check, the only caller needing all three analyzers - and the one mistake it exists to
+    /// prevent, since LevelMeta is its own root and a level's own validation never touches a rule on it. </summary>
     [TestFixture]
     public class ValidationFacadePublishTests
     {

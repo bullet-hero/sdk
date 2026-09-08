@@ -29,33 +29,41 @@ namespace BH.SDK.Rules.Attributes
     [AttributeUsage(PropertyTarget)]
     public class RuleReferenceExistsAttribute : BasePropertyRuleAttribute
     {
+        /// <summary> <c>"rule_reference_exists"</c>, the key its message is looked up under. </summary>
         public override string RuleNameKey => "rule_reference_exists";
 
         // Warning, not Error, and Fix has nothing to do with it: a dangling reference is UNREPAIRABLE by
         // design - inventing an id would point the object at some other resource - so reporting it as
         // Error would mean a level that can never stop being an error. The consumer substitutes its
         // fallback and the level plays; what it loses is one texture, font or clip.
+
+        /// <summary> A warning: the level still plays, but this is not what the author meant. </summary>
         public override RuleGroup Group => RuleGroup.Warning;
 
+        /// <summary> Which resource collection the reference must be found in. </summary>
         public ResourceReferenceKind Kind { get; }
 
         /// <summary> Whether an unset reference is a legitimate authored state rather than a
         /// dangling one. </summary>
         public bool AllowNull { get; set; }
 
+        /// <summary> Takes which resource collection the reference must be found in. </summary>
         public RuleReferenceExistsAttribute(ResourceReferenceKind kind)
         {
             Kind = kind;
         }
 
+        /// <summary> Takes which resource collection the reference must be found in and whether an unset reference passes. </summary>
         public RuleReferenceExistsAttribute(ResourceReferenceKind kind, bool allowNull) : this(kind)
         {
             AllowNull = allowNull;
         }
 
+        /// <summary> Applies to int id wrappers. </summary>
         protected override bool IsValidTypeInternal(PropertyInfo property)
             => typeof(IPrimitiveInt).IsAssignableFrom(property.PropertyType);
 
+        /// <summary> Passes when the id names a resource the level actually carries, or is unset where that is allowed. </summary>
         protected override bool IsValidInternal(object value, RuleContext context)
         {
             if (value is not IPrimitiveInt primitive) return false;
@@ -85,8 +93,11 @@ namespace BH.SDK.Rules.Attributes
         // other resource shows the wrong asset, and clearing it to Null either hides an object
         // entirely or - where Null is a real state - changes what the object means. A dangling
         // reference is a decision for whoever is editing the level, so this reports and stops.
+
+        /// <summary> Off: which resource was meant is not knowable here, so a dangling reference is reported and left alone. </summary>
         public override bool HasFix => false;
 
+        /// <summary> Nothing - see HasFix. </summary>
         protected override void FixInternal(object target, PropertyInfo property, RuleContext context) { }
     }
 }

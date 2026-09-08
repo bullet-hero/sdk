@@ -28,6 +28,7 @@ namespace BH.SDK.Avatars
         /// <see cref="Rules.AvatarRules.ArrivedDistance"/>. </summary>
         public readonly bool Arrived;
 
+        /// <summary> Everything one simulated step produced; nothing mutates it afterwards. </summary>
         public AvatarStepResult(float2 position, float2 targetDirection, float targetSpeed,
             bool moving, bool arrived)
         {

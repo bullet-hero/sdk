@@ -10,6 +10,7 @@ namespace BH.SDK.Tests.Rules
     /// </summary>
     public class RuleShortcutBindingsTests : BaseRuleTests
     {
+        /// <summary> A keybinding override map, where each value must be in canonical shortcut form. </summary>
         [RuleContainer]
         private class MapModel
         {
@@ -17,6 +18,7 @@ namespace BH.SDK.Tests.Rules
             public Dictionary<string, string> Value { get; set; } = new();
         }
 
+        /// <summary> A property of a type the rule does not apply to, so it must decline rather than refuse. </summary>
         [RuleContainer]
         private class WrongTypeModel
         {

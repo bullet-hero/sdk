@@ -28,6 +28,7 @@ namespace BH.SDK.Interop
         /// author can go and look at. </summary>
         public string FirstPath { get; }
 
+        /// <summary> One finding, before any identical ones are folded into it. </summary>
         public InteropIssue(InteropSeverity severity, string code, string message, string firstPath)
         {
             Severity = severity;
@@ -37,8 +38,10 @@ namespace BH.SDK.Interop
             Count = 1;
         }
 
+        /// <summary> Counts one more occurrence of the same finding, so a level with 4000 of them prints one line. </summary>
         internal void Increment() => Count++;
 
+        /// <summary> One line for the report, carrying the count when the finding repeated. </summary>
         public override string ToString()
             => Count > 1
                 ? $"[{Severity}] {Message} (x{Count}, first at {FirstPath})"

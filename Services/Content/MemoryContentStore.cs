@@ -33,6 +33,7 @@ namespace BH.SDK.Services.Content
         private readonly long _maxTotalBytes;
         private long _totalBytes;
 
+        /// <summary> Built from its "memory" and default max total bytes. </summary>
         public MemoryContentStore(string name = "memory", long maxTotalBytes = DefaultMaxTotalBytes)
         {
             if (maxTotalBytes <= 0) throw new ArgumentOutOfRangeException(nameof(maxTotalBytes));
@@ -41,6 +42,7 @@ namespace BH.SDK.Services.Content
             _maxTotalBytes = maxTotalBytes;
         }
 
+        /// <summary> What this store is called in a message; never part of a path. </summary>
         public string Name { get; }
 
         /// <summary> How many blobs the store holds. </summary>
@@ -68,6 +70,7 @@ namespace BH.SDK.Services.Content
             Commit(path, bytes);
         }
 
+        /// <summary> Whether anything is stored under that path. </summary>
         public ValueTask<bool> ExistsAsync(string path, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
@@ -75,6 +78,7 @@ namespace BH.SDK.Services.Content
             return new ValueTask<bool>(_blobs.ContainsKey(path));
         }
 
+        /// <summary> Every path under a prefix. </summary>
         public ValueTask<IReadOnlyList<string>> ListAsync(string prefix, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
@@ -88,6 +92,7 @@ namespace BH.SDK.Services.Content
             return new ValueTask<IReadOnlyList<string>>(results);
         }
 
+        /// <summary> Reads one entry. </summary>
         public ValueTask<Stream> OpenReadAsync(string path, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
@@ -102,6 +107,7 @@ namespace BH.SDK.Services.Content
             return new ValueTask<Stream>(stream);
         }
 
+        /// <summary> Writes one entry, filed only once the stream is closed. </summary>
         public ValueTask<Stream> OpenWriteAsync(string path, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
@@ -115,6 +121,7 @@ namespace BH.SDK.Services.Content
             return new ValueTask<Stream>(stream);
         }
 
+        /// <summary> Removes one entry; a missing one is not an error. </summary>
         public ValueTask DeleteAsync(string path, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
@@ -124,6 +131,7 @@ namespace BH.SDK.Services.Content
             return default;
         }
 
+        /// <summary> How many bytes one entry holds. </summary>
         public ValueTask<long> GetLengthAsync(string path, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
@@ -165,36 +173,44 @@ namespace BH.SDK.Services.Content
         // CopyTo too, since both route through them. Subclassing rather than wrapping means every
         // other member (seeking, Position, ToArray) stays MemoryStream's, which is what the callers
         // above expect a writable stream to behave like.
+
+        /// <summary> Holds a write in memory and files it under its key only when the stream is closed, so an
+        /// abandoned write leaves nothing behind. </summary>
         private sealed class CommittingStream : MemoryStream
         {
             private readonly MemoryContentStore _owner;
             private readonly string _path;
             private bool _committed;
 
+            /// <summary> Built from its owner and path. </summary>
             public CommittingStream(MemoryContentStore owner, string path)
             {
                 _owner = owner;
                 _path = path;
             }
 
+            /// <summary> Buffers the bytes; nothing is filed until close. </summary>
             public override void Write(byte[] buffer, int offset, int count)
             {
                 _owner.EnsureRoom(Length + count);
                 base.Write(buffer, offset, count);
             }
 
+            /// <summary> The same for a span. </summary>
             public override void Write(ReadOnlySpan<byte> buffer)
             {
                 _owner.EnsureRoom(Length + buffer.Length);
                 base.Write(buffer);
             }
 
+            /// <summary> The same for one byte. </summary>
             public override void WriteByte(byte value)
             {
                 _owner.EnsureRoom(Length + 1);
                 base.WriteByte(value);
             }
 
+            /// <summary> Files what was written under its key - so an abandoned write leaves nothing behind. </summary>
             protected override void Dispose(bool disposing)
             {
                 // Once, and before the buffer goes away: a stream disposed twice must not commit a

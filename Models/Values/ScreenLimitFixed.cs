@@ -22,14 +22,19 @@ namespace BH.SDK.Models.Values
         [JsonProperty(Names.Aspect)]
         public ScreenAspect Aspect { get; set; }
         
+        /// <summary> Which concrete form this is - the discriminator a converter writes and reads back. </summary>
         public ScreenLimitType GetModelType() => ScreenLimitType.Fixed;
+        /// <summary> True only on the one aspect this level accepts. </summary>
         public bool IsValid(float currentAspect) => BHSDKMath.Approximately(Aspect.GetAspect(), currentAspect);
+        /// <summary> Always the authored aspect - every other screen gets bars. </summary>
         public float GetValid(float currentAspect) => Aspect.GetAspect();
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public ScreenLimitFixed()
         {
             Aspect = new ScreenAspect();
         }
+        /// <summary> Built from its aspect. </summary>
         public ScreenLimitFixed(ScreenAspect aspect)
         {
             Aspect = aspect;

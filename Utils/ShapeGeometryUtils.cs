@@ -33,6 +33,7 @@ namespace BH.SDK.Utils
         public static float SignedDoubleArea(Vector2Value a, Vector2Value b, Vector2Value c)
             => (b.X - a.X) * (c.Y - a.Y) - (c.X - a.X) * (b.Y - a.Y);
 
+        /// <summary> True when three corners describe no area, so the triangle would draw nothing. </summary>
         public static bool IsDegenerate(Vector2Value a, Vector2Value b, Vector2Value c)
         {
             var area = SignedDoubleArea(a, b, c);

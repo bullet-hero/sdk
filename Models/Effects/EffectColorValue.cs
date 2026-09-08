@@ -25,8 +25,10 @@ namespace BH.SDK.Models.Effects
         [JsonProperty(Names.Color)]
         public IColor4 Color4 { get; set; }
         
+        /// <summary> Which concrete form this is - the discriminator a converter writes and reads back. </summary>
         public EffectColorType GetModelType() => EffectColorType.Value;
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public EffectColorValue()
         {
             Color4 = new Color4Value(
@@ -35,6 +37,7 @@ namespace BH.SDK.Models.Effects
                 EffectRules.Color.A_B_Default,
                 EffectRules.Color.A_A_Default);
         }
+        /// <summary> Built from its 4. </summary>
         public EffectColorValue(IColor4 color4)
         {
             Color4 = color4;

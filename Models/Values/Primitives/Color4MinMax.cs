@@ -61,6 +61,7 @@ namespace BH.SDK.Models.Values
         [JsonProperty(Names.MaxA)]
         public float MaxA { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public Color4MinMax()
         {
             MinR = ValueRules.MinColor;
@@ -73,6 +74,7 @@ namespace BH.SDK.Models.Values
             MaxB = ValueRules.MaxColor;
             MaxA = ValueRules.MaxColor;
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public Color4MinMax(float minR, float minG, float minB, float minA, 
             float maxR, float maxG, float maxB, float maxA)
         {
@@ -87,6 +89,7 @@ namespace BH.SDK.Models.Values
             MaxA = maxA;
         }
 
+        /// <summary> Which concrete form this is - the discriminator a converter writes and reads back. </summary>
         public ColorType GetModelType() => ColorType.RandomMinMax;
     }
 }

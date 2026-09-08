@@ -26,19 +26,23 @@ namespace BH.SDK.Models.Values
         [JsonProperty(Names.Strings)]
         public List<StringLanguage> Strings { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public StringLocalized()
         {
             Strings = new List<StringLanguage>();
         }
+        /// <summary> Built from its strings. </summary>
         public StringLocalized(params StringLanguage[] strings)
         {
             Strings = strings.ToList();
         }
+        /// <summary> Built from its strings. </summary>
         public StringLocalized(List<StringLanguage> strings)
         {
             Strings = strings;
         }
 
+        /// <summary> Which concrete form this is - the discriminator a converter writes and reads back. </summary>
         public StringType GetModelType() => StringType.Localized;
     }
 }

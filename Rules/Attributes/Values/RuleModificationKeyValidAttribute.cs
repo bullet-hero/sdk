@@ -22,23 +22,30 @@ namespace BH.SDK.Rules.Attributes
     [AttributeUsage(PropertyTarget)]
     public class RuleModificationKeyValidAttribute : BasePropertyRuleAttribute
     {
+        /// <summary> <c>"rule_modification_key_valid"</c>, the key its message is looked up under. </summary>
         public override string RuleNameKey => "rule_modification_key_valid";
 
         // Warning, not Error, and its own header already says why: a key that does not resolve degrades
         // into "the override silently does not apply". The placement still materializes and the
         // level still plays - it plays the template's value instead of the author's.
+
+        /// <summary> A warning: the level still plays, but this is not what the author meant. </summary>
         public override RuleGroup Group => RuleGroup.Warning;
 
+        /// <summary> The longest a field path may be. </summary>
         public int MaxPathLength { get; set; }
 
+        /// <summary> Takes the longest a field path may be. </summary>
         public RuleModificationKeyValidAttribute(int maxPathLength)
         {
             MaxPathLength = maxPathLength;
         }
 
+        /// <summary> Applies to prefab-override key properties. </summary>
         protected override bool IsValidTypeInternal(PropertyInfo property)
             => typeof(ModificationKey).IsAssignableFrom(property.PropertyType);
 
+        /// <summary> Passes when the field path is within its length ceiling. </summary>
         protected override bool IsValidInternal(object value, RuleContext context)
         {
             if (value is not ModificationKey key) return false;
@@ -54,6 +61,8 @@ namespace BH.SDK.Rules.Attributes
         // A broken ObjectId is deliberately left alone: repointing it at some other template object
         // would apply the author's override to the wrong object, silently and plausibly. Dropping
         // the whole entry is the right repair and it belongs to whoever owns the dictionary.
+
+        /// <summary> Truncates the path, keeping the object the key addresses. </summary>
         protected override void FixInternal(object target, PropertyInfo property, RuleContext context)
         {
             if (property.GetValue(target) is not ModificationKey key) return;

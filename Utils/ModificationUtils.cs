@@ -6,6 +6,8 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Utils
 {
+    /// <summary> Resolves a modification's field path against a live object: which property each segment names,
+    /// and what to do when one indexes into a list. Cached per type, since a resync walks every placement. </summary>
     public static class ModificationUtils
     {
         private static readonly Dictionary<(Type type, string name),
@@ -27,6 +29,7 @@ namespace BH.SDK.Utils
             AddPropertiesRecursive<RectObject, ShapeObject, EffectObject, TextObject, PrefabObject>();
         }
 
+        /// <summary> Writes one override onto a materialized object, resolving its path as it goes. </summary>
         public static void Apply(this RectObject obj, Modification mod)
         {
             ParsePath(mod.Key.Path, SegmentBuffer);
@@ -161,51 +164,71 @@ namespace BH.SDK.Utils
             ((Array)array).SetValue(newValue, segment.Index);
         }
 
+        /// <summary> Registers several types at once. </summary>
         public static void AddProperties<T>()
             => AddProperties(typeof(T));
+        /// <summary> Registers several types at once. </summary>
         public static void AddProperties<T1, T2>()
             => AddProperties(typeof(T1), typeof(T2));
+        /// <summary> Registers several types at once. </summary>
         public static void AddProperties<T1, T2, T3>()
             => AddProperties(typeof(T1), typeof(T2), typeof(T3));
+        /// <summary> Registers several types at once. </summary>
         public static void AddProperties<T1, T2, T3, T4>()
             => AddProperties(typeof(T1), typeof(T2), typeof(T3), typeof(T4));
+        /// <summary> Registers several types at once. </summary>
         public static void AddProperties<T1, T2, T3, T4, T5>()
             => AddProperties(typeof(T1), typeof(T2), typeof(T3), typeof(T4), typeof(T5));
+        /// <summary> Registers several types at once. </summary>
         public static void AddProperties<T1, T2, T3, T4, T5, T6>()
             => AddProperties(typeof(T1), typeof(T2), typeof(T3), typeof(T4), typeof(T5), typeof(T6));
+        /// <summary> Registers several types at once. </summary>
         public static void AddProperties<T1, T2, T3, T4, T5, T6, T7>()
             => AddProperties(typeof(T1), typeof(T2), typeof(T3), typeof(T4), typeof(T5), typeof(T6), typeof(T7));
+        /// <summary> Registers several types at once. </summary>
         public static void AddProperties<T1, T2, T3, T4, T5, T6, T7, T8>()
             => AddProperties(typeof(T1), typeof(T2), typeof(T3), typeof(T4), typeof(T5), typeof(T6), typeof(T7), typeof(T8));
         
+        /// <summary> Registers several types at once, descending into what their properties hold. </summary>
         public static void AddPropertiesRecursive<T>()
             => AddPropertiesRecursive(typeof(T));
+        /// <summary> Registers several types at once, descending into what their properties hold. </summary>
         public static void AddPropertiesRecursive<T1, T2>()
             => AddPropertiesRecursive(typeof(T1), typeof(T2));
+        /// <summary> Registers several types at once, descending into what their properties hold. </summary>
         public static void AddPropertiesRecursive<T1, T2, T3>()
             => AddPropertiesRecursive(typeof(T1), typeof(T2), typeof(T3));
+        /// <summary> Registers several types at once, descending into what their properties hold. </summary>
         public static void AddPropertiesRecursive<T1, T2, T3, T4>()
             => AddPropertiesRecursive(typeof(T1), typeof(T2), typeof(T3), typeof(T4));
+        /// <summary> Registers several types at once, descending into what their properties hold. </summary>
         public static void AddPropertiesRecursive<T1, T2, T3, T4, T5>()
             => AddPropertiesRecursive(typeof(T1), typeof(T2), typeof(T3), typeof(T4), typeof(T5));
+        /// <summary> Registers several types at once, descending into what their properties hold. </summary>
         public static void AddPropertiesRecursive<T1, T2, T3, T4, T5, T6>()
             => AddPropertiesRecursive(typeof(T1), typeof(T2), typeof(T3), typeof(T4), typeof(T5), typeof(T6));
+        /// <summary> Registers several types at once, descending into what their properties hold. </summary>
         public static void AddPropertiesRecursive<T1, T2, T3, T4, T5, T6, T7>()
             => AddPropertiesRecursive(typeof(T1), typeof(T2), typeof(T3), typeof(T4), typeof(T5), typeof(T6), typeof(T7));
+        /// <summary> Registers several types at once, descending into what their properties hold. </summary>
         public static void AddPropertiesRecursive<T1, T2, T3, T4, T5, T6, T7, T8>()
             => AddPropertiesRecursive(typeof(T1), typeof(T2), typeof(T3), typeof(T4), typeof(T5), typeof(T6), typeof(T7), typeof(T8));
         
+        /// <summary> Registers the properties of each type, so a path can address them. </summary>
         public static void AddProperties(params Type[] types)
         {
             foreach (var type in types)
                 AddProperties(type);
         }
+
+        /// <summary> The same, descending into whatever those properties hold. </summary>
         public static void AddPropertiesRecursive(params Type[] types)
         {
             foreach (var type in types)
                 AddPropertiesRecursive(type);
         }
         
+        /// <summary> Registers one type's properties. </summary>
         public static void AddProperties(Type type)
         {
             foreach (var property in type.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
@@ -213,6 +236,7 @@ namespace BH.SDK.Utils
                 RegisterProperty(type, property);
             }
         }
+        /// <summary> The same, descending into whatever those properties hold. </summary>
         public static void AddPropertiesRecursive(Type type)
         {
             if (!ProcessedTypes.Add(type)) return; // recursive protection
@@ -293,18 +317,25 @@ namespace BH.SDK.Utils
             return PropertyCategory.Value;
         }
         
+        /// <summary> Whether a property is a plain value, a list or an array - which decides how a path segment
+        /// indexes into it. </summary>
         private enum PropertyCategory : byte
         {
             Value = 0,
             List = 1,
             Array = 2,
         }
+
+        /// <summary> One step of a parsed path: a property name, and an index when that step indexes into it. </summary>
         public struct PathSegment
         {
+            /// <summary> The property this step names. </summary>
             public string Name;
+            /// <summary> The collection index it carries, where it has one. </summary>
             public int Index;
         }
 
+        /// <summary> Splits a dotted, indexed path into its steps, reusing the caller's buffer. </summary>
         public static void ParsePath(string path, List<PathSegment> buffer)
         {
             buffer.Clear();

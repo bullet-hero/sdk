@@ -24,6 +24,7 @@ namespace BH.SDK.Models.Objects
     [GenerateModel]
     public sealed partial class ShapeObject : RectObject, IModel<ShapeObject>, IUpdatable<ShapeObject>
     {
+        /// <summary> Which concrete form this is - the discriminator a converter writes and reads back. </summary>
         public override ObjectType GetModelType() => ObjectType.ShapeObject;
 
         // Two ShapeId fields, not one, and neither derives from the other. They answer different
@@ -68,6 +69,7 @@ namespace BH.SDK.Models.Objects
         [JsonProperty(Names.UV)]
         public List<UVKey> UVs { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public ShapeObject()
         {
             ShaderType = ShaderType.Auto;
@@ -77,6 +79,7 @@ namespace BH.SDK.Models.Objects
             Colors = new List<IColor4X4Key>();
             UVs = new List<UVKey>();
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public ShapeObject(ObjectId objectId, ObjectId parentObjectId, string name, bool active, FrameSpan span, int layer,
             List<PosKey> positions, List<AngleKey> rotations, List<ScaKey> scales, List<ScaKey> sizes,
             List<AlignmentKey> anchorsMin, List<AlignmentKey> anchorsMax, List<AlignmentKey> pivots,

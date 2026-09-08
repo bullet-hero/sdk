@@ -22,6 +22,7 @@ namespace BH.SDK.Tests.Rules
     /// </summary>
     public class RuleGroupFilterTests : BaseRuleTests
     {
+        /// <summary> A rule that always fails, at Advice severity - so the filter has something of every severity to sort. </summary>
         [AttributeUsage(BaseRuleAttribute.PropertyTarget)]
         private class AlwaysFailsAdviceAttribute : BasePropertyRuleAttribute
         {
@@ -34,6 +35,7 @@ namespace BH.SDK.Tests.Rules
             protected override void FixInternal(object target, PropertyInfo property, RuleContext context) { }
         }
 
+        /// <summary> A model whose only violation is an Advice. </summary>
         [RuleContainer]
         private class AdviceModel
         {
@@ -41,6 +43,7 @@ namespace BH.SDK.Tests.Rules
             public int Value { get; set; }
         }
 
+        /// <summary> A model whose only violation is an Error. </summary>
         [RuleContainer]
         private class ErrorModel
         {
@@ -48,6 +51,7 @@ namespace BH.SDK.Tests.Rules
             public int Value { get; set; }
         }
 
+        /// <summary> A model violating rules of both severities at once. </summary>
         [RuleContainer]
         private class MixedModel
         {

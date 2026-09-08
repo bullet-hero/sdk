@@ -82,6 +82,7 @@ namespace BH.SDK.Models.Data
         [JsonProperty(Names.Color)]
         public IEffectColor Color { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public EffectData()
         {
             EffectId = EffectId.Null;
@@ -95,6 +96,7 @@ namespace BH.SDK.Models.Data
             Scale = new EffectScaleValue();
             Color = new EffectColorValue();
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public EffectData(EffectId effectId, string name, bool hasStopLocalFrame, int stopLocalFrame, EffectObjectCore core,
             EffectObjectForces forces, IEffectShape shape, IEffectAngle angle, IEffectScale scale, IEffectColor color)
         {

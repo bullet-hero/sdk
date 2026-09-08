@@ -1,5 +1,6 @@
 ﻿namespace BH.SDK.Models.Enums.Keyframes
 {
+    /// <summary> How many of a quad's four corner colours are authored separately. </summary>
     public enum Color4X4KeyType : byte
     {
         Value = 0, // all colors setup with one color value

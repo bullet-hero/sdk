@@ -6,6 +6,7 @@ namespace BH.SDK.Generators
     /// </summary>
     public abstract class BaseContentGenerator<TParams> : BaseScopeGenerator<TParams> where TParams : class, new()
     {
+        /// <summary> Fixed here, so a content generator cannot end up in the modifier list. </summary>
         public sealed override GeneratorKind Kind => GeneratorKind.Content;
     }
 }

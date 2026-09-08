@@ -32,6 +32,7 @@ namespace BH.SDK.Roslyn.Validation
     {
         private const string Category = "BH.SDK.Validation";
 
+        /// <summary> BHS1102 - a property hiding a base one, where the walk cannot tell which was meant. </summary>
         public static readonly DiagnosticDescriptor HiddenProperty = new(
             "BHS1102",
             "A walked property hides an inherited one",
@@ -41,6 +42,7 @@ namespace BH.SDK.Roslyn.Validation
             + "the report changes silently. Rename one of them",
             Category, DiagnosticSeverity.Error, true);
 
+        /// <summary> BHS1103 - only one accessor overridden, so the pair does not agree about what it is. </summary>
         public static readonly DiagnosticDescriptor SplitAccessorOverride = new(
             "BHS1103",
             "A walked property is overridden with a different accessor set",
@@ -49,6 +51,7 @@ namespace BH.SDK.Roslyn.Validation
             + "depending on which one wins - declare both accessors",
             Category, DiagnosticSeverity.Error, true);
 
+        /// <summary> BHS1104 - an indexer, which the reflective walk never visited either. </summary>
         public static readonly DiagnosticDescriptor Indexer = new(
             "BHS1104",
             "A [RuleContainer] type must not declare a public indexer",
@@ -57,6 +60,7 @@ namespace BH.SDK.Roslyn.Validation
             + "TargetParameterCountException halfway through a level - make it a method",
             Category, DiagnosticSeverity.Error, true);
 
+        /// <summary> BHS1105 - accessors of differing accessibility, where what the walk may touch is ambiguous. </summary>
         public static readonly DiagnosticDescriptor MixedAccessorAccessibility = new(
             "BHS1105",
             "A walked property's accessors disagree about being public",
@@ -65,6 +69,7 @@ namespace BH.SDK.Roslyn.Validation
             + "give both accessors the property's own accessibility",
             Category, DiagnosticSeverity.Error, true);
 
+        /// <summary> BHS1108 - a rule on a property the walk never reaches, so it would never run. </summary>
         public static readonly DiagnosticDescriptor RuleOnUnwalkedProperty = new(
             "BHS1108",
             "A rule on a property the walk never reads",

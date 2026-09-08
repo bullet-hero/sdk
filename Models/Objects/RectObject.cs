@@ -24,6 +24,7 @@ namespace BH.SDK.Models.Objects
     [GenerateModel]
     public partial class RectObject : IFrameBounds, INameable, IModel<RectObject>, IUpdatable<RectObject>
     {
+        /// <summary> Which concrete form this is - the discriminator a converter writes and reads back. </summary>
         public virtual ObjectType GetModelType() => ObjectType.RectObject;
 
         /// <summary> Identity within its own scope (a level or one prefab template) - the key of the
@@ -113,6 +114,7 @@ namespace BH.SDK.Models.Objects
         [JsonProperty(Names.PivotShort)]
         public List<AlignmentKey> Pivots { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public RectObject()
         {
             ObjectId = ObjectId.Null;
@@ -130,6 +132,7 @@ namespace BH.SDK.Models.Objects
             AnchorsMax = new List<AlignmentKey>();
             Pivots = new List<AlignmentKey>();
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public RectObject(ObjectId objectId, ObjectId parentObjectId, string name, bool active, FrameSpan span, int layer,
             List<PosKey> positions, List<AngleKey> rotations, List<ScaKey> scales, List<ScaKey> sizes,
             List<AlignmentKey> anchorsMin, List<AlignmentKey> anchorsMax, List<AlignmentKey> pivots)

@@ -29,10 +29,13 @@ namespace BH.SDK.Generators.Audio
     /// </summary>
     public class AudioWaveformGenerator : BaseSpawnGenerator<AudioWaveformGenerator.Parameters>
     {
+        /// <summary> <c>"gen_audio_waveform"</c>, the key a host lists this generator under. </summary>
         public override string NameKey => "gen_audio_waveform";
 
+        /// <summary> What must be true before a host offers this run. </summary>
         public override GeneratorRequirements Requirements => GeneratorRequirements.ExternalAnalysis;
 
+        /// <summary> The order, labels and ranges a host lays its form out with. </summary>
         public override GeneratorHints Hints { get; } = new GeneratorHints.Builder()
             .Section(GeneratorSections.Main, SpawnParameters.MainFields)
             .Section(GeneratorSections.Main, nameof(Parameters.Source), nameof(Parameters.BarCount),
@@ -53,6 +56,7 @@ namespace BH.SDK.Generators.Audio
             .Range(nameof(SpawnParameters.Size), ValueRules.MinSca, ValueRules.MaxSca)
             .Build();
 
+        /// <summary> Writes this run's objects into the scope. </summary>
         protected override void Generate(GeneratorContext context, Parameters parameters)
         {
             var bars = BarCount(parameters);
@@ -85,6 +89,7 @@ namespace BH.SDK.Generators.Audio
             }
         }
 
+        /// <summary> What this run would add, answered before it runs. </summary>
         protected override GeneratorCost EstimateTyped(GeneratorContext context, Parameters parameters)
         {
             var bars = BarCount(parameters);
@@ -124,22 +129,32 @@ namespace BH.SDK.Generators.Audio
 
         private const int KeysPerBar = 3; // position + size + colour
 
+        /// <summary> Which samples are charted and how the bars are laid out. Public mutable fields, like every
+        /// parameters class here - a form binds to them and a preset serializes from them. </summary>
         public class Parameters : SpawnParameters, IWaveformInput
         {
             /// <summary> Zero means "one bar per supplied peak". </summary>
             public int BarCount = 64;
+            /// <summary> How wide one bar is. </summary>
             public float BarWidth = 0.2f;
+            /// <summary> The gap between neighbouring bars. </summary>
             public float Spacing = 0.05f;
+            /// <summary> How tall the loudest bar gets. </summary>
             public float Height = 6f;
+            /// <summary> How tall the quietest one stays, so silence still reads as a line. </summary>
             public float MinHeight = 0.1f;
+            /// <summary> Where the chart starts. </summary>
             public float OriginX;
 
             /// <summary> The axis every bar is measured from - see WaveformAlign. </summary>
             public float OriginY = -6f;
 
+            /// <summary> Which side of the baseline the bars grow on. </summary>
             public WaveformAlign Align = WaveformAlign.Bottom;
 
+            /// <summary> Which track is charted. </summary>
             public AudioResourceId Source = AudioResourceId.Null;
+            /// <summary> The samples themselves; filled by the host, since the SDK decodes no audio. </summary>
             public float[] Peaks = System.Array.Empty<float>();
 
             AudioResourceId IWaveformInput.Source

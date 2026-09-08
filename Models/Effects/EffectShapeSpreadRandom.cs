@@ -25,12 +25,15 @@ namespace BH.SDK.Models.Effects
         [JsonProperty(Names.Spread)]
         public IFloat Spread { get; set; }
         
+        /// <summary> Which concrete form this is - the discriminator a converter writes and reads back. </summary>
         public EffectShapeSpreadType GetModelType() => EffectShapeSpreadType.Random;
         
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public EffectShapeSpreadRandom()
         {
             Spread = new FloatValue(EffectRules.ShapeSpread.Spread_Default);
         }
+        /// <summary> Built from its spread. </summary>
         public EffectShapeSpreadRandom(IFloat spread)
         {
             Spread = spread;

@@ -3,8 +3,10 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Serialization.Converters
 {
+    /// <summary> A version as its textual form, so an envelope's tag is readable in the file. </summary>
     public class VersionConverter : JsonConverter<Version>
     {
+        /// <summary> Writes the textual form, so an envelope's tag is readable in the file. </summary>
         public override void WriteJson(JsonWriter writer, Version value, JsonSerializer serializer)
         {
             if (value == null)
@@ -16,6 +18,7 @@ namespace BH.SDK.Serialization.Converters
             writer.WriteValue(value.ToString());
         }
 
+        /// <summary> Parses it back, refusing anything that is not a version. </summary>
         public override Version ReadJson(JsonReader reader, Type objectType, Version existingValue, bool hasExistingValue,
             JsonSerializer serializer)
         {

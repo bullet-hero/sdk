@@ -41,6 +41,7 @@ namespace BH.SDK.Models.Statistics
         [JsonProperty(Names.Bot)]
         public BotKind Bot { get; }
 
+        /// <summary> The stored hundredths read back as the number a player sees. </summary>
         [JsonIgnore]
         public float Speed => SpeedCenti / 100f;
 
@@ -51,6 +52,8 @@ namespace BH.SDK.Models.Statistics
         // [JsonConstructor] because a readonly struct has no property-setter path for Newtonsoft to
         // fill: the members are get-only on purpose (a key that can be mutated after it has been
         // hashed into a dictionary is a bug waiting to happen), so construction is the only way in.
+
+        /// <summary> Built from its count, centi, checkpoints and bot. </summary>
         [JsonConstructor]
         public RunProfile(int lifeCount, int speedCenti, bool useCheckpoints, BotKind bot)
         {
@@ -67,18 +70,23 @@ namespace BH.SDK.Models.Statistics
         /// <summary> Rounds a speed to the hundredths this key is filed under. </summary>
         public static int ToCenti(float speed) => (int)Math.Round(speed * 100.0, MidpointRounding.AwayFromZero);
 
+        /// <summary> Member by member. </summary>
         public bool Equals(RunProfile other)
             => LifeCount == other.LifeCount
                && SpeedCenti == other.SpeedCenti
                && UseCheckpoints == other.UseCheckpoints
                && Bot == other.Bot;
 
+        /// <summary> The same, boxed. </summary>
         public override bool Equals(object obj) => obj is RunProfile other && Equals(other);
 
+        /// <summary> Matches the equality above. </summary>
         public override int GetHashCode() => HashCode.Combine(LifeCount, SpeedCenti, UseCheckpoints, Bot);
 
         // Ordering exists so a UI listing several profiles is stable across sessions, and so a test
         // can compare two sets without depending on dictionary order.
+
+        /// <summary> Orders profiles so a list of records is stable across sessions. </summary>
         public int CompareTo(RunProfile other)
         {
             var cmp = LifeCount.CompareTo(other.LifeCount);
@@ -89,9 +97,12 @@ namespace BH.SDK.Models.Statistics
             return cmp != 0 ? cmp : ((byte)Bot).CompareTo((byte)other.Bot);
         }
 
+        /// <summary> Value equality. </summary>
         public static bool operator ==(RunProfile left, RunProfile right) => left.Equals(right);
+        /// <summary> Its negation. </summary>
         public static bool operator !=(RunProfile left, RunProfile right) => !left.Equals(right);
 
+        /// <summary> One line, for a log. </summary>
         public override string ToString()
             => $"Lives:{LifeCount}, Speed:{Speed:0.00}, Checkpoints:{UseCheckpoints}, Bot:{Bot}";
     }

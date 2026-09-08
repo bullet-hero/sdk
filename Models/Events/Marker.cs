@@ -38,6 +38,7 @@ namespace BH.SDK.Models.Events
         [JsonProperty(Names.Color)]
         public Color4Value Color4 { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public Marker()
         {
             Frame = FrameRules.MinFrame;
@@ -45,6 +46,7 @@ namespace BH.SDK.Models.Events
             Description = string.Empty;
             Color4 = new Color4Value();
         }
+        /// <summary> Built from its name, description, 4 and frame. </summary>
         public Marker(string name, string description, Color4Value color4, int frame)
         {
             Frame = frame;

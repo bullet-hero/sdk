@@ -35,6 +35,7 @@ namespace BH.SDK.Models.AudioEffects
         [JsonProperty(Names.Rate)]
         public float Rate { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public AudioFlange()
         {
             DryMix = AudioRules.Flange.DryMix_Default;
@@ -42,6 +43,7 @@ namespace BH.SDK.Models.AudioEffects
             Depth = AudioRules.Flange.Depth_Default;
             Rate = AudioRules.Flange.Rate_Default;
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public AudioFlange(float mixLevel, float dryMix, float wetMix,
             float depth, float rate) : base(mixLevel)
         {

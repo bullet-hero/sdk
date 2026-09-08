@@ -41,6 +41,7 @@ namespace BH.SDK.Models.Meta
         [JsonProperty(Names.Url)]
         public string Url { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public Author()
         {
             Name = new StringValue();
@@ -50,6 +51,8 @@ namespace BH.SDK.Models.Meta
 
         // Credit trails url despite reading between name and url, so the six call sites that predate
         // it still compile - a record with no credit is a legal record, not an incomplete one.
+
+        /// <summary> Built from its name, url and null. </summary>
         public Author(IString name, string url, IString credit = null)
         {
             Name = name;

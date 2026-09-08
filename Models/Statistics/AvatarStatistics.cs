@@ -32,6 +32,7 @@ namespace BH.SDK.Models.Statistics
         [JsonProperty(Names.TotalDistanceMoved)]
         public double TotalDistanceMoved { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public AvatarStatistics()
         {
             TotalDashes = 0L;

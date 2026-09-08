@@ -23,6 +23,7 @@ namespace BH.SDK.Serialization.Converters.CustomTypes
     /// <summary> Writes FrameSpan as [start, duration], each negated when its own edge is anchored. </summary>
     public class FrameSpanConverter : JsonConverter<FrameSpan>
     {
+        /// <summary> Writes the two logical numbers, each negated when its own edge is anchored - never the in-memory packing. </summary>
         public override void WriteJson(JsonWriter writer, FrameSpan value, JsonSerializer serializer)
         {
             writer.WriteStartArray();
@@ -34,6 +35,8 @@ namespace BH.SDK.Serialization.Converters.CustomTypes
         // Every out-of-shape input degrades to a default span instead of throwing: FrameSpan's own
         // constructor clamps whatever it is handed into the legal range anyway, so a corrupt file
         // costs the author one wrong object rather than a level that refuses to open.
+
+        /// <summary> Unpacks that pair, leniently: a damaged one should cost the author an object rather than the level. </summary>
         public override FrameSpan ReadJson(JsonReader reader, Type objectType, FrameSpan existingValue,
             bool hasExistingValue, JsonSerializer serializer)
         {

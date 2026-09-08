@@ -64,6 +64,7 @@ namespace BH.SDK.Models.Game
         [JsonProperty(Names.Shake)]
         public List<ShakeKey> Shakes { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public CameraEvents()
         {
             Positions = new List<PosKey>();
@@ -72,6 +73,7 @@ namespace BH.SDK.Models.Game
             Pivots = new List<AlignmentKey>();
             Shakes = new List<ShakeKey>();
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public CameraEvents(List<PosKey> positions, List<AngleKey> rotations,
             List<ZoomKey> zooms, List<AlignmentKey> pivots, List<ShakeKey> shakes)
         {

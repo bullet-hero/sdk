@@ -50,6 +50,7 @@ namespace BH.SDK.Roslyn.Model
     /// <summary> A leaf's type and how to encode it. </summary>
     internal readonly struct ValueSpec : IEquatable<ValueSpec>
     {
+        /// <summary> One value's type as the emitters see it - what it is, and what it wraps where that matters. </summary>
         public ValueSpec(string type, ValueKind kind, ValueKind underlying = ValueKind.None,
             string accessor = "", string version = "", string family = "")
         {
@@ -63,6 +64,7 @@ namespace BH.SDK.Roslyn.Model
 
         /// <summary> Fully qualified, global::-prefixed. </summary>
         public string Type { get; }
+        /// <summary> Which encoding the emitters use for it. </summary>
         public ValueKind Kind { get; }
         /// <summary> Enum only: the width it actually occupies. </summary>
         public ValueKind Underlying { get; }
@@ -86,14 +88,18 @@ namespace BH.SDK.Roslyn.Model
         /// Color4Value. The blob needs no such thing: sealed means the type IS the declared one. </summary>
         public string Family { get; }
 
+        /// <summary> True when nothing here can encode the type. </summary>
         public bool IsNone => Kind == ValueKind.None;
 
+        /// <summary> Compared by VALUE: an incremental generator that compares its specs by reference re-emits every model on every keystroke. </summary>
         public bool Equals(ValueSpec other) => Type == other.Type && Kind == other.Kind
             && Underlying == other.Underlying && Accessor == other.Accessor
             && Version == other.Version && Family == other.Family;
 
+        /// <summary> The same, boxed. </summary>
         public override bool Equals(object obj) => obj is ValueSpec other && Equals(other);
 
+        /// <summary> Compared by VALUE: an incremental generator that compares its specs by reference re-emits every model on every keystroke. </summary>
         public override int GetHashCode() => unchecked((Type?.GetHashCode() ?? 0) * 397
             ^ (int)Kind * 31 ^ (int)Underlying ^ (Accessor?.GetHashCode() ?? 0)
             ^ (Version?.GetHashCode() ?? 0) ^ (Family?.GetHashCode() ?? 0));

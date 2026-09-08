@@ -2,10 +2,14 @@ using System.Collections.Generic;
 
 namespace BH.SDK.Validations
 {
+    /// <summary> Applies the repair each finding carries, deepest first, and re-analyzes until nothing new
+    /// appears - a repair can legitimately create the next violation. </summary>
     public class RuleFixer
     {
         // The root is no longer a parameter: every issue carries the context it was found in, which
         // is both the root and the scope-local bounds a repair has to respect.
+
+        /// <summary> Repairs every finding, deepest first, re-analyzing until nothing new appears. </summary>
         public void Fix(List<RuleIssue> issues, RuleFixerSettings settings)
         {
             // Cat.Meow("Fix");

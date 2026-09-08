@@ -10,18 +10,21 @@ namespace BH.SDK.Tests.Rules
     /// </summary>
     public class RuleEnumValidTests : BaseRuleTests
     {
+        /// <summary> An enum with gaps between its values. </summary>
         private enum Sparse : byte
         {
             First = 3,
             Second = 7,
         }
 
+        /// <summary> An enum whose values run consecutively. </summary>
         private enum Dense : byte
         {
             Zero = 0,
             One = 1,
         }
 
+        /// <summary> A real enum from the format, so the rule is exercised against shipped data too. </summary>
         [RuleContainer]
         private class EaseModel
         {
@@ -29,6 +32,7 @@ namespace BH.SDK.Tests.Rules
             public EaseType Value { get; set; } = EaseType.Linear;
         }
 
+        /// <summary> The rule left at its own default, with nothing spelled out at the call site. </summary>
         [RuleContainer]
         private class DefaultModel
         {
@@ -36,6 +40,7 @@ namespace BH.SDK.Tests.Rules
             public EaseType Value { get; set; } = EaseType.InOutSine;
         }
 
+        /// <summary> A property of the sparse enum, where a value in a gap must be refused. </summary>
         [RuleContainer]
         private class SparseModel
         {
@@ -43,6 +48,7 @@ namespace BH.SDK.Tests.Rules
             public Sparse Value { get; set; } = Sparse.First;
         }
 
+        /// <summary> A property of the dense enum. </summary>
         [RuleContainer]
         private class DenseModel
         {
@@ -50,6 +56,7 @@ namespace BH.SDK.Tests.Rules
             public Dense Value { get; set; } = Dense.One;
         }
 
+        /// <summary> A property of a type the rule does not apply to, so it must decline rather than refuse. </summary>
         [RuleContainer]
         private class WrongTypeModel
         {

@@ -11,6 +11,8 @@ namespace BH.SDK.Roslyn.Tests
     // explicit interface implementations where a polymorphic variant needs a second contract, and
     // the base-typed Equals that downgrades rather than answering false.
 
+    /// <summary> That the emitted code COMPILES, checked before anything about its text is asserted - and then
+    /// that its shape is right where a subclass or a polymorphic variant needs it to be. </summary>
     [TestFixture]
     public class ModelGeneratorTests
     {

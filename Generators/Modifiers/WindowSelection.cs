@@ -15,6 +15,7 @@ namespace BH.SDK.Generators.Modifiers
     /// <summary> Whether a lifetime is what a window-driven modifier is talking about. </summary>
     public static class WindowSelection
     {
+        /// <summary> Whether a lifetime falls inside the run's window - or outside it, which is what the two modes of the content remover are. </summary>
         public static bool Selects(in FrameSpan span, in FrameSpan window, bool invert)
             => invert ? !window.Overlaps(span) : window.Contains(span);
     }

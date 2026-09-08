@@ -13,6 +13,7 @@ namespace BH.SDK.Tests.Rules
     /// </summary>
     public class RuleCollectionSortedTests : BaseRuleTests
     {
+        /// <summary> The property the collection has to be ordered by. </summary>
         private class Key
         {
             public int Frame { get; set; }
@@ -24,6 +25,7 @@ namespace BH.SDK.Tests.Rules
             }
         }
 
+        /// <summary> A list required to be in ascending order of that key. </summary>
         [RuleContainer]
         private class Model
         {
@@ -31,6 +33,7 @@ namespace BH.SDK.Tests.Rules
             public List<Key> Value { get; set; } = new();
         }
 
+        /// <summary> A property of a type the rule does not apply to, so it must decline rather than refuse. </summary>
         [RuleContainer]
         private class WrongTypeModel
         {

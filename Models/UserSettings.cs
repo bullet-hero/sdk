@@ -9,17 +9,18 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models
 {
-    /// <summary>
-    /// The player's own options, saved once per device (settings.json) - the third top-level file
-    /// next to a level and its metadata. Nothing here travels with a level: the same level must
-    /// play the same way regardless of these.
-    /// </summary>
     // GameEditorSettings was RESTRUCTURED once - sixteen flat properties became nine nested groups.
     // Every other change to this file was additive and rode on Newtonsoft leaving a constructor's
     // default in place for an absent key; moving keys is the one thing that cannot, so that change
     // took the domain to (2,0) and shipped a snapshot and a migrator. Both are gone and the domain is
     // back at (1,0), per root CLAUDE.md Rule 11: pre-release, the format changes in place. A
     // settings.json older than that restructure now reads its editor group back as defaults.
+
+    /// <summary>
+    /// The player's own options, saved once per device (settings.json) - the third top-level file
+    /// next to a level and its metadata. Nothing here travels with a level: the same level must
+    /// play the same way regardless of these.
+    /// </summary>
     [RuleContainer]
     [DataVersion(DataDomains.UserSettings, 1, 0)]
     [GenerateModel]
@@ -76,6 +77,7 @@ namespace BH.SDK.Models
         [JsonProperty(Names.Keys)]
         public KeybindingsSettings Keybindings { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public UserSettings()
         {
             General = new GeneralSettings();
@@ -87,6 +89,7 @@ namespace BH.SDK.Models
             Keybindings = new KeybindingsSettings();
         }
 
+        /// <summary> Every member at once, in declaration order. </summary>
         public UserSettings(GeneralSettings general, ControlsSettings controls,
             AudioSettings audio, GraphicsSettings graphics, GameEditorSettings gameEditor,
             InterfaceSettings interfaceSettings, KeybindingsSettings keybindings)

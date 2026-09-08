@@ -73,15 +73,18 @@ namespace BH.SDK.Models.PostProcessing
         [JsonProperty(Names.LumVsSat)]
         public CurveValue LumVsSat { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public ColorCurvesKey()
         {
         }
 
+        /// <summary> Built from its active, frame and keyframe default ease. </summary>
         public ColorCurvesKey(bool active, int frame, EaseType ease = Keyframe.DefaultEase)
             : base(active, frame, ease)
         {
         }
 
+        /// <summary> Every member at once, in declaration order. </summary>
         public ColorCurvesKey(CurveValue master, CurveValue red, CurveValue green, CurveValue blue,
             CurveValue hueVsHue, CurveValue hueVsSat, CurveValue satVsSat, CurveValue lumVsSat,
             bool active, int frame, EaseType ease = Keyframe.DefaultEase) : base(active, frame, ease)

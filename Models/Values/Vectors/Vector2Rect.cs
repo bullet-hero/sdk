@@ -39,6 +39,7 @@ namespace BH.SDK.Models.Values
         [JsonProperty(Names.MaxY)]
         public float MaxY { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public Vector2Rect()
         {
             MinX = ValueRules.FloatZero;
@@ -48,6 +49,7 @@ namespace BH.SDK.Models.Values
             MaxY = ValueRules.FloatOne;
         }
 
+        /// <summary> Built from its X, Y, X and Y. </summary>
         public Vector2Rect(float minX, float minY, float maxX, float maxY)
         {
             MinX = minX;
@@ -57,6 +59,7 @@ namespace BH.SDK.Models.Values
             MaxY = maxY;
         }
 
+        /// <summary> Which concrete form this is - the discriminator a converter writes and reads back. </summary>
         public VectorType GetModelType() => VectorType.RandomRect;
     }
 }

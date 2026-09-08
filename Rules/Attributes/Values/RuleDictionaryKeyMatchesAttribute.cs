@@ -19,18 +19,23 @@ namespace BH.SDK.Rules.Attributes
     [AttributeUsage(PropertyTarget)]
     public class RuleDictionaryKeyMatchesAttribute : BasePropertyRuleAttribute
     {
+        /// <summary> <c>"rule_dictionary_key_matches"</c>, the key its message is looked up under. </summary>
         public override string RuleNameKey => "rule_dictionary_key_matches";
 
+        /// <summary> Which property of a value must equal the key it is filed under. </summary>
         public string ValuePropertyName { get; set; }
 
+        /// <summary> Takes which property of a value must equal its key. </summary>
         public RuleDictionaryKeyMatchesAttribute(string valuePropertyName)
         {
             ValuePropertyName = valuePropertyName;
         }
 
+        /// <summary> Applies to any dictionary. </summary>
         protected override bool IsValidTypeInternal(PropertyInfo property)
             => typeof(IDictionary).IsAssignableFrom(property.PropertyType);
 
+        /// <summary> Passes when every key equals the id its own value carries. </summary>
         protected override bool IsValidInternal(object value, RuleContext context)
         {
             if (value is not IDictionary dictionary) return false;
@@ -53,6 +58,8 @@ namespace BH.SDK.Rules.Attributes
         // is bookkeeping. Rebuilding the dictionary is the only way to do it - a key cannot be
         // changed in place - and entries whose ids collide after re-keying collapse into one, which
         // is the honest outcome of two objects claiming the same identity.
+
+        /// <summary> Re-files each entry under the id its value carries, which is the half that cannot be wrong. </summary>
         protected override void FixInternal(object target, PropertyInfo property, RuleContext context)
         {
             if (property.GetValue(target) is not IDictionary dictionary) return;

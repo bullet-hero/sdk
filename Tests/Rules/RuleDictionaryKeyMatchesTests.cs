@@ -12,6 +12,7 @@ namespace BH.SDK.Tests.Rules
     /// </summary>
     public class RuleDictionaryKeyMatchesTests : BaseRuleTests
     {
+        /// <summary> A dictionary whose keys must equal the id each value already carries. </summary>
         [RuleContainer]
         private class Model
         {
@@ -19,6 +20,7 @@ namespace BH.SDK.Tests.Rules
             public Dictionary<ObjectId, RectObject> Value { get; set; } = new();
         }
 
+        /// <summary> A property of a type the rule does not apply to, so it must decline rather than refuse. </summary>
         [RuleContainer]
         private class WrongTypeModel
         {

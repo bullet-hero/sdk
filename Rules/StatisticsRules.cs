@@ -15,12 +15,16 @@ namespace BH.SDK.Rules
         // seconds. 64 puts a three-minute level at about 2.8s per bucket, which is fine enough for
         // an author to see which passage kills people and coarse enough to stay a short array in a
         // file a person may open.
+
+        /// <summary> The bucket count, read by DifficultyStatistics, StatisticsModelTests, StatisticsSerializationTests. </summary>
         public const int BucketCount = 64;
 
         // Comfortably more profiles than a player produces by hand (four life presets x four speed
         // presets x checkpoints x three bots is 96 in theory, but nobody plays the cross product),
         // and low enough that a custom-slider spree cannot grow the file without bound. Eviction is
         // oldest-first by the record's own TimeUtc.
+
+        /// <summary> Upper bound of LevelStatistics.Records. </summary>
         public const int MaxRecordProfiles = 64;
 
         /// <summary> How many distinct checkpoints one level may keep a death count for. </summary>
@@ -42,9 +46,13 @@ namespace BH.SDK.Rules
         // A century of continuous play. Not a real limit on anything - it is what stops a corrupted
         // double from rendering as a number nobody can read, and what makes "seconds" a checkable
         // claim rather than an arbitrary float.
+
+        /// <summary> Lower bound of DeviceTimeStatistics.DeviceGyroSeconds, DeviceTimeStatistics.GamepadSeconds, DeviceTimeStatistics.KeyboardMouseSeconds and 8 more. </summary>
         public const double MinSeconds = 0.0;
+        /// <summary> Upper bound of DeviceTimeStatistics.DeviceGyroSeconds, DeviceTimeStatistics.GamepadSeconds, DeviceTimeStatistics.KeyboardMouseSeconds and 8 more. </summary>
         public const double MaxSeconds = 60.0 * 60.0 * 24.0 * 365.0 * 100.0;
 
+        /// <summary> Lower bound of BestRun.Dashes, BestRun.Frame, BestRun.Hits and 34 more. </summary>
         public const int MinCount = 0;
     }
 }

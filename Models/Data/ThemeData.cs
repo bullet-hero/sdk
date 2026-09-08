@@ -53,6 +53,7 @@ namespace BH.SDK.Models.Data
         // 49-57 - effects (PA)
         // 58-64 - free
         
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public ThemeData()
         {
             ThemeId = ThemeId.Null;
@@ -60,6 +61,7 @@ namespace BH.SDK.Models.Data
             Matrix = new Color4Value[ValueRules.ThemeCount];
             Array.Fill(Matrix, Color4Value.white);
         }
+        /// <summary> Built from its id and "". </summary>
         public ThemeData(ThemeId themeId, string name = "")
         {
             ThemeId = themeId;
@@ -67,6 +69,7 @@ namespace BH.SDK.Models.Data
             Matrix = new Color4Value[ValueRules.ThemeCount];
             Array.Fill(Matrix, Color4Value.white);
         }
+        /// <summary> Built from its id, name and matrix. </summary>
         public ThemeData(ThemeId themeId, string name, Color4Value[] matrix)
         {
             ThemeId = themeId;

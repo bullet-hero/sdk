@@ -66,6 +66,7 @@ namespace BH.SDK.Models.Values
         [JsonProperty(Names.RequiresSameLicense)]
         public bool RequiresSameLicense { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public CustomLicense()
         {
             LicenseName = string.Empty;
@@ -79,6 +80,7 @@ namespace BH.SDK.Models.Values
             RequiresSourceDisclosure = false;
             RequiresSameLicense = false;
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public CustomLicense(string licenseName, string licenseUrl, string licenseText,
             bool aggressive, bool allowsDistribution, bool allowsModification, bool allowsCommercialUse,
             bool requiresAttribution, bool requiresSourceDisclosure, bool requiresSameLicense)
@@ -95,6 +97,7 @@ namespace BH.SDK.Models.Values
             RequiresSameLicense = requiresSameLicense;
         }
         
+        /// <summary> Which concrete form this is - the discriminator a converter writes and reads back. </summary>
         public LicenseType GetModelType() => LicenseType.Custom;
     }
 }

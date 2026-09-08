@@ -22,6 +22,9 @@ namespace BH.SDK.Tests
     // NO VERSION MOVED WITH THIS, which is the claim the round trip below is here to check rather
     // than assert: a level written when these were four-channel carries one property more than the
     // type now has, and Newtonsoft drops it.
+
+    /// <summary> Why the grading colours carry three channels: URP reads a fourth as a signed offset, so an
+    /// alpha defaulting to 1 pushed a whole tonal band four stops the moment its range was switched on. </summary>
     public class PostProcessingColorTests
     {
         [Test]

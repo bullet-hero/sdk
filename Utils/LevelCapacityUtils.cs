@@ -113,7 +113,10 @@ namespace BH.SDK.Utils
             private List<int> _starts;
             private List<int> _ends;
 
+            /// <summary> Counts one lifetime. </summary>
             public void Add(IFrameBounds bounds) => Add(bounds.Span);
+
+            /// <summary> Counts one lifetime, as a bare span. </summary>
             public void Add(in FrameSpan span)
             {
                 _starts ??= new List<int>();
@@ -123,6 +126,7 @@ namespace BH.SDK.Utils
                 _ends.Add(span.EndFrame);
             }
 
+            /// <summary> The largest number of those lifetimes overlapping on any one frame. </summary>
             public int GetPeak()
             {
                 if (_starts == null || _starts.Count == 0) return 0;

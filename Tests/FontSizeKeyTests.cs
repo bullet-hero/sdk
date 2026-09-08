@@ -26,6 +26,9 @@ namespace BH.SDK.Tests
     // untagged key and reads it back as the plain kind round-trips perfectly and has silently made
     // auto sizing unrepresentable.
 
+
+    /// <summary> The one per-object track whose key class is polymorphic - so the only one where a round trip
+    /// can keep every number and silently lose the KIND. The wire shape is asserted separately for that reason. </summary>
     [TestFixture]
     public class FontSizeKeyTests
     {

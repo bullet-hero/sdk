@@ -18,8 +18,10 @@ namespace BH.SDK.Generators.Bullets
     /// </summary>
     public class BulletWaveGenerator : BaseSpawnGenerator<BulletWaveGenerator.Parameters>
     {
+        /// <summary> <c>"gen_bullet_wave"</c>, the key a host lists this generator under. </summary>
         public override string NameKey => "gen_bullet_wave";
 
+        /// <summary> The order, labels and ranges a host lays its form out with. </summary>
         public override GeneratorHints Hints { get; } = new GeneratorHints.Builder()
             .Section(GeneratorSections.Main, SpawnParameters.MainFields)
             .Section(GeneratorSections.Main, nameof(Parameters.Count), nameof(Parameters.Spacing),
@@ -41,6 +43,7 @@ namespace BH.SDK.Generators.Bullets
             .Range(nameof(SpawnParameters.Size), ValueRules.MinSca, ValueRules.MaxSca)
             .Build();
 
+        /// <summary> Writes this run's objects into the scope. </summary>
         protected override void Generate(GeneratorContext context, Parameters parameters)
         {
             var count = Count(parameters.Count);
@@ -84,6 +87,7 @@ namespace BH.SDK.Generators.Bullets
             }
         }
 
+        /// <summary> What this run would add, answered before it runs. </summary>
         protected override GeneratorCost EstimateTyped(GeneratorContext context, Parameters parameters)
         {
             var count = Count(parameters.Count);
@@ -109,17 +113,36 @@ namespace BH.SDK.Generators.Bullets
         private static int Travel(int value) => value < 1 ? 1 : value;
         private static int Stagger(int value) => value < 0 ? 0 : value;
 
+        /// <summary> Where the line travels from and to, and how far apart its bullets arrive. Public mutable
+        /// fields, like every parameters class here - a form binds to them and a preset serializes from them. </summary>
         public class Parameters : SpawnParameters
         {
+            /// <summary> How many bullets the line holds. </summary>
             public int Count = 8;
+
+            /// <summary> Gap between neighbouring bullets in the line. </summary>
             public float Spacing = 1.5f;
+
+            /// <summary> Where the line starts. </summary>
             public float FromX = -10f;
+            /// <summary> Its vertical half. </summary>
             public float FromY = 6f;
+
+            /// <summary> Where it ends. </summary>
             public float ToX = -10f;
+            /// <summary> Its vertical half. </summary>
             public float ToY = -6f;
+
+            /// <summary> How long one bullet takes to cross. </summary>
             public int TravelFrames = 60;
+
+            /// <summary> Delay between neighbours setting off, so they arrive one after another. </summary>
             public int StaggerFrames = 4;
+
+            /// <summary> Curve a bullet travels along. </summary>
             public EaseType Ease = EaseType.Linear;
+
+            /// <summary> Rotate each bullet to point along its own path. </summary>
             public bool FaceTravel;
         }
     }

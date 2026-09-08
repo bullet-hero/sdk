@@ -122,6 +122,7 @@ namespace BH.SDK.Publishing
         [JsonProperty(Names.UnknownSourceTrust)]
         public SourceTrust UnknownSourceTrust { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public PublishProfile()
         {
             ProfileKey = string.Empty;

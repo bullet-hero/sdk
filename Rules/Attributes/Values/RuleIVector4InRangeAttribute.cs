@@ -7,30 +7,57 @@ using BH.SDK.Utils;
 
 namespace BH.SDK.Rules.Attributes
 {
+    /// <summary> An authored 4D vector bounded on every axis, in every form of it. </summary>
     [AttributeUsage(PropertyTarget)]
     public class RuleIVector4InRangeAttribute : BasePropertyRuleAttribute
     {
+        /// <summary> <c>"rule_ivector4_in_range"</c>, the key its message is looked up under. </summary>
         public override string RuleNameKey => "rule_ivector4_in_range";
 
         // always include
+
+        /// <summary> Lower bound on the X axis. </summary>
         public float MinX { get; set; }
+
+        /// <summary> Upper bound on the X axis. </summary>
         public float MaxX { get; set; }
+
+        /// <summary> Lower bound on the Y axis. </summary>
         public float MinY { get; set; }
+
+        /// <summary> Upper bound on the Y axis. </summary>
         public float MaxY { get; set; }
+
+        /// <summary> Lower bound on the Z axis. </summary>
         public float MinZ { get; set; }
+
+        /// <summary> Upper bound on the Z axis. </summary>
         public float MaxZ { get; set; }
+
+        /// <summary> Lower bound on the W component. </summary>
         public float MinW { get; set; }
+
+        /// <summary> Upper bound on the W component. </summary>
         public float MaxW { get; set; }
         
+        /// <summary> Width of the range on the X axis. </summary>
         public float DiffX => MaxX - MinX;
+        /// <summary> Width of the range on the Y axis. </summary>
         public float DiffY => MaxY - MinY;
+        /// <summary> Width of the range on the Z axis. </summary>
         public float DiffZ => MaxZ - MinZ;
+        /// <summary> Width of the range on the W axis. </summary>
         public float DiffW => MaxW - MinW;
+        /// <summary> Half the width of the range on the X axis - the offset from its midpoint to either end. </summary>
         public float HalfDiffX => (MaxX - MinX) / 2f;
+        /// <summary> Half the width of the range on the Y axis - the offset from its midpoint to either end. </summary>
         public float HalfDiffY => (MaxY - MinY) / 2f;
+        /// <summary> Half the width of the range on the Z axis - the offset from its midpoint to either end. </summary>
         public float HalfDiffZ => (MaxZ - MinZ) / 2f;
+        /// <summary> Half the width of the range on the W axis - the offset from its midpoint to either end. </summary>
         public float HalfDiffW => (MaxW - MinW) / 2f;
 
+        /// <summary> Both bounds, as <c>float</c>. </summary>
         public RuleIVector4InRangeAttribute(float min, float max)
         {
             MinX = min;
@@ -42,6 +69,7 @@ namespace BH.SDK.Rules.Attributes
             MinW = min;
             MaxW = max;
         }
+        /// <summary> Both bounds per component, when the four axes do not share them. </summary>
         public RuleIVector4InRangeAttribute(float minX, float maxX, float minY, float maxY,
             float minZ, float maxZ, float minW, float maxW)
         {
@@ -55,9 +83,11 @@ namespace BH.SDK.Rules.Attributes
             MaxW = maxW;
         }
 
+        /// <summary> Applies to authored 4D vector properties. </summary>
         protected override bool IsValidTypeInternal(PropertyInfo property)
             => typeof(IVector4).IsAssignableFrom(property.PropertyType);
 
+        /// <summary> Passes when every point the value can produce lies inside the bounds on every component. </summary>
         protected override bool IsValidInternal(object value, RuleContext context)
         {
             if (value is not IVector4 vec) return false;
@@ -112,6 +142,7 @@ namespace BH.SDK.Rules.Attributes
             }
         }
 
+        /// <summary> Clamps each form of it into the box. </summary>
         protected override void FixInternal(object target, PropertyInfo property, RuleContext context)
         {
             var value = property.GetValue(target);

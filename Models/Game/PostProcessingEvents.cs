@@ -11,16 +11,17 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models.Game
 {
+    // ColorCurves' two scalars became URP's eight curves - see ColorCurvesKey's own header for why
+    // they could not simply be joined by six more. That took the domain to 1.1 and shipped with a
+    // snapshot and a migrator; both are gone and the domain is back at 1.0, per root CLAUDE.md
+    // Rule 11 - the game is pre-release, so the format changes in place and nothing migrates.
+
     /// <summary>
     /// The level's screen-effect stack: one independent keyframe track per URP effect. Two levels of
     /// switching - this Active gates the whole stack, and every key has its own Active on top of it.
     /// Fields are grouped below as general / color grading / glitches.
     /// </summary>
     [RuleContainer]
-    // ColorCurves' two scalars became URP's eight curves - see ColorCurvesKey's own header for why
-    // they could not simply be joined by six more. That took the domain to 1.1 and shipped with a
-    // snapshot and a migrator; both are gone and the domain is back at 1.0, per root CLAUDE.md
-    // Rule 11 - the game is pre-release, so the format changes in place and nothing migrates.
     [DataVersion(DataDomains.PostProcessingEvents, 1, 0)]
     [GenerateModel]
     public sealed partial class PostProcessingEvents : IModel<PostProcessingEvents>
@@ -108,6 +109,7 @@ namespace BH.SDK.Models.Game
         [JsonProperty(Names.DigitalGlitchShort)]
         public List<DigitalGlitchKey> DigitalGlitches { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public PostProcessingEvents()
         {
             Active = PostProcessingRules.ActiveDefault;
@@ -124,6 +126,7 @@ namespace BH.SDK.Models.Game
             AnalogGlitches = new List<AnalogGlitchKey>();
             DigitalGlitches = new List<DigitalGlitchKey>();
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public PostProcessingEvents(bool active,
             List<BloomKey> blooms, 
             List<ChromaticAberrationKey> chromatics, 

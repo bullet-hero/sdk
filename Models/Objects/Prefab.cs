@@ -63,8 +63,10 @@ namespace BH.SDK.Models.Objects
         [JsonProperty(Names.ObjectIdCounter)]
         public int ObjectIdCounter { get; set; }
 
+        /// <summary> The next unused id in this scope, consuming it. </summary>
         public ObjectId GetNextObjectId() => new(ObjectIdCounter++);
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public Prefab()
         {
             PrefabId = PrefabId.Null;
@@ -73,6 +75,7 @@ namespace BH.SDK.Models.Objects
             ObjectIdCounter = ObjectId.MinLevelValue;
             FrameDuration = PrefabRules.DefaultFrameDuration;
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public Prefab(PrefabId prefabId, string name, Dictionary<ObjectId, RectObject> objects, int objectIdCounter, int frameDuration)
         {
             PrefabId = prefabId;

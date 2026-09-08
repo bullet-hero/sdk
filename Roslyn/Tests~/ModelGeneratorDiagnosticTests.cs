@@ -11,6 +11,8 @@ namespace BH.SDK.Roslyn.Tests
     // express is an error naming the member, and these fixtures are what keep it from quietly
     // becoming a skip.
 
+    /// <summary> That every refusal is loud: a member the generator cannot express is an error naming the
+    /// member, never a silent skip. </summary>
     [TestFixture]
     public class ModelGeneratorDiagnosticTests
     {

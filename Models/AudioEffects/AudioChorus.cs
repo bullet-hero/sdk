@@ -58,6 +58,7 @@ namespace BH.SDK.Models.AudioEffects
         [JsonProperty(Names.Feedback)]
         public float Feedback { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public AudioChorus()
         {
             DryMix = AudioRules.Chorus.DryMix_Default;
@@ -69,6 +70,7 @@ namespace BH.SDK.Models.AudioEffects
             Depth = AudioRules.Chorus.Depth_Default;
             Feedback = AudioRules.Chorus.Feedback_Default;
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public AudioChorus(float mixLevel, float dryMix,
             float wetMixTap1, float wetMixTap2, float wetMixTap3,
             float delay, float rate, float depth, float feedback) 

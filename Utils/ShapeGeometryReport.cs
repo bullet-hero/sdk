@@ -38,6 +38,7 @@ namespace BH.SDK.Utils
         /// <summary> Back-facing triangles whose winding was corrected. </summary>
         public int FlippedTriangles;
 
+        /// <summary> True when the geometry needed no repair at all. </summary>
         public bool IsClean => NullVertices == 0 && OutOfBoundsPoints == 0 && MalformedIndices == 0
             && WeldedVertices == 0 && DegenerateTriangles == 0 && ExcessTriangles == 0
             && ExcessVertices == 0 && OrphanVertices == 0 && FlippedTriangles == 0;

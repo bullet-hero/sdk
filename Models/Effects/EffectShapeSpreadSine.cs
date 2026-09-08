@@ -15,6 +15,7 @@ namespace BH.SDK.Models.Effects
     [GenerateModel]
     public sealed partial class EffectShapeSpreadSine : IEffectShapeSpread, IModel<EffectShapeSpreadSine>
     {
+        /// <summary> Which concrete form this is - the discriminator a converter writes and reads back. </summary>
         public EffectShapeSpreadType GetModelType() => EffectShapeSpreadType.Sine;
         
         // ReSharper disable once BaseObjectGetHashCodeCallInGetHashCode

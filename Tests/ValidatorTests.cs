@@ -6,6 +6,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests
 {
+    /// <summary> That the shipped fixtures validate clean, and that each deliberately broken one is both detected
+    /// and repaired. </summary>
     public class ValidatorTests
     {
         [Test]

@@ -52,6 +52,7 @@ namespace BH.SDK.Models.Game
         [JsonProperty(Names.Objects)]
         public Dictionary<ObjectId, RectObject> Objects { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public GameLevel()
         {
             Events = new GameEvents();
@@ -61,6 +62,7 @@ namespace BH.SDK.Models.Game
 
             Objects = new Dictionary<ObjectId, RectObject>();
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public GameLevel(GameEvents events, CameraEvents cameraEvents, PostProcessingEvents postProcessingEvents,
             PlayerEvents playerEvents, Dictionary<ObjectId, RectObject> objects)
         {

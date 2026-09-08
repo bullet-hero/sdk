@@ -24,6 +24,7 @@ namespace BH.SDK.Models.Attributes
     [AttributeUsage(AttributeTargets.Property, Inherited = false)]
     public sealed class GenerateModelKeyedAttribute : Attribute
     {
+        /// <summary> Built from its property. </summary>
         public GenerateModelKeyedAttribute(string keyProperty) => KeyProperty = keyProperty;
 
         /// <summary> Property name on the value type. </summary>

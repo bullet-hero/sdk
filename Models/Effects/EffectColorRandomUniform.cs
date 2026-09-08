@@ -30,8 +30,10 @@ namespace BH.SDK.Models.Effects
         [JsonProperty(Names.ColorB)]
         public IColor4 Color4B { get; set; }
         
+        /// <summary> Which concrete form this is - the discriminator a converter writes and reads back. </summary>
         public EffectColorType GetModelType() => EffectColorType.RandomUniform;
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public EffectColorRandomUniform()
         {
             Color4A = new Color4Value(
@@ -45,6 +47,7 @@ namespace BH.SDK.Models.Effects
                 EffectRules.Color.B_B_Default,
                 EffectRules.Color.B_A_Default);
         }
+        /// <summary> Built from its 4 A and 4 B. </summary>
         public EffectColorRandomUniform(IColor4 color4A, IColor4 color4B)
         {
             Color4A = color4A;

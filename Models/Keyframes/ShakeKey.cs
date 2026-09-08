@@ -36,6 +36,7 @@ namespace BH.SDK.Models.Keyframes
         [JsonProperty(Names.CoordY)]
         public float IntensityY { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public ShakeKey()
         {
             Intensity = 1f;
@@ -43,6 +44,7 @@ namespace BH.SDK.Models.Keyframes
             IntensityX = 1f;
             IntensityY = 1f;
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public ShakeKey(float intensity, float speed,
             int frame, EaseType ease = DefaultEase) : base(frame, ease)
         {
@@ -51,6 +53,7 @@ namespace BH.SDK.Models.Keyframes
             IntensityX = 1f;
             IntensityY = 1f;
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public ShakeKey(float intensity, float speed, float intensityX, float intensityY,
             int frame, EaseType ease = DefaultEase) : base(frame, ease)
         {

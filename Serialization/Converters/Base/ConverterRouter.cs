@@ -16,13 +16,16 @@ namespace BH.SDK.Serialization.Converters.Base
         private readonly JsonConverter[] _converters;
         private readonly ConcurrentDictionary<Type, JsonConverter> _resolved = new();
 
+        /// <summary> Takes the converters to route between, first match per type winning. </summary>
         public ConverterRouter(IEnumerable<JsonConverter> converters)
         {
             _converters = converters.ToArray();
         }
 
+        /// <summary> True when any routed converter claims the type - resolved once per type and cached, sentinel included. </summary>
         public override bool CanConvert(Type objectType) => Resolve(objectType) != null;
 
+        /// <summary> Hands the value to whichever converter claimed its type. </summary>
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue,
             JsonSerializer serializer)
         {
@@ -36,6 +39,8 @@ namespace BH.SDK.Serialization.Converters.Base
         // Resolved off the value's own type, which is what Newtonsoft asked CanConvert about on this
         // path too: a property declared as a base type is written against the contract of whatever it
         // actually holds, so routing by the declared type here would answer a different question.
+
+        /// <summary> The same on the way out. </summary>
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
             if (value == null)
@@ -72,11 +77,14 @@ namespace BH.SDK.Serialization.Converters.Base
         /// <summary> Cache entry meaning "no converter handles this type"; never invoked. </summary>
         private sealed class UnroutedConverter : JsonConverter
         {
+            /// <summary> Never - this is the "nothing handles it" sentinel, since the cache cannot store a null. </summary>
             public override bool CanConvert(Type objectType) => false;
 
+            /// <summary> Hands the value to whichever converter claimed its type. </summary>
             public override object ReadJson(JsonReader reader, Type objectType, object existingValue,
                 JsonSerializer serializer) => throw new NotSupportedException();
 
+            /// <summary> The same on the way out. </summary>
             public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
                 => throw new NotSupportedException();
         }

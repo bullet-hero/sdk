@@ -1,5 +1,6 @@
 ﻿namespace BH.SDK.Models.Enums
 {
+    /// <summary> Which grain texture the film-grain effect samples, from finest to coarsest. </summary>
     public enum FilmGrainType : byte // FilmGrainLookup
     {
         None = 0,

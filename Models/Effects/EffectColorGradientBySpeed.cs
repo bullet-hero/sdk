@@ -31,8 +31,10 @@ namespace BH.SDK.Models.Effects
         [JsonProperty(Names.SpeedRange)]
         public IVector2 SpeedRange { get; set; }
 
+        /// <summary> Which concrete form this is - the discriminator a converter writes and reads back. </summary>
         public EffectColorType GetModelType() => EffectColorType.GradientBySpeed;
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public EffectColorGradientBySpeed()
         {
             Gradient = EffectRules.GetGradient_Default();
@@ -40,6 +42,7 @@ namespace BH.SDK.Models.Effects
                 EffectRules.Color.BySpeedRange_X_Default,
                 EffectRules.Color.BySpeedRange_Y_Default);
         }
+        /// <summary> Built from its gradient and range. </summary>
         public EffectColorGradientBySpeed(GradientValue gradient, IVector2 speedRange)
         {
             Gradient = gradient;

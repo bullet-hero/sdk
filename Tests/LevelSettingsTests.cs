@@ -17,6 +17,9 @@ namespace BH.SDK.Tests
     // Horizontal, which is how the game already played it. A NotSpecified default would have opted
     // every level that exists into a portrait screen its content was never composed for.
 
+
+    /// <summary> Seed and Orientation, which ride object initializers rather than the constructor - and the fact
+    /// that Orientation's Horizontal default is what makes every level written before it still play as it did. </summary>
     public class LevelSettingsTests
     {
         private static LevelSettings Authored() =>

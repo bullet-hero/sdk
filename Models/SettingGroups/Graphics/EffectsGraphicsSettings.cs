@@ -62,6 +62,7 @@ namespace BH.SDK.Models.SettingGroups.Graphics
         [JsonProperty(Names.FrameStepBudget)]
         public int FrameStepBudget { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public EffectsGraphicsSettings()
         {
             Render = true;
@@ -71,6 +72,7 @@ namespace BH.SDK.Models.SettingGroups.Graphics
             ReplayStepBudget = EffectRules.ReplayStepBudget_Default;
             FrameStepBudget = EffectRules.FrameStepBudget_Default;
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public EffectsGraphicsSettings(bool render, FramerateTarget framerateTarget,
             int fixedFramerate, float maxScrubTime, int replayStepBudget, int frameStepBudget) : base(render)
         {

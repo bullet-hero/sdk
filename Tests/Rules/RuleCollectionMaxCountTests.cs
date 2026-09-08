@@ -10,6 +10,7 @@ namespace BH.SDK.Tests.Rules
     /// </summary>
     public class RuleCollectionMaxCountTests : BaseRuleTests
     {
+        /// <summary> The rule on a List property. </summary>
         [RuleContainer]
         private class ListModel
         {
@@ -17,6 +18,7 @@ namespace BH.SDK.Tests.Rules
             public List<int> Value { get; set; } = new();
         }
 
+        /// <summary> The rule on an array, which is fixed-size and therefore repaired by replacement. </summary>
         [RuleContainer]
         private class ArrayModel
         {
@@ -24,6 +26,7 @@ namespace BH.SDK.Tests.Rules
             public int[] Value { get; set; } = { 1, 2, 3 };
         }
 
+        /// <summary> A property of a type the rule does not apply to, so it must decline rather than refuse. </summary>
         [RuleContainer]
         private class WrongTypeModel
         {

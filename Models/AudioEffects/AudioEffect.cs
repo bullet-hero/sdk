@@ -26,10 +26,12 @@ namespace BH.SDK.Models.AudioEffects
         [JsonProperty(Names.MixLevel)]
         public float MixLevel { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public AudioEffect()
         {
             MixLevel = AudioRules.MixLevel_Default;
         }
+        /// <summary> Built from its level. </summary>
         public AudioEffect(float mixLevel)
         {
             MixLevel = mixLevel;

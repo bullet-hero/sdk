@@ -23,6 +23,9 @@ namespace BH.SDK.Tests
     // rather than through byte comparison: a codec that writes and reads its own mistakes
     // consistently passes every byte comparison ever written.
 
+
+    /// <summary> The binary format: a round trip proven through Level.Equals, plus every way a file can be
+    /// wrong - truncated, damaged mid-payload, from another generation, or claiming a length it does not have. </summary>
     [TestFixture]
     public class BlobCodecTests
     {

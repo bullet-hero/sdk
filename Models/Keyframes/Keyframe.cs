@@ -16,7 +16,10 @@ namespace BH.SDK.Models.Keyframes
     [GenerateModel]
     public partial class Keyframe : IKeyframe, IModel<Keyframe>
     {
+        /// <summary> Where a keyframe sits when nothing says otherwise. </summary>
         public const int DefaultFrame = 0;
+
+        /// <summary> How it is blended into when nothing says otherwise. </summary>
         public const EaseType DefaultEase = EaseType.Linear;
 
         /// <summary> Level frame this key sits on, bounded by LevelSettings.FrameDuration. </summary>
@@ -30,11 +33,13 @@ namespace BH.SDK.Models.Keyframes
         [JsonProperty(Names.Ease)]
         public EaseType Ease { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public Keyframe()
         {
             Frame = DefaultFrame;
             Ease = DefaultEase;
         }
+        /// <summary> Built from its frame and default ease. </summary>
         public Keyframe(int frame, EaseType ease = DefaultEase)
         {
             Frame = frame;

@@ -33,6 +33,7 @@ namespace BH.SDK.Generators.Modifiers
     /// </summary>
     public class FramerateRemapGenerator : BaseModifier<FramerateRemapGenerator.Parameters>
     {
+        /// <summary> <c>"mod_framerate_remap"</c>, the key a host lists this generator under. </summary>
         public override string NameKey => "mod_framerate_remap";
 
         /// <summary> Whole-scope, and level-only: the framerate belongs to the level, so running this
@@ -42,6 +43,8 @@ namespace BH.SDK.Generators.Modifiers
         // One section, so a host draws no header over a form this short. CurrentFramerate is listed
         // like any other field and marked read-only - it is there to be read next to the value being
         // typed, never typed into.
+
+        /// <summary> The order, labels and ranges a host lays its form out with. </summary>
         public override GeneratorHints Hints { get; } = new GeneratorHints.Builder()
             .Section(GeneratorSections.Main, nameof(Parameters.CurrentFramerate), nameof(Parameters.Framerate),
                 nameof(Parameters.RemapObjects), nameof(Parameters.RemapAudio), nameof(Parameters.RemapEvents),
@@ -53,6 +56,7 @@ namespace BH.SDK.Generators.Modifiers
             .Unit(nameof(Parameters.MaxKeyShift), "frames")
             .Build();
 
+        /// <summary> Applies this run's edit. </summary>
         protected override void Generate(GeneratorContext context, Parameters parameters)
         {
             var settings = context.Settings;
@@ -77,6 +81,8 @@ namespace BH.SDK.Generators.Modifiers
 
         // Adds nothing - it moves and drops. GeneratorCost describes additions, and reporting one here
         // would read as "this will add N".
+
+        /// <summary> What this run would add, answered before it runs. </summary>
         protected override GeneratorCost EstimateTyped(GeneratorContext context, Parameters parameters)
             => GeneratorCost.Zero;
 
@@ -282,6 +288,8 @@ namespace BH.SDK.Generators.Modifiers
         private static int ClampFrame(int frame, int last)
             => frame < FrameRules.MinFrame ? FrameRules.MinFrame : frame > last ? last : frame;
 
+        /// <summary> The framerate being moved to, and what happens to keys that collide on the way down. Public
+        /// mutable fields, like every parameters class here - a form binds to them and a preset serializes from them. </summary>
         public class Parameters : ICurrentFramerateInput
         {
             /// <summary> What the level runs at now. Display only - the run reads the real value off

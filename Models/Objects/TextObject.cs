@@ -25,6 +25,7 @@ namespace BH.SDK.Models.Objects
     [GenerateModel]
     public sealed partial class TextObject : RectObject, IModel<TextObject>, IUpdatable<TextObject>
     {
+        /// <summary> Which concrete form this is - the discriminator a converter writes and reads back. </summary>
         public override ObjectType GetModelType() => ObjectType.TextObject;
 
         /// <summary> The text to show, localizable - a level can read differently per language
@@ -108,6 +109,7 @@ namespace BH.SDK.Models.Objects
         [JsonProperty(Names.VerticalAlignment)]
         public TextObjectVerticalAlignment VerticalAlignment { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public TextObject()
         {
             Text = new StringValue();
@@ -123,6 +125,7 @@ namespace BH.SDK.Models.Objects
             VerticalAlignment = TextRules.VerticalAlignment_Default;
         }
 
+        /// <summary> Every member at once, in declaration order. </summary>
         public TextObject(ObjectId objectId, ObjectId parentObjectId, string name, bool active, FrameSpan span,
             int layer,
             List<PosKey> positions, List<AngleKey> rotations, List<ScaKey> scales, List<ScaKey> sizes,

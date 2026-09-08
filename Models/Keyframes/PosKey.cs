@@ -25,10 +25,12 @@ namespace BH.SDK.Models.Keyframes
         [JsonProperty(Names.Vector2)]
         public IVector2 Pos { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public PosKey()
         {
             Pos = new Vector2Value();
         }
+        /// <summary> Built from its 2, frame and default ease. </summary>
         public PosKey(IVector2 vector2, int frame, EaseType ease = DefaultEase) : base(frame, ease)
         {
             Pos = vector2;

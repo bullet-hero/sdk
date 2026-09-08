@@ -23,10 +23,12 @@ namespace BH.SDK.Models.Keyframes
         [JsonProperty(Names.Int)]
         public IInt Value { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public IntKey()
         {
             Value = new IntValue();
         }
+        /// <summary> Built from its value, frame and default ease. </summary>
         public IntKey(IInt value, int frame, EaseType ease = DefaultEase) : base(frame, ease)
         {
             Value = value;

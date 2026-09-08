@@ -24,14 +24,18 @@ namespace BH.SDK.Generators.Utility
     /// </summary>
     public class FontCacheGenerator : BaseContentGenerator<FontCacheGenerator.Parameters>
     {
+        /// <summary> <c>"gen_font_cache"</c>, the key a host lists this generator under. </summary>
         public override string NameKey => "gen_font_cache";
 
+        /// <summary> What must be true before a host offers this run. </summary>
         public override GeneratorRequirements Requirements => GeneratorRequirements.LevelScope;
 
+        /// <summary> The order, labels and ranges a host lays its form out with. </summary>
         public override GeneratorHints Hints { get; } = new GeneratorHints.Builder()
             .Section(GeneratorSections.Main, nameof(Parameters.RemoveUnused))
             .Build();
 
+        /// <summary> Writes this run's objects into the scope. </summary>
         protected override void Generate(GeneratorContext context, Parameters parameters)
         {
             var cache = context.Hints?.FontCharacters;
@@ -60,6 +64,8 @@ namespace BH.SDK.Generators.Utility
         // the entries this would write and drop makes the estimate both honest and non-zero whenever
         // there is anything to do - and correctly zero, hence correctly refused, on a level with no
         // text and no stale entries.
+
+        /// <summary> What this run would add, answered before it runs. </summary>
         protected override GeneratorCost EstimateTyped(GeneratorContext context, Parameters parameters)
         {
             var cache = context?.Hints?.FontCharacters;
@@ -86,6 +92,8 @@ namespace BH.SDK.Generators.Utility
             context.AddResource(target, fontResourceId, cached);
         }
 
+        /// <summary> Which fonts are rebuilt. Public mutable fields, like every parameters class here - a form
+        /// binds to them and a preset serializes from them. </summary>
         public class Parameters
         {
             /// <summary> Drop entries for fonts no text object references any more. On by default -

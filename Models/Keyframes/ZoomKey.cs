@@ -24,10 +24,12 @@ namespace BH.SDK.Models.Keyframes
         [JsonProperty(Names.Float)]
         public IFloat Zoom { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public ZoomKey()
         {
             Zoom = new FloatValue(ValueRules.DefaultZoom);
         }
+        /// <summary> Built from its zoom, frame and default ease. </summary>
         public ZoomKey(IFloat zoom, int frame, EaseType ease = DefaultEase) : base(frame, ease)
         {
             Zoom = zoom;

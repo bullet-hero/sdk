@@ -42,6 +42,7 @@ namespace BH.SDK.Models.PostProcessing
         [JsonProperty(Names.ColorDrift)]
         public float ColorDrift { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public AnalogGlitchKey()
         {
             ScanLineJitter = 0.5f;
@@ -49,6 +50,7 @@ namespace BH.SDK.Models.PostProcessing
             HorizontalShake = 0f;
             ColorDrift = 0f;
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public AnalogGlitchKey(float scanLineJitter, float verticalJump, float horizontalShake, float colorDrift,
             bool active, int frame, EaseType ease = Keyframe.DefaultEase) : base(active, frame, ease)
         {

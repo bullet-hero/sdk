@@ -3,6 +3,7 @@ using System.Buffers.Binary;
 
 namespace BH.SDK.Utils
 {
+    /// <summary> Packs an int into a guid and back, so an int-keyed id can travel where a guid is expected. </summary>
     public static class GuidHelper
     {
         /// <summary>

@@ -17,12 +17,17 @@ using Newtonsoft.Json.Serialization;
 
 namespace BH.SDK.Serialization
 {
+    /// <summary> The one place the whole converter stack is assembled: which converters exist, in which order
+    /// they are routed, and which serializer each format is driven by. Everything that reads or writes a
+    /// document in this project goes through an instance of this. </summary>
     public class SerializationService
     {
+        /// <summary> The serializer every format shares - only the reader/writer over the bytes differs. </summary>
         public readonly JsonSerializer Serializer;
 
         private readonly Dictionary<SerializationType, IDataSerializer> _dataSerializers = new();
 
+        /// <summary> The serializer for one format, built on first use and kept for the rest of the session. </summary>
         public IDataSerializer GetDataSerializer(SerializationType type)
         {
             if (_dataSerializers.TryGetValue(type, out var dataSerializer)) return dataSerializer;
@@ -40,6 +45,7 @@ namespace BH.SDK.Serialization
             return dataSerializer;
         }
 
+        /// <summary> The settings the game itself runs with. </summary>
         public SerializationService() : this(new SerializationSettings())
         {
         }
@@ -51,6 +57,7 @@ namespace BH.SDK.Serialization
         public static SerializationService CreateWithoutGeneratedCodecs()
             => new(new SerializationSettings { useGeneratedCodecs = false });
 
+        /// <summary> Built against settings, which is how the one test that needs the reflective path gets it. </summary>
         public SerializationService(SerializationSettings serializationSettings)
         {
             var contractResolver = new ContractResolver(serializationSettings);
@@ -178,15 +185,19 @@ namespace BH.SDK.Serialization
             return new List<JsonConverter> { versionedEnvelope, new ConverterRouter(converters) };
         }
 
+        /// <summary> Applies the project's own member rules on top of Newtonsoft's: opt-in serialization and
+        /// the property order the format was written in. </summary>
         public class ContractResolver : DefaultContractResolver
         {
             private readonly SerializationSettings _serializationSettings;
 
+            /// <summary> Takes the settings whose member rules it applies. </summary>
             public ContractResolver(SerializationSettings serializationSettings)
             {
                 _serializationSettings = serializationSettings;
             }
 
+            /// <summary> Applies the opt-in member rule, so a member reaches a file only by carrying a JSON name. </summary>
             protected override JsonObjectContract CreateObjectContract(Type objectType)
             {
                 var contract = base.CreateObjectContract(objectType);
@@ -203,6 +214,8 @@ namespace BH.SDK.Serialization
             // model implements it and so does every polymorphic value interface (IVector2 : IModel
             // <IVector2>), while List<T> and Dictionary<,> do not - which is what keeps a null
             // collection distinguishable from an empty one, as the blob codec keeps it.
+
+            /// <summary> Applies the property order the format was written in, which is what keeps a re-saved file byte-identical. </summary>
             protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
             {
                 var property = base.CreateProperty(member, memberSerialization);
@@ -226,6 +239,7 @@ namespace BH.SDK.Serialization
         // SerializationSettings and therefore applied to every save this service ever made, which is
         // the opposite of what a per-save choice needs. Bson is not a valid argument here - this is
         // the plain-text entry point; use GetDataSerializer for the binary one.
+
         /// <summary> The TEXT api: always compact JSON, whatever a caller's chosen file format is.
         /// Which FORMAT a level is written in is SerializeEnvelope's question, since only bytes can
         /// answer it - a blob has no text form, and there is no longer a second JSON shape. </summary>
@@ -246,6 +260,7 @@ namespace BH.SDK.Serialization
             return json;
         }
 
+        /// <summary> Reads one envelope out of a JSON string, migrations included. </summary>
         public TValue DeserializeData<TValue>(string json)
         {
             if (!VersionedTypeRegistry.CanConvert(typeof(TValue)))

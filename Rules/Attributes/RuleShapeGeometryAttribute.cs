@@ -24,11 +24,14 @@ namespace BH.SDK.Rules.Attributes
     [AttributeUsage(ClassTarget)]
     public class RuleShapeGeometryAttribute : BaseObjectRuleAttribute
     {
+        /// <summary> <c>"rule_shape_geometry"</c>, the key its message is looked up under. </summary>
         public override string RuleNameKey => "rule_shape_geometry";
 
+        /// <summary> Sits on a type carrying indexed geometry. </summary>
         protected override bool IsValidTypeInternal(Type type)
             => typeof(IShapeGeometry).IsAssignableFrom(type);
 
+        /// <summary> Passes when the vertices and the index triples describe real triangles inside the authored box. </summary>
         protected override bool IsValidInternal(object target, RuleContext context)
         {
             if (target is not IShapeGeometry geometry) return false;
@@ -38,6 +41,8 @@ namespace BH.SDK.Rules.Attributes
         // Sanitize repairs everything it can and leaves alone the one thing it must not invent: a
         // shape with no triangles at all stays empty, so this reports again next run rather than
         // fabricating geometry nobody authored.
+
+        /// <summary> Sanitizes the pair - drops degenerate triangles and indices pointing at nothing. </summary>
         protected override void FixInternal(object target, RuleContext context)
         {
             if (target is not IShapeGeometry geometry) return;

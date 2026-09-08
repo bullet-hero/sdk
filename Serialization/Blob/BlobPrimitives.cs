@@ -29,6 +29,7 @@ namespace BH.SDK.Serialization.Blob
     {
         #region FrameSpan
 
+        /// <summary> Start, duration and both anchors, written out honestly rather than as the packed pair. </summary>
         public static void Write(ref BlobWriter writer, FrameSpan value)
         {
             writer.WriteInt(value.StartFrame);
@@ -36,6 +37,7 @@ namespace BH.SDK.Serialization.Blob
             writer.WriteByte((byte)value.Anchors);
         }
 
+        /// <summary> Rebuilds a span from the four numbers, back through the constructor that clamps them. </summary>
         public static FrameSpan ReadFrameSpan(ref BlobReader reader)
         {
             var start = reader.ReadInt();
@@ -49,12 +51,14 @@ namespace BH.SDK.Serialization.Blob
 
         #region ModificationKey
 
+        /// <summary> The template object it addresses plus the field path, as written state has no setters. </summary>
         public static void Write(ref BlobWriter writer, ModificationKey value)
         {
             writer.WriteInt(value.ObjectId.value);
             writer.WriteString(value.Path);
         }
 
+        /// <summary> Rebuilds the key through its constructor, since its properties are get-only. </summary>
         public static ModificationKey ReadModificationKey(ref BlobReader reader)
         {
             var objectId = new ObjectId(reader.ReadInt());
@@ -65,6 +69,7 @@ namespace BH.SDK.Serialization.Blob
 
         #region RunProfile
 
+        /// <summary> The four numbers a run is filed under: lives, speed, checkpoints, bot. </summary>
         public static void Write(ref BlobWriter writer, RunProfile value)
         {
             writer.WriteInt(value.LifeCount);
@@ -73,6 +78,7 @@ namespace BH.SDK.Serialization.Blob
             writer.WriteByte((byte)value.Bot);
         }
 
+        /// <summary> Rebuilds the profile through its constructor, since its properties are get-only. </summary>
         public static RunProfile ReadRunProfile(ref BlobReader reader)
         {
             var lives = reader.ReadInt();
@@ -86,8 +92,10 @@ namespace BH.SDK.Serialization.Blob
 
         #region Pixel
 
+        /// <summary> One int, not four bytes - an image-sized array cannot afford four calls per pixel. </summary>
         public static void Write(ref BlobWriter writer, Pixel value) => writer.WriteInt(value.rgba);
 
+        /// <summary> Reads the packed int back. </summary>
         public static Pixel ReadPixel(ref BlobReader reader) => new Pixel { rgba = reader.ReadInt() };
 
         #endregion

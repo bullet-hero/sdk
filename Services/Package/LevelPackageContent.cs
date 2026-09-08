@@ -46,6 +46,7 @@ namespace BH.SDK.Services.Package
             Result = result;
         }
 
+        /// <summary> Every member at once, in declaration order. </summary>
         public LevelPackageContent(byte[] levelBytes, SerializationType levelFormat, bool levelWasProtected,
             byte[] metaBytes, SerializationType metaFormat, IContentStore payload,
             IReadOnlyList<string> resourceFileNames)
@@ -87,9 +88,11 @@ namespace BH.SDK.Services.Package
         /// <summary> Names of the files in <see cref="Payload"/> that are not documents. </summary>
         public IReadOnlyList<string> ResourceFileNames { get; }
 
+        /// <summary> Nothing was opened, and this is why. </summary>
         public static LevelPackageContent Failed(LevelPackageOpenResult result) =>
             new LevelPackageContent(result);
 
+        /// <summary> One line, for a log. </summary>
         public override string ToString() => IsOk
             ? $"Ok ({LevelFormat}, {ResourceFileNames?.Count ?? 0} file(s))"
             : Result.ToString();

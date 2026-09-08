@@ -25,8 +25,10 @@ namespace BH.SDK.Serialization.Serializers
         /// that a small level never grows it and a large one doubles a handful of times. </summary>
         private const int InitialCapacity = 64 * 1024;
 
+        /// <summary> Which format this writes. </summary>
         public SerializationType Type => SerializationType.Blob;
 
+        /// <summary> Header, then the payload written by the model's own generated codec. </summary>
         public byte[] SerializeEnvelope(string domain, EnvelopeData data)
         {
             if (data.RawPayload == null) return Array.Empty<byte>();
@@ -60,6 +62,7 @@ namespace BH.SDK.Serialization.Serializers
             return file.ToArray();
         }
 
+        /// <summary> Checks the header through before decoding a byte, and refuses an older generation outright. </summary>
         public EnvelopeData DeserializeEnvelope(byte[] data, Type payloadType)
         {
             var offset = BlobFormat.ReadHeader(data, out var payloadLength);

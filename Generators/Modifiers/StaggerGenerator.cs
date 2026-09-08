@@ -39,8 +39,10 @@ namespace BH.SDK.Generators.Modifiers
     /// </summary>
     public class StaggerGenerator : BaseModifier<StaggerGenerator.Parameters>
     {
+        /// <summary> <c>"mod_span_stagger"</c>, the key a host lists this generator under. </summary>
         public override string NameKey => "mod_span_stagger";
 
+        /// <summary> The order, labels and ranges a host lays its form out with. </summary>
         public override GeneratorHints Hints { get; } = new GeneratorHints.Builder()
             .Section(GeneratorSections.Main, nameof(Parameters.StepFrames), nameof(Parameters.Order))
             .Section(GeneratorSections.Additional, nameof(Parameters.Reverse),
@@ -55,6 +57,7 @@ namespace BH.SDK.Generators.Modifiers
             .VisibleWhen(nameof(Parameters.OriginY), p => ((Parameters)p).Order == StaggerOrder.Distance)
             .Build();
 
+        /// <summary> Applies this run's edit. </summary>
         protected override void Generate(GeneratorContext context, Parameters parameters)
         {
             if (parameters.StepFrames == 0) return;
@@ -85,6 +88,7 @@ namespace BH.SDK.Generators.Modifiers
             }
         }
 
+        /// <summary> What this run would add, answered before it runs. </summary>
         protected override GeneratorCost EstimateTyped(GeneratorContext context, Parameters parameters)
             => GeneratorCost.Zero;
 
@@ -172,10 +176,15 @@ namespace BH.SDK.Generators.Modifiers
             return span.WithStart(start);
         }
 
+        /// <summary> How far apart the objects are pushed, and what decides which one moves first. Public mutable
+        /// fields, like every parameters class here - a form binds to them and a preset serializes from them. </summary>
         public class Parameters
         {
+            /// <summary> How far apart consecutive objects are pushed. </summary>
             public int StepFrames = 4;
+            /// <summary> What decides which object moves first. </summary>
             public StaggerOrder Order = StaggerOrder.Selection;
+            /// <summary> Walks that order backwards. </summary>
             public bool Reverse;
 
             /// <summary> Delays when the object exists. Because a keyframe's Frame is LOCAL to its
@@ -187,8 +196,11 @@ namespace BH.SDK.Generators.Modifiers
             /// shift. Off by default: with bounds shifting too, this delays the motion twice. </summary>
             public bool ShiftKeyframes;
 
+            /// <summary> Which of an object's tracks move with it. </summary>
             public ObjectTrackMask Tracks = ObjectTrackMask.All;
+            /// <summary> The point distance is measured from, for the distance orders. </summary>
             public float OriginX;
+            /// <summary> Its vertical half. </summary>
             public float OriginY;
         }
     }

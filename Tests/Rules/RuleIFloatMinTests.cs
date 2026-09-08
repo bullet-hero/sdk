@@ -11,6 +11,7 @@ namespace BH.SDK.Tests.Rules
     /// </summary>
     public class RuleIFloatMinTests : BaseRuleTests
     {
+        /// <summary> The model the rule under test sits on. </summary>
         [RuleContainer]
         private class Model
         {
@@ -18,6 +19,7 @@ namespace BH.SDK.Tests.Rules
             public IFloat Value { get; set; } = new FloatValue(1f);
         }
 
+        /// <summary> A property of a type the rule does not apply to, so it must decline rather than refuse. </summary>
         [RuleContainer]
         private class WrongTypeModel
         {

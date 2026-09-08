@@ -15,8 +15,10 @@ namespace BH.SDK.Generators.Bullets
     /// </summary>
     public class BulletRainGenerator : BaseSpawnGenerator<BulletRainGenerator.Parameters>
     {
+        /// <summary> <c>"gen_bullet_rain"</c>, the key a host lists this generator under. </summary>
         public override string NameKey => "gen_bullet_rain";
 
+        /// <summary> The order, labels and ranges a host lays its form out with. </summary>
         public override GeneratorHints Hints { get; } = new GeneratorHints.Builder()
             .Section(GeneratorSections.Main, SpawnParameters.MainFields)
             .Section(GeneratorSections.Main, nameof(Parameters.Count), nameof(Parameters.TravelFrames))
@@ -37,6 +39,7 @@ namespace BH.SDK.Generators.Bullets
             .Range(nameof(SpawnParameters.Size), ValueRules.MinSca, ValueRules.MaxSca)
             .Build();
 
+        /// <summary> Writes this run's objects into the scope. </summary>
         protected override void Generate(GeneratorContext context, Parameters parameters)
         {
             var count = Count(parameters.Count);
@@ -67,6 +70,8 @@ namespace BH.SDK.Generators.Bullets
         // Mirrors Generate's own draw order exactly, because the number of position keys depends on
         // the randomly-chosen delay - an estimate that assumed two keys each would drift near the
         // end of the context window, where lifetimes get clamped.
+
+        /// <summary> What this run would add, answered before it runs. </summary>
         protected override GeneratorCost EstimateTyped(GeneratorContext context, Parameters parameters)
         {
             var count = Count(parameters.Count);
@@ -97,16 +102,34 @@ namespace BH.SDK.Generators.Bullets
         private static int Spread(int value) => value < 0 ? 0 : value;
         private static float Jitter(float value) => value < 0f ? 0f : value > 1f ? 1f : value;
 
+        /// <summary> Which band the rain falls through, and how it scatters in space and time. Public mutable
+        /// fields, like every parameters class here - a form binds to them and a preset serializes from them. </summary>
         public class Parameters : SpawnParameters
         {
+            /// <summary> How many bullets fall. </summary>
             public int Count = 24;
+
+            /// <summary> The horizontal band they are scattered across. </summary>
             public float AreaLeft = -12f;
+            /// <summary> The right edge of that band. </summary>
             public float AreaRight = 12f;
+
+            /// <summary> Where they start. </summary>
             public float TopY = 8f;
+
+            /// <summary> Where they end. </summary>
             public float BottomY = -8f;
+
+            /// <summary> How long one bullet takes to cross. </summary>
             public int TravelFrames = 75;
+
+            /// <summary> Window the departures are spread over, so they do not arrive as a wall. </summary>
             public int SpreadFrames = 60;
+
+            /// <summary> How much each bullet's travel time may differ from the rest, as a fraction. </summary>
             public float TravelJitter = 0.25f;
+
+            /// <summary> Curve a bullet falls along. </summary>
             public EaseType Ease = EaseType.Linear;
         }
     }

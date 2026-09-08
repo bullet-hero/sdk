@@ -31,8 +31,10 @@ namespace BH.SDK.Models.Effects
         [JsonProperty(Names.ScaleB)]
         public IVector2 ScaleB { get; set; }
 
+        /// <summary> Which concrete form this is - the discriminator a converter writes and reads back. </summary>
         public EffectScaleType GetModelType() => EffectScaleType.RandomUniform;
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public EffectScaleRandomUniform()
         {
             ScaleA = new Vector2Value(
@@ -42,6 +44,7 @@ namespace BH.SDK.Models.Effects
                 EffectRules.Scale.B_X_Default, 
                 EffectRules.Scale.B_Y_Default);
         }
+        /// <summary> Built from its A and B. </summary>
         public EffectScaleRandomUniform(IVector2 scaleA, IVector2 scaleB)
         {
             ScaleA = scaleA;

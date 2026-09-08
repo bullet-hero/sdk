@@ -23,10 +23,12 @@ namespace BH.SDK.Models.Keyframes
         [JsonProperty(Names.Float)]
         public IFloat Value { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public FloatKey()
         {
             Value = new FloatValue();
         }
+        /// <summary> Built from its value, frame and default ease. </summary>
         public FloatKey(IFloat value, int frame, EaseType ease = DefaultEase) : base(frame, ease)
         {
             Value = value;

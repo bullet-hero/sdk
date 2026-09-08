@@ -5,8 +5,11 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Serialization.Converters.Base
 {
+    /// <summary> The wire shape every polymorphic value in this format takes: <c>[type, value]</c>, where the
+    /// tag is the interface's own discriminator enum and the payload is the concrete class's plain members. </summary>
     public abstract class JsonConverterCustomType<T, TType> : JsonConverter<T>, IRequiresDefaultSerializer
     {
+        /// <summary> The serializer used for the payload - this converter excluded, so it does not re-wrap it. </summary>
         public JsonSerializer SerializerDefault { get; private set; }
 
         void IRequiresDefaultSerializer.SetDefaultSerializer(JsonSerializer serializer) =>
@@ -46,6 +49,7 @@ namespace BH.SDK.Serialization.Converters.Base
         // this number should start by measuring that, and should not assume otherwise from the
         // shape of the code here.
 
+        /// <summary> Writes the tag, then the concrete class's own members - the tag directly rather than through a serializer, which is measurably cheaper for one enum. </summary>
         public override void WriteJson(JsonWriter writer, T value, JsonSerializer serializer)
         {
             if (value == null)
@@ -66,6 +70,7 @@ namespace BH.SDK.Serialization.Converters.Base
             writer.WriteEndArray();
         }
 
+        /// <summary> Reads the tag, resolves the class it names, and populates it through the serializer that excludes this converter. </summary>
         public override T ReadJson(JsonReader reader, Type objectType, T existingValue, bool hasExistingValue,
             JsonSerializer serializer)
         {
@@ -87,7 +92,10 @@ namespace BH.SDK.Serialization.Converters.Base
             return value;
         }
 
+        /// <summary> The tag written for a value. </summary>
         public abstract TType GetCustomType(T value);
+
+        /// <summary> The concrete class a tag names, or null when nothing does. </summary>
         public abstract Type GetType(TType customType);
 
         // `TType` is an enum on every one of the seventeen converters built on this, but nothing in the

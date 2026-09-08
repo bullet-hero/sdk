@@ -23,13 +23,16 @@ namespace BH.SDK.Models.Resources
         [JsonProperty(Names.FontResourceId)]
         public FontResourceId FontResourceId { get; set; }
 
+        /// <summary> Which kind of resource this is. </summary>
         [JsonProperty(Names.Type)]
         public override ResourceType Type => ResourceType.Font;
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public FontResource()
         {
             FontResourceId = FontResourceId.Null;
         }
+        /// <summary> Built from its resource id and sources. </summary>
         public FontResource(FontResourceId fontResourceId, List<ResourceKey> sources) : base(sources)
         {
             FontResourceId = fontResourceId;

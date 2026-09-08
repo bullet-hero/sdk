@@ -32,22 +32,32 @@ namespace BH.SDK.Models.Values
         [JsonProperty(Names.CoordZ)]
         public float Z { get; set; }
         
+        /// <summary> All components zero. </summary>
         public static Vector3Value Zero => new(0.0f, 0.0f, 0.0f);
+        /// <summary> All components one. </summary>
         public static Vector3Value One => new(1.0f, 1.0f, 1.0f);
         
+        /// <summary> The +X unit vector. </summary>
         public static Vector3Value Right => new(1.0f, 0.0f, 0.0f);
+        /// <summary> The -X unit vector. </summary>
         public static Vector3Value Left => new(-1.0f, 0.0f, 0.0f);
+        /// <summary> The +Y unit vector. </summary>
         public static Vector3Value Up => new(0.0f, 1.0f, 0.0f);
+        /// <summary> The -Y unit vector. </summary>
         public static Vector3Value Down => new(0.0f, -1.0f, 0.0f);
+        /// <summary> The +Z unit vector. </summary>
         public static Vector3Value Forward => new(0.0f, 0.0f, 1.0f);
+        /// <summary> The -Z unit vector. </summary>
         public static Vector3Value Backward => new(0.0f, 0.0f, -1.0f);
         
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public Vector3Value()
         {
             X = ValueRules.FloatZero;
             Y = ValueRules.FloatZero;
             Z = ValueRules.FloatZero;
         }
+        /// <summary> Built from its x, y and z. </summary>
         public Vector3Value(float x, float y, float z)
         {
             X = x;
@@ -55,6 +65,7 @@ namespace BH.SDK.Models.Values
             Z = z;
         }
 
+        /// <summary> Which concrete form this is - the discriminator a converter writes and reads back. </summary>
         public VectorType GetModelType() => VectorType.Value;
     }
 }

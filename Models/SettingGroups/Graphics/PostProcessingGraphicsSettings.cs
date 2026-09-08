@@ -65,6 +65,7 @@ namespace BH.SDK.Models.SettingGroups.Graphics
         [JsonProperty(Names.RenderDigitalGlitch)]
         public bool RenderDigitalGlitch { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public PostProcessingGraphicsSettings()
         {
             Render = true;
@@ -81,6 +82,7 @@ namespace BH.SDK.Models.SettingGroups.Graphics
             RenderAnalogGlitch = true;
             RenderDigitalGlitch = true;
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public PostProcessingGraphicsSettings(bool render, bool renderBloom, bool renderChroma, bool renderVignette,
             bool renderLens, bool renderGrain, bool renderMotionBlur, bool renderColorCurves, bool renderLiftGammaGain,
             bool renderShadowsMidtonesHighlights, bool renderWhiteBalance, bool renderAnalogGlitch,
@@ -100,6 +102,7 @@ namespace BH.SDK.Models.SettingGroups.Graphics
             RenderDigitalGlitch = renderDigitalGlitch;
         }
         
+        /// <summary> Every effect off - the cheapest the device can draw. </summary>
         public PostProcessingGraphicsSettings GetPresetNone() => new()
         {
             Render = false,
@@ -116,6 +119,7 @@ namespace BH.SDK.Models.SettingGroups.Graphics
             RenderAnalogGlitch = false,
             RenderDigitalGlitch = false,
         };
+        /// <summary> Everything but the effects that cost a phone most. </summary>
         public PostProcessingGraphicsSettings GetPresetMobile() => new()
         {
             Render = true,
@@ -132,6 +136,7 @@ namespace BH.SDK.Models.SettingGroups.Graphics
             RenderAnalogGlitch = false, // HEAVY
             RenderDigitalGlitch = false, // HEAVY
         };
+        /// <summary> Everything on. </summary>
         public PostProcessingGraphicsSettings GetPresetAll() => new()
         {
             Render = true,

@@ -124,6 +124,7 @@ namespace BH.SDK.Models
         [JsonProperty(Names.Duration)]
         public float LevelDuration { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public LevelMeta()
         {
             LevelId = LevelId.NewId();
@@ -139,6 +140,7 @@ namespace BH.SDK.Models
             LevelTags = new List<string>();
             LevelDuration = 0f;
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public LevelMeta(LevelId levelId, IString levelName, IString levelDescription, ResourceKey levelLogo,
             Version levelVersion, ILicense levelLicense, List<Author> levelAuthors, List<ResourceMeta> resourcesMeta,
             AgeRating levelAgeRating = AgeRating.Unrated,

@@ -64,19 +64,26 @@ namespace BH.SDK.Services.Shapes
         /// <summary> How many sides the shape a Circle is built from actually has. </summary>
         public const int CircleSides = 32;
 
+        /// <summary> The form's own number, which is what the id carries. </summary>
         public readonly byte Code;
 
+        /// <summary> Built from its code. </summary>
         public ShapeForm(byte code) => Code = code;
 
+        /// <summary> A square. </summary>
         public static readonly ShapeForm Square = new(0x01);
+        /// <summary> A circle. </summary>
         public static readonly ShapeForm Circle = new(0x02);
+        /// <summary> A right triangle. </summary>
         public static readonly ShapeForm RightTriangle = new(0x03);
+        /// <summary> An equilateral triangle. </summary>
         public static readonly ShapeForm Triangle = new(0x04);
 
         /// <summary> A regular polygon of <paramref name="sides"/> sides. Three and four sides are
         /// <see cref="Triangle"/> and <see cref="Square"/> and never reach the ladder. </summary>
         public static ShapeForm Polygon(int sides) => new((byte)(PolygonBase + sides));
 
+        /// <summary> True for the regular polygons, which are numbered consecutively above the named forms. </summary>
         public bool IsLadder => Code >= PolygonBase;
 
         /// <summary> Side count of the polygon this form is built out of. RightTriangle answers 3
@@ -109,6 +116,7 @@ namespace BH.SDK.Services.Shapes
         /// <summary> Whether the first corner sits half a step round from straight up. </summary>
         public bool UsesHalfStepPhase => Sides == 4;
 
+        /// <summary> What this form is called, for a report. </summary>
         public string Name
         {
             get
@@ -140,12 +148,18 @@ namespace BH.SDK.Services.Shapes
             _ => $"Polygon{sides}",
         };
 
+        /// <summary> Member by member. </summary>
         public bool Equals(ShapeForm other) => Code == other.Code;
+        /// <summary> The same, boxed. </summary>
         public override bool Equals(object obj) => obj is ShapeForm other && Equals(other);
+        /// <summary> Matches the equality above. </summary>
         public override int GetHashCode() => Code;
+        /// <summary> One line, for a log. </summary>
         public override string ToString() => Name;
 
+        /// <summary> Value equality. </summary>
         public static bool operator ==(ShapeForm a, ShapeForm b) => a.Code == b.Code;
+        /// <summary> Its negation. </summary>
         public static bool operator !=(ShapeForm a, ShapeForm b) => a.Code != b.Code;
     }
 
@@ -156,14 +170,19 @@ namespace BH.SDK.Services.Shapes
     /// </summary>
     public readonly struct ShapeParameters : IEquatable<ShapeParameters>
     {
+        /// <summary> Which form the shape is. </summary>
         public readonly ShapeForm Form;
+        /// <summary> How much of it is kept - the whole, a half, a quarter, an eighth. </summary>
         public readonly ShapeSlice Slice;
+        /// <summary> Which of two quarters, where the second is not a rotation of the first. </summary>
         public readonly ShapeSliceVariant Variant;
+        /// <summary> Filled, or a ring of one of the thickness rungs. </summary>
         public readonly ShapeThickness Thickness;
 
         /// <summary> The shape's own sector of the box, with the shape itself taken out of it. </summary>
         public readonly bool Invert;
 
+        /// <summary> Every member at once, in declaration order. </summary>
         public ShapeParameters(ShapeForm form, ShapeSlice slice = ShapeSlice.Full,
             ShapeSliceVariant variant = ShapeSliceVariant.Primary,
             ShapeThickness thickness = ShapeThickness.Filled, bool invert = false)
@@ -175,7 +194,9 @@ namespace BH.SDK.Services.Shapes
             Invert = invert;
         }
 
+        /// <summary> True when the shape is hollow. </summary>
         public bool IsRing => Thickness != ShapeThickness.Filled;
+        /// <summary> True when nothing was sliced off. </summary>
         public bool IsFullTurn => Slice == ShapeSlice.Full;
 
         /// <summary> How much of a full turn the sector covers. </summary>
@@ -198,13 +219,17 @@ namespace BH.SDK.Services.Shapes
             _ => 0f,
         };
 
+        /// <summary> Member by member. </summary>
         public bool Equals(ShapeParameters other)
             => Form == other.Form && Slice == other.Slice && Variant == other.Variant
                && Thickness == other.Thickness && Invert == other.Invert;
 
+        /// <summary> The same, boxed. </summary>
         public override bool Equals(object obj) => obj is ShapeParameters other && Equals(other);
+        /// <summary> Matches the equality above. </summary>
         public override int GetHashCode()
             => HashCode.Combine(Form.Code, (int)Slice, (int)Variant, (int)Thickness, Invert);
+        /// <summary> One line, for a log. </summary>
         public override string ToString() => ShapeCatalogService.GetName(this);
     }
 }

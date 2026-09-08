@@ -14,6 +14,9 @@ namespace BH.SDK.Tests.Generators
     // about "does Create add an object" and more about "does Revert put the model back exactly, and
     // does Reapply put it forward exactly" - the two properties every future generator inherits for
     // free and none of them can test for itself.
+
+    /// <summary> The journal every generator inherits and none can test for itself: that Revert puts the model
+    /// back exactly, and Reapply puts it forward exactly. </summary>
     public class GeneratorContextTests
     {
         private static Level CreateLevel()

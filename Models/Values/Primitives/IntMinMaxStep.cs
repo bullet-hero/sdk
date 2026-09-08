@@ -33,12 +33,14 @@ namespace BH.SDK.Models.Values
         [JsonProperty(Names.Step)]
         public int Step { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public IntMinMaxStep()
         {
             Min = ValueRules.IntZero;
             Max = ValueRules.IntOne;
             Step = ValueRules.IntOne;
         }
+        /// <summary> Built from its min, max and step. </summary>
         public IntMinMaxStep(int min, int max, int step)
         {
             Min = min;
@@ -46,6 +48,7 @@ namespace BH.SDK.Models.Values
             Step = step;
         }
 
+        /// <summary> Which concrete form this is - the discriminator a converter writes and reads back. </summary>
         public IntType GetModelType() => IntType.RandomMinMaxStep;
     }
 }

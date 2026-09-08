@@ -15,15 +15,20 @@ namespace BH.SDK.Publishing
     /// <summary> One reason a level is not ready to be published, and how badly. </summary>
     public readonly struct PublishIssue
     {
+        /// <summary> Which finding this is. </summary>
         public readonly PublishRule Rule;
+
+        /// <summary> Whether it blocks publishing or only asks to be looked at. </summary>
         public readonly RuleGroup Group;
 
         /// <summary> Human-readable location - which resource record, since there is no property
         /// path to give. </summary>
         public readonly string Path;
 
+        /// <summary> What to tell the author. </summary>
         public readonly string Message;
 
+        /// <summary> Built from its rule, group, path and message. </summary>
         public PublishIssue(PublishRule rule, RuleGroup group, string path, string message)
         {
             Rule = rule;
@@ -32,6 +37,7 @@ namespace BH.SDK.Publishing
             Message = message;
         }
 
+        /// <summary> One line, for a log. </summary>
         public override string ToString() => $"Publish issue, Rule: {Rule}, At: {Path}, {Message}";
     }
 }

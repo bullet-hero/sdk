@@ -48,10 +48,12 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
         [JsonProperty(Names.Opacity)]
         public float Opacity { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public EditorGridSettings()
         {
             ResetOwn();
         }
+        /// <summary> Built from its default, size and opacity. </summary>
         public EditorGridSettings(bool activeDefault, float size, float opacity)
         {
             ActiveDefault = activeDefault;

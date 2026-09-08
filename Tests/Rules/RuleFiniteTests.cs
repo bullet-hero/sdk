@@ -8,6 +8,7 @@ namespace BH.SDK.Tests.Rules
     /// </summary>
     public class RuleFiniteTests : BaseRuleTests
     {
+        /// <summary> A float that may be neither NaN nor an infinity. </summary>
         [RuleContainer]
         private class FloatModel
         {
@@ -15,6 +16,7 @@ namespace BH.SDK.Tests.Rules
             public float Value { get; set; }
         }
 
+        /// <summary> The same for a double. </summary>
         [RuleContainer]
         private class DoubleModel
         {
@@ -22,6 +24,7 @@ namespace BH.SDK.Tests.Rules
             public double Value { get; set; }
         }
 
+        /// <summary> The rule left at its own default, with nothing spelled out at the call site. </summary>
         [RuleContainer]
         private class DefaultModel
         {
@@ -29,6 +32,7 @@ namespace BH.SDK.Tests.Rules
             public float Value { get; set; }
         }
 
+        /// <summary> A property of a type the rule does not apply to, so it must decline rather than refuse. </summary>
         [RuleContainer]
         private class WrongTypeModel
         {

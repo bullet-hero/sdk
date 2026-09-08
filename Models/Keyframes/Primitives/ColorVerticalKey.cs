@@ -29,22 +29,26 @@ namespace BH.SDK.Models.Keyframes
         [JsonProperty(Names.ColorTop)]
         public IColor4 Color4Top { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public ColorVerticalKey()
         {
             Color4Bottom = Color4Value.white;
             Color4Top = Color4Value.white;
         }
+        /// <summary> Built from its 4, frame and default ease. </summary>
         public ColorVerticalKey(IColor4 color4, int frame, EaseType ease = DefaultEase) : base(frame, ease)
         {
             Color4Bottom = color4.Copy();
             Color4Top = color4.Copy();
         }
+        /// <summary> Built from its 4 bottom, 4 top, frame and default ease. </summary>
         public ColorVerticalKey(IColor4 color4Bottom, IColor4 color4Top, int frame, EaseType ease = DefaultEase) : base(frame, ease)
         {
             Color4Bottom = color4Bottom;
             Color4Top = color4Top;
         }
         
+        /// <summary> Which concrete form this is - the discriminator a converter writes and reads back. </summary>
         public Color4X4KeyType GetModelType() => Color4X4KeyType.Vertical;
     }
 }

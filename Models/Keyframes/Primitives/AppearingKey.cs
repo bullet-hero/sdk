@@ -31,11 +31,13 @@ namespace BH.SDK.Models.Keyframes
         [JsonProperty(Names.ModeShort)]
         public TextAppearingMode Mode { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public AppearingKey()
         {
             Value = TextRules.Appearing_Fallback;
             Mode = TextRules.AppearingMode_Default;
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public AppearingKey(float value, int frame, TextAppearingMode mode = TextRules.AppearingMode_Default,
             EaseType ease = DefaultEase) : base(frame, ease)
         {

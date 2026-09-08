@@ -8,10 +8,13 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Services
 {
+    /// <summary> Reads and writes a field addressed by a path string, against any model - the mechanism behind a
+    /// prefab placement's per-instance overrides. </summary>
     public class ModificationService
     {
         private readonly Dictionary<Type, Dictionary<string, PropertyInfo>> _propertyMaps = new();
 
+        /// <summary> Registers a type's properties so a path can address them. </summary>
         public void Add(Type type)
         {
             if (_propertyMaps.TryGetValue(type, out var typeMap)) return;
@@ -26,11 +29,13 @@ namespace BH.SDK.Services
                 typeMap[attribute.PropertyName] = prop;
             }
         }
+        /// <summary> Forgets them again. </summary>
         public void Remove(Type type)
         {
             _propertyMaps.Remove(type);
         }
 
+        /// <summary> Reads the field a path addresses. </summary>
         public object GetValue(object obj, string path)
         {
             if (obj == null) return null;
@@ -60,6 +65,7 @@ namespace BH.SDK.Services
 
             return obj;
         }
+        /// <summary> Writes it, answering false where the path resolves to nothing. </summary>
         public bool SetValue(object obj, object value, string path)
         {
             if (!TryResolveProperty(obj, path, out var owner, out var propertyInfo, out var pathPart))
@@ -159,14 +165,17 @@ namespace BH.SDK.Services
             return true;
         }
 
+        /// <summary> Walks a path expression without allocating: each step is an offset into the original string. </summary>
         public struct Enumerator : IEnumerator<PathPart>
         {
             private readonly string _expression;
             private int _currentIndex;
 
+            /// <summary> The step the walk is on. </summary>
             public PathPart Current { get; private set; }
             object IEnumerator.Current => Current;
 
+            /// <summary> Built from its expression. </summary>
             public Enumerator(string expression)
             {
                 _expression = expression;
@@ -174,6 +183,7 @@ namespace BH.SDK.Services
                 Current = default;
             }
 
+            /// <summary> Advances to the next step, answering false at the end. </summary>
             public bool MoveNext()
             {
                 var startIndex = _currentIndex;
@@ -271,22 +281,29 @@ namespace BH.SDK.Services
                 Current = default;
                 return false;
             }
+            /// <summary> Back to the values the constructor writes. </summary>
             public void Reset()
             {
                 _currentIndex = 0;
             }
+            /// <summary> Nothing to release; the walk allocates nothing. </summary>
             public void Dispose()
             {
                 _currentIndex = 0;
             }
         }
 
+        /// <summary> One step of a path, as a window into the expression plus a collection index when it has one. </summary>
         public readonly struct PathPart
         {
+            /// <summary> Where this step starts in the expression. </summary>
             public readonly int StartIndex;
+            /// <summary> How long it is. </summary>
             public readonly int Length;
+            /// <summary> The collection index this step carries, or -1 for none. </summary>
             public readonly int Index;
 
+            /// <summary> Built from its index, length and 1. </summary>
             public PathPart(int startIndex, int length, int index = -1)
             {
                 StartIndex = startIndex;
@@ -294,9 +311,12 @@ namespace BH.SDK.Services
                 Index = index;
             }
 
+            /// <summary> True when this step indexes into a collection. </summary>
             public bool HasIndex() => Index >= 0;
+            /// <summary> True when this step names anything at all. </summary>
             public bool IsValid() => Length > 0;
 
+            /// <summary> This step as a string, cut from the original expression. </summary>
             public string GetSubstring(string expression)
             {
                 if (Length == 0) return string.Empty;

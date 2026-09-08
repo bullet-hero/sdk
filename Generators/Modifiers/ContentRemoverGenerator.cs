@@ -32,6 +32,7 @@ namespace BH.SDK.Generators.Modifiers
     /// </summary>
     public class ContentRemoverGenerator : BaseModifier<ContentRemoverGenerator.Parameters>
     {
+        /// <summary> <c>"mod_content_remover"</c>, the key a host lists this generator under. </summary>
         public override string NameKey => "mod_content_remover";
 
         // Whole-scope rather than the selection: "everything in/outside this range" is a statement
@@ -48,11 +49,14 @@ namespace BH.SDK.Generators.Modifiers
         // short enough to read at a glance, and a host renders no header at all while there is only
         // one section (Section is still what every field is listed through - see
         // HintsSections_CoverEveryParameterField).
+
+        /// <summary> The order, labels and ranges a host lays its form out with. </summary>
         public override GeneratorHints Hints { get; } = new GeneratorHints.Builder()
             .Section(GeneratorSections.Main, nameof(Parameters.Invert), nameof(Parameters.Objects),
                 nameof(Parameters.Audio), nameof(Parameters.EventFrames))
             .Build();
 
+        /// <summary> Applies this run's edit. </summary>
         protected override void Generate(GeneratorContext context, Parameters parameters)
         {
             var window = context.Span;
@@ -64,6 +68,8 @@ namespace BH.SDK.Generators.Modifiers
 
         // Deletes only. GeneratorCost describes what a run ADDS, and reporting anything here would
         // read as "this will add N", which is the opposite of what happens.
+
+        /// <summary> What this run would add, answered before it runs. </summary>
         protected override GeneratorCost EstimateTyped(GeneratorContext context, Parameters parameters)
             => GeneratorCost.Zero;
 
@@ -72,6 +78,8 @@ namespace BH.SDK.Generators.Modifiers
         // it takes), and a window spanning the whole timeline covers all of it either way. Both are
         // legitimate - they are the generator's two headline use cases - which is exactly why they
         // get a confirmation instead of a refusal.
+
+        /// <summary> True where these parameters would destroy or rewrite content the author did not point at. </summary>
         protected override bool IsDangerousTyped(GeneratorContext context, Parameters parameters)
             => parameters.Invert || CoversWholeTimeline(context);
 
@@ -220,6 +228,8 @@ namespace BH.SDK.Generators.Modifiers
         private static bool Doomed(in FrameSpan span, in FrameSpan window, bool invert)
             => WindowSelection.Selects(span, window, invert);
 
+        /// <summary> Which window is kept or cleared, and which kinds of content the run touches. Public mutable
+        /// fields, like every parameters class here - a form binds to them and a preset serializes from them. </summary>
         public class Parameters
         {
             /// <summary> On: remove what falls outside the frame range. Off (the default, and the

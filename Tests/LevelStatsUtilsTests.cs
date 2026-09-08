@@ -7,6 +7,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests
 {
+    /// <summary> The counts a level browser shows: how many objects of each kind a level holds, and how deep its
+    /// hierarchy goes. </summary>
     [TestFixture]
     public class LevelStatsUtilsTests
     {

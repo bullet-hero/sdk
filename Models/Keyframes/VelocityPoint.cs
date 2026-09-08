@@ -31,11 +31,13 @@ namespace BH.SDK.Models.Keyframes
         [JsonProperty(Names.Force)]
         public float Force { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public VelocityPoint()
         {
             Center = new Vector2Value();
             Force = 1f;
         }
+        /// <summary> Built from its center, force, frame and default ease. </summary>
         public VelocityPoint(IVector2 center, float force, int frame, EaseType ease = DefaultEase) : base(frame, ease)
         {
             Center = center;

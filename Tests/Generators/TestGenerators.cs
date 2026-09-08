@@ -40,6 +40,7 @@ namespace BH.SDK.Tests.Generators
         protected override GeneratorCost EstimateTyped(GeneratorContext context, Parameters parameters)
             => new(parameters.Count, parameters.Count);
 
+        /// <summary> How many objects to spawn. </summary>
         internal class Parameters
         {
             public int Count = 4;
@@ -69,6 +70,7 @@ namespace BH.SDK.Tests.Generators
         protected override GeneratorCost EstimateTyped(GeneratorContext context, Parameters parameters)
             => GeneratorCost.Zero;
 
+        /// <summary> The name prefix and the layer everything selected is moved to. </summary>
         internal class Parameters
         {
             public string Prefix = "renamed";
@@ -107,6 +109,7 @@ namespace BH.SDK.Tests.Generators
         protected override GeneratorCost EstimateTyped(GeneratorContext context, Parameters parameters)
             => new(0, parameters.Frames.Length);
 
+        /// <summary> The zoom keys to write, and whether the range is wiped first. </summary>
         internal class Parameters
         {
             public int[] Frames = System.Array.Empty<int>();
@@ -140,6 +143,7 @@ namespace BH.SDK.Tests.Generators
         protected override GeneratorCost EstimateTyped(GeneratorContext context, Parameters parameters)
             => new(parameters.Count, parameters.Count);
 
+        /// <summary> How many objects to scatter, and over what area. </summary>
         internal class Parameters
         {
             public int Count = 8;

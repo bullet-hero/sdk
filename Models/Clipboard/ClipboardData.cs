@@ -104,6 +104,7 @@ namespace BH.SDK.Models.Clipboard
         [JsonProperty(Names.PlayerKeys)]
         public PlayerEvents PlayerKeys { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public ClipboardData()
         {
             Content = ClipboardContent.None;
@@ -117,6 +118,7 @@ namespace BH.SDK.Models.Clipboard
             PostProcessingKeys = new PostProcessingEvents();
             PlayerKeys = new PlayerEvents();
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public ClipboardData(ClipboardContent content,
             Dictionary<ObjectId, RectObject> objects, Dictionary<ObjectId, RectObject> prefabObjects,
             Dictionary<ObjectId, RectObject> keyObjects, Dictionary<AudioId, LevelTrack> keyTracks,

@@ -50,6 +50,7 @@ namespace BH.SDK.Models.Events
         [JsonProperty(Names.Space)]
         public CheckpointSpace Space { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public Checkpoint()
         {
             Frame = FrameRules.MinFrame;
@@ -59,8 +60,10 @@ namespace BH.SDK.Models.Events
             Position = Vector2Value.Zero;
             Space = CheckpointSpace.World;
         }
+        /// <summary> Built from its name, active, 4 and frame. </summary>
         public Checkpoint(string name, bool active, IColor4 color4, int frame)
             : this(name, active, color4, frame, Vector2Value.Zero, CheckpointSpace.World) { }
+        /// <summary> Every member at once, in declaration order. </summary>
         public Checkpoint(string name, bool active, IColor4 color4, int frame,
             IVector2 position, CheckpointSpace space)
         {

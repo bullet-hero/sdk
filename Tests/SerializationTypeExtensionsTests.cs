@@ -3,6 +3,7 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests
 {
+    /// <summary> The mapping between a format and its file extension, in both directions. </summary>
     public class SerializationTypeExtensionsTests
     {
         [TestCase(SerializationType.Json, ".json")]

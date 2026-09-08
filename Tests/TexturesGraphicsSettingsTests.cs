@@ -13,6 +13,9 @@ namespace BH.SDK.Tests
     // an older file assert a device policy nobody chose - which is why the default is pinned here
     // rather than left to whoever edits the class next.
 
+
+    /// <summary> The device's half of image loading, and the property carrying the whole design: every field
+    /// defaults to Auto, so an older settings file asserts no policy nobody chose. </summary>
     public class TexturesGraphicsSettingsTests
     {
         [Test]

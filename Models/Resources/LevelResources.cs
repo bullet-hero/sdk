@@ -81,6 +81,7 @@ namespace BH.SDK.Models.Resources
         [JsonProperty(Names.Prefabs)]
         public Dictionary<PrefabId, Prefab> Prefabs { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public LevelResources()
         {
             Textures = new Dictionary<TextureResourceId, TextureResource>();
@@ -93,6 +94,7 @@ namespace BH.SDK.Models.Resources
             
             Prefabs = new Dictionary<PrefabId, Prefab>();
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public LevelResources(Dictionary<TextureResourceId, TextureResource> textures,
             Dictionary<FontResourceId, FontResource> fonts,
             Dictionary<AudioResourceId, AudioResource> audios,

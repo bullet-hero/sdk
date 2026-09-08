@@ -44,6 +44,7 @@ namespace BH.SDK.Models.Values
         [JsonProperty(Names.Step)]
         public float Step { get; set; }
 
+        /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public Vector2RectStep()
         {
             MinX = ValueRules.FloatZero;
@@ -54,6 +55,7 @@ namespace BH.SDK.Models.Values
             
             Step = ValueRules.FloatOne;
         }
+        /// <summary> Every member at once, in declaration order. </summary>
         public Vector2RectStep(float minX, float minY, float maxX, float maxY, float step)
         {
             MinX = minX;
@@ -65,6 +67,7 @@ namespace BH.SDK.Models.Values
             Step = step;
         }
 
+        /// <summary> Which concrete form this is - the discriminator a converter writes and reads back. </summary>
         public VectorType GetModelType() => VectorType.RandomRectStep;
     }
 }
