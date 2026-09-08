@@ -4,14 +4,17 @@ who moves it. Three of them are the ones anyone normally means — the client, t
 format — and those three are what the game shows the player on one line.
 
 This is not a changelog and not a release process. It is the answer to "which number is this, and
-what happens if I change it".
+what happens if I change it". **The step-by-step for actually raising one is the consuming project's
+`Docs/VERSION-BUMP.md`** — every file to touch, in order, and how to know it worked. That one lives
+outside this repo on purpose: two of the three axes (the client's own version, and the store build
+numbers that move with it) are not the SDK's business at all.
 
 ### The three axes a player sees
 
 The Settings screen shows them in this order, labelled, and clicking the line copies it:
 
 ```
-gv 0.5.5, sv 0.5.5, mg 1
+gv 0.6.0, sv 0.6.0, mg 1
 ```
 
 | Axis | What it versions | Where it lives | Runtime |
@@ -53,14 +56,14 @@ NuGet-style build stamps on the assembly. None of the three can see the others, 
 `Services.Shared.Tests`' `SdkVersionAgreementTests` compares them.
 
 `SdkVersion.Value` is **`static readonly`, never `const`**: a `const` is inlined into each consumer
-at *its* compile time, so a tool built against 0.5.5 would keep reporting 0.5.5 after being handed a
+at *its* compile time, so a tool built against 0.6.0 would keep reporting 0.6.0 after being handed a
 newer DLL — which is exactly the question the field exists to answer.
 
 `<Version>` sits in `BH.SDK.csproj` rather than `Directory.Build.props`, which is shared by four
 projects and would stamp the analyzer and both test assemblies too.
 
 **`sv` has no git tags yet**, and cannot have them until the SDK submodule's gitlink is restored in
-the main repository: for `0.5.1`–`0.5.5` there is no pinned SDK commit to tag at all.
+the main repository: from `0.5.1` onward there is no pinned SDK commit to tag at all.
 
 ### `mg` — the model format's generation
 

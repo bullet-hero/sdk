@@ -13,8 +13,8 @@ namespace BH.SDK
     // the two are free to diverge from here.
     //
     // READONLY, NEVER CONST, and that is the whole reason this is a field rather than a constant: a
-    // const is inlined into every consumer at ITS compile time, so a tool built against 0.5.5 would
-    // keep reporting 0.5.5 after being handed a newer DLL - which is precisely the question this
+    // const is inlined into every consumer at ITS compile time, so a tool built against 0.6.0 would
+    // keep reporting 0.6.0 after being handed a newer DLL - which is precisely the question this
     // exists to answer. Two other copies must agree with it (package.json and BH.SDK.csproj's
     // <Version>), and Services.Shared.Tests' SdkVersionAgreementTests is what fails when one moves
     // alone.
@@ -23,6 +23,6 @@ namespace BH.SDK
     public static class SdkVersion
     {
         /// <summary> Semver over the public API. Read, never inlined - see this file's header. </summary>
-        public static readonly string Value = "0.5.5";
+        public static readonly string Value = "0.6.0";
     }
 }
