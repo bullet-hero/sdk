@@ -18,7 +18,7 @@ namespace BH.SDK.Models.Game
     /// LevelSettings instead, so the pair has to be carried together by anything creating objects.
     /// </summary>
     [RuleContainer]
-    [DataVersion(DataDomains.GameLevel, 1, 0)]
+    [ModelGeneration(ModelDomains.GameLevel, ModelGenerations.Release)]
     [GenerateModel]
     public sealed partial class GameLevel : IObjectScope, IModel<GameLevel>
     {

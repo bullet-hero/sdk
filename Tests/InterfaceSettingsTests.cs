@@ -127,7 +127,7 @@ namespace BH.SDK.Tests
         // TRUE IS THE DEFAULT AND FALSE IS THE ZERO VALUE, so an older settings.json - which
         // carries none of the three keys - has to read back with the HUD SHOWN. That is the same
         // mechanism MenuBackgroundKind.Bot relies on one block down, and it is what makes all
-        // three additive with no DataVersion bump.
+        // three additive with no generation bump.
         //
         // AND THEY RIDE AN OBJECT INITIALIZER IN Copy() rather than the constructor, because a
         // seventh parameter would break every caller. An initializer is the one shape a

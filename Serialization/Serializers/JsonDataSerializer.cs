@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 namespace BH.SDK.Serialization.Serializers
 {
     // JSON implementation of IDataSerializer - see NewtonsoftDataSerializer for the shared envelope
-    // logic. Works uniformly for every [DataVersion] domain, top-level (Level, Theme, UserSettings,
+    // logic. Works uniformly for every [ModelGeneration] domain, top-level (Level, Theme, UserSettings,
     // ...) or nested (LevelSettings, GameLevel, ...) alike, since VersionedEnvelopeConverter.CanConvert
     // is gated purely on the attribute being present, not on a fixed type list.
     //

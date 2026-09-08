@@ -34,7 +34,7 @@ namespace BH.SDK.Tests
         private static IDataSerializer Blob => Service.GetDataSerializer(SerializationType.Blob);
 
         private static byte[] Write(Level level)
-            => Blob.SerializeEnvelope(DataDomains.Level, new EnvelopeData(new Version(1, 0), level));
+            => Blob.SerializeEnvelope(ModelDomains.Level, new EnvelopeData(ModelGenerations.Release, level));
 
         private static Level Read(byte[] bytes)
             => Blob.DeserializeEnvelope(bytes, typeof(Level)).GetPayload<Level>();

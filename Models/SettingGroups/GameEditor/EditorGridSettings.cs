@@ -32,7 +32,7 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
         // size of a desktop panel - they read as content rather than as a guide. Reaching for the
         // grid is one press; getting it out of the way every session is one press per session.
         // Being the zero value also keeps the field additive: a settings file written before it
-        // existed reads back as false, so no DataVersion moved and there is no migrator.
+        // existed reads back as false, so no generation moved and there is no migrator.
 
         /// <summary> Whether the editor's viewport grid starts switched on. </summary>
         [JsonProperty(Names.ActiveDefault)]

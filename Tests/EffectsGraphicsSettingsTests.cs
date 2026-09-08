@@ -17,7 +17,7 @@ namespace BH.SDK.Tests
     /// the shipped defaults rather than to a zero that would stall every replay. </summary>
     public class EffectsGraphicsSettingsTests
     {
-        // A settings group carries no [DataVersion] - only the GameSettings root does - so it is
+        // A settings group carries no [ModelGeneration] - only the GameSettings root does - so it is
         // serialized as a plain nested object, and that is what these read and write directly.
 
         [Test]

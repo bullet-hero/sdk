@@ -45,7 +45,7 @@ A level on disk is **three independent files**, each its own serialization root:
   assume otherwise since both describe "the same level."
 - `settings.json` — a `UserSettings` (device-wide player options, not per-level).
 
-Every serialization root is a class carrying `[DataVersion(domain, major, minor)]` — see
+Every serialization root is a class carrying `[ModelGeneration(domain, generation)]` — see
 "Serialization & versioning" below; everything else is a plain nested model versioned only as part
 of its containing envelope. `Models/FileNames.cs` names the on-disk files; `PathUtils.FindDataFile`
 resolves the actual extension (json vs bson chosen per-level at creation).
@@ -78,8 +78,8 @@ alive so `GamePlayer`'s jobs can re-roll randomness every frame instead of freez
 - **Serialization/** — `Serializers/` (`SerializationService`, the JSON/BSON entry point),
   `Converters/Base/` + `Converters/CustomTypes/` + `Converters/Dict/` (the polymorphism/id/dictionary
   JsonConverters — see "Serialization pipeline" below).
-- **Versions/** — the model-versioning/migration system (`[DataVersion]`, `VersionedTypeRegistry`,
-  `IMigration`) plus one subfolder per historical format generation (`V0_0/`). Has its own detailed
+- **Versions/** — the model-versioning/migration system (`[ModelGeneration]`, `VersionedTypeRegistry`,
+  `IMigration`) plus one subfolder per historical format generation (`V0/`). Has its own detailed
   `README.md` — read it first, this file only adds what it doesn't cover.
 - **Rules/** — `public const` numeric/enum clamp tables (`FrameRules`, `ValueRules`, `LevelRules`,
   `AudioRules`, `EffectRules`, `PostProcessingRules`, `ResourceRules`, `TextRules`) plus
@@ -349,7 +349,7 @@ solid" moved to where it belongs: a Null `ShapeId` with a real `ColliderId`.
 `ShapeObject.ShaderType` (`Models/Enum/ShaderType.cs`, byte: `Auto = 0`/`Opaque`/`Transparent`) is
 authored intent about the render path, not a shader id — the format deliberately has no
 user-defined shaders. `Auto = 0` is what an older file deserializes to, so adding it needed no
-migration and the domain stayed at `(1, 0)`. What `Auto` actually resolves to is a *consumer*
+migration and the domain stayed at generation 1. What `Auto` actually resolves to is a *consumer*
 question and lives in the Unity project (`Core`'s `ShapeShaderResolver`); the format only stores the
 three-way choice. It is one of the hand-written-boilerplate fields, so it must appear in
 `CopyImpl`/`Update`/`EqualsShapeObject`/`GetHashCode` alike.
@@ -448,7 +448,7 @@ risk on each write - and the menu only ever needs a handful of levels to draw a 
 
 ## Clipboard (`Models/Clipboard/`)
 
-`ClipboardData` (`[DataVersion(DataDomains.ClipboardData, 1, 0)]`) is one copied editor selection,
+`ClipboardData` (`[ModelGeneration(ModelDomains.ClipboardData, ModelGenerations.Release)]`) is one copied editor selection,
 split into **one section per editor timeline** — the consumer keeps a single instance as the backing
 store of all its per-timeline buffers, and the same instance is what leaves the process as JSON when
 the author exports it. It is a **partial level**: every section is a collection type the format
@@ -586,7 +586,7 @@ layer, converted once at load via `LevelStateBuilder`).
   rather than compete (the consumer does it in `BuildAudioJob`): the fader is what the whole track
   sits behind, the curve is what fades it in and out inside that, and an author wanting "this track,
   quieter" should not have to rewrite every key on it. Additive with a constructor default, so it
-  needed no migration and `AudioLevel` stays at `(1, 0)` - a pre-fader file reads back at full
+  needed no migration and `AudioLevel` stays at generation 1 - a pre-fader file reads back at full
   volume, which is exactly how it used to sound. Note this is the opposite call from `Speed`
   below, whose pre-Speed default deserialized to a silent `0`.
   `LevelTrack.Speed` (`[-2, 2]`, default `1`) is the track's own resample rate — faster is also
@@ -594,11 +594,11 @@ layer, converted once at load via `LevelStateBuilder`).
   start, with `OffsetTime` skipping the tail rather than the head), `0` freezes it silent — and it
   is deliberately **not** keyframed: an animated rate would make the clip position the integral of
   that curve, which no consumer can evaluate from one frame's data. It shipped **without a migration**
-  on purpose (`AudioLevel` stays at `(1, 0)`): a pre-Speed file deserializes to `0f`, i.e. silent
+  on purpose (`AudioLevel` stays at generation 1): a pre-Speed file deserializes to `0f`, i.e. silent
   tracks, and the levels that existed at the time were the author's own to re-save. Don't add a
   `NullSpeed`-style sentinel after the fact — `0` is a legal authored value here.
-- **PostProcessing**: `GameLevel.PostProcessingEvents` (`(1, 0)` like every other domain - it was at
-  `(1, 1)` while the ColorCurves migrator existed; see `docs/issues/COLOR_CURVES_HISTORY.md` in the
+- **PostProcessing**: `GameLevel.PostProcessingEvents` (generation 1 like every other domain - it had moved
+  while the ColorCurves migrator existed; see `docs/issues/COLOR_CURVES_HISTORY.md` in the
   consuming project) - top-level `Active` (default `true`,
   opposite default from audio's `Active`) + 12 keyframe-track lists, one per URP effect (Bloom,
   ChromaticAberration, Vignette, LensDistortion, FilmGrain, MotionBlur, ColorCurves, LiftGammaGain,
@@ -634,7 +634,7 @@ layer, converted once at load via `LevelStateBuilder`).
 
 ## `Models/Game/`, `Models/Events/`: level-global vs. per-object
 
-`GameLevel` (`Level.Game`) = `Objects` (the `IObjectScope`) + four `[DataVersion]`-tagged event
+`GameLevel` (`Level.Game`) = `Objects` (the `IObjectScope`) + four `[ModelGeneration]`-tagged event
 aggregates: `GameEvents` (Markers — editor-only annotation, no gameplay effect — **Beats**, Checkpoints,
 ScreenLimits, Backgrounds [`Color3Key`, themeable], Themes [`ThemeKeyframe`]), `CameraEvents`
 (Positions/Rotations/Pivots like a `RectObject`, but `Zooms` instead of 2-axis `Sizes` and an added
@@ -650,7 +650,7 @@ plus `Marker`-style `Name`/`Color4`). Spans rather than tempo points because a p
 express a HOLE: an intro with no percussion, a break, the tail after the song ends. Editor-only in
 exactly the sense `Markers` is — saved, read back, consumed by generators and by the editor's own
 snapping, never by playback. `Span`'s setter strips `FrameAnchor`s: anchors mean "follow the parent's
-edge" and a segment has no parent. Adding it needed no migration — the domain stays at `(1, 0)` and
+edge" and a segment has no parent. Adding it needed no migration — the domain stays at generation 1 and
 an older file deserializes to an empty list.
 
 **Where the beats fall is computed, never stored**: `Utils/BeatMath` resolves
@@ -680,7 +680,7 @@ happy path. What a binding string may SAY lives in `Utils/ShortcutSyntax` (and i
 for the reason `KeyBindingMask`'s own header gives, and the consumer resolves the name against
 `UnityEngine.InputSystem.Key`. An empty value is a real state ("the player unbound this") and is not
 the same as an absent key ("the player never touched it"). It shipped additively like everything else
-here, so `UserSettings` stays at `(1, 0)`.
+here, so `UserSettings` stays at generation 1.
 
 `InterfaceSettings` is the newest of them (the game's own overlays — the diagnostics readout's
 `StatsActive` + `StatsAlignmentX`/`Y`, plus `OpenMenuOnLose`, which is a BEHAVIOUR rather than an
@@ -708,7 +708,7 @@ camera background live, which is why there is no grid colour here.
 derive from `BaseGraphicsSettings`, and the omission is deliberate: an inherited `Render` would mean
 "is anti-aliasing on", which is exactly what `Type = None` already says, and two switches for one
 decision can disagree. It shipped additively like everything else here — the domain stays at
-`(1, 0)`, and a settings file written before it deserializes to the constructor's defaults (MSAA,
+generation 1, and a settings file written before it deserializes to the constructor's defaults (MSAA,
 x2, no HDR) rather than to a zeroed pair that would read as "off". `MsaaType`'s value **is** its
 sample count, except `None = 0`, which every graphics API states as 1 — convert with
 `MsaaTypeExtensions.ToSampleCount`, never a cast.
@@ -721,7 +721,7 @@ same everywhere, so an author may not author a device's memory budget, and a pla
 asked what a picture depicts. Every field defaults to `Auto` and resolves per platform in the
 consumer (`Core`'s `TextureLoadPlanner`), which is what makes an older `settings.json` with no
 `"textures"` key correct rather than merely tolerated. Additive like everything else here, so
-`UserSettings` stays at `(1, 0)`.
+`UserSettings` stays at generation 1.
 
 **`Filtering` and `CompressionQuality` were both DERIVED from the author's kind before they existed**
 and were on the wrong side of the split: the encoder's effort yields the same size in the same
@@ -752,11 +752,11 @@ consumer generates a fresh seed on every load, which is the ordinary case; an au
 pin a run down, and a host may still override it per-launch. The consumer side of that three-tier
 ladder lives in the Unity project (`Core`'s `SettingsGroup`, see its CLAUDE.md "Determinism") — the
 format only stores the middle tier. Adding the field needed no migration: the domain stays at
-`(1, 0)` and an older file simply deserializes to 0.
+generation 1 and an older file simply deserializes to 0.
 
 ## `Models/Hints/` — the level's advisory aggregate
 
-`LevelHints` (`Level.Hints`, `[DataVersion(LevelHints, 1, 0)]`) is the fifth aggregate on `Level`
+`LevelHints` (`Level.Hints`, `[ModelGeneration(LevelHints, ModelGenerations.Release)]`) is the fifth aggregate on `Level`
 and the only one carrying **nothing an author wrote**. Everything in it is DERIVED from the other
 four, written by whoever saves the level, and safe to drop: a consumer that ignores the whole object
 plays the identical level, only paying at load (or mid-playback) for work the hint front-loads.
@@ -800,7 +800,7 @@ Two members today:
 Both reach a generator through `GeneratorContext.Hints`, which is **null in Prefab Mode** exactly
 like `Game`/`Audio`: a hint describes the file a player loads, and a template is not one.
 
-**No migration, and the domains stay at `(1, 0)`.** A level written before this existed deserializes
+**No migration, and the domains stay at generation 1.** A level written before this existed deserializes
 to an all-empty `Hints`, which is precisely "no hint"; one whose hints were written under the old
 layout simply loses them at the next save. That is what advisory means, and it is why the move needed
 nothing else.
@@ -837,7 +837,7 @@ always reached the shader, and the consumer hard-coded Clamp, so a tiling UV onl
 row of pixels.
 
 All three are additive with a zero default, so a level written before them reads back as
-`Auto`/`Auto`/`Clamp` and `LevelResources` stays at `(1, 0)`.
+`Auto`/`Auto`/`Clamp` and `LevelResources` stays at generation 1.
 
 **`FontCharacters` used to live here and no longer does** — it was never a resource, only a fact
 *about* the resources, so it moved to `Level.Hints` with the rest of the advisory data. Don't look
@@ -957,7 +957,7 @@ not domain objects; don't expect every `[JsonProperty]`-bearing class in this co
 ## Serialization pipeline (`SerializationService`)
 
 `SerializationService.SerializeData<T>`/`DeserializeData<T>` are the plain string-JSON entry points —
-both throw `ArgumentException` if `T` has no `[DataVersion]` (only aggregate roots may go through
+both throw `ArgumentException` if `T` has no `[ModelGeneration]` (only aggregate roots may go through
 this API). They take no mode: **text is always compact JSON**, and which FORMAT a file is written in
 is `SerializeEnvelope`'s question, since only bytes can answer it. `GetDataSerializer(type)` returns
 an `IDataSerializer` (`SerializeEnvelope`/`DeserializeEnvelope` over raw `byte[]` + `EnvelopeData` —
@@ -1076,7 +1076,7 @@ default nowhere.
   apart); a one-byte tag for a polymorphic value with `0xFF` reserved for null. **The tag is the
   model's own `GetModelType()`** - the generator reads the enum member that method names - so the
   blob and the JSON `[tag, payload]` carry the same discriminator and cannot drift apart.
-- **Every `[DataVersion]` aggregate writes its own envelope**: domain as text, `major`, `minor`, and
+- **Every `[ModelGeneration]` aggregate writes its own envelope**: domain as text, `major`, `minor`, and
   a byte length the reader checks the content against. The version tags are written so that the day
   a domain bumps there is somewhere to attach a migration; today an unknown version is REFUSED,
   which is honest rather than a gap - no build has ever written a `.blob`, so none of an older
@@ -1094,53 +1094,70 @@ default nowhere.
 
 ## Model versioning (`Versions/`)
 
-**Read `Versions/README.md` first** — it documents the folder convention (generation-first, e.g.
-`V0_0/` + `V0_0/Migrations/`) and the "nested envelope always resolves to the domain's *current*
-type" rule in detail; this section only adds what it doesn't cover.
+**`Docs/VERSIONING.md` is the design record and `Versions/README.md` the folder convention**
+(generation-first, e.g. `V0/` + `V0/Migrations/`, plus the "nested envelope always resolves to the
+domain's *current* type" rule). Read those first; this section only adds what they don't cover.
 
-- `[DataVersion(domain, major, minor)]` marks an aggregate-root boundary that gets its own envelope
-  and migrates as one unit. **20 types carry it and EVERY ONE of them is at `(1, 0)`.** Two had
-  bumped (`UserSettings` to `(2, 0)`, `PostProcessingEvents` to `(1, 1)`) and both were put back when
-  their snapshots were deleted - the game is pre-release, so the format changes in place and nothing
-  migrates; root `CLAUDE.md` Rule 11 is the record. The twenty: `Level`, `LevelMeta`,
+- **A GENERATION IS ONE INTEGER, NOT `major.minor`.** `[ModelGeneration(domain, generation)]` marks
+  an aggregate-root boundary that gets its own envelope and migrates as one unit. The second number
+  never had anything to say — a shape change either needs a migration or does not, and there is no
+  intermediate grade a minor could express; what it did instead was invite a bump nobody migrated.
+  **20 types carry the attribute and every one of them is at generation 1
+  (`ModelGenerations.Release`).** Two had bumped and both were put back when their snapshots were
+  deleted - the game is pre-release, so the format changes in place and nothing migrates; root
+  `CLAUDE.md` Rule 11 is the record. The twenty: `Level`, `LevelMeta`,
   `UserSettings`, `Prefab`, `EffectData`, `ThemeData`, `CompositeShape`, `ClipboardData` (SDK-repo
   "core" tier); `PublishProfile` (`Publishing/`); `GameStatistics`, `LevelStatistics`
   (`Models/Statistics/`, two roots rather than one — see that section); `LevelSettings`, `GameLevel`,
   `AudioLevel`, `LevelResources`, `LevelHints` (nested under `Level`); `GameEvents`, `CameraEvents`,
-  `PostProcessingEvents`, `PlayerEvents` (nested under `GameLevel`). `DataDomains.cs` is the
-  `nameof()`-based constant list.
+  `PostProcessingEvents`, `PlayerEvents` (nested under `GameLevel`). `ModelDomains.cs` is the
+  `nameof()`-based constant list; `ModelGenerations.cs` names the generations themselves, so no
+  attribute carries a bare digit.
+- **`ModelGenerations.Invalid` is `-1`, and everything negative is equally invalid.** Zero cannot be
+  the sentinel: the frozen snapshots under `Versions/V0` are written at generation 0, so a reader
+  treating zero as "no generation" would refuse exactly the files the migration path exists for.
+  Every reader therefore asks "did we read one" with a flag rather than by comparing the value.
 - `VersionedEnvelopeConverter` (`Serialization/Converters/`, not `Versions/`) writes/reads the
-  `{"version": "major.minor", "value": ...}` wrapper, gated purely by `[DataVersion]` presence — a
+  `{"g": <int>, "v": ...}` wrapper, gated purely by `[ModelGeneration]` presence — a
   `_activeDomains` reentrancy guard lets member serialization fall through to plain fields while
   writing/reading that same domain's own payload, without special-casing "nested vs. top-level."
   On read, it always resolves + upgrades through `VersionedTypeRegistry` and returns the domain's
   **current-shape type**, never the historical snapshot type.
+- **The envelope's key is `Names.Generation` (`"g"`), never `Names.Version` (`"vrs"`).** That second
+  one is the AUTHOR's version of a level (`LevelMeta`/`BestRun`/`LevelStatistics`), a `System.Version`
+  written as a string. While the envelope shared it, one `metadata.json` carried `"vrs"` twice at two
+  depths meaning two different things - so nothing may rewrite that key mechanically.
 - `VersionedTypeRegistry` populates itself via a **one-time reflection scan in a static constructor**
   (same pattern as the Unity project's `ReflectionUtils.GetImplementations<T>()`), indexing both
-  every `[DataVersion]` type and every `IMigration` implementation. `UpgradeToLatest` walks
-  `IMigration` step by step from a deserialized instance's version to the domain's latest, throwing
-  if a step is missing.
-- **`V1_0/` IS GONE, and its absence is the point.** It held the only two real snapshots this repo
-  ever had - `PostProcessingEventsV1_0` (+ the frozen leaf `ColorCurvesKeyV1_0`) and
-  `UserSettingsV1_0`/`GameEditorSettingsV1_0` - plus their two migrators. They were deleted along
-  with the version bumps that needed them: pre-release there is no file on anyone's disk worth
-  migrating, so a settings.json older than the GameEditorSettings restructure simply reads its
-  editor group back as defaults. Root `CLAUDE.md` Rule 11 says when this stops being true.
-- **`V0_0` is a scaffold that exercises the machinery end-to-end, not real shipped format history** —
+  every `[ModelGeneration]` type and every `IMigration` implementation. `UpgradeToLatest` walks
+  `IMigration` step by step from a deserialized instance's generation to the domain's latest,
+  throwing if a step is missing. `VersionedTypeRegistryTests` is its own fixture.
+- **`V0` is a scaffold that exercises the machinery end-to-end, not real shipped format history** —
   its `Names` use placeholder JSON keys (`"test_settings"`, etc.) and its snapshot classes are
-  structurally near-identical to current ones. **It is kept for exactly that reason**: with `V1_0`
-  gone it is the ONLY thing that still proves `VersionedTypeRegistry` and `IMigration` work at all,
-  and they have to work the day the game ships. "Current" is
-  the live, un-suffixed class carrying `[DataVersion(..., 1, 0)]` directly, and a migrator
-  filename like `LevelV0_0ToV1_0.cs` names that live class by convention rather than an actual file.
+  structurally near-identical to current ones. **It is kept for exactly that reason**: the only two
+  real snapshots this repo ever had were deleted along with the bumps that needed them, so this is
+  the ONLY thing that still proves `VersionedTypeRegistry` and `IMigration` work at all, and they
+  have to work the day the game ships. "Current" is the live, un-suffixed class carrying
+  `[ModelGeneration(..., ModelGenerations.Release)]` directly, and a migrator filename like
+  `LevelV0ToV1.cs` names that live class by convention rather than an actual file.
+- **A NESTED DOMAIN IS REFUSED AT ANOTHER GENERATION, NOT MIGRATED.** The top-level envelope
+  migrates (that is `VersionedEnvelopeConverter`'s job); `IJsonModel.ReadEnveloped<T>`, which the
+  generated codec uses for every nested domain, checks the generation and throws on anything else -
+  a generated codec reads only ITSELF, holds no `JsonSerializer`, and a snapshot is not a generated
+  model. It used to `Skip()` the tag instead, which read an old payload by property name into today's
+  class and returned CONSTRUCTOR DEFAULTS silently: a nested `LevelSettings` at generation 0 came back
+  `fps=60` through the generated codec and `fps=61` through the reflective one, so
+  `useGeneratedCodecs` - a switch that must change nothing - changed the answer, and the parity tests
+  could not see it with the whole corpus at one generation. `.blob` always refused this case, so the
+  two formats agree now. Migration for nested domains is still open by decision, and waits for a real
+  second snapshot rather than being built against the `V0` scaffold - `Docs/VERSIONING.md` carries the
+  three options.
 - Replaces an older `CompatibilityService`/`SaveData<T>`/`JsonConverterData<T>` design — those names
   are fully gone from the codebase (only survive in a comment explaining what replaced them); don't
   reintroduce or reference them as if live.
-- **Dangling cross-reference**: both `Versions/README.md` and this SDK's `TODO.md` say "see
-  `VERSION-UPDATE.md` at the SDK root" — that file does not exist. Likely renamed to
-  `Versions/README.md` without updating the pointer, or lost; don't try to find it.
 - Open per the SDK's own `TODO.md`: nested/optional aggregates below the current per-domain split,
-  the first *real* migrator once a domain actually needs to bump past 1.0, Project Arrhythmya import.
+  the first *real* migrator once a domain actually needs to bump past generation 1, Project
+  Arrhythmya import.
 
 ## Rules & validation
 
@@ -1286,11 +1303,12 @@ non-static, non-abstract, and has a public parameterless constructor — because
   auto-discovery anywhere in this system (unlike `[RuleContainer]`'s reflection scan or
   `VersionedTypeRegistry`'s reflection scan) — every converter is a manual, explicit mapping.
   Same applies to `RectObject` subtypes via `ObjectConverter`.
-- **New `[DataVersion]` aggregate** = add the attribute at `(1, 0)` if genuinely new, or bump + write
-  a `VX_Y/` snapshot + `IMigration` pair if changing an existing domain's shape — see `Versions/
+- **New `[ModelGeneration]` aggregate** = add the attribute at `ModelGenerations.Release` if
+  genuinely new, or take the next free generation + write a `VX/` snapshot + `IMigration` pair if
+  changing an existing domain's shape — see `Versions/
   README.md`'s folder-convention rules in full before doing this, several easy-to-miss subtleties
   (nested property must stay typed as the *current* class, snapshot classes skip `IModel<T>`, a
-  domain with no independent envelope yet at some generation gets a snapshot with no `[DataVersion]`
+  domain with no independent envelope yet at some generation gets a snapshot with no `[ModelGeneration]`
   at all).
 - **`ValueRules`' layer constants define reserved draw-order bands, not just a clamp.** Authored
   content is capped to `[MinLayer, MaxLayer]` = `[-1000, 1000]`; everything above that is reserved
@@ -1321,9 +1339,9 @@ non-static, non-abstract, and has a public parameterless constructor — because
 of `SerializationTests` specifically so every test file can reuse it) — `CreateTestXxx`/
 `CreateValidXxx` factories deliberately touch as much field surface as possible while staying
 rule-valid; `CreateInvalidXxx` factories are deliberately minimal, each encoding exactly one rule
-violation `RuleFixer` must detect and fix. A `#region Version v0.0` half builds equivalents against
-`V0_0` snapshot types for exercising the migration path, including a hand-spliced JSON envelope
-builder (`CreateTestLevelV0_0Json`) — needed because `VersionedEnvelopeConverter` always tags a
+violation `RuleFixer` must detect and fix. A `#region Generation 0` half builds equivalents against
+`V0` snapshot types for exercising the migration path, including a hand-spliced JSON envelope
+builder (`CreateTestLevelV0Json`) — needed because `VersionedEnvelopeConverter` always tags a
 *whole* current-shape object with the *current* version when serializing, so each historical fragment
 has to be serialized standalone from its own real `VX_Y` type and spliced in by hand.
 

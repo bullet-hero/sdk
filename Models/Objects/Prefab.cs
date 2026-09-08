@@ -17,7 +17,7 @@ namespace BH.SDK.Models.Objects
     /// those two roles are split across GameLevel and LevelSettings.
     /// </summary>
     [RuleContainer]
-    [DataVersion(DataDomains.Prefab, 1, 0)]
+    [ModelGeneration(ModelDomains.Prefab, ModelGenerations.Release)]
     [GenerateModel]
     public sealed partial class Prefab : IFrameScope, IObjectIdCounter, IModel<Prefab>
     {

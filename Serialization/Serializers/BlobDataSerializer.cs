@@ -11,8 +11,8 @@ namespace BH.SDK.Serialization.Serializers
     // a JSON envelope has to resolve a version to a historical TYPE because Newtonsoft binds
     // members by name and a snapshot class is how an old shape is described. A blob's payload is
     // read by generated code that is the type, so an old generation is not something this build can
-    // decode at all. The version tags are written anyway - every envelope carries its domain and
-    // its major.minor - so the day a domain bumps, the machinery has somewhere to attach.
+    // decode at all. The generation tags are written anyway - every envelope carries its domain and
+    // its generation - so the day a domain bumps, the machinery has somewhere to attach.
     //
     // NO .blob OF AN OLDER GENERATION CAN EXIST, because no build has ever written one. That is why
     // refusing is honest here rather than a gap: the .json beside it is the recovery path, and it
@@ -34,18 +34,18 @@ namespace BH.SDK.Serialization.Serializers
             if (data.RawPayload == null) return Array.Empty<byte>();
 
             var payloadType = data.RawPayload.GetType();
-            var attribute = payloadType.GetCustomAttribute<DataVersionAttribute>();
-            if (attribute == null || attribute.Domain != domain || attribute.Version != data.Version)
+            var attribute = payloadType.GetCustomAttribute<ModelGenerationAttribute>();
+            if (attribute == null || attribute.Domain != domain || attribute.Generation != data.Generation)
             {
                 throw new ArgumentException(
-                    $"Payload of type '{payloadType}' does not match domain '{domain}' version {data.Version}",
+                    $"Payload of type '{payloadType}' does not match domain '{domain}' generation {data.Generation}",
                     nameof(data.RawPayload));
             }
 
             if (!(data.RawPayload is IBinaryModel model))
             {
                 throw new ArgumentException(
-                    $"'{payloadType}' carries [DataVersion] but no blob codec - it is not [GenerateModel]",
+                    $"'{payloadType}' carries [ModelGeneration] but no blob codec - it is not [GenerateModel]",
                     nameof(data.RawPayload));
             }
 
@@ -67,15 +67,15 @@ namespace BH.SDK.Serialization.Serializers
         {
             var offset = BlobFormat.ReadHeader(data, out var payloadLength);
 
-            var attribute = payloadType.GetCustomAttribute<DataVersionAttribute>();
+            var attribute = payloadType.GetCustomAttribute<ModelGenerationAttribute>();
             if (attribute == null)
-                throw new ArgumentException($"'{payloadType}' carries no [DataVersion]", nameof(payloadType));
+                throw new ArgumentException($"'{payloadType}' carries no [ModelGeneration]", nameof(payloadType));
 
             var instance = Activator.CreateInstance(payloadType);
             if (!(instance is IBinaryModel model))
             {
                 throw new ArgumentException(
-                    $"'{payloadType}' carries [DataVersion] but no blob codec - it is not [GenerateModel]",
+                    $"'{payloadType}' carries [ModelGeneration] but no blob codec - it is not [GenerateModel]",
                     nameof(payloadType));
             }
 
@@ -85,7 +85,7 @@ namespace BH.SDK.Serialization.Serializers
             if (reader.Remaining != 0)
                 throw new BlobFormatException($"{reader.Remaining} bytes left over after the payload");
 
-            return new EnvelopeData(attribute.Version, instance);
+            return new EnvelopeData(attribute.Generation, instance);
         }
     }
 }

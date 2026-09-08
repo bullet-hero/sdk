@@ -4,17 +4,17 @@ using BH.SDK.Models.Objects;
 using BH.SDK.Models.Primitives;
 using Newtonsoft.Json;
 
-namespace BH.SDK.Versions.V0_0
+namespace BH.SDK.Versions.V0
 {
     // ReSharper disable once InconsistentNaming
 
 
-    /// <summary> The v0.0 generation of the game domain. A frozen snapshot - never edit it to match today's shape. </summary>
-    [DataVersion(DataDomains.GameLevel, 0, 0)]
-    public class GameLevelV0_0
+    /// <summary> Generation 0 of the game domain. A frozen snapshot - never edit it to match today's shape. </summary>
+    [ModelGeneration(ModelDomains.GameLevel, ModelGenerations.Test)]
+    public class GameLevelV0
     {
         // GameEvents is its own independently-versioned domain - must be typed as the CURRENT
-        // GameEvents class, same reasoning as LevelV0_0.Settings/.Game/.Resources.
+        // GameEvents class, same reasoning as LevelV0.Settings/.Game/.Resources.
 
         /// <summary> Its own versioned domain, so this is typed as the CURRENT class - the envelope upgrades it before this container is read. </summary>
         [JsonProperty("test_game_events")]

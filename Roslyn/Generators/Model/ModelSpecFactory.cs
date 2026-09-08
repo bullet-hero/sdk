@@ -59,9 +59,8 @@ namespace BH.SDK.Roslyn.Model
                 EquatableArray.From(ResolveFamilies(type)),
                 HintName(type),
                 ResolveTypeTag(type),
-                ResolveDomain(type, out var major, out var minor),
-                major,
-                minor);
+                ResolveDomain(type, out var generation),
+                generation);
         }
 
         #region Shape resolution
@@ -385,7 +384,7 @@ namespace BH.SDK.Roslyn.Model
             if (IsModelReference(type))
                 return new ValueSpec(name,
                     type.IsSealed ? ValueKind.ModelSealed : ValueKind.ModelPolymorphic,
-                    ValueKind.None, string.Empty, LeafVersion(type), LeafFamily(type));
+                    ValueKind.None, string.Empty, LeafGeneration(type), LeafFamily(type));
 
             if (type.IsValueType) return new ValueSpec(name, ValueKind.Struct);
 
@@ -406,13 +405,13 @@ namespace BH.SDK.Roslyn.Model
             return string.Empty;
         }
 
-        /// <summary> The [DataVersion] a member's own type carries, as it is written. </summary>
-        private static string LeafVersion(ITypeSymbol type)
+        /// <summary> The [ModelGeneration] a member's own type carries, or Invalid. </summary>
+        private static int LeafGeneration(ITypeSymbol type)
         {
-            if (!(type is INamedTypeSymbol named)) return string.Empty;
+            if (!(type is INamedTypeSymbol named)) return ModelGenerationValues.Invalid;
 
-            var domain = ResolveDomain(named, out var major, out var minor);
-            return domain is null ? string.Empty : major + "." + minor;
+            var domain = ResolveDomain(named, out var generation);
+            return domain is null ? ModelGenerationValues.Invalid : generation;
         }
 
         private static ValueSpec Primitive(ITypeSymbol type)
@@ -495,22 +494,27 @@ namespace BH.SDK.Roslyn.Model
             return NoTypeTag;
         }
 
-        /// <summary> The [DataVersion] this type carries, if any. </summary>
-        private static string ResolveDomain(INamedTypeSymbol type, out int major, out int minor)
+        // MATCHED BY SIMPLE NAME, which is what makes this the single most dangerous line in the
+        // generator: rename ModelGenerationAttribute without renaming the literal here and every
+        // type resolves to no domain at all - the blob emitter silently stops writing envelopes and
+        // the JSON emitter silently stops wrapping nested domains. It compiles clean and the format
+        // is different. The arity is the same trap one step down, which is why a wrong one is
+        // REPORTED now rather than skipped in silence.
+
+        /// <summary> The [ModelGeneration] this type carries, if any. </summary>
+        private static string ResolveDomain(INamedTypeSymbol type, out int generation)
         {
-            major = 0;
-            minor = 0;
+            generation = ModelGenerationValues.Invalid;
 
             foreach (var attribute in type.GetAttributes())
             {
-                if (attribute.AttributeClass?.Name != "DataVersionAttribute") continue;
-                if (attribute.ConstructorArguments.Length < 3) continue;
+                if (attribute.AttributeClass?.Name != "ModelGenerationAttribute") continue;
+                if (attribute.ConstructorArguments.Length < 2) continue;
 
                 var domain = attribute.ConstructorArguments[0].Value as string;
                 if (domain is null) continue;
 
-                major = System.Convert.ToInt32(attribute.ConstructorArguments[1].Value);
-                minor = System.Convert.ToInt32(attribute.ConstructorArguments[2].Value);
+                generation = System.Convert.ToInt32(attribute.ConstructorArguments[1].Value);
                 return domain;
             }
 

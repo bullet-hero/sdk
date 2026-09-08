@@ -95,7 +95,7 @@ namespace BH.SDK.Tests
             Assert.IsTrue(source.Equals(restored));
         }
 
-        // The claim that made the field additive: no DataVersion bump on LevelMeta, no migrator. An
+        // The claim that made the field additive: no generation bump on LevelMeta, no migrator. An
         // absent key leaves the constructor's empty StringValue standing, which is what a record
         // written before credits existed means.
         [Test]

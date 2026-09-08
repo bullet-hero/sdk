@@ -280,7 +280,7 @@ namespace BH.SDK.Serialization
         // them holds BYTES, and none of them can go through the string API without deciding that
         // Bson does not exist.
         //
-        // The domain and the version come off the type's own [DataVersion] rather than from the
+        // The domain and the version come off the type's own [ModelGeneration] rather than from the
         // caller, for the same reason the string API refuses a type without one: an envelope whose
         // version was supplied by whoever wrote it is an envelope that can lie about what it holds.
 
@@ -289,12 +289,12 @@ namespace BH.SDK.Serialization
         {
             if (value == null) throw new ArgumentNullException(nameof(value));
 
-            var attribute = value.GetType().GetCustomAttribute<DataVersionAttribute>();
+            var attribute = value.GetType().GetCustomAttribute<ModelGenerationAttribute>();
             if (attribute == null)
                 throw new ArgumentException(CantConvertMessage<TValue>(nameof(SerializeEnvelope)), typeof(TValue).Name);
 
             return GetDataSerializer(type)
-                .SerializeEnvelope(attribute.Domain, new EnvelopeData(attribute.Version, value));
+                .SerializeEnvelope(attribute.Domain, new EnvelopeData(attribute.Generation, value));
         }
 
         /// <summary> Reads a versioned aggregate back out of an envelope's bytes, migrating it to
@@ -311,6 +311,6 @@ namespace BH.SDK.Serialization
         }
 
         private static string CantConvertMessage<TValue>(string methodName)
-            => $"Type '{typeof(TValue)}' has no [DataVersion] attribute and cannot be used with {methodName}";
+            => $"Type '{typeof(TValue)}' has no [ModelGeneration] attribute and cannot be used with {methodName}";
     }
 }

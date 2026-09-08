@@ -2,7 +2,7 @@ namespace BH.SDK.Models.Enums
 {
     // World is 0 on purpose, so a file written before Checkpoint carried a position deserializes
     // into it and reads as "respawn where the level says", which is what every existing checkpoint
-    // already meant. That is also why GameEvents never bumped its DataVersion - "absent" and
+    // already meant. That is also why GameEvents never bumped its generation - "absent" and
     // "World at (0, 0)" have to mean the same thing for this to need no migration.
     //
     // Camera and CameraPosition differ by exactly one term and the difference is the point of

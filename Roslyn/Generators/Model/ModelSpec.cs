@@ -157,13 +157,12 @@ namespace BH.SDK.Roslyn.Model
         public ModelSpec(string @namespace, string name, string qualifiedName, string accessibility,
             bool isSealed, bool isAbstract, string baseModel, EquatableArray<MemberSpec> members,
             EquatableArray<FamilySpec> families, string hintName,
-            int typeTag, string domain, int major, int minor)
+            int typeTag, string domain, int generation)
         {
             IsAbstract = isAbstract;
             TypeTag = typeTag;
             Domain = domain;
-            Major = major;
-            Minor = minor;
+            Generation = generation;
             Namespace = @namespace;
             Name = name;
             QualifiedName = qualifiedName;
@@ -214,15 +213,13 @@ namespace BH.SDK.Roslyn.Model
         /// thing - a JSON [tag, payload] and a blob [tag][payload] carry the same tag. </summary>
         public int TypeTag { get; }
 
-        /// <summary> The [DataVersion] domain this type is the root of, or null. A versioned type
-        /// writes its own envelope, exactly as it does in JSON. </summary>
+        /// <summary> The [ModelGeneration] domain this type is the root of, or null. A versioned
+        /// type writes its own envelope, exactly as it does in JSON. </summary>
         public string Domain { get; }
 
-        /// <summary> The model's own data version, when it is a versioning boundary. </summary>
-        public int Major { get; }
-
-        /// <summary> The minor half of it. </summary>
-        public int Minor { get; }
+        /// <summary> The model's own generation, when it is a versioning boundary,
+        /// or ModelGenerations.Invalid when it is not. </summary>
+        public int Generation { get; }
 
         /// <summary> Compared by VALUE: an incremental generator that compares its specs by reference re-emits every model on every keystroke. </summary>
         public bool Equals(ModelSpec other) => other is not null
@@ -232,7 +229,7 @@ namespace BH.SDK.Roslyn.Model
             && BaseModel == other.BaseModel
             && Members.Equals(other.Members) && Families.Equals(other.Families)
             && HintName == other.HintName && TypeTag == other.TypeTag
-            && Domain == other.Domain && Major == other.Major && Minor == other.Minor;
+            && Domain == other.Domain && Generation == other.Generation;
 
         /// <summary> The same, boxed. </summary>
         public override bool Equals(object obj) => obj is ModelSpec other && Equals(other);

@@ -13,7 +13,7 @@ namespace BH.SDK.Serialization.Serializers
     // members of the abstract JsonWriter/JsonReader - so the same JsonSerializer (and therefore the
     // same VersionedEnvelopeConverter chain) works unchanged for both JSON and BSON. Only the raw
     // reader/writer over the byte stream differs per format, which is what subclasses supply.
-    // See VERSION-UPDATE.md, "Format-agnosticism".
+    // See Docs/VERSIONING.md, "Format-agnosticism".
 
     /// <summary> The envelope half every Newtonsoft-backed format shares; a subclass supplies only the
     /// reader and writer over the bytes. </summary>
@@ -36,17 +36,17 @@ namespace BH.SDK.Serialization.Serializers
         /// <summary> The reader this format takes bytes back through. </summary>
         protected abstract JsonReader CreateReader(Stream stream);
 
-        /// <summary> Writes one envelope, refusing a payload whose own <c>[DataVersion]</c> does not match what it claims. </summary>
+        /// <summary> Writes one envelope, refusing a payload whose own <c>[ModelGeneration]</c> does not match what it claims. </summary>
         public byte[] SerializeEnvelope(string domain, EnvelopeData data)
         {
             if (data.RawPayload == null) return Array.Empty<byte>();
 
             var payloadType = data.RawPayload.GetType();
-            var attribute = payloadType.GetCustomAttribute<DataVersionAttribute>();
-            if (attribute == null || attribute.Domain != domain || attribute.Version != data.Version)
+            var attribute = payloadType.GetCustomAttribute<ModelGenerationAttribute>();
+            if (attribute == null || attribute.Domain != domain || attribute.Generation != data.Generation)
             {
                 throw new ArgumentException(
-                    $"Payload of type '{payloadType}' does not match domain '{domain}' version {data.Version}",
+                    $"Payload of type '{payloadType}' does not match domain '{domain}' generation {data.Generation}",
                     nameof(data.RawPayload));
             }
 
@@ -56,34 +56,34 @@ namespace BH.SDK.Serialization.Serializers
             return stream.ToArray();
         }
 
-        // Two streaming passes over the bytes, not one materialized tree. The version has to be
+        // Two streaming passes over the bytes, not one materialized tree. The generation has to be
         // known before the payload can be typed, and reading it used to mean loading the WHOLE
         // document into a JObject and then walking that tree a second time to deserialize - so a
         // level was parsed twice, the second time out of a tree that cost one JToken per value.
-        // The first pass here stops at the version property; only the second one reads content.
+        // The first pass here stops at the generation property; only the second one reads content.
         //
         // Both passes are format-agnostic: subclasses supply the reader, and nothing below it cares
         // whether the bytes are JSON or BSON.
 
         /// <summary>
         /// Reads one envelope. VersionedEnvelopeConverter resolves the concrete historical type for
-        /// the version it finds and upgrades it to the domain's current shape in one step, so what
+        /// the generation it finds and upgrades it to the domain's current shape in one step, so what
         /// comes back is already current-shape - "raw" only means handed back untyped.
         /// </summary>
         public EnvelopeData DeserializeEnvelope(byte[] data, Type payloadType)
         {
             VersionedTypeRegistry.ThrowIfNoDomain(payloadType);
 
-            var version = ReadVersion(data, payloadType);
+            var generation = ReadGeneration(data, payloadType);
 
             using var stream = new MemoryStream(data);
             using var reader = CreateReader(stream);
             var rawPayload = _serializer.Deserialize(reader, payloadType);
 
-            return new EnvelopeData(version, rawPayload);
+            return new EnvelopeData(generation, rawPayload);
         }
 
-        private Version ReadVersion(byte[] data, Type payloadType)
+        private int ReadGeneration(byte[] data, Type payloadType)
         {
             using var stream = new MemoryStream(data);
             using var reader = CreateReader(stream);
@@ -93,20 +93,20 @@ namespace BH.SDK.Serialization.Serializers
 
             while (reader.Read() && reader.TokenType == JsonToken.PropertyName)
             {
-                var isVersion = (string)reader.Value == Names.Version;
+                var isGeneration = (string)reader.Value == Names.Generation;
                 if (!reader.Read()) break;
 
-                // Skip() rather than a full read: everything before the version is content this
+                // Skip() rather than a full read: everything before the generation is content this
                 // pass has no use for, and the ordinary document has nothing there at all.
-                if (!isVersion)
+                if (!isGeneration)
                 {
                     reader.Skip();
                     continue;
                 }
-                return _serializer.Deserialize<Version>(reader);
+                return _serializer.Deserialize<int>(reader);
             }
 
-            throw new JsonSerializationException($"Missing '{Names.Version}' property for type '{payloadType}'");
+            throw new JsonSerializationException($"Missing '{Names.Generation}' property for type '{payloadType}'");
         }
     }
 }

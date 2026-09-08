@@ -33,7 +33,7 @@ namespace BH.SDK.Tests
             Assert.AreEqual(0f, position.Y);
         }
 
-        // The whole reason GameEvents never bumped its DataVersion: absent has to mean the same
+        // The whole reason GameEvents never bumped its generation: absent has to mean the same
         // thing the field's default means. The document is hand-spliced rather than produced by
         // serializing a current GameEvents, because a current one would carry the new keys - the
         // same reason Tests/MockData.cs splices its own historical fragments by hand.
@@ -46,7 +46,7 @@ namespace BH.SDK.Tests
             // Built from the constants: this fixture is a document in the CURRENT format that simply
             // omits the two keys under test, so the envelope has to follow the format, not a literal.
             var json =
-                $"{{\"{Names.Version}\":\"1.0\",\"{Names.Value}\":{{\"checkpoints\":[{{\"f\":42,\"name\":\"Old\",\"a\":true}}]}}}}";
+                $"{{\"{Names.Generation}\":1,\"{Names.Value}\":{{\"checkpoints\":[{{\"f\":42,\"name\":\"Old\",\"a\":true}}]}}}}";
 
             var events = new SerializationService().DeserializeData<GameEvents>(json);
 

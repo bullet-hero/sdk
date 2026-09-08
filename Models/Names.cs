@@ -51,6 +51,12 @@
         public const string Kind = "kind";
         /// <summary> Word kept in the key vocabulary; nothing is built from it today. </summary>
         public const string Value = "v";
+        /// <summary> The versioned envelope's own generation key - the OTHER half of {g, v}. Not
+        /// Version below, which is the author's own version of a level: one file would then carry
+        /// "vrs" meaning two different things at two depths. The letter is reused by ChannelG and
+        /// GlobalShort, which is fine - keys are local to their object, and an envelope holds
+        /// nothing but these two. </summary>
+        public const string Generation = "g";
         /// <summary> The word "value", for a settings key that spells it out - Value
         /// itself is the ENVELOPE's payload key and is one character. </summary>
         public const string ValueWord = "value";
@@ -65,7 +71,9 @@
         public const string Level = "level";
         /// <summary> AudioDistortion.Level. </summary>
         public const string LevelShort = "lvl";
-        /// <summary> BestRun.LevelVersion, LevelMeta.LevelVersion, LevelStatistics.LevelVersion. </summary>
+        /// <summary> BestRun.LevelVersion, LevelMeta.LevelVersion, LevelStatistics.LevelVersion.
+        /// The AUTHOR's version of a level, a System.Version written as a string - never the
+        /// envelope's, which is Generation above. </summary>
         public const string Version = "vrs";
         /// <summary> Word fragment, built into RequireResourceMeta, ResourcesMeta. </summary>
         public const string Meta = "meta";

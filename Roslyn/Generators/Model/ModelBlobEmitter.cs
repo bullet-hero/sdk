@@ -56,14 +56,13 @@ namespace BH.SDK.Roslyn.Model
 
             if (spec.Domain != null)
             {
-                builder.Append(indent).AppendLine("    // An aggregate root carries its own version, exactly as it does in");
+                builder.Append(indent).AppendLine("    // An aggregate root carries its own generation, exactly as it does in");
                 builder.Append(indent).AppendLine("    // JSON, and a length so a reader can tell a short payload from a");
                 builder.Append(indent).AppendLine("    // wrong one. The domain is written as text rather than as a number:");
                 builder.Append(indent).AppendLine("    // a numbering would be a second registry to keep in step with");
-                builder.Append(indent).AppendLine("    // DataDomains, and the bytes it saves are a rounding error.");
+                builder.Append(indent).AppendLine("    // ModelDomains, and the bytes it saves are a rounding error.");
                 builder.Append(indent).Append("    writer.WriteString(\"").Append(spec.Domain).AppendLine("\");");
-                builder.Append(indent).Append("    writer.WriteUShort(").Append(spec.Major).AppendLine(");");
-                builder.Append(indent).Append("    writer.WriteUShort(").Append(spec.Minor).AppendLine(");");
+                builder.Append(indent).Append("    writer.WriteInt(").Append(spec.Generation).AppendLine(");");
                 builder.Append(indent).AppendLine("    var lengthSlot = writer.ReserveInt();");
                 builder.Append(indent).AppendLine("    var contentStart = writer.Length;");
                 builder.Append(indent).Append("    WriteBlob").Append(spec.Name).AppendLine("(ref writer);");
@@ -220,23 +219,21 @@ namespace BH.SDK.Roslyn.Model
             if (spec.Domain != null)
             {
                 builder.Append(indent).AppendLine("    var domain = reader.ReadString();");
-                builder.Append(indent).AppendLine("    var major = reader.ReadUShort();");
-                builder.Append(indent).AppendLine("    var minor = reader.ReadUShort();");
+                builder.Append(indent).AppendLine("    var generation = reader.ReadInt();");
                 builder.Append(indent).AppendLine("    var length = reader.ReadInt();");
                 builder.Append(indent).Append("    if (domain != \"").Append(spec.Domain).AppendLine("\")");
                 builder.Append(indent).Append("        throw new ").Append(Blob)
                     .Append(".BlobFormatException($\"expected domain '").Append(spec.Domain)
                     .AppendLine("', found '{domain}'\");");
-                builder.Append(indent).AppendLine("    // A version tag is written on every envelope so a future generation");
-                builder.Append(indent).AppendLine("    // CAN be migrated. None can exist yet - no build has ever written a");
+                builder.Append(indent).AppendLine("    // A generation tag is written on every envelope so a future one CAN");
+                builder.Append(indent).AppendLine("    // be migrated. None can exist yet - no build has ever written a");
                 builder.Append(indent).AppendLine("    // .blob - so an unknown one is refused rather than guessed at, and");
                 builder.Append(indent).AppendLine("    // the .json beside it is the recovery path.");
-                builder.Append(indent).Append("    if (major != ").Append(spec.Major)
-                    .Append(" || minor != ").Append(spec.Minor).AppendLine(")");
+                builder.Append(indent).Append("    if (generation != ").Append(spec.Generation).AppendLine(")");
                 builder.Append(indent).Append("        throw new ").Append(Blob)
                     .Append(".BlobFormatException($\"").Append(spec.Domain)
-                    .Append(" is version {major}.{minor}, this build reads ").Append(spec.Major)
-                    .Append('.').Append(spec.Minor).AppendLine("\");");
+                    .Append(" is generation {generation}, this build reads ").Append(spec.Generation)
+                    .AppendLine("\");");
                 builder.Append(indent).AppendLine("    var contentStart = reader.Position;");
                 builder.Append(indent).Append("    ReadBlob").Append(spec.Name).AppendLine("(ref reader);");
                 builder.Append(indent).AppendLine("    if (reader.Position - contentStart != length)");

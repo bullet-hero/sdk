@@ -60,6 +60,26 @@ namespace BH.SDK.Models.Attributes
     public sealed class GenerateModelMergeAttribute : System.Attribute { }
 }
 
+namespace BH.SDK.Versions
+{
+    // WITHOUT THIS STUB THE WHOLE VERSIONED PATH IS UNTESTED, and untestable in a way that looks
+    // like nothing: ModelSpecFactory matches the attribute by its SIMPLE NAME, so a fixture with no
+    // such type in scope resolves to no domain and both emitters quietly take their unversioned
+    // branch. It was absent for as long as the generator existed.
+    [System.AttributeUsage(System.AttributeTargets.Class)]
+    public class ModelGenerationAttribute : System.Attribute
+    {
+        public ModelGenerationAttribute(string domain, int generation)
+        {
+            Domain = domain;
+            Generation = generation;
+        }
+
+        public string Domain { get; }
+        public int Generation { get; }
+    }
+}
+
 namespace BH.SDK.Utils
 {
     using System.Collections.Generic;
@@ -223,9 +243,9 @@ namespace BH.SDK.Serialization.Json
     public static class JsonModels
     {
         public static void ReadObject(JsonReader reader, IJsonModel model) { }
-        public static void WriteEnvelope(JsonWriter writer, IJsonModel value, string version) { }
+        public static void WriteEnvelope(JsonWriter writer, IJsonModel value, int generation) { }
         public static T Read<T>(JsonReader reader) where T : class, IJsonModel, new() => null;
-        public static T ReadEnveloped<T>(JsonReader reader) where T : class, IJsonModel, new() => null;
+        public static T ReadEnveloped<T>(JsonReader reader, int generation) where T : class, IJsonModel, new() => null;
     }
 
     public static class JsonPrimitives

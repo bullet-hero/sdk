@@ -35,7 +35,7 @@ namespace BH.SDK.Models.Clipboard
     /// instance as the backing store of all its per-timeline buffers.
     /// </summary>
     [RuleContainer]
-    [DataVersion(DataDomains.ClipboardData, 1, 0)]
+    [ModelGeneration(ModelDomains.ClipboardData, ModelGenerations.Release)]
     [GenerateModel]
     public sealed partial class ClipboardData : IModel<ClipboardData>
     {

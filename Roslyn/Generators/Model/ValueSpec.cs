@@ -47,18 +47,30 @@ namespace BH.SDK.Roslyn.Model
         ModelPolymorphic,
     }
 
+    // MIRRORS BH.SDK's ModelGenerations.Invalid, and has to be its own copy: this assembly is
+    // compiled against no reference to the SDK at all - the generator only ever sees the user's
+    // source through Roslyn symbols. The two must stay in step; ModelGenerations.cs says so on its
+    // own side.
+
+    /// <summary> The generation numbers the generator itself needs to name. </summary>
+    internal static class ModelGenerationValues
+    {
+        /// <summary> No generation: a leaf whose type is not a versioning boundary. </summary>
+        public const int Invalid = -1;
+    }
+
     /// <summary> A leaf's type and how to encode it. </summary>
     internal readonly struct ValueSpec : IEquatable<ValueSpec>
     {
         /// <summary> One value's type as the emitters see it - what it is, and what it wraps where that matters. </summary>
         public ValueSpec(string type, ValueKind kind, ValueKind underlying = ValueKind.None,
-            string accessor = "", string version = "", string family = "")
+            string accessor = "", int generation = ModelGenerationValues.Invalid, string family = "")
         {
             Type = type;
             Kind = kind;
             Underlying = underlying;
             Accessor = accessor;
-            Version = version;
+            Generation = generation;
             Family = family;
         }
 
@@ -75,11 +87,11 @@ namespace BH.SDK.Roslyn.Model
         /// The public field beside it costs nothing. </summary>
         public string Accessor { get; }
 
-        /// <summary> "major.minor" when this leaf's TYPE is a [DataVersion] aggregate, empty
-        /// otherwise. A versioned member is wrapped in its own envelope by whoever HOLDS it, not by
-        /// itself - which is what leaves the top-level wrapper to VersionedEnvelopeConverter, and
-        /// with it the migration path an older file still needs. </summary>
-        public string Version { get; }
+        /// <summary> The generation when this leaf's TYPE is a [ModelGeneration] aggregate,
+        /// Invalid otherwise. A versioned member is wrapped in its own envelope by whoever HOLDS it,
+        /// not by itself - which is what leaves the top-level wrapper to VersionedEnvelopeConverter,
+        /// and with it the migration path an older file still needs. </summary>
+        public int Generation { get; }
 
         /// <summary> The value-family interface this leaf's type implements, when it has one.
         /// A member declared as the CONCRETE type is still written `[tag, payload]` in JSON -
@@ -94,7 +106,7 @@ namespace BH.SDK.Roslyn.Model
         /// <summary> Compared by VALUE: an incremental generator that compares its specs by reference re-emits every model on every keystroke. </summary>
         public bool Equals(ValueSpec other) => Type == other.Type && Kind == other.Kind
             && Underlying == other.Underlying && Accessor == other.Accessor
-            && Version == other.Version && Family == other.Family;
+            && Generation == other.Generation && Family == other.Family;
 
         /// <summary> The same, boxed. </summary>
         public override bool Equals(object obj) => obj is ValueSpec other && Equals(other);
@@ -102,6 +114,6 @@ namespace BH.SDK.Roslyn.Model
         /// <summary> Compared by VALUE: an incremental generator that compares its specs by reference re-emits every model on every keystroke. </summary>
         public override int GetHashCode() => unchecked((Type?.GetHashCode() ?? 0) * 397
             ^ (int)Kind * 31 ^ (int)Underlying ^ (Accessor?.GetHashCode() ?? 0)
-            ^ (Version?.GetHashCode() ?? 0) ^ (Family?.GetHashCode() ?? 0));
+            ^ Generation ^ (Family?.GetHashCode() ?? 0));
     }
 }

@@ -14,7 +14,7 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
     // TRUE in the model and per-platform in a fresh settings file, which is the one place this group
     // differs from its two neighbours. The model's default is what an author who never had the
     // setting gets - the behaviour the editor already had, so the field is additive and no
-    // DataVersion moved - while a settings.json BORN on a phone is seeded false
+    // generation moved - while a settings.json BORN on a phone is seeded false
     // (Services.Root's RootEntryPoint, beside the controls seeding it already does): post-processing
     // is the single most expensive thing the editor draws, and the one screen a phone runs it on is
     // also the one where the author is scrubbing rather than watching.

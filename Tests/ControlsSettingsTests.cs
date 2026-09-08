@@ -246,7 +246,7 @@ namespace BH.SDK.Tests
             CollectionAssert.AreEqual(settings.Controls.Priority, restored.Controls.Priority);
         }
 
-        // The removed ClassicControlsType is why UserSettings deliberately did NOT bump its DataVersion:
+        // The removed ClassicControlsType is why UserSettings deliberately did NOT bump its generation:
         // an unknown key has to be skipped, not throw, or every settings.json written before this change
         // would fail to load.
         [Test]

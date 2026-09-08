@@ -60,7 +60,7 @@ namespace BH.SDK.Tests
             Assert.IsFalse(source.Equals(louder));
         }
 
-        // Through AudioLevel, not the track alone: only a [DataVersion] aggregate root may go through
+        // Through AudioLevel, not the track alone: only a [ModelGeneration] aggregate root may go through
         // SerializeData, and a track is a nested model like every other one here.
         [Test]
         [Author(Metadata.Author.Vertoker)]

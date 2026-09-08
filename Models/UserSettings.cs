@@ -27,7 +27,7 @@ namespace BH.SDK.Models
     /// play the same way regardless of these.
     /// </summary>
     [RuleContainer]
-    [DataVersion(DataDomains.UserSettings, 1, 0)]
+    [ModelGeneration(ModelDomains.UserSettings, ModelGenerations.Release)]
     [GenerateModel]
     public sealed partial class UserSettings : IModel<UserSettings>, IMoveable<UserSettings>
     {

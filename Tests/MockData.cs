@@ -26,7 +26,7 @@ using BH.SDK.Models.SettingGroups;
 using BH.SDK.Models.Values;
 using BH.SDK.Rules;
 using BH.SDK.Serialization;
-using BH.SDK.Versions.V0_0;
+using BH.SDK.Versions.V0;
 using Newtonsoft.Json.Linq;
 
 namespace BH.SDK.Tests
@@ -827,22 +827,22 @@ namespace BH.SDK.Tests
 
         #endregion
 
-        #region Version v0.0
+        #region Generation 0
 
-        // Mock data for the Versions/V0_0 migration-test generation (see VERSION-UPDATE.md, "a real
-        // (test) generation exists", and TestLevelV0_0Migration in SerializationTests.cs). Built from
-        // the actual LevelSettingsV0_0/GameEventsV0_0/GameLevelV0_0/LevelResourcesV0_0 snapshot
+        // Mock data for the Versions/V0 migration-test generation (see Docs/VERSIONING.md, "a real
+        // (test) generation exists", and TestLevelV0Migration in SerializationTests.cs). Built from
+        // the actual LevelSettingsV0/GameEventsV0/GameLevelV0/LevelResourcesV0 snapshot
         // classes and serialized through the real SerializationService rather than a hand-typed JSON
         // literal, so the fixture stays honest against those classes' own [JsonProperty] names (e.g.
         // "test_fps") instead of silently drifting out of sync with a copy-pasted string if they ever
         // change.
-        public static LevelSettingsV0_0 CreateTestLevelSettingsV0_0() => new() { Framerate = 61 };
+        public static LevelSettingsV0 CreateTestLevelSettingsV0() => new() { Framerate = 61 };
 
-        public static GameEventsV0_0 CreateTestGameEventsV0_0() => new();
+        public static GameEventsV0 CreateTestGameEventsV0() => new();
 
-        public static GameLevelV0_0 CreateTestGameLevelV0_0()
+        public static GameLevelV0 CreateTestGameLevelV0()
         {
-            var gameLevel = new GameLevelV0_0
+            var gameLevel = new GameLevelV0
             {
                 GameEvents = new GameEvents(),
                 Objects = new Dictionary<ObjectId, RectObject>(),
@@ -852,44 +852,44 @@ namespace BH.SDK.Tests
             return gameLevel;
         }
 
-        public static LevelResourcesV0_0 CreateTestLevelResourcesV0_0() => new()
+        public static LevelResourcesV0 CreateTestLevelResourcesV0() => new()
         {
             Resources = new Dictionary<int, object>(),
         };
 
-        public static AudioLevelV0_0 CreateTestAudioLevelV0_0() => new();
+        public static AudioLevelV0 CreateTestAudioLevelV0() => new();
 
-        public static LevelV0_0 CreateTestLevelV0_0() => new()
+        public static LevelV0 CreateTestLevelV0() => new()
         {
             Settings = new LevelSettings(),
             Game = new GameLevel(),
-            Audio = CreateTestAudioLevelV0_0(),
+            Audio = CreateTestAudioLevelV0(),
             Resources = new LevelResources(),
         };
 
         // GameEvents/LevelSettings/LevelResources are independently-versioned domains (see
-        // VERSION-UPDATE.md) - VersionedEnvelopeConverter always writes a nested envelope using the
-        // runtime instance's OWN [DataVersion] attribute, so serializing LevelV0_0/GameLevelV0_0 as a
-        // whole tags every nested envelope with the domain's CURRENT version (1.0), never 0.0 - there
-        // is no way to make a LevelV0_0/GameLevelV0_0 field actually hold a LevelSettingsV0_0/
-        // GameEventsV0_0 instance, since their declared property types are the CURRENT classes by
-        // design (see the "gotcha" in VERSION-UPDATE.md). So each independently-versioned fragment is
-        // serialized standalone from its own VX_Y snapshot type instead (which DOES carry the old
-        // [DataVersion]) and spliced into the current-shape envelope produced from the outer object -
-        // a genuine v0.0 tag can only ever come from a real VX_Y instance's own attribute.
-        public static string CreateTestLevelV0_0Json(SerializationService serializationService)
+        // Docs/VERSIONING.md) - VersionedEnvelopeConverter always writes a nested envelope using the
+        // runtime instance's OWN [ModelGeneration] attribute, so serializing LevelV0/GameLevelV0 as a
+        // whole tags every nested envelope with the domain's CURRENT generation (1), never 0 - there
+        // is no way to make a LevelV0/GameLevelV0 field actually hold a LevelSettingsV0/
+        // GameEventsV0 instance, since their declared property types are the CURRENT classes by
+        // design (see the "gotcha" in Docs/VERSIONING.md). So each independently-versioned fragment is
+        // serialized standalone from its own VX snapshot type instead (which DOES carry the old
+        // [ModelGeneration]) and spliced into the current-shape envelope produced from the outer object -
+        // a genuine generation 0 tag can only ever come from a real VX instance's own attribute.
+        public static string CreateTestLevelV0Json(SerializationService serializationService)
         {
-            var settingsFragment = JObject.Parse(serializationService.SerializeData(CreateTestLevelSettingsV0_0()));
-            var gameEventsFragment = JObject.Parse(serializationService.SerializeData(CreateTestGameEventsV0_0()));
-            var resourcesFragment = JObject.Parse(serializationService.SerializeData(CreateTestLevelResourcesV0_0()));
+            var settingsFragment = JObject.Parse(serializationService.SerializeData(CreateTestLevelSettingsV0()));
+            var gameEventsFragment = JObject.Parse(serializationService.SerializeData(CreateTestGameEventsV0()));
+            var resourcesFragment = JObject.Parse(serializationService.SerializeData(CreateTestLevelResourcesV0()));
 
-            var gameFragment = JObject.Parse(serializationService.SerializeData(CreateTestGameLevelV0_0()));
-            gameFragment[Names.Value]![NamesV0_0.GameEvents] = gameEventsFragment;
+            var gameFragment = JObject.Parse(serializationService.SerializeData(CreateTestGameLevelV0()));
+            gameFragment[Names.Value]![NamesV0.GameEvents] = gameEventsFragment;
 
-            var levelJson = JObject.Parse(serializationService.SerializeData(CreateTestLevelV0_0()));
-            levelJson[Names.Value]![NamesV0_0.Settings] = settingsFragment;
-            levelJson[Names.Value]![NamesV0_0.Game] = gameFragment;
-            levelJson[Names.Value]![NamesV0_0.Resources] = resourcesFragment;
+            var levelJson = JObject.Parse(serializationService.SerializeData(CreateTestLevelV0()));
+            levelJson[Names.Value]![NamesV0.Settings] = settingsFragment;
+            levelJson[Names.Value]![NamesV0.Game] = gameFragment;
+            levelJson[Names.Value]![NamesV0.Resources] = resourcesFragment;
 
             return levelJson.ToString();
         }

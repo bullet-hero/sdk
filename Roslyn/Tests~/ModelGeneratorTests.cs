@@ -311,6 +311,89 @@ namespace Fixture
 
         #endregion
 
+        #region A versioned aggregate
+
+        private const string Aggregate = Usings + @"
+using BH.SDK.Versions;
+
+namespace Fixture
+{
+    [GenerateModel]
+    [ModelGeneration(""test_domain"", 1)]
+    public sealed partial class Aggregate : IModel<Aggregate>
+    {
+        [JsonProperty(Names.Layer)] public int Layer { get; set; }
+    }
+
+    [GenerateModel]
+    public sealed partial class Holder : IModel<Holder>
+    {
+        [JsonProperty(Names.Value)] public Aggregate Inner { get; set; }
+
+        public Holder() { Inner = new Aggregate(); }
+    }
+}";
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Normal)]
+        public void AVersionedAggregate_WritesItsOwnEnvelopeInBothFormats()
+        {
+            // The path nothing exercised until the harness learned the attribute. It is matched by
+            // SIMPLE NAME, so its absence resolved every fixture to no domain and both emitters took
+            // their unversioned branch - silently, and with the format different.
+            var run = Run(Aggregate);
+            AssertCompiles(run);
+
+            var aggregate = run.Sources.Single(s => s.Key.Contains("Aggregate")).Value;
+
+            // The blob envelope: domain as text, then ONE generation, then the length slot.
+            Assert.That(aggregate, Does.Contain("writer.WriteString(\"test_domain\");"));
+            Assert.That(aggregate, Does.Contain("writer.WriteInt(1);"));
+            Assert.That(aggregate, Does.Contain("var generation = reader.ReadInt();"));
+            Assert.That(aggregate, Does.Contain("if (generation != 1)"));
+            Assert.That(aggregate, Does.Not.Contain("WriteUShort"));
+
+            // The JSON half is wrapped by whoever HOLDS it, never by the aggregate itself - and the
+            // reader is handed the generation, which is what lets it refuse another one instead of
+            // reading an old payload into today's class.
+            var holder = run.Sources.Single(s => s.Key.Contains("Holder")).Value;
+            Assert.That(holder, Does.Contain("WriteEnvelope(writer, Inner, 1);"));
+            Assert.That(holder, Does.Contain("ReadEnveloped<global::Fixture.Aggregate>(reader, 1)"));
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Easy)]
+        public void GenerationZero_IsAValueRatherThanAnAbsentDomain()
+        {
+            // The frozen snapshots under Versions/V0 read generation 0, so zero may never be the
+            // sentinel for "no generation" - that one is negative. A generator treating it as absent
+            // would stop writing the envelope for exactly the types the migration path needs.
+            var run = Run(Usings + @"
+using BH.SDK.Versions;
+
+namespace Fixture
+{
+    [GenerateModel]
+    [ModelGeneration(""frozen"", 0)]
+    public sealed partial class Frozen : IModel<Frozen>
+    {
+        [JsonProperty(Names.Layer)] public int Layer { get; set; }
+    }
+}");
+
+            AssertCompiles(run);
+
+            var frozen = run.Sources.Single(s => s.Key.Contains("Frozen")).Value;
+            Assert.That(frozen, Does.Contain("writer.WriteString(\"frozen\");"));
+            Assert.That(frozen, Does.Contain("writer.WriteInt(0);"));
+        }
+
+        #endregion
+
         #region Declining
 
         [Test]

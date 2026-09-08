@@ -98,7 +98,7 @@ namespace BH.SDK.Tests
             Assert.IsTrue(level.Equals(level2));
         }
 
-        // IDataSerializer (VERSION-UPDATE.md, "Format-agnosticism") is generic per [DataVersion]
+        // IDataSerializer (Docs/VERSIONING.md, "Format-agnosticism") is generic per [ModelGeneration]
         // domain, not per concrete type - exercised here against two unrelated domains (Level and
         // Theme) to prove it isn't hardcoded to either one. Parametrized over SerializationType so
         // both implementations run through the same assertions - and unlike the JSON/BSON pair this
@@ -117,47 +117,47 @@ namespace BH.SDK.Tests
             Assert.AreEqual(type, dataSerializer.Type);
 
             var level = MockData.CreateTestLevel();
-            var levelAttribute = level.GetType().GetCustomAttribute<DataVersionAttribute>();
+            var levelAttribute = level.GetType().GetCustomAttribute<ModelGenerationAttribute>();
             var levelBytes = dataSerializer.SerializeEnvelope(levelAttribute.Domain,
-                new EnvelopeData(levelAttribute.Version, level));
+                new EnvelopeData(levelAttribute.Generation, level));
             var levelEnvelope = dataSerializer.DeserializeEnvelope(levelBytes, typeof(Level));
-            Assert.AreEqual(levelAttribute.Version, levelEnvelope.Version);
+            Assert.AreEqual(levelAttribute.Generation, levelEnvelope.Generation);
             Assert.IsTrue(level.Equals(levelEnvelope.GetPayload<Level>()));
 
             var theme = MockData.CreateTestTheme();
-            var themeAttribute = theme.GetType().GetCustomAttribute<DataVersionAttribute>();
+            var themeAttribute = theme.GetType().GetCustomAttribute<ModelGenerationAttribute>();
             var themeBytes = dataSerializer.SerializeEnvelope(themeAttribute.Domain,
-                new EnvelopeData(themeAttribute.Version, theme));
+                new EnvelopeData(themeAttribute.Generation, theme));
             var themeEnvelope = dataSerializer.DeserializeEnvelope(themeBytes, typeof(ThemeData));
-            Assert.AreEqual(themeAttribute.Version, themeEnvelope.Version);
+            Assert.AreEqual(themeAttribute.Generation, themeEnvelope.Generation);
             Assert.IsTrue(theme.Equals(themeEnvelope.GetPayload<ThemeData>()));
 
             var shape = MockData.CreateTestCompositeShape();
-            var shapeAttribute = shape.GetType().GetCustomAttribute<DataVersionAttribute>();
+            var shapeAttribute = shape.GetType().GetCustomAttribute<ModelGenerationAttribute>();
             var shapeBytes = dataSerializer.SerializeEnvelope(shapeAttribute.Domain,
-                new EnvelopeData(shapeAttribute.Version, shape));
+                new EnvelopeData(shapeAttribute.Generation, shape));
             var shapeEnvelope = dataSerializer.DeserializeEnvelope(shapeBytes, typeof(CompositeShape));
-            Assert.AreEqual(shapeAttribute.Version, shapeEnvelope.Version);
+            Assert.AreEqual(shapeAttribute.Generation, shapeEnvelope.Generation);
             Assert.IsTrue(shape.Equals(shapeEnvelope.GetPayload<CompositeShape>()));
         }
 
-        // Exercises the full recursive migration chain against a v0.0 fixture (Versions/V0_0) -
+        // Exercises the full recursive migration chain against a generation 0 fixture (Versions/V0) -
         // Level -> LevelSettings/GameLevel/LevelResources (each independently
         // versioned, auto-upgraded by VersionedEnvelopeConverter) -> GameEvents (nested one level
-        // deeper inside GameLevel) -> Audio (intentionally NOT independently versioned at v0.0,
-        // migrated by hand inside LevelV0_0ToV1_0 instead). See VERSION-UPDATE.md. The fixture JSON
-        // itself comes from MockDataSource.CreateTestLevelV0_0Json, built from the real VX_Y snapshot
+        // deeper inside GameLevel) -> Audio (intentionally NOT independently versioned at generation 0,
+        // migrated by hand inside LevelV0ToV1 instead). See Docs/VERSIONING.md. The fixture JSON
+        // itself comes from MockDataSource.CreateTestLevelV0Json, built from the real VX snapshot
         // classes rather than a hand-typed literal - see that method's own comment for why.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.Extreme)]
-        public void TestLevelV0_0Migration()
+        public void TestLevelV0Migration()
         {
             var settings = new SerializationSettings();
             var serializationService = new SerializationService(settings);
 
-            var json = MockData.CreateTestLevelV0_0Json(serializationService);
+            var json = MockData.CreateTestLevelV0Json(serializationService);
 
             var level = serializationService.DeserializeData<Level>(json);
 
@@ -172,7 +172,7 @@ namespace BH.SDK.Tests
             Assert.IsNotNull(level.Audio);
             Assert.IsNotNull(level.Resources);
 
-            // Migration-correctness oracle (see VERSION-UPDATE.md, Rule system section): a migrator's
+            // Migration-correctness oracle (see Docs/VERSIONING.md, Rule system section): a migrator's
             // output must never violate a RuleGroup.Error rule against the current-shape model, even
             // though Warning/Advice issues are allowed (e.g. a sparse fixture missing recommended data).
             var validator = new RuleAnalyzer();

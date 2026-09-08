@@ -30,7 +30,7 @@ namespace BH.SDK.Publishing
 
     /// <summary> One service's conditions for accepting a level. </summary>
     [RuleContainer]
-    [DataVersion(DataDomains.PublishProfile, 1, 0)]
+    [ModelGeneration(ModelDomains.PublishProfile, ModelGenerations.Release)]
     [GenerateModel]
     public sealed partial class PublishProfile : IModel<PublishProfile>
     {

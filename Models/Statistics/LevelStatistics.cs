@@ -35,7 +35,7 @@ namespace BH.SDK.Models.Statistics
 
     /// <summary> Everything one player has done with one level. </summary>
     [RuleContainer]
-    [DataVersion(DataDomains.LevelStatistics, 1, 0)]
+    [ModelGeneration(ModelDomains.LevelStatistics, ModelGenerations.Release)]
     [GenerateModel]
     public sealed partial class LevelStatistics : IModel<LevelStatistics>
     {

@@ -68,7 +68,7 @@ namespace BH.SDK.Tests
         }
 
         // The whole level round trip is what actually matters here: Beats rides inside GameEvents,
-        // which is its own [DataVersion] envelope, and the segment has no converter of its own.
+        // which is its own [ModelGeneration] envelope, and the segment has no converter of its own.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]

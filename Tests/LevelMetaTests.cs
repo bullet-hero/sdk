@@ -110,7 +110,7 @@ namespace BH.SDK.Tests
             Assert.AreEqual(source.LevelDuration, restored.LevelDuration);
         }
 
-        // The claim that made both fields additive: no DataVersion bump, no migrator. An absent key
+        // The claim that made both fields additive: no generation bump, no migrator. An absent key
         // is never written, so the constructor's empty list and zero survive - and zero is exactly
         // the "unknown" the browser must not filter on.
         [Test]

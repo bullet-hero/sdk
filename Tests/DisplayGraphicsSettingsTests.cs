@@ -7,7 +7,7 @@ using NUnit.Framework;
 namespace BH.SDK.Tests
 {
     // The group is desktop-only, so what these pin is not behaviour but the two claims that let it
-    // ship without a DataVersion bump: the defaults are what the game already does (FullScreenWindow
+    // ship without a generation bump: the defaults are what the game already does (FullScreenWindow
     // is ProjectSettings.asset's own fullscreenMode, native resolution, no render scaling, vsync
     // off - which is what SettingsApplier used to write unconditionally), and a settings file
     // written before the group, or before VSync joined it, reads back as exactly those.

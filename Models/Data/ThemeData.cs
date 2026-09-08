@@ -17,7 +17,7 @@ namespace BH.SDK.Models.Data
     /// once - the reason ColorType.ThemeRef exists.
     /// </summary>
     [RuleContainer]
-    [DataVersion(DataDomains.ThemeData, 1, 0)]
+    [ModelGeneration(ModelDomains.ThemeData, ModelGenerations.Release)]
     [GenerateModel]
     public sealed partial class ThemeData : IModel<ThemeData>
     {

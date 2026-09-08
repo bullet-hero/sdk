@@ -28,7 +28,16 @@
     and the whole point of this project is to compile the branch Unity never takes.
   -->
 
+  <!--
+    <Version> IS THE THIRD COPY OF THE SDK'S OWN VERSION, beside SdkVersion.cs and package.json, and
+    it lives HERE rather than in Directory.Build.props on purpose: that file is shared by four
+    projects, so a version in it would also stamp BH.SDK.Roslyn and both test assemblies, which
+    version nothing. Services.Shared.Tests' SdkVersionAgreementTests fails the moment one of the
+    three moves alone.
+  -->
+
   <PropertyGroup>
+    <Version>0.5.5</Version>
     <TargetFramework>netstandard2.1</TargetFramework>
     <LangVersion>9.0</LangVersion>
     <Nullable>disable</Nullable>

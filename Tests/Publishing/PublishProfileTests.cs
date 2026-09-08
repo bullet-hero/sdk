@@ -143,7 +143,7 @@ namespace BH.SDK.Tests.Publishing
         #region Serialization
 
         // A profile is a file an operator keeps for years while its shape moves under them, which is
-        // why it carries [DataVersion] and goes through SerializeData like any other aggregate root.
+        // why it carries [ModelGeneration] and goes through SerializeData like any other aggregate root.
 
         [Test]
         [Author(Metadata.Author.Vertoker)]

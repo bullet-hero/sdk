@@ -16,7 +16,7 @@ namespace BH.SDK.Models.SettingGroups
     /// class are split here, so anything creating objects must hold both.
     /// </summary>
     [RuleContainer]
-    [DataVersion(DataDomains.LevelSettings, 1, 0)]
+    [ModelGeneration(ModelDomains.LevelSettings, ModelGenerations.Release)]
     [GenerateModel]
     public sealed partial class LevelSettings : IObjectIdCounter, IFrameDuration, IModel<LevelSettings>
     {

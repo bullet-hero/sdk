@@ -1,7 +1,7 @@
 namespace BH.SDK.Models.Enums
 {
     // Auto is 0 on purpose, so a file written before this field existed deserializes into it and
-    // keeps rendering exactly as it did. That is also why the domain never bumped its DataVersion:
+    // keeps rendering exactly as it did. That is also why the domain never bumped its generation:
     // "absent" and "Auto" have to mean the same thing for this to need no migration.
     //
     // The three values are not three shaders. Opaque and Transparent name the two render paths a

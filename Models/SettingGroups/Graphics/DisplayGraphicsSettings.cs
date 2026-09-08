@@ -70,7 +70,7 @@ namespace BH.SDK.Models.SettingGroups.Graphics
 
         // Additive, and the zero value is what makes it so: a settings.json written before this
         // field has no "vsync" key, Newtonsoft leaves the constructor's Off in place, and Off is
-        // exactly what the game did unconditionally before there was a choice. No DataVersion move,
+        // exactly what the game did unconditionally before there was a choice. No generation move,
         // the same call Textures and Display themselves made.
 
         /// <summary> Whether presentation waits for the display's refresh. Desktop only - Unity

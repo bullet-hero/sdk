@@ -23,7 +23,7 @@ namespace BH.SDK.Models
     /// hundreds of levels without deserializing a single one of them.
     /// </summary>
     [RuleContainer]
-    [DataVersion(DataDomains.LevelMeta, 1, 0)]
+    [ModelGeneration(ModelDomains.LevelMeta, ModelGenerations.Release)]
     [GenerateModel]
     public sealed partial class LevelMeta : IModel<LevelMeta>
     {
@@ -50,7 +50,7 @@ namespace BH.SDK.Models
         public ResourceKey LevelLogo { get; set; }
 
         /// <summary> The author's own version of this level, bumped by whoever edits it. Unrelated
-        /// to the format version that [DataVersion] tracks. </summary>
+        /// to the format generation that [ModelGeneration] tracks. </summary>
         [RuleNotNull(1, 0)]
         [JsonProperty(Names.Version)]
         public Version LevelVersion { get; set; }

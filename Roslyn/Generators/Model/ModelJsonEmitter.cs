@@ -220,8 +220,8 @@ namespace BH.SDK.Roslyn.Model
                     // A versioned member is wrapped where it is HELD. Its own WriteJson writes the
                     // plain object, so the top-level wrapper stays VersionedEnvelopeConverter's -
                     // and with it the migration path an older file still needs.
-                    if (value.Version.Length > 0)
-                        return Json + ".JsonModels.WriteEnvelope(writer, " + access + ", \"" + value.Version + "\");";
+                    if (value.Generation >= 0)
+                        return Json + ".JsonModels.WriteEnvelope(writer, " + access + ", " + value.Generation + ");";
 
                     // A CONCRETE member of a value family is still tagged. ConverterRouter resolves
                     // by the value's RUNTIME type and a family converter matches every implementor,
@@ -422,8 +422,12 @@ namespace BH.SDK.Roslyn.Model
                 case ValueKind.Struct:
                     return Primitives + ".Read" + SimpleName(value.Type) + "(reader)";
                 case ValueKind.ModelSealed:
-                    if (value.Version.Length > 0)
-                        return Json + ".JsonModels.ReadEnveloped<" + value.Type + ">(reader)";
+                    // The generation is passed so the reader can REFUSE another one. It cannot
+                    // migrate - that needs a type this codec is not - so the alternative was reading
+                    // an old payload by property name into today's class and returning defaults.
+                    if (value.Generation >= 0)
+                        return Json + ".JsonModels.ReadEnveloped<" + value.Type + ">(reader, "
+                               + value.Generation + ")";
                     if (value.Family.Length > 0)
                         return "(" + value.Type + ")" + JsonDispatcher(value.Family) + ".Read(reader)";
                     return Json + ".JsonModels.Read<" + value.Type + ">(reader)";

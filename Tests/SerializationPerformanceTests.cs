@@ -9,7 +9,7 @@ using NUnit.Framework;
 namespace BH.SDK.Tests
 {
     // Reading a level is the slowest thing a player or an editor does on the way into one, and the
-    // envelope layer is where most of it was decided: every [DataVersion] domain resolves its own
+    // envelope layer is where most of it was decided: every [ModelGeneration] domain resolves its own
     // concrete type from its own version, and how that lookup is done is the difference between one
     // streaming pass and one materialized JToken tree per domain. A Level nests ten domains and holds
     // one more per Prefab, so a tree per domain was a tree per prefab too.
@@ -84,8 +84,8 @@ namespace BH.SDK.Tests
         private static double MeasureRead(Level level, SerializationType type)
         {
             var serializer = new SerializationService().GetDataSerializer(type);
-            var attribute = typeof(Level).GetCustomAttribute<DataVersionAttribute>();
-            var bytes = serializer.SerializeEnvelope(attribute.Domain, new EnvelopeData(attribute.Version, level));
+            var attribute = typeof(Level).GetCustomAttribute<ModelGenerationAttribute>();
+            var bytes = serializer.SerializeEnvelope(attribute.Domain, new EnvelopeData(attribute.Generation, level));
 
             // Untimed: the first pass pays every static constructor, JIT stub and contract in the
             // graph, which is not what this measures.
@@ -109,10 +109,10 @@ namespace BH.SDK.Tests
             var level = MockData.CreateLargeTestLevel(ObjectCount, PrefabCount, PrefabObjectCount);
             var service = new SerializationService();
             var serializer = service.GetDataSerializer(type);
-            var attribute = typeof(Level).GetCustomAttribute<DataVersionAttribute>();
+            var attribute = typeof(Level).GetCustomAttribute<ModelGenerationAttribute>();
 
             var writeWatch = Stopwatch.StartNew();
-            var bytes = serializer.SerializeEnvelope(attribute.Domain, new EnvelopeData(attribute.Version, level));
+            var bytes = serializer.SerializeEnvelope(attribute.Domain, new EnvelopeData(attribute.Generation, level));
             writeWatch.Stop();
 
             // Warm-up read, untimed: the first pass through the converter graph pays every static

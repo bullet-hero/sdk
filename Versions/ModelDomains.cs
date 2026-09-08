@@ -1,12 +1,12 @@
 namespace BH.SDK.Versions
 {
-    // Domain name constants used by [DataVersion] on aggregate roots and by anything in
+    // Domain name constants used by [ModelGeneration] on aggregate roots and by anything in
     // Serialization that needs to key per-domain behaviour (e.g. excluded converters) without
-    // Models referencing Serialization types directly. See VERSION-UPDATE.md.
+    // Models referencing Serialization types directly. See Docs/VERSIONING.md.
 
-    /// <summary> The name of every independently-versioned domain, as <c>[DataVersion]</c> spells it. Constants
+    /// <summary> The name of every independently-versioned domain, as <c>[ModelGeneration]</c> spells it. Constants
     /// rather than literals so a domain has one spelling, and so Models never has to see Serialization. </summary>
-    public static class DataDomains
+    public static class ModelDomains
     {
         // Core
 

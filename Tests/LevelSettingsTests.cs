@@ -123,7 +123,7 @@ namespace BH.SDK.Tests
             Assert.AreEqual(source, restored);
         }
 
-        // The claim that made this field additive: no DataVersion bump, no migrator, because an
+        // The claim that made this field additive: no generation bump, no migrator, because an
         // absent key is never written and the constructor's Horizontal survives deserialization.
         [Test]
         [Author(Metadata.Author.Vertoker)]

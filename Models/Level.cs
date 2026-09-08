@@ -20,7 +20,7 @@ namespace BH.SDK.Models
     /// levels never means loading them.
     /// </summary>
     [RuleContainer]
-    [DataVersion(DataDomains.Level, 1, 0)]
+    [ModelGeneration(ModelDomains.Level, ModelGenerations.Release)]
     [GenerateModel]
     public sealed partial class Level : IModel<Level>
     {

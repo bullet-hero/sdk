@@ -77,7 +77,7 @@ namespace BH.SDK.Models.SettingGroups
         // TRUE BY DEFAULT, all three, so a settings file written before them reads back as the HUD
         // the game already had. Like MenuBackgroundKind.Bot and ScreenOrientationLock.Horizontal,
         // the default is the behaviour rather than the zero value - which is what makes them
-        // additive with no DataVersion bump and no migrator.
+        // additive with no generation bump and no migrator.
 
         /// <summary> Whether the run progress bar is drawn. </summary>
         [JsonProperty(Names.ShowGameProgress)]

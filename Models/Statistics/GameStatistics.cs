@@ -12,7 +12,7 @@ namespace BH.SDK.Models.Statistics
     // exists as its own document rather than as a sum computed on demand because deriving it would
     // mean opening every file in stats/ to draw one screen.
     //
-    // SEVEN GROUPS, none of them carrying its own [DataVersion] - one envelope per FILE, exactly as
+    // SEVEN GROUPS, none of them carrying its own [ModelGeneration] - one envelope per FILE, exactly as
     // UserSettings does with its own sub-groups. A group is a heading on a screen and a place to add
     // a field without touching the root, not an independently versioned document.
     //
@@ -22,7 +22,7 @@ namespace BH.SDK.Models.Statistics
 
     /// <summary> Everything one player has done, across every level and every screen. </summary>
     [RuleContainer]
-    [DataVersion(DataDomains.GameStatistics, 1, 0)]
+    [ModelGeneration(ModelDomains.GameStatistics, ModelGenerations.Release)]
     [GenerateModel]
     public sealed partial class GameStatistics : IModel<GameStatistics>
     {

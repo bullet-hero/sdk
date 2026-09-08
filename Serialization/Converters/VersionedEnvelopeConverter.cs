@@ -8,21 +8,26 @@ using Newtonsoft.Json.Linq;
 
 namespace BH.SDK.Serialization.Converters
 {
-    // Single converter for every SaveData kind and any internal aggregate that opts into
-    // versioning via [DataVersion]. Replaces the old per-kind JsonConverterData<T> subclasses and
-    // CompatibilityService entirely - see VERSION-UPDATE.md. CanConvert is gated purely on the
+    // Single converter for every aggregate root and any internal aggregate that opts into
+    // versioning via [ModelGeneration]. Replaces the old per-kind JsonConverterData<T> subclasses
+    // and CompatibilityService entirely - see Docs/VERSIONING.md. CanConvert is gated purely on the
     // attribute being present, so this recurses correctly into nested aggregates without any
     // special-casing for "aggregated vs non-aggregated" models.
+    //
+    // THE ENVELOPE'S KEY IS ITS OWN, and deliberately not Names.Version: that one is the AUTHOR's
+    // version of a level (LevelMeta/BestRun/LevelStatistics), which is a System.Version written as
+    // a string. Sharing "vrs" would put {"vrs":1} and {"vrs":"1.0"} in one file meaning two
+    // different things.
 
-    /// <summary> Wraps every <c>[DataVersion]</c> domain as <c>{version, value}</c>, and on the way back in resolves
-    /// that version to its historical snapshot type and walks the migration chain up to today's shape. </summary>
+    /// <summary> Wraps every <c>[ModelGeneration]</c> domain as <c>{g, v}</c>, and on the way back in resolves
+    /// that generation to its historical snapshot type and walks the migration chain up to today's shape. </summary>
     public class VersionedEnvelopeConverter : JsonConverter
     {
         // Domains currently being written/read one level up the call stack. Suppresses CanConvert
         // just for that domain so the serializer.Serialize/ToObject calls below - which re-enter this
         // same converter for the exact value being wrapped - fall through to plain member
         // serialization instead of re-wrapping it in another envelope. A differently-domained nested
-        // aggregate (e.g. GameLevel's own [DataVersion] inside Level) is a different domain, so it
+        // aggregate (e.g. GameLevel's own [ModelGeneration] inside Level) is a different domain, so it
         // stays convertible and recurses into this converter normally - this is how "aggregated"
         // domains get every nested envelope written/upgraded without any special-casing.
         private readonly HashSet<string> _activeDomains = new();
@@ -31,7 +36,7 @@ namespace BH.SDK.Serialization.Converters
         public override bool CanConvert(Type objectType) =>
             VersionedTypeRegistry.CanConvert(objectType) && !_activeDomains.Contains(VersionedTypeRegistry.GetDomain(objectType));
 
-        /// <summary> Wraps the payload as <c>{version, value}</c>, at the domain's current version. </summary>
+        /// <summary> Wraps the payload as <c>{g, v}</c>, at the domain's current generation. </summary>
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
             if (value == null)
@@ -41,13 +46,13 @@ namespace BH.SDK.Serialization.Converters
             }
 
             var type = value.GetType();
-            var attribute = type.GetCustomAttribute<DataVersionAttribute>();
+            var attribute = type.GetCustomAttribute<ModelGenerationAttribute>();
 
             writer.WriteStartObject();
 
-            // serialize version
-            writer.WritePropertyName(Names.Version);
-            serializer.Serialize(writer, attribute.Version);
+            // serialize generation
+            writer.WritePropertyName(Names.Generation);
+            writer.WriteValue(attribute.Generation);
 
             // THE PAYLOAD IS HANDED STRAIGHT TO ITS OWN WRITER when it has one, and that is not an
             // optimisation - it is the only way this works. Going back through the serializer for
@@ -78,12 +83,12 @@ namespace BH.SDK.Serialization.Converters
         // envelope into a JObject first. The old shape cost a materialized JToken tree PER DOMAIN,
         // and domains nest: a Level's own tree was cloned again for GameLevel, again for each of the
         // four event aggregates, and again for every Prefab in its resources - each clone one JToken
-        // per value in that subtree. WriteJson emits the version first, so the ordinary document
+        // per value in that subtree. WriteJson emits the generation first, so the ordinary document
         // needs nothing buffered at all; a document that happens to carry the value first (hand
         // edited, or written by another tool) is still read correctly, by buffering that one subtree
-        // until the version that types it arrives.
+        // until the generation that types it arrives.
 
-        /// <summary> Resolves the version tag to its snapshot type, reads that, and walks the migration chain up to today's shape. </summary>
+        /// <summary> Resolves the generation tag to its snapshot type, reads that, and walks the migration chain up to today's shape. </summary>
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
             if (reader.TokenType == JsonToken.Null) return null;
@@ -92,8 +97,11 @@ namespace BH.SDK.Serialization.Converters
 
             var domain = VersionedTypeRegistry.GetDomain(objectType);
 
-            var hasVersion = false;
-            Version version = default;
+            // ZERO IS A REAL GENERATION - the frozen snapshots under Versions/V0 are written at it -
+            // so "did we read one" cannot be asked of the value itself. The flag is what asks, and
+            // Invalid is what an unread envelope holds.
+            var hasGeneration = false;
+            var generation = ModelGenerations.Invalid;
             object raw = null;
             JToken pendingValue = null;
 
@@ -103,36 +111,36 @@ namespace BH.SDK.Serialization.Converters
                 if (!reader.Read())
                     throw new JsonSerializationException($"Truncated versioned envelope for domain '{domain}'");
 
-                if (propertyName == Names.Version)
+                if (propertyName == Names.Generation)
                 {
-                    version = serializer.Deserialize<Version>(reader);
-                    hasVersion = true;
+                    generation = serializer.Deserialize<int>(reader);
+                    hasGeneration = true;
 
                     if (pendingValue != null)
                     {
-                        raw = ReadPayload(pendingValue, domain, version, serializer);
+                        raw = ReadPayload(pendingValue, domain, generation, serializer);
                         pendingValue = null;
                     }
                 }
                 else if (propertyName == Names.Value)
                 {
-                    if (hasVersion) raw = ReadPayload(reader, domain, version, serializer);
+                    if (hasGeneration) raw = ReadPayload(reader, domain, generation, serializer);
                     else pendingValue = JToken.Load(reader);
                 }
                 else reader.Skip();
             }
 
-            if (!hasVersion)
-                throw new JsonSerializationException($"Missing '{Names.Version}' property for domain '{domain}'");
+            if (!hasGeneration)
+                throw new JsonSerializationException($"Missing '{Names.Generation}' property for domain '{domain}'");
 
-            return VersionedTypeRegistry.UpgradeToLatest(domain, raw, version.Major, version.Minor);
+            return VersionedTypeRegistry.UpgradeToLatest(domain, raw, generation);
         }
 
-        private object ReadPayload(JsonReader reader, string domain, Version version, JsonSerializer serializer)
+        private object ReadPayload(JsonReader reader, string domain, int generation, JsonSerializer serializer)
         {
             if (reader.TokenType == JsonToken.Null) return null;
 
-            var concreteType = VersionedTypeRegistry.Resolve(domain, version.Major, version.Minor);
+            var concreteType = VersionedTypeRegistry.Resolve(domain, generation);
 
             _activeDomains.Add(domain);
             var raw = serializer.Deserialize(reader, concreteType);
@@ -140,11 +148,11 @@ namespace BH.SDK.Serialization.Converters
             return raw;
         }
 
-        private object ReadPayload(JToken token, string domain, Version version, JsonSerializer serializer)
+        private object ReadPayload(JToken token, string domain, int generation, JsonSerializer serializer)
         {
             if (token == null || token.Type == JTokenType.Null) return null;
 
-            var concreteType = VersionedTypeRegistry.Resolve(domain, version.Major, version.Minor);
+            var concreteType = VersionedTypeRegistry.Resolve(domain, generation);
 
             _activeDomains.Add(domain);
             var raw = token.ToObject(concreteType, serializer);
