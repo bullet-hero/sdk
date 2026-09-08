@@ -7,8 +7,14 @@ namespace BH.SDK.Generators.Bullets
 {
     // Homing is a runtime behaviour, and this format has no runtime behaviours - a level is data, so
     // the curve has to be BAKED into position keys at author time. That is why Steps exists and why
-    // it is capped: LevelRules.MaxObjectKeys is 32 per track, so a bullet cannot carry more than
-    // that many baked positions no matter how smooth the author would like the arc to be.
+    // it is capped.
+    //
+    // The cap is this generator's OWN number and must stay that way. It was LevelRules.MaxObjectKeys
+    // minus two, which read as the same thing while that cap was 32; it is not. The format ceiling
+    // says how many keyframes a track may STORE, while this says how many a single bullet should
+    // COST - a burst multiplies it by every bullet in it - and the two answers only ever coincided
+    // by accident. Raising the ceiling to 512 would otherwise have made every homing bullet an
+    // order of magnitude heavier with nothing said about it.
 
     /// <summary>
     /// A burst of bullets that curve toward a target, their pursuit curve baked into position
@@ -142,6 +148,7 @@ namespace BH.SDK.Generators.Bullets
                     keys += perKey;
                 }
             }
+
             return new GeneratorCost(objects, keys);
         }
 
@@ -163,11 +170,12 @@ namespace BH.SDK.Generators.Bullets
         }
 
         private const int MinSteps = 2;
-        private const int MaxSteps = LevelRules.MaxObjectKeys - 2; // room for the spawn key and a spare
+        private const int MaxSteps = 30; // what one bullet should cost, not what a track may hold
 
         private static int Burst(int value) => value < 1 ? 1 : value;
         private static int Travel(int value) => value < 1 ? 1 : value;
         private static int Stagger(int value) => value < 0 ? 0 : value;
+
         private static int Steps(int value)
             => value < MinSteps ? MinSteps : value > MaxSteps ? MaxSteps : value;
 
@@ -186,11 +194,13 @@ namespace BH.SDK.Generators.Bullets
 
             /// <summary> Where the burst starts. </summary>
             public float OriginX;
+
             /// <summary> Its vertical half. </summary>
             public float OriginY = 6f;
 
             /// <summary> The point the bullets curve towards. </summary>
             public float TargetX;
+
             /// <summary> Its vertical half. </summary>
             public float TargetY = -6f;
 

@@ -9,10 +9,13 @@ namespace BH.SDK.Rules
     {
         /// <summary> Upper bound of GameEvents.Markers. </summary>
         public const int MaxMarkerEvents = 1024;
+
         /// <summary> Upper bound of GameEvents.Checkpoints. </summary>
         public const int MaxCheckpointEvents = 128;
+
         /// <summary> Upper bound of GameEvents.Beats. </summary>
         public const int MaxBeatEvents = 256;
+
         /// <summary> Upper bound of GameEvents.Backgrounds. </summary>
         public const int MaxBackgroundEvents = 128;
 
@@ -31,12 +34,23 @@ namespace BH.SDK.Rules
 
         /// <summary> Upper bound of PlayerEvents.Collisions, PlayerEvents.Controls, PlayerEvents.Sizes and 4 more. </summary>
         public const int MaxPlayerKeys = 512;
+
         /// <summary> Upper bound of CameraEvents.Positions, CameraEvents.Rotations, CameraEvents.Shakes and 1 more. </summary>
         public const int MaxCameraKeys = 512;
+
         /// <summary> Upper bound of PostProcessingEvents.AnalogGlitches, PostProcessingEvents.Blooms, PostProcessingEvents.Chromatics and 9 more. </summary>
         public const int MaxPostProcessingKeys = 512;
+        // 32 was never justified in writing, and five real Afterbeat workshop levels say it was too
+        // low by an order of magnitude: 1 948 authored tracks exceeded it, and the worst carried 189
+        // keyframes across 123 seconds - truncating it froze that object for 100 of them. Every
+        // consumer of this number is a validation clamp or an import truncation; nothing sizes a
+        // buffer, a native collection or a blob field by it (a blob count is always an Int32), so
+        // the cap costs only what an author actually writes. It matches the camera and player tracks
+        // now for the reason stated above them: one number for every track is one fewer to explain.
+
         /// <summary> Upper bound of CameraEvents.Pivots, RectObject.AnchorsMax, RectObject.AnchorsMin and 11 more. </summary>
-        public const int MaxObjectKeys = 32;
+        public const int MaxObjectKeys = 512;
+
         /// <summary> Upper bound of LevelTrackEffects.StereoPans, LevelTrackEffects.Volumes. </summary>
         public const int MaxAudioKeys = 32;
 
@@ -72,20 +86,25 @@ namespace BH.SDK.Rules
 
         /// <summary> Lower bound of BeatSegment.BPM. </summary>
         public const float MinBpm = 1f;
+
         /// <summary> Upper bound of BeatSegment.BPM. </summary>
         public const float MaxBpm = 1000f;
+
         /// <summary> The bpm used when nothing says otherwise, read by BeatSegment, BeatSegmentTests. </summary>
         public const float DefaultBpm = 120f;
 
         /// <summary> Lower bound of BeatSegment.Offset. </summary>
         public const float MinBeatOffset = -FrameRules.MaxFrameDuration;
+
         /// <summary> Upper bound of BeatSegment.Offset. </summary>
         public const float MaxBeatOffset = FrameRules.MaxFrameDuration;
 
         /// <summary> Lower bound of BeatSegment.BeatsPerBar. </summary>
         public const int MinBeatsPerBar = 1;
+
         /// <summary> Upper bound of BeatSegment.BeatsPerBar. </summary>
         public const int MaxBeatsPerBar = 32;
+
         /// <summary> The beats per bar used when nothing says otherwise, read by ABEventsImporter, BeatSegment, BeatSegmentTests. </summary>
         public const int DefaultBeatsPerBar = 4;
 
@@ -99,11 +118,18 @@ namespace BH.SDK.Rules
 
         /// <summary> Upper bound of AudioLevel.Tracks. </summary>
         public const int MaxAudioTracks = 512;
+
         /// <summary> Upper bound of LevelMeta.ResourcesMeta. </summary>
         public const int MaxResourcesMeta = 512;
 
+        // Raised from 64, which a real workshop level already crossed: 72 templates, so eight of
+        // them and the 63 placements referencing them were dropped - 524 of that level's 3 690
+        // materialized objects, one seventh of what it draws. A prefab is a template sitting in the
+        // resources, so what it costs is proportional to what is IN it rather than to this number,
+        // and nothing sizes a buffer by it.
+
         /// <summary> Upper bound of LevelResources.Prefabs. </summary>
-        public const int MaxPrefabs = 64;
+        public const int MaxPrefabs = 256;
 
         // Bounds of LevelHints.Limits - purely a format-level sanity clamp, so a corrupted or
         // hostile file can't ask a player's device to preallocate gigabytes before the runtime even
@@ -112,6 +138,7 @@ namespace BH.SDK.Rules
 
         /// <summary> Lower bound of LimitHints.Effects, LimitHints.Instances, LimitHints.ShapesOpaque and 3 more. </summary>
         public const int MinCapacityHint = 0;
+
         /// <summary> Upper bound of LimitHints.Effects, LimitHints.Instances, LimitHints.ShapesOpaque and 3 more. </summary>
         public const int MaxCapacityHint = 1_048_576; // 2^20
 
@@ -130,11 +157,13 @@ namespace BH.SDK.Rules
 
         /// <summary> The null seed, read by ABLevelExporter, DisplayGraphicsSettings, LevelSettings and 2 more. </summary>
         public const int NullSeed = 0;
+
         /// <summary> Lower bound of LevelSettings.Seed. </summary>
         public const int MinSeed = 0;
 
         /// <summary> Lowest valid seed allowed. </summary>
         public const int MinValidSeed = 1;
+
         /// <summary> Highest valid seed allowed. </summary>
         public const int MaxValidSeed = int.MaxValue;
 

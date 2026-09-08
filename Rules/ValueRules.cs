@@ -8,25 +8,31 @@ namespace BH.SDK.Rules
     {
         /// <summary> The number 0, named so a rule reads as a bound rather than as a magic number. </summary>
         public const int IntZero = 0;
+
         /// <summary> The number 1, named so a rule reads as a bound rather than as a magic number. </summary>
         public const int IntOne = 1;
+
         /// <summary> The number 0, named so a rule reads as a bound rather than as a magic number. </summary>
         public const float FloatZero = 0f;
+
         /// <summary> The number 1, named so a rule reads as a bound rather than as a magic number. </summary>
         public const float FloatOne = 1f;
-        
+
         // default value limits without type specification.
         // Choose it because Max * Max => close to int.MaxValue 
 
         /// <summary> Lower bound of IntMinMax.Max, IntMinMax.Min, IntMinMaxStep.Max and 2 more. </summary>
         public const int MinIntValue = -1_000_000;
+
         /// <summary> Upper bound of IntMinMax.Max, IntMinMax.Min, IntMinMaxStep.Max and 3 more. </summary>
         public const int MaxIntValue = 1_000_000;
+
         /// <summary> Lower bound of CurveKeyframeValue.InTangent, CurveKeyframeValue.InWeight, CurveKeyframeValue.OutTangent and 64 more. </summary>
         public const float MinFloatValue = -1_000_000f;
+
         /// <summary> Upper bound of CurveKeyframeValue.InTangent, CurveKeyframeValue.InWeight, CurveKeyframeValue.OutTangent and 71 more. </summary>
         public const float MaxFloatValue = 1_000_000f;
-        
+
         // convert from logical layer to real z position
 
         /// <summary> The layer coefficient. </summary>
@@ -53,13 +59,16 @@ namespace BH.SDK.Rules
 
         /// <summary> Granularity the layer Z offset step is quantized to, read by ABLayerMap. </summary>
         public const float LayerZOffsetStep = 0.001f;
+
         /// <summary> The layer Z offset count. </summary>
         public const int LayerZOffsetCount = 512;
-        
+
         /// <summary> Lower bound of LayerKey.Layer, RectObject.Layer. </summary>
         public const int MinLayer = -1000;
+
         /// <summary> Upper bound of LayerKey.Layer, RectObject.Layer. </summary>
         public const int MaxLayer = 1000;
+
         /// <summary> Lowest layer selection allowed. </summary>
         public const float MinLayerSelection = MaxLayer + MinLayerDelta;
 
@@ -109,6 +118,7 @@ namespace BH.SDK.Rules
 
         /// <summary> Lowest camera layer allowed. </summary>
         public const float MinCameraLayer = -2000f;
+
         /// <summary> Highest camera layer allowed. </summary>
         public const float MaxCameraLayer = 2000f;
 
@@ -135,20 +145,25 @@ namespace BH.SDK.Rules
 
         /// <summary> What the player's speed is multiplied by when a level says nothing. </summary>
         public const float DefaultPlayerSpeed = 1f;
-        
+
         /// <summary> Lower bound of Color3MinMax.MaxB, Color3MinMax.MaxG, Color3MinMax.MaxR and 18 more. </summary>
         public const float MinColor = 0f;
+
         /// <summary> Upper bound of Color3MinMax.MaxB, Color3MinMax.MaxG, Color3MinMax.MaxR and 18 more. </summary>
         public const float MaxColor = 1f;
+
         /// <summary> The color R used when nothing says otherwise. </summary>
         public const float DefaultColorR = 1f;
+
         /// <summary> The color G used when nothing says otherwise. </summary>
         public const float DefaultColorG = 1f;
+
         /// <summary> The color B used when nothing says otherwise. </summary>
         public const float DefaultColorB = 1f;
+
         /// <summary> The color A used when nothing says otherwise. </summary>
         public const float DefaultColorA = 1f;
-        
+
         // approximate size for min/max coordinates, because this allows
         // to calculate collision detection with at least 3 digits precision
         // S_max = (0.5·10⁻ᵈ) / (2ε) = 10⁻ᵈ / (4ε) = 2²¹ · 10⁻ᵈ = 2 097 152 · 10⁻ᵈ
@@ -156,13 +171,16 @@ namespace BH.SDK.Rules
 
         /// <summary> Lower bound of Checkpoint.Position, PosKey.Pos. </summary>
         public const float MinPos = -10000f;
+
         /// <summary> Upper bound of Checkpoint.Position, PosKey.Pos. </summary>
         public const float MaxPos = 10000f;
+
         /// <summary> The pos X used when nothing says otherwise. </summary>
         public const float DefaultPosX = 0f;
+
         /// <summary> The pos Y used when nothing says otherwise. </summary>
         public const float DefaultPosY = 0f;
-        
+
         // A size is measured in the SAME world units a position is, so it gets the same range rather
         // than one of its own: an object may legitimately be as long as the space it is placed in,
         // and the old +-100 was a tenth of that with nothing behind the number. Real content proved
@@ -174,13 +192,16 @@ namespace BH.SDK.Rules
 
         /// <summary> Lower bound of ScaKey.Scale. </summary>
         public const float MinSca = MinPos;
+
         /// <summary> Upper bound of ScaKey.Scale. </summary>
         public const float MaxSca = MaxPos;
+
         /// <summary> The sca X used when nothing says otherwise. </summary>
         public const float DefaultScaX = 1f;
+
         /// <summary> The sca Y used when nothing says otherwise. </summary>
         public const float DefaultScaY = 1f;
-        
+
         // Rotation is stored in RADIANS, so the generic +-1e6 it used to inherit is about 160 000
         // turns - a number no author writes and every angle-wrapping consumer has to survive. A
         // spinner is the case that needs room: an object turning continuously is authored as one
@@ -189,8 +210,10 @@ namespace BH.SDK.Rules
 
         /// <summary> Highest rotation turns allowed, read by AngleKey. </summary>
         public const int MaxRotationTurns = 1000;
+
         /// <summary> Lower bound of AngleKey.Angle. </summary>
         public const float MinRotation = -BHSDKMath.PI2 * MaxRotationTurns;
+
         /// <summary> Upper bound of AngleKey.Angle. </summary>
         public const float MaxRotation = BHSDKMath.PI2 * MaxRotationTurns;
 
@@ -200,6 +223,7 @@ namespace BH.SDK.Rules
 
         /// <summary> Lower bound of ShakeKey.Intensity, ShakeKey.IntensityX, ShakeKey.IntensityY and 1 more. </summary>
         public const float MinShake = -1000f;
+
         /// <summary> Upper bound of ShakeKey.Intensity, ShakeKey.IntensityX, ShakeKey.IntensityY and 1 more. </summary>
         public const float MaxShake = 1000f;
 
@@ -208,6 +232,7 @@ namespace BH.SDK.Rules
 
         /// <summary> Lower bound of UVKey.Offset, UVKey.Tiling. </summary>
         public const float MinUv = -1000f;
+
         /// <summary> Upper bound of UVKey.Offset, UVKey.Tiling. </summary>
         public const float MaxUv = 1000f;
 
@@ -215,36 +240,50 @@ namespace BH.SDK.Rules
 
         /// <summary> Lower bound of Alignment.Value, AlignmentKey.Value. </summary>
         public const float MinAlignment = -100f;
+
         /// <summary> Upper bound of Alignment.Value, AlignmentKey.Value. </summary>
         public const float MaxAlignment = 100f;
+
         /// <summary> The alignment X used when nothing says otherwise. </summary>
         public const float DefaultAlignmentX = 0.5f;
+
         /// <summary> The alignment Y used when nothing says otherwise. </summary>
         public const float DefaultAlignmentY = 0.5f;
-        
+
         /// <summary> Lower bound of ZoomKey.Zoom. </summary>
         public const float MinZoom = 0f;
+        // Raised from 100 because real Afterbeat content crosses it: an imported zoom is the
+        // source's own number doubled, and 21% of one workshop level's zoom keyframes landed
+        // between 102 and 142, silently clamped. Nothing normalizes by this bound - it is read
+        // only by ZoomKey's range rule, the editor's zoom field and two generator parameters.
+
         /// <summary> Upper bound of ZoomKey.Zoom. </summary>
-        public const float MaxZoom = 100f;
+        public const float MaxZoom = 200f;
+
         /// <summary> The zoom used when nothing says otherwise, read by BeatFlashGenerator, ZoomKey. </summary>
         public const float DefaultZoom = 10f;
-        
+
         /// <summary> The uv X used when nothing says otherwise, read by TextureResource, UVKey. </summary>
         public const float DefaultUvX = 1f; // tilling x
+
         /// <summary> The uv Y used when nothing says otherwise, read by TextureResource, UVKey. </summary>
         public const float DefaultUvY = 1f; // tilling y
+
         /// <summary> The uv Z used when nothing says otherwise, read by TextureResource, UVKey. </summary>
         public const float DefaultUvZ = 0f; // offset x
+
         /// <summary> The uv W used when nothing says otherwise, read by TextureResource, UVKey. </summary>
         public const float DefaultUvW = 0f; // offset y
-        
+
         /// <summary> Lower bound of Color3ThemeRef.ThemeColorIndex, Color4ThemeRef.ThemeColorIndex. </summary>
         public const int MinThemeIndex = 0;
+
         /// <summary> Upper bound of Color3ThemeRef.ThemeColorIndex, Color4ThemeRef.ThemeColorIndex. </summary>
         public const int MaxThemeIndex = 63;
+
         /// <summary> Bounds ThemeData.Matrix. </summary>
         public const int ThemeCount = 64;
-        
+
         // A shape needs at least one triangle to be a shape at all - an empty one is a shape that
         // silently draws and collides with nothing, which is worse than no shape (that is what a
         // Null ShapeId already means, explicitly).
@@ -257,6 +296,7 @@ namespace BH.SDK.Rules
 
         /// <summary> Lowest shape triangles allowed, read by ABImportTests, ShapeCatalogServiceTests, ShapeSynthUtils and 1 more. </summary>
         public const int MinShapeTriangles = 1;
+
         /// <summary> Highest shape triangles allowed, read by ShapeCatalogServiceTests, ShapeGeometryUtils, ShapeGeometryUtilsTests and 2 more. </summary>
         public const int MaxShapeTriangles = 128;
 
@@ -267,6 +307,7 @@ namespace BH.SDK.Rules
 
         /// <summary> Lowest shape vertices allowed, read by ShapeSynthUtils, ShapeSynthUtilsTests. </summary>
         public const int MinShapeVertices = 3;
+
         /// <summary> Highest shape vertices allowed, read by ShapeGeometryUtils, ShapeGeometryUtilsTests, ShapeSynthUtilsTests. </summary>
         public const int MaxShapeVertices = MaxShapeTriangles * 3;
 
@@ -283,6 +324,7 @@ namespace BH.SDK.Rules
 
         /// <summary> Lowest shape point allowed, read by ShapeCatalogServiceTests, ShapeGeometryUtils, ShapeSynthUtilsTests. </summary>
         public const float MinShapePoint = -0.5f;
+
         /// <summary> Highest shape point allowed, read by ABShapeMap, ShapeCatalogServiceTests, ShapeGeometryUtils and 1 more. </summary>
         public const float MaxShapePoint = 0.5f;
 
@@ -292,35 +334,46 @@ namespace BH.SDK.Rules
 
         /// <summary> Lower bound of CurveValue.KeyFrames. </summary>
         public const int MinCurveKeys = 2;
+
         /// <summary> Upper bound of CurveValue.KeyFrames. </summary>
         public const int MaxCurveKeys = 16;
+
         /// <summary> Lower bound of GradientValue.AlphaKeys, GradientValue.ColorKeys. </summary>
         public const int MinGradientKeys = 2;
+
         /// <summary> Upper bound of GradientValue.AlphaKeys, GradientValue.ColorKeys. </summary>
         public const int MaxGradientKeys = 8;
 
         /// <summary> Lower bound of CurveKeyframeValue.Time. </summary>
         public const float MinCurveTime = 0f;
+
         /// <summary> Upper bound of CurveKeyframeValue.Time. </summary>
         public const float MaxCurveTime = 1f;
+
         /// <summary> Lower bound of GradientAlphaKeyValue.Time, GradientColorKeyValue.Time. </summary>
         public const float MinGradientTime = 0f;
+
         /// <summary> Upper bound of GradientAlphaKeyValue.Time, GradientColorKeyValue.Time. </summary>
         public const float MaxGradientTime = 1f;
-        
+
         /// <summary> Lower bound of ScreenAspect.Width. </summary>
         public const int MinAspectWidth = 1;
+
         /// <summary> Lower bound of ScreenAspect.Height. </summary>
         public const int MinAspectHeight = 1;
+
         /// <summary> Upper bound of ScreenAspect.Width. </summary>
         public const int MaxAspectWidth = 100;
+
         /// <summary> Upper bound of ScreenAspect.Height. </summary>
         public const int MaxAspectHeight = 100;
+
         /// <summary> The aspect width used when nothing says otherwise, read by ScreenAspect. </summary>
         public const int DefaultAspectWidth = 16;
+
         /// <summary> The aspect height used when nothing says otherwise, read by ScreenAspect. </summary>
         public const int DefaultAspectHeight = 9;
-        
+
         // Also the fixed slot length of the player's per-frame text buffers, which is why it is a
         // round power of two rather than a number picked per field: a text object's authored string
         // and its rendered result each occupy exactly this much, so slot addressing stays two shifts
@@ -332,10 +385,13 @@ namespace BH.SDK.Rules
 
         /// <summary> What DefaultModel.Value, StringLanguage.LanguageCode holds when nothing says otherwise. </summary>
         public const string DefaultLanguageCode = "en";
+
         /// <summary> Upper bound of Author.Url, CustomLicense.LicenseUrl, PermissionGrant.ProofUrl and 2 more. </summary>
         public const int MaxUrl = 512;
+
         /// <summary> Upper bound of Author.Credit, Author.Name, BeatSegment.Name and 12 more. </summary>
         public const int MaxEditorName = 512;
+
         /// <summary> Upper bound of LevelMeta.LevelDescription, Marker.Description, ResourceMeta.ResourceDescription and 1 more. </summary>
         public const int MaxEditorDescription = 4096;
 
@@ -344,6 +400,7 @@ namespace BH.SDK.Rules
 
         /// <summary> Upper bound of GeneralSettings.Language, StringLanguage.LanguageCode. </summary>
         public const int MaxLanguageCode = 16;
+
         /// <summary> Bounds DefaultModel.Value, LanguageModel.Value, StringLanguage.LanguageCode. </summary>
         public const string LanguageCodePattern = "^[A-Za-z]{2,8}(-[A-Za-z0-9]{1,8})*$";
 
@@ -352,6 +409,7 @@ namespace BH.SDK.Rules
 
         /// <summary> Upper bound of CustomLicense.LicenseName. </summary>
         public const int MaxLicenseName = 256;
+
         /// <summary> Upper bound of CustomLicense.LicenseText. </summary>
         public const int MaxLicenseText = 65_536;
 

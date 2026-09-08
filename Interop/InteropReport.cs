@@ -37,7 +37,7 @@ namespace BH.SDK.Interop
         {
             if (_byCode.TryGetValue(code, out var existing))
             {
-                existing.Increment();
+                existing.Increment(path);
                 return;
             }
 
@@ -72,7 +72,8 @@ namespace BH.SDK.Interop
         {
             var count = 0;
             foreach (var issue in _issues)
-                if (issue.Severity >= severity) count++;
+                if (issue.Severity >= severity)
+                    count++;
             return count;
         }
 
@@ -80,19 +81,33 @@ namespace BH.SDK.Interop
         public void Absorb(InteropReport other)
         {
             if (other == null) return;
+
+            // The counts and the PATHS both have to survive a merge, and they are different
+            // lengths: an issue hit 4000 times keeps at most MaxTrackedPaths of them, so replaying
+            // one path per count would either lose paths or invent them. Each is replayed from the
+            // half that actually holds it - the paths from the list, the remaining count as bare
+            // increments carrying no path at all.
             foreach (var issue in other._issues)
             {
-                if (_byCode.TryGetValue(issue.Code, out var existing))
+                if (!_byCode.TryGetValue(issue.Code, out var existing))
                 {
-                    for (var i = 0; i < issue.Count; i++) existing.Increment();
-                    continue;
+                    existing = new InteropIssue(issue.Severity, issue.Code, issue.Message, null);
+                    existing.Decrement();
+                    _byCode.Add(existing.Code, existing);
+                    _issues.Add(existing);
+                    if (existing.Severity > Worst) Worst = existing.Severity;
                 }
 
-                var copy = new InteropIssue(issue.Severity, issue.Code, issue.Message, issue.FirstPath);
-                for (var i = 1; i < issue.Count; i++) copy.Increment();
-                _byCode.Add(copy.Code, copy);
-                _issues.Add(copy);
-                if (copy.Severity > Worst) Worst = copy.Severity;
+                var replayed = 0;
+                foreach (var path in issue.Paths)
+                {
+                    if (replayed >= issue.Count) break;
+                    existing.Increment(path);
+                    replayed++;
+                }
+
+                for (var i = replayed; i < issue.Count; i++) existing.Increment(null);
+                if (issue.HasMorePaths) existing.MarkMorePaths();
             }
         }
 
