@@ -62,8 +62,16 @@ newer DLL — which is exactly the question the field exists to answer.
 `<Version>` sits in `BH.SDK.csproj` rather than `Directory.Build.props`, which is shared by four
 projects and would stamp the analyzer and both test assemblies too.
 
-**`sv` has no git tags yet**, and cannot have them until the SDK submodule's gitlink is restored in
-the main repository: from `0.5.1` onward there is no pinned SDK commit to tag at all.
+**`sv` tags live in THIS repository, not the consumer's.** They are pushed from here, which is why
+tagging the game's repo never produces any — `gv*` and `sv*` are tags of two different repositories
+that happen to share a working tree. `sv0.5.5` (the commit that introduced `SdkVersion.cs`) and
+`sv0.6.0` are the two that exist; there is no history before that, because the library carried no
+version at all until then.
+
+Separately, and often confused with the above: the consuming project currently pins **no** SDK commit
+(its submodule gitlink was replaced by loose files in its index), so nothing records which `sv` a
+given `gv` shipped against. That is a defect in the consumer's repository rather than anything about
+these tags.
 
 ### `mg` — the model format's generation
 
