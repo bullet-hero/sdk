@@ -9,6 +9,11 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models
 {
+    // AUDIO SITS SECOND, right after General, and the settings screen's tabs follow the same order:
+    // volume is what a player reaches for first and most often, and it was buried behind Controls
+    // and Keybindings in both places. Reordering properties is free for the JSON this file is
+    // written as - Newtonsoft reads by key name - and it moves no key, so nothing migrates.
+    //
     // GameEditorSettings was RESTRUCTURED once - sixteen flat properties became nine nested groups.
     // Every other change to this file was additive and rode on Newtonsoft leaving a constructor's
     // default in place for an absent key; moving keys is the one thing that cannot, so that change
@@ -31,15 +36,15 @@ namespace BH.SDK.Models
         [JsonProperty(Names.General)]
         public GeneralSettings General { get; set; }
 
-        /// <summary> Which devices drive the avatar, in what mode, with what tuning. </summary>
-        [RuleNotNull]
-        [JsonProperty(Names.Controls)]
-        public ControlsSettings Controls { get; set; }
-
         /// <summary> Volume mix. </summary>
         [RuleNotNull]
         [JsonProperty(Names.Audio)]
         public AudioSettings Audio { get; set; }
+
+        /// <summary> Which devices drive the avatar, in what mode, with what tuning. </summary>
+        [RuleNotNull]
+        [JsonProperty(Names.Controls)]
+        public ControlsSettings Controls { get; set; }
 
         /// <summary> Rendering quality and per-subsystem switches. </summary>
         [RuleNotNull]
@@ -81,8 +86,8 @@ namespace BH.SDK.Models
         public UserSettings()
         {
             General = new GeneralSettings();
-            Controls = new ControlsSettings();
             Audio = new AudioSettings();
+            Controls = new ControlsSettings();
             Graphics = new GraphicsSettings();
             GameEditor = new GameEditorSettings();
             Interface = new InterfaceSettings();
@@ -90,13 +95,13 @@ namespace BH.SDK.Models
         }
 
         /// <summary> Every member at once, in declaration order. </summary>
-        public UserSettings(GeneralSettings general, ControlsSettings controls,
-            AudioSettings audio, GraphicsSettings graphics, GameEditorSettings gameEditor,
+        public UserSettings(GeneralSettings general, AudioSettings audio,
+            ControlsSettings controls, GraphicsSettings graphics, GameEditorSettings gameEditor,
             InterfaceSettings interfaceSettings, KeybindingsSettings keybindings)
         {
             General = general;
-            Controls = controls;
             Audio = audio;
+            Controls = controls;
             Graphics = graphics;
             GameEditor = gameEditor;
             Interface = interfaceSettings;

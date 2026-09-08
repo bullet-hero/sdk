@@ -121,12 +121,16 @@ namespace BH.SDK.Tests.Rules
             "rule_not_null ResourcesMeta[0].ResourceUrl\n" +
             "rule_not_null ResourcesMeta[0].ResourceLicense\n";
 
+        // Audio before Controls because UserSettings declares it there. The walk visits properties in
+        // declaration order, so this golden is also a record of that order - moving a group in the
+        // model moves lines here, and that is the point rather than a maintenance cost: nothing else
+        // would report that RuleFixer's reverse-order repairs now run in a different sequence.
         private const string InvalidSettings =
             "rule_in_range General.ResourceParallelLoadCount\n" +
             "rule_min_value General.ResourceWebTimeout\n" +
-            "rule_control_priority Controls.Priority\n" +
             "rule_in_range Audio.Game\n" +
             "rule_in_range Audio.UI\n" +
+            "rule_control_priority Controls.Priority\n" +
             "rule_min_value Graphics.Effects.FpsFixed\n" +
             "rule_min_value GameEditor.Camera.MinSize\n";
     }
