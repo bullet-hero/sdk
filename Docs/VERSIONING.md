@@ -68,10 +68,11 @@ that happen to share a working tree. `sv0.5.5` (the commit that introduced `SdkV
 `sv0.6.0` are the two that exist; there is no history before that, because the library carried no
 version at all until then.
 
-Separately, and often confused with the above: the consuming project currently pins **no** SDK commit
-(its submodule gitlink was replaced by loose files in its index), so nothing records which `sv` a
-given `gv` shipped against. That is a defect in the consumer's repository rather than anything about
-these tags.
+Separately, and often confused with the above: what records which `sv` a given `gv` shipped against
+is the consumer's **submodule pointer**, not a tag on either side. That pointer has been lost once
+already - staging a file that lives inside this folder from the outer repository replaces it with
+loose files, since a gitlink cannot coexist with tracked files under its own path - and the consuming
+project's `Docs/VERSION-BUMP.md` carries the repair.
 
 ### `mg` — the model format's generation
 
