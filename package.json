@@ -1,6 +1,6 @@
 {
   "name": "com.vertoker.bullet-hero-sdk",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "displayName": "Bullet Hero SDK",
   "description": "Level/save data model, serialization and validation for Bullet Hero.",
   "unity": "6000.0"
