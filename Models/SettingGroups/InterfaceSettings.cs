@@ -92,6 +92,22 @@ namespace BH.SDK.Models.SettingGroups
         [JsonProperty(Names.ShowGameInterface)]
         public bool ShowGameInterface { get; set; }
 
+        // TRUE BY DEFAULT, like the three flags above and for the same reason: it names the
+        // behaviour the game already had, so a settings file written before it reads back
+        // unchanged and neither the generation nor a migrator moves.
+        //
+        // IT GATES THE WINDOW, NEVER THE REPORT. Services.Root's ErrorReportService goes on
+        // catching, building and publishing every report whatever this says - what the flag decides
+        // is only whether ErrorView raises itself over the screen. So the player log, the report
+        // text and the rolling log buffer are identical either way, and turning it off cannot hide
+        // an error from a bug report. It is a setting because the alternative to a modal is not
+        // "no error" but "an error a player who is mid-run does not have to answer".
+
+        /// <summary> Whether an uncaught exception opens the error window. The report is built and
+        /// logged either way. </summary>
+        [JsonProperty(Names.AlertOnException)]
+        public bool AlertOnException { get; set; }
+
         /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public InterfaceSettings()
         {
@@ -104,9 +120,10 @@ namespace BH.SDK.Models.SettingGroups
             ShowGameProgress = true;
             ShowGamePause = true;
             ShowGameInterface = true;
+            AlertOnException = true;
         }
 
-        // THE THREE HUD FLAGS ARE NOT PARAMETERS, and that is deliberate: adding one here is a
+        // THE FOUR TRUE-BY-DEFAULT FLAGS ARE NOT PARAMETERS, and that is deliberate: adding one here is a
         // source break for every caller, and LevelSettings.Seed already set the precedent of
         // taking the object-initializer route in Copy instead. They are defaulted here as well as
         // in the parameterless constructor, so the two agree - a value built through this one and
@@ -126,6 +143,7 @@ namespace BH.SDK.Models.SettingGroups
             ShowGameProgress = true;
             ShowGamePause = true;
             ShowGameInterface = true;
+            AlertOnException = true;
         }
 
         // Nested because HashCode.Combine takes eight arguments and there are nine values.

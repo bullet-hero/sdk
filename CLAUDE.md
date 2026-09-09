@@ -73,7 +73,9 @@ alive so `GamePlayer`'s jobs can re-roll randomness every frame instead of freez
   ordinary record; `ResourceMeta` — consumed by `LevelMeta`, itself NOT in this folder; note
   `ResourceMeta` carries licensing/attribution only — **age rating and content descriptors live on
   `LevelMeta` alone**, since a rating describes the finished experience, not an asset in isolation),
-  `Interfaces/`, `Enum/`, `Primitives/` (id structs). `Models/Names.cs` is the single source of truth
+  `Interfaces/`, `Enum/`, `Primitives/` (id structs — **`Docs/IDENTIFIERS.md` is the criterion that
+  decides `Guid` vs `int`, and the answer to "will these ever have to be unified"; read it before
+  adding an id**). `Models/Names.cs` is the single source of truth
   for every `[JsonProperty]` name (short/abbreviated on purpose — see Serialization).
 - **Serialization/** — `Serializers/` (`SerializationService`, the JSON/BSON entry point),
   `Converters/Base/` + `Converters/CustomTypes/` + `Converters/Dict/` (the polymorphism/id/dictionary
