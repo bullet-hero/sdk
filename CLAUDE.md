@@ -189,7 +189,16 @@ alive so `GamePlayer`'s jobs can re-roll randomness every frame instead of freez
   `BaseLevelGenerator<T>`/`BaseContentGenerator<T>`/`BaseModifier<T>` as the bases anyone actually
   derives from. **All mutation goes through `GeneratorContext`**, which journals it into a
   `GeneratorChangeLog` — that journal *is* undo, and writing to the model directly silently breaks
-  it. The context also owns **grouping**: given a `groupName`, `context.Parent` lazily creates one
+  it. **`Replace<T>` is the third write primitive beside `Create`/`Edit`/`Delete`**, and it exists
+  because neither of the others can change an object's TYPE: `Edit<T>` refuses a mismatched subtype
+  by contract, and `Delete` + `Create<T>` mints a fresh `ObjectId`, which orphans every child pointing
+  at the old one. The id is exactly what has to survive, so the object is replaced under it — and
+  `ObjectEdited` already keeps whole instances and assigns them back by id, so no journal entry of its
+  own was needed. Its overload takes an `IObjectScope`, since a run may legitimately reach outside its
+  own (`Level.Resources.Prefabs` holds templates that are scopes in their own right); that is also why
+  `GeneratorChangeLog.HasEdit` is keyed by scope AND id rather than by id — a `Prefab` owns its
+  `ObjectId` namespace, so id 1 in a template and id 1 in the level are different objects.
+  The context also owns **grouping**: given a `groupName`, `context.Parent` lazily creates one
   container `RectObject` (Layer 0 — Layer is parent-relative, the children already carry
   `context.Layer`) and returns it, so every generator that parents to `context.Parent` gets
   "wrap this run in one object" for free, including future ones; `BaseScopeGenerator.Estimate` adds
@@ -214,10 +223,16 @@ alive so `GamePlayer`'s jobs can re-roll randomness every frame instead of freez
   field name, so a rename is a compile error), `Modifiers/` (`ObjectTrackMask`/`ObjectTracks` —
   generic enumeration of an object's ten keyframe tracks, plus the modifiers themselves),
   `Import/` (`LevelPackageGenerator`, `gen_level_package` - importing this project's OWN package, as opposed to `Interop/`'s foreign formats),
-  `Geometry/`, `Bullets/`, `Audio/`, `Textures/`, `Utility/` (the concrete generators — 20 of them,
-  the roster the design document calls complete plus `mod_content_remover`/`mod_framerate_remap` and
+  `Geometry/`, `Bullets/`, `Audio/`, `Textures/`, `Utility/` (the concrete generators — 21 of them,
+  the roster the design document calls complete plus `mod_content_remover`/`mod_framerate_remap`,
   `mod_span_fit`, which fits every child's lifetime to its parent's and is what replaced the removed
-  `GraphRule.ChildSpanOutsideParent` and its auto-repair). Three rules a spawning generator must get right:
+  `GraphRule.ChildSpanOutsideParent` and its auto-repair, and `mod_prefab_flatten`, which turns every
+  prefab placement in a scope back into an ordinary object — see the consuming project's root
+  `CLAUDE.md`, "Prefab system", for why a flatten always takes a whole chain, and note two things
+  about the generator itself: its two switches need the WHOLE level and therefore decline in Prefab
+  Mode, and its run order is level-then-templates, because a template edit propagates to placements
+  and the other order leaves the level describing content its templates no longer hold).
+  Three rules a spawning generator must get right:
   **a keyframe's `Frame` is LOCAL to its owning object** (the runtime reads `obj.Span.StartFrame + Frame`,
   so an absolute frame yields objects that spawn correctly and then never move — `BaseSpawnGenerator`'s
   `Add*` helpers convert, `mod_quantize_keyframes` converts the other way to snap against the level's

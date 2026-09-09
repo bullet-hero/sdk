@@ -200,6 +200,7 @@ namespace BH.SDK.Generators
                 sum += parent.Layer;
                 id = parent.ParentObjectId;
             }
+
             return sum;
         }
 
@@ -251,12 +252,42 @@ namespace BH.SDK.Generators
 
             // A second Edit of the same object must not overwrite the ORIGINAL before-copy with an
             // already-modified one, or undo restores a half-generated state.
-            if (!Log.HasEdit(id)) Log.Add(new ObjectEdited(Scope, id, obj.Copy()));
+            if (!Log.HasEdit(Scope, id)) Log.Add(new ObjectEdited(Scope, id, obj.Copy()));
             return typed;
         }
 
         /// <summary> Same as Edit&lt;T&gt; when the concrete subtype doesn't matter. </summary>
         public RectObject Edit(ObjectId id) => Edit<RectObject>(id);
+
+        // CHANGING AN OBJECT'S TYPE IN PLACE IS ITS OWN PRIMITIVE BECAUSE NEITHER OF THE OTHER TWO
+        // CAN DO IT. Edit<T> refuses a mismatched subtype by contract, and Delete + Create<T> mints a
+        // fresh ObjectId - which orphans every child pointing at the old one, drops it out of any
+        // selection and breaks any operation already holding it. The id is exactly what has to
+        // survive, so the object is replaced under it. ObjectEdited already keeps whole instances and
+        // assigns them back by id, so a type change needs no journal entry of its own.
+
+        /// <summary> Replace an object with a fresh one of another type, keeping its id and every
+        /// member RectObject declares. Returns the new instance, live in the scope. </summary>
+        public T Replace<T>(ObjectId id) where T : RectObject, new() => Replace<T>(Scope, id);
+
+        // The scope is a parameter rather than always this run's own because a run may legitimately
+        // reach outside it: Level.Resources.Prefabs holds templates that are IObjectScopes in their
+        // own right, and a sweep over them is one run, not one per template.
+
+        /// <summary> Same, in a scope this run does not target - a Prefab template, say. </summary>
+        public T Replace<T>(IObjectScope scope, ObjectId id) where T : RectObject, new()
+        {
+            if (scope?.Objects == null) throw new ArgumentNullException(nameof(scope));
+            if (!scope.Objects.TryGetValue(id, out var obj))
+                throw new KeyNotFoundException($"Object {id.value} is not in the given scope");
+
+            if (!Log.HasEdit(scope, id)) Log.Add(new ObjectEdited(scope, id, obj.Copy()));
+
+            var replacement = new T();
+            replacement.Update(obj);
+            scope.Objects[id] = replacement;
+            return replacement;
+        }
 
         /// <summary> Remove an object from the target scope. Children are NOT removed - reparenting
         /// or cascading is a content decision the generator makes explicitly. </summary>
@@ -328,6 +359,7 @@ namespace BH.SDK.Generators
                 track.RemoveAt(i);
                 removed++;
             }
+
             return removed;
         }
     }

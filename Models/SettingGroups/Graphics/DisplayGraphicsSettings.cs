@@ -88,7 +88,7 @@ namespace BH.SDK.Models.SettingGroups.Graphics
         /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public DisplayGraphicsSettings()
         {
-            WindowMode = WindowMode.FullScreenWindow;
+            WindowMode = WindowMode.Windowed;
             ResolutionWidth = NativeResolution;
             ResolutionHeight = NativeResolution;
             RenderScale = 1f;

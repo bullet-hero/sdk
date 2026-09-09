@@ -32,13 +32,18 @@ namespace BH.SDK.Generators
         /// <summary> Records one edit. Internal: only the context may write to the journal. </summary>
         internal void Add(IGeneratorChange change) => _changes.Add(change);
 
+        // The scope is part of the question, not decoration: a Prefab template owns its ObjectId
+        // namespace (it is its own IObjectIdCounter), so id 1 in a template and id 1 in the level are
+        // different objects. A run that edits both - flattening placements inside templates as well
+        // as in the level - would otherwise take the first one's before-copy for the second's.
+
         /// <summary> Whether this log already carries a before-copy for that object, so a second
         /// Edit() of the same object doesn't overwrite the ORIGINAL state with an already-modified
         /// one. </summary>
-        internal bool HasEdit(ObjectId id)
+        internal bool HasEdit(IObjectScope scope, ObjectId id)
         {
             foreach (var change in _changes)
-                if (change is ObjectEdited edited && edited.Id.Equals(id))
+                if (change is ObjectEdited edited && ReferenceEquals(edited.Scope, scope) && edited.Id.Equals(id))
                     return true;
             return false;
         }
@@ -109,6 +114,7 @@ namespace BH.SDK.Generators
 
         /// <summary> Undoes this entry. </summary>
         public void Revert() => _scope.Objects.Remove(Id);
+
         /// <summary> Redoes it. </summary>
         public void Reapply() => _scope.Objects[Id] = _instance;
     }
@@ -124,6 +130,10 @@ namespace BH.SDK.Generators
         private readonly IObjectScope _scope;
         private readonly RectObject _before;
         private RectObject _after;
+
+        /// <summary> Which scope the object lives in - see GeneratorChangeLog.HasEdit for why an id
+        /// alone does not identify one. </summary>
+        public IObjectScope Scope => _scope;
 
         /// <summary> The object this entry is about. </summary>
         public ObjectId Id { get; }
@@ -168,6 +178,7 @@ namespace BH.SDK.Generators
 
         /// <summary> Undoes this entry. </summary>
         public void Revert() => _scope.Objects[_id] = _instance;
+
         /// <summary> Redoes it. </summary>
         public void Reapply() => _scope.Objects.Remove(_id);
     }
@@ -189,6 +200,7 @@ namespace BH.SDK.Generators
 
         /// <summary> Undoes this entry. </summary>
         public void Revert() => _target.Remove(_id);
+
         /// <summary> Redoes it. </summary>
         public void Reapply() => _target[_id] = _resource;
     }
@@ -214,6 +226,7 @@ namespace BH.SDK.Generators
 
         /// <summary> Undoes this entry. </summary>
         public void Revert() => _write(_before);
+
         /// <summary> Redoes it. </summary>
         public void Reapply() => _write(_after);
     }
@@ -235,6 +248,7 @@ namespace BH.SDK.Generators
 
         /// <summary> Undoes this entry. </summary>
         public void Revert() => _target[_id] = _resource;
+
         /// <summary> Redoes it. </summary>
         public void Reapply() => _target.Remove(_id);
     }
@@ -262,6 +276,7 @@ namespace BH.SDK.Generators
 
         /// <summary> Undoes this entry. </summary>
         public void Revert() => _track.RemoveAt(_index);
+
         /// <summary> Redoes it. </summary>
         public void Reapply() => _track.Insert(_index, _key);
     }
@@ -283,6 +298,7 @@ namespace BH.SDK.Generators
 
         /// <summary> Undoes this entry. </summary>
         public void Revert() => _track.Insert(_index, _key);
+
         /// <summary> Redoes it. </summary>
         public void Reapply() => _track.RemoveAt(_index);
     }
