@@ -55,11 +55,12 @@ build was *compiled*, not which build it *is*, so there is deliberately **no fou
 already defines `DEVELOPMENT_BUILD`, and `Debug.isDebugBuild` already answers the only question
 anyone asks at runtime.
 
-A variant moves exactly two things:
+A variant moves exactly three things:
 
 |  | Release | Debug |
 |---|---|---|
 | `BH_USE_BURST` | defined | not defined |
+| `BH_NO_CHECKS` | defined | not defined |
 | Development Build | off | on |
 
 - **`BH_USE_BURST` is the load-bearing half.** Every `[BurstCompile]` in the project sits behind it,
@@ -70,6 +71,13 @@ A variant moves exactly two things:
 - **It is not in Player Settings**, so the Editor, Play mode and the test suites all run Burst-off —
   the configuration the game is developed and debugged in. Only a build carries it, and only through
   its profile.
+- **`BH_NO_CHECKS` is the same shape one layer down**, for the managed code Burst never reaches.
+  Every `[Il2CppSetOption]` sits behind it, so a Release build drops il2cpp's null and array-bounds
+  checks on the types that opted in, and a Debug build of the same pair keeps them — a Release-only
+  crash is therefore reproduced by rebuilding as Debug, with no source change. It is likewise absent
+  from Player Settings, and it means nothing outside IL2CPP: a Mono player and the Editor read no
+  `[Il2CppSetOption]` whether or not it is defined. Which types opted in is
+  `docs/issues/IL2CPP_CHECKS.md`.
 - **Every profile also repeats the project-wide symbols** (`UNITEXT`, `BHSDK_UNITY`) alongside its
   own three. Whether Unity appends a profile's defines to Player Settings' or replaces them is not
   documented for Unity 6.5; carrying the full set is correct either way, and it makes a profile
