@@ -116,7 +116,7 @@ namespace BH.SDK.Models.SettingGroups
             StatsAlignmentX = 0f;
             StatsAlignmentY = 1f;
             MenuBackground = MenuBackgroundKind.Bot;
-            ScreenOrientation = ScreenOrientationLock.Horizontal;
+            ScreenOrientation = ScreenOrientationLock.Unlock;
             ShowGameProgress = true;
             ShowGamePause = true;
             ShowGameInterface = true;

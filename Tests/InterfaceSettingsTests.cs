@@ -246,31 +246,37 @@ namespace BH.SDK.Tests
             Assert.IsTrue(settings.StatsActive);
         }
 
-        // Horizontal is the default while Unlock is the zero value, and here that ordering is
-        // load-bearing rather than tidy: a file written before the field must not read back as
-        // Unlock, because Unlock is free rotation on screens that have no portrait layout yet. The
-        // same absent-key mechanism MenuBackground relies on is what guarantees it.
+        // THE DEFAULT REVERSED, and this pair is what pins it. It was Horizontal, because Unlock
+        // meant free rotation on screens with no portrait layout; screens lay themselves out from
+        // `.portrait` now, so a phone the player turns over is expected to follow. What did NOT
+        // move is which side wins while a level runs - LevelOrientation still defaults to
+        // Horizontal and still outranks this - so freeing it frees the menu, the browser and the
+        // settings screens alone.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.VeryEasy)]
-        public void Defaults_LockTheScreenHorizontally()
+        public void Defaults_LeaveTheScreenFreeToRotate()
         {
-            Assert.AreEqual(ScreenOrientationLock.Horizontal,
+            Assert.AreEqual(ScreenOrientationLock.Unlock,
                 new InterfaceSettings().ScreenOrientation);
         }
 
+        // Unlock is also the zero value now, so this can no longer prove the absent-key mechanism on
+        // its own - a missing key and a constructor default are the same answer here. It is kept
+        // because the OTHER field in the same document still proves it: StatsActive is present and
+        // true, so the object really was deserialized rather than left at its defaults wholesale.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.Easy)]
-        public void SettingsWrittenBeforeTheField_ReadBackLockedHorizontally()
+        public void SettingsWrittenBeforeTheField_ReadBackFreeToRotate()
         {
             var settings = JsonConvert.DeserializeObject<InterfaceSettings>(
                 "{\"open_menu_on_lose\":false,\"stats_active\":true," +
                 "\"stats_alignment_x\":0.5,\"stats_alignment_y\":0.5,\"menu_background\":2}");
 
-            Assert.AreEqual(ScreenOrientationLock.Horizontal, settings.ScreenOrientation);
+            Assert.AreEqual(ScreenOrientationLock.Unlock, settings.ScreenOrientation);
             Assert.IsTrue(settings.StatsActive);
         }
     }
