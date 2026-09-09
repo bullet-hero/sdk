@@ -64,9 +64,9 @@ projects and would stamp the analyzer and both test assemblies too.
 
 **`sv` tags live in THIS repository, not the consumer's.** They are pushed from here, which is why
 tagging the game's repo never produces any — `gv*` and `sv*` are tags of two different repositories
-that happen to share a working tree. `sv0.5.5` (the commit that introduced `SdkVersion.cs`) and
-`sv0.6.0` are the two that exist, with `sv0.6.1`, `sv0.6.2` and `sv0.6.3` due; there is no history before that, because the library carried no
-version at all until then.
+that happen to share a working tree. `sv0.5.5` (the commit that introduced `SdkVersion.cs`)
+through `sv0.6.3` exist; there is no history before that, because the library carried no version at
+all until then.
 
 Separately, and often confused with the above: what records which `sv` a given `gv` shipped against
 is the consumer's **submodule pointer**, not a tag on either side. That pointer has been lost once
