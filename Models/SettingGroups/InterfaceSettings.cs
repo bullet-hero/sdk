@@ -36,6 +36,36 @@ namespace BH.SDK.Models.SettingGroups
         [JsonProperty(Names.StatsActive)]
         public bool StatsActive { get; set; }
 
+        // FALSE BY DEFAULT, all three, and unlike the HUD flags above that IS the zero value - so
+        // they are additive in the cheapest way there is and neither the generation nor a migrator
+        // moves. The default is also the honest one: the overlay is opened to read a frame time,
+        // and these three blocks are the ones that answer a different question - what this level
+        // is made of, whether a buffer ran out, and what the process is holding. An overlay that
+        // starts by covering a third of the screen with them is one a player turns back off.
+        //
+        // THE MEMORY FLAG IS THE ONE THAT CHANGES AN EXISTING BEHAVIOUR: that block used to be
+        // drawn unconditionally, so its default is a removal rather than an addition and a
+        // settings file written before this key loses it. That is the same call the other two
+        // made and is why it is worth stating rather than defaulting the other way for symmetry
+        // with the HUD flags: the overlay is a diagnostics readout, and its shortest useful form
+        // is the frame line alone.
+        //
+        // THE LEVEL FLAG GATES A WALK, NOT ONLY A LABEL. StatsOverlayView's level block costs an
+        // O(objects) pass once a second and the editor routinely holds tens of thousands of them,
+        // so off it collects nothing at all rather than collecting and hiding.
+
+        /// <summary> Whether the overlay draws the per-frame buffer usage block. </summary>
+        [JsonProperty(Names.StatsFrameObjects)]
+        public bool StatsFrameObjects { get; set; }
+
+        /// <summary> Whether the overlay draws the loaded level's own size block. </summary>
+        [JsonProperty(Names.StatsLevelObjects)]
+        public bool StatsLevelObjects { get; set; }
+
+        /// <summary> Whether the overlay draws the process memory block. </summary>
+        [JsonProperty(Names.StatsMemory)]
+        public bool StatsMemory { get; set; }
+
         /// <summary> Horizontal alignment of the statistics overlay: 0 is the left screen edge, 1 the
         /// right one. </summary>
         [JsonProperty(Names.StatsAlignmentX)]
@@ -113,6 +143,9 @@ namespace BH.SDK.Models.SettingGroups
         {
             OpenMenuOnLose = false;
             StatsActive = false;
+            StatsFrameObjects = false;
+            StatsLevelObjects = false;
+            StatsMemory = false;
             StatsAlignmentX = 0f;
             StatsAlignmentY = 1f;
             MenuBackground = MenuBackgroundKind.Bot;

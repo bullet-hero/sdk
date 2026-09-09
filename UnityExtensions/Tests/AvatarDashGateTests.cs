@@ -16,8 +16,9 @@ namespace BH.SDK.UnityExtensions.Tests
     //
     // MEASURED, BEFORE THE FIX, at the old 0.25 cooldown - a window of 0.05 s: 3 exposed samples per
     // dash at 60 fps, 1 at 20 fps, and at 15 fps 43% of dash cycles had NONE, which on a phone under
-    // a heavy level is not a corner case. The cooldown is 0.35 now, and Observe makes the guarantee
-    // absolute rather than merely likely.
+    // a heavy level is not a corner case. The cooldown is 0.30 now - a window of 0.10 s, twice what
+    // was measured above and exactly the floor AvatarRulesTests states - and Observe makes the
+    // guarantee absolute rather than merely likely.
     //
     // THE SWEEP IS THE POINT OF THIS FILE. The single-window cases pin the mechanism; the sweep is
     // what actually asserts the game rule, at frame rates no test rig can otherwise reach.

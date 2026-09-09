@@ -54,17 +54,33 @@ namespace BH.SDK.Rules
         // MEASURED FROM THE LAUNCH, NOT FROM THE LANDING, and it is LONGER THAN
         // DashInvulnerabilityTime BY DESIGN - that difference IS the vulnerability window. Spending
         // every dash the moment the cooldown allows buys speed at the price of control, and the
-        // 0.15 s in between is what the bargain costs: a player who never stops dashing is still
-        // exposed for three sevenths of every cycle, and no input can close that gap.
+        // 0.10 s in between is what the bargain costs: a player who never stops dashing is still
+        // exposed for a third of every cycle, and no input can close that gap.
         //
         // IT WAS 0.25, WHICH LEFT ONLY 0.05 s. That is under one frame at 20 fps, and the collision
         // pass is a per-frame point sample (GameAvatarService zeroes the radius while i-frames are
         // up), so on a phone dropping frames the whole window fell BETWEEN two samples and dash
-        // spam really was free. Widening it to 0.35 makes the gap 0.15 s - wider than a frame at
-        // anything above ~7 fps - and AvatarMovement.Observe closes the case below that outright.
+        // spam really was free. It went to 0.35 for that, and back to 0.30 once
+        // AvatarMovement.Observe had made the guarantee independent of the duration entirely.
+        //
+        // 0.30 IS THE SHORTEST VALUE THIS MAY TAKE, and the floor is stated rather than felt: the
+        // window is then exactly the 0.1 s that AvatarRulesTests.TheVulnerabilityWindow_IsWiderThan
+        // AFrame requires, which is one frame at 10 fps. Anything shorter is a balance resting on
+        // the safety net instead of on the numbers - the dash still cannot become immunity, but how
+        // OFTEN it comes back starts depending on the device's frame rate.
+        //
+        // WHY IT MAY NOT SIMPLY BECOME DashTime, which is what "a dash with no cooldown" asks for.
+        // The i-frames have to outlast the dash for dashing THROUGH a solid obstacle to work at all
+        // (IFrames_OutlastTheDash), and the window needs the cooldown to outlast the i-frames - so
+        // cooldown > i-frames > dash holds by construction and the cooldown is always strictly the
+        // longer of the two. Equalising them makes the tail of the dash touchable WHILE the avatar
+        // is still travelling at DashSpeed, which is the tunnelling case a point-sampled narrowphase
+        // is worst at: at 0.2 s and 37.5 u/s one frame at 60 fps covers 0.6 world units, so the
+        // exposure is worth a fraction of the same duration spent standing still. The gap belongs
+        // after the dash, not inside it. docs/issues/MOVEMENT_HISTORY.md 13 is the record.
 
         /// <summary> How long after a dash STARTS before another may be taken, in seconds. </summary>
-        public const float DashCooldown = 0.35f;
+        public const float DashCooldown = 0.3f;
 
         // A dash grants i-frames, and that is a rule of the game rather than a detail: levels are
         // authored around crossing a solid obstacle by dashing through it, which speed alone could

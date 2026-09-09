@@ -56,8 +56,8 @@ namespace BH.SDK.Tests
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.VeryEasy)]
-        public void DashCooldown_IsSevenTwentieths()
-            => Assert.AreEqual(0.35f, AvatarRules.DashCooldown, Tolerance);
+        public void DashCooldown_IsThreeTenths()
+            => Assert.AreEqual(0.3f, AvatarRules.DashCooldown, Tolerance);
 
         [Test]
         [Author(Metadata.Author.Vertoker)]
@@ -171,13 +171,18 @@ namespace BH.SDK.Tests
         // 0.05 s did on a phone. AvatarMovement.ExposedSinceDash is the hard guarantee below this
         // frame rate; the number here is what keeps that guarantee from ever being what holds the
         // balance up. A tenth of a second is a frame at 10 fps.
+        //
+        // THE WINDOW NOW SITS EXACTLY ON THAT FLOOR (0.30 - 0.20), so the tolerance is load-bearing
+        // rather than tidy: this comparison must be decided by the balance and never by float
+        // subtraction, which lands the difference a rounding step either side of a tenth depending
+        // on which two constants produce it.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.VeryEasy)]
         public void TheVulnerabilityWindow_IsWiderThanAFrame()
             => Assert.GreaterOrEqual(
-                AvatarRules.DashCooldown - AvatarRules.DashInvulnerabilityTime, 0.1f);
+                AvatarRules.DashCooldown - AvatarRules.DashInvulnerabilityTime, 0.1f - Tolerance);
 
         // The hitbox is smaller than what is drawn, deliberately: a bullet that visibly clips the
         // outline and does not kill reads as generous, the reverse reads as broken.

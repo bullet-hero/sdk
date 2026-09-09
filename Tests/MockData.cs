@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using BH.SDK.Models;
 using BH.SDK.Models.Audio;
@@ -296,7 +296,10 @@ namespace BH.SDK.Tests
                 TextureResourceUV = new Vector4Value(2f, 2f, 0.1f, 0.1f),
                 Kind = TextureKind.PixelArt,
                 Alpha = TextureAlpha.Opaque,
-                Wrap = TextureWrapKind.Repeat,
+                Sampling = TextureSampling.Sharp,
+                Compression = TextureCompressionKind.Refuse,
+                WrapU = TextureWrapKind.Repeat,
+                WrapV = TextureWrapKind.Mirror,
             };
             level.Resources.Textures.Add(textureResource.TextureResourceId, textureResource);
             level.Resources.Fonts.Add(new FontResourceId(-1), new FontResource(new FontResourceId(-1),

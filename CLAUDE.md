@@ -700,7 +700,8 @@ the same as an absent key ("the player never touched it"). It shipped additively
 here, so `UserSettings` stays at generation 1.
 
 `InterfaceSettings` is the newest of them (the game's own overlays — the diagnostics readout's
-`StatsActive` + `StatsAlignmentX`/`Y`, plus `OpenMenuOnLose`, which is a BEHAVIOUR rather than an
+`StatsActive` + `StatsFrameObjects`/`StatsLevelObjects`/`StatsMemory` + `StatsAlignmentX`/`Y`, plus
+`OpenMenuOnLose`, which is a BEHAVIOUR rather than an
 overlay: off — the default — a lost run rewinds itself to the last checkpoint it reached instead of
 opening the result window, see root `CLAUDE.md`, "Checkpoints") and shipped **without bumping the
 `UserSettings` domain**: an
@@ -708,6 +709,13 @@ additive property whose constructor supplies a default needs no snapshot and no 
 `LevelSettings.Seed` and `GameEvents.Beats`. Its alignment pair is two free `[0,1]` floats rather than
 a nine-value enum, because it is the same convention level content is authored in (`0,0` lower-left) —
 the settings screen offers the nine presets, a hand-edited value between them is legal data.
+The three block switches are all **false** by default, which here is the zero value — and for the
+first two it is also the behaviour they shipped with. `StatsMemory` is the exception and the only
+one of the group that TOOK something away: that block used to be drawn whatever the file said, so a
+`settings.json` written before the key reads back without it. Rule 11 is what makes that a one-line
+change rather than a migrator. The level switch gates a WALK rather than a label: the consumer's
+overlay collects `LevelStatsUtils` once a second, which is O(objects) over a level the editor may be
+holding tens of thousands of, so off it collects nothing at all.
 `GameEditorSettings.Grid` (`ActiveDefault`/`Size`/`Opacity` — the editor's viewport grid: on at
 startup, one world unit per cell and a quarter opacity by default, floored at
 `ValueRules.MinGridSize` and ranged `[0,1]`) shipped the same way and is worth reading as the worked
@@ -732,18 +740,22 @@ sample count, except `None = 0`, which every graphics API states as 1 — conver
 
 `TexturesGraphicsSettings` (`Compression`/`SizeLimit`/`Mipmaps`/`Filtering`/`CompressionQuality`) is
 the newest of them and the one whose design is half outside this repo: it is the DEVICE's half of how
-a level's images are loaded, while the author's half is three fields on the image itself
-(`TextureResource`'s `Kind`/`Alpha`/`Wrap`). Neither can express the other - a level has to play the
+a level's images are loaded, while the author's half is six fields on the image itself
+(`TextureResource`'s `Kind`/`Alpha`/`Sampling`/`Compression`/`WrapU`/`WrapV`). Neither can express
+the other's half - a level has to play the
 same everywhere, so an author may not author a device's memory budget, and a player must never be
 asked what a picture depicts. Every field defaults to `Auto` and resolves per platform in the
 consumer (`Core`'s `TextureLoadPlanner`), which is what makes an older `settings.json` with no
 `"textures"` key correct rather than merely tolerated. Additive like everything else here, so
 `UserSettings` stays at generation 1.
 
-**`Filtering` and `CompressionQuality` were both DERIVED from the author's kind before they existed**
-and were on the wrong side of the split: the encoder's effort yields the same size in the same
-format either way, so all it trades is the player's own loading time, and filtering is how a device
-draws. Their `Auto` reproduces the old derivation, which is why neither needed a migration either.
+**`Filtering` and `CompressionQuality` were both DERIVED from the author's kind before they existed,
+and only `CompressionQuality` belonged here**: the encoder's effort yields the same size in the same
+format either way, so all it trades is the player's own loading time. `Filtering` turned out to be
+SHARED, because its four members conflate two questions - sharp against soft is a LOOK, costs the
+same on every GPU and is therefore the author's (`TextureSampling` overrules `Point`), while bilinear
+against trilinear is a real device cost and stays here. Their `Auto` reproduces the old derivation,
+which is why neither needed a migration either.
 
 **`TextureSizeLimit`'s two newest rungs are `Side512 = 5` and `Side8192 = 6`, out of ladder order on
 purpose**: a member's number is what a settings file stores, so a rung is APPENDED and never
@@ -836,11 +848,23 @@ resources are baked into the game/its own registries and never appear in a level
 range, freely convertible to/from the untyped `TypedResourceId`.
 
 **`TextureResource` is the one resource carrying authored fields beyond its id, UV and sources**, and
-there are three of them - `Kind` (`TextureKind`: `Auto`/`Photo`/`Graphic`/`PixelArt`/`Gradient`),
-`Alpha` (`TextureAlpha`: `Auto`/`Opaque`) and `Wrap` (`TextureWrapKind`: `Clamp`/`Repeat`/`Mirror`).
-**Three independent axes, deliberately not one enum**: an opaque pixel-art tile that repeats is three
-answers, and folding them together makes exactly those cases unsayable. None of them is a format, a
-size or a switch - all of that belongs to the player's own `UserSettings.Graphics.Textures`.
+there are six of them - `Kind` (`TextureKind`: `Auto`/`Photo`/`Graphic`/`PixelArt`/`Gradient`),
+`Alpha` (`TextureAlpha`: `Auto`/`Opaque`), `Sampling` (`TextureSampling`: `Auto`/`Smooth`/`Sharp`),
+`Compression` (`TextureCompressionKind`: `Auto`/`Allow`/`Refuse`) and `WrapU`/`WrapV`
+(`TextureWrapKind`: `Clamp`/`Repeat`/`Mirror`, one per axis).
+**Six independent axes, deliberately not one richer enum**: an opaque pixel-art tile repeating
+horizontally and clamped vertically is five answers, and every pair that was ever folded together
+made a real case unsayable. None of them is a format, a size or a memory budget - all of that belongs
+to the player's own `UserSettings.Graphics.Textures`.
+
+**`Sampling` and `Compression` are the two statements `Kind` used to carry on its own behalf**, split
+out because they are not the same claim as the content: a photograph an author refuses to have
+compressed is not a `Gradient`, a crisp hand-drawn sprite is not pixel art, and calling it one to get
+the look also threw its mip-maps away. A kind still SEEDS both (`PixelArt` seeds `Sharp` plus a
+compression refusal, `Gradient` a refusal), so nothing authored before them changed - and `Allow` is
+the direction that was previously inexpressible, an author handing a device its memory back. The
+consumer's rules for each are in `Core`'s `TextureLoadPlanner`: a memory axis may only be REFUSED,
+never demanded, and never touches the size cap; a look axis wins outright.
 
 `Alpha` is the one whose motive is worth restating: `ImageHeaderReader` proves a file CANNOT be
 transparent from 33 bytes, but proving an alpha channel that EXISTS is 255 everywhere needs every
@@ -849,12 +873,16 @@ nothing verifies the claim. It is an enum rather than a bool for the reason `Sha
 is one: `Cutout` is the obvious next member, and two booleans that can contradict each other is what
 this shape avoids.
 
-`Wrap` is the field that finally makes `TextureResourceUV`'s tiling half mean something - the data
-always reached the shader, and the consumer hard-coded Clamp, so a tiling UV only ever stretched one
-row of pixels.
+`WrapU`/`WrapV` are the fields that finally make `TextureResourceUV`'s tiling half mean something -
+the data always reached the shader, and the consumer hard-coded Clamp, so a tiling UV only ever
+stretched one row of pixels. **Per axis rather than one field**, because the content a single one
+could not describe is ordinary: a strip that tiles along X and is clamped on Y.
 
-All three are additive with a zero default, so a level written before them reads back as
-`Auto`/`Auto`/`Clamp` and `LevelResources` stays at generation 1.
+Every one is additive with a zero default except the wrap pair, which REPLACED a single `Wrap` under
+new keys (`wrap_u`/`wrap_v`) - so a level written before them reads back as
+`Auto`/`Auto`/`Auto`/`Auto`/`Clamp`/`Clamp`, one that had authored a repeat needs a re-save (the
+consumer's Rule 11: the format breaks in place before release), and `LevelResources` stays at
+generation 1 either way.
 
 **`FontCharacters` used to live here and no longer does** — it was never a resource, only a fact
 *about* the resources, so it moved to `Level.Hints` with the rest of the advisory data. Don't look

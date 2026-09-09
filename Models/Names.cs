@@ -121,8 +121,11 @@
         /// <summary> GameEditorSettings.Interface, UserSettings.Interface. </summary>
         public const string Interface = "iface";
 
-        /// <summary> Word fragment, built into StatsActive, StatsAlignmentX, StatsAlignmentY. </summary>
+        /// <summary> Word fragment, built into StatsActive, StatsAlignmentX, StatsAlignmentY and 3 more. </summary>
         public const string Stats = "stats";
+
+        /// <summary> Word fragment, built into StatsMemory. </summary>
+        public const string Memory = "memory";
 
         /// <summary> Word fragment, built into ShowAllFoundContent, ShowGameInterface, ShowGamePause, ShowGameProgress. </summary>
         public const string Show = "show";
@@ -548,6 +551,12 @@
 
         /// <summary> ClipboardData.Objects, GameLevel.Objects, Prefab.Objects. </summary>
         public const string Objects = "objs";
+
+        /// <summary> Word fragment, built into StatsFrameObjects, StatsLevelObjects. The spelled-out
+        /// twin of <see cref="Objects"/>, and the pair is the SINGLE/MULTIPLE split of docs/NAMING.md
+        /// rather than an oversight: a level holds thousands of the abbreviated one, settings.json
+        /// holds one of each of these and a person is the one reading it. </summary>
+        public const string ObjectsFull = "objects";
 
         /// <summary> Word kept in the key vocabulary; nothing is built from it today. </summary>
         public const string Instance = "instance";
@@ -996,8 +1005,17 @@
         /// <summary> Word kept in the key vocabulary; nothing is built from it today. </summary>
         public const string Word = "word";
 
-        /// <summary> TextureResource.Wrap. </summary>
+        /// <summary> Word fragment, built into WrapU, WrapV; TextObject.WordWrap. </summary>
         public const string Wrap = "wrap";
+
+        /// <summary> <c>"wrap_u"</c> - TextureResource.WrapU. </summary>
+        public const string WrapU = Wrap + _ + "u";
+
+        /// <summary> <c>"wrap_v"</c> - TextureResource.WrapV. </summary>
+        public const string WrapV = Wrap + _ + "v";
+
+        /// <summary> TextureResource.Sampling. </summary>
+        public const string Sampling = "sampling";
 
         /// <summary> Checkpoint.Space. </summary>
         public const string Space = "spc";
@@ -1920,11 +1938,23 @@
         /// <summary> <c>"game_editor"</c> - UserSettings.GameEditor. </summary>
         public const string GameEditor = Game + _ + Editor;
 
+        /// <summary> <c>"editor_ui"</c> - AudioSettings.EditorUI. </summary>
+        public const string EditorUI = Editor + _ + UI;
+
         /// <summary> <c>"open_menu_on_lose"</c> - InterfaceSettings.OpenMenuOnLose. </summary>
         public const string OpenMenuOnLose = Open + _ + Menu + _ + On + _ + Lose;
 
         /// <summary> <c>"stats_active"</c> - InterfaceSettings.StatsActive. </summary>
         public const string StatsActive = Stats + _ + Active;
+
+        /// <summary> <c>"stats_frame_objects"</c> - InterfaceSettings.StatsFrameObjects. </summary>
+        public const string StatsFrameObjects = Stats + _ + Frame + _ + ObjectsFull;
+
+        /// <summary> <c>"stats_level_objects"</c> - InterfaceSettings.StatsLevelObjects. </summary>
+        public const string StatsLevelObjects = Stats + _ + Level + _ + ObjectsFull;
+
+        /// <summary> <c>"stats_memory"</c> - InterfaceSettings.StatsMemory. </summary>
+        public const string StatsMemory = Stats + _ + Memory;
 
         /// <summary> <c>"stats_alignment_x"</c> - InterfaceSettings.StatsAlignmentX. </summary>
         public const string StatsAlignmentX = Stats + _ + Alignment + _ + CoordX;
@@ -2139,7 +2169,8 @@
         // Textures. The group's own key is the shared Textures one - a level's resource list and a
         // settings group can never appear on one model, which is the reuse this file allows.
 
-        /// <summary> TexturesGraphicsSettings.Compression. </summary>
+        /// <summary> TexturesGraphicsSettings.Compression, TextureResource.Compression - the device's
+        /// setting and the author's permission, two members of two unrelated models. </summary>
         public const string Compression = "compress";
 
         /// <summary> TexturesGraphicsSettings.Mipmaps. </summary>

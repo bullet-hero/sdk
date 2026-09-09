@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Enums.Settings;
 using BH.SDK.Models.Interfaces;
@@ -7,24 +7,28 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models.SettingGroups.Graphics
 {
-    // The device's half of how a level's images are loaded. The author's half is three fields on the
-    // image itself (TextureResource's Kind/Alpha/Wrap), and they say only what is true of the
-    // PICTURE - the split is the whole point: a level has to play the same everywhere, so the author
-    // may not author the device's memory budget, and the player may not be asked what a picture
-    // depicts. The two meet in Core's TextureLoadPlanner, which is the only place that turns an
-    // (authoring, settings) pair into a format.
+    // The device's half of how a level's images are loaded. The author's half is six fields on the
+    // image itself (TextureResource's Kind/Alpha/Sampling/Compression/WrapU/WrapV), and they say only
+    // what is true of the PICTURE - the split is the whole point: a level has to play the same
+    // everywhere, so the author may not author the device's memory budget, and the player may not be
+    // asked what a picture depicts. The two meet in Core's TextureLoadPlanner, which is the only place
+    // that turns an (authoring, settings) pair into a format.
     //
     // Every field defaults to Auto and Auto resolves per platform, so a player who never opens this
     // group runs the right settings for their device. None of them is a BaseGraphicsSettings Render
     // switch, for the same reason AntiAliasingGraphicsSettings is not: "do not render textures" is
     // not a state this game has.
     //
-    // TWO OF THESE USED TO BE DERIVED FROM THE AUTHOR'S KIND and were on the wrong side of the split:
-    // the sampling filter (pixel art point-sampled, everything else smoothed) and the compression
-    // encoder's effort (everything but a photo took the careful one). Encoder effort is pure load
-    // TIME and filtering is how the device draws, so both are the player's. Their Auto reproduces the
-    // old derivation exactly, and a kind may still RESTRICT - PixelArt forces Point however Filtering
-    // is set, exactly as it already forces compression and mip-maps off.
+    // TWO OF THESE USED TO BE DERIVED FROM THE AUTHOR'S KIND, and only ONE of them belonged here.
+    // The compression encoder's EFFORT is the player's outright: the result is the same size in the
+    // same format either way, so all it trades is this device's own loading time.
+    //
+    // FILTERING IS THE ONE THAT IS SHARED, and the line runs between two questions its four members
+    // conflate. Whether an image is drawn SHARP or SOFT is a look: it costs the same on every GPU, so
+    // there is no budget here to protect and the author's TextureSampling wins outright over Point.
+    // How soft - whether a smoothed image blends between mip levels, i.e. Bilinear against Trilinear -
+    // is a real device cost and stays this setting's answer. So Point here is a preference an image
+    // may overrule, while the linear pair is not.
     //
     // These are read when a level's resources LOAD. Changing one mid-level does nothing until the
     // next load, which is why nothing here is pushed by SettingsApplier the way anti-aliasing is.

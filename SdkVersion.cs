@@ -23,6 +23,6 @@ namespace BH.SDK
     public static class SdkVersion
     {
         /// <summary> Semver over the public API. Read, never inlined - see this file's header. </summary>
-        public static readonly string Value = "0.6.3";
+        public static readonly string Value = "0.7.0";
     }
 }
