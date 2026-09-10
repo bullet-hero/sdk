@@ -9,8 +9,8 @@ The design goal is that **adding a generator is adding one class**. No host writ
 registry is edited, no switch gains a case. Everything a host needs — how to list it, what to call
 it, what form to show, what it will cost, how to undo it — comes off the contract below.
 
-The full design document lives in the consuming project at
-`docs/superpowers/specs/2026-08-05-sdk-generators-design.md`.
+The design document this was written from is no longer present in the consuming project, so
+what follows is the record.
 
 ## Three kinds
 

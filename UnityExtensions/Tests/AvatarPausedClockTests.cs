@@ -113,6 +113,47 @@ namespace BH.SDK.UnityExtensions.Tests
             Assert.AreEqual(Start.y, stepped.Position.y, 1e-6f);
         }
 
+        // WHY A DASH MUST NEVER BE LAUNCHED WITHOUT A DIRECTION, pinned here because the symptom
+        // appears three layers up and looks like nothing to do with this type. DashHadMove is what
+        // arms the branch that locks a dash to its launch direction while a TARGET is being chased;
+        // without it a cursor-mode dash is re-aimed at the cursor every frame, so the avatar is
+        // thrown out along its idle angle and hauled straight back, once per frame, for the length
+        // of the dash. Services.Shared's AvatarController.ResolveDashDirection is what guarantees
+        // the argument is never zero; this is the contract it is guaranteeing.
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.VeryEasy)]
+        public void ADashWithADirection_KeepsItWhileATargetIsChased()
+        {
+            var launch = math.normalize(new float2(1f, 1f));
+            var movement = AvatarMovement.At(Start).StartDash(0f, launch);
+
+            Assert.IsTrue(movement.DashHadMove, "a dash given a direction has to record that it had one");
+
+            // The target sits back the way the avatar came, which is exactly the pull that used to
+            // win: with the lock armed the dash ignores it.
+            var behind = Start - launch * 5f;
+            var stepped = movement.Step(true, behind, launch, 0f, Speeds,
+                AvatarRules.DashTime * 0.5f, 0.016f, out var result);
+
+            Assert.Greater(math.dot(math.normalize(stepped.Position - Start), launch), 0.99f,
+                "a locked dash travels along its launch direction, not back towards the cursor");
+            Assert.Greater(math.dot(math.normalize(result.TargetDirection), launch), 0.99f);
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.VeryEasy)]
+        public void ADashWithoutADirection_DoesNotLockAndIsTheCaseToAvoid()
+        {
+            var movement = AvatarMovement.At(Start).StartDash(0f, float2.zero);
+
+            Assert.IsFalse(movement.DashHadMove,
+                "a dash given nothing cannot lock - which is why the caller must never give it nothing");
+        }
+
         // THE OTHER HALF OF THE CONTRACT, so these cases cannot pass by the step being broken
         // outright: the same fixtures with a real delta DO move, which is exactly what a resumed run
         // has to go on doing.

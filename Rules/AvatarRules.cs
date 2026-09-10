@@ -128,6 +128,31 @@ namespace BH.SDK.Rules
         /// <summary> The avatar's own scale, before the level's own Player Size track. </summary>
         public const float AvatarScale = 0.5f;
 
+        // ONE NUMBER FOR BOTH DIRECTIONS, and the asymmetry between an arrival and a death is
+        // carried by the EASE rather than by the duration - Core's AvatarPresenceRamp pops in on
+        // OutBack and decays out on OutQuad. Two durations would be two knobs for one decision, and
+        // the thing a player actually reads is the shape of the curve, not its length.
+        //
+        // 0.5 IS THE CEILING AND THIS SITS UNDER IT, which is the whole reason the number settled
+        // where it did. The animation has to nest inside the checkpoint rewind: a death compresses
+        // out during CheckpointRamp's 0.5 s slowdown and the respawn pops back in during its
+        // speed-up, so the two clocks never meet.
+        //
+        // ABOVE 0.5 the departure is still playing when the seek happens -
+        // GameAvatarService.ApplyRespawn calls Reset, the arrival replaces the departure mid-way,
+        // the avatar never reaches nothing, and therefore is never REMOVED either, since
+        // IsDespawned cannot become true. Nothing crashes and no frame is wrong; the death simply
+        // reads as a shrink that changed its mind. It was tried at 0.8 to see the curves, and that
+        // is what it looked like.
+        //
+        // It was 0.2 first - a dash's length, the shortest interval this game already asks the eye
+        // to resolve. 0.3 is that with enough room to read the ease, and still a comfortable margin
+        // under the ceiling.
+
+        /// <summary> How long the avatar takes to grow in, and to compress back to a point, in
+        /// seconds. </summary>
+        public const float SpawnTime = 0.3f;
+
         // The hitbox is SMALLER than what is drawn, deliberately and by a fifth: a bullet that visibly
         // clips the avatar's outline and does not kill reads as generous, while the reverse reads as
         // broken. Every genre this game sits in makes the same call.

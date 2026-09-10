@@ -53,7 +53,7 @@ resolves the actual extension (json vs bson chosen per-level at creation).
 Almost every "value-shaped" field in the model tree is **polymorphic**: a keyframeable float,
 vector, or color can be a literal `Value`, `RandomMinMax[Step]`, `RandomCircle`/`RandomRect[Step]`,
 or (for colors) a `ThemeRef` — see "The polymorphic Value system" below. This is the SDK-side half
-of what the Unity project's `Core/CLAUDE.md` calls "two parallel data shapes": the SDK model keeps
+of what the Unity project's `Assets/Code/Core/CLAUDE.md` calls "two parallel data shapes": the SDK model keeps
 values tagged with their *kind*; Unity's runtime `*KeyState`/`*State` structs keep that same tag
 alive so `GamePlayer`'s jobs can re-roll randomness every frame instead of freezing it once at load.
 
@@ -245,8 +245,8 @@ alive so `GamePlayer`'s jobs can re-roll randomness every frame instead of freez
   `BaseSpawnGenerator.CanAnimate`, and note that `Estimate` has to apply the same clamp. A third,
   format-wide: **`FrameDuration` is a count**, so the last legal frame is `FrameDuration - 1`
   (`RuleLevelFrame`'s upper bound is exclusive).
-  Has its own `README.md`; full design in the consuming project's
-  `docs/superpowers/specs/2026-08-05-sdk-generators-design.md`.
+  Has its own `README.md`, and that README is now the design record: the spec it was written
+  from is no longer present in the consuming project.
 - **Roslyn/** — the compile-time half: analyzers and incremental source generators, **running**
   since 2026-09-02 (they never had before: the gate `#if BHSDK_ROSLYN` was defined nowhere, and the
   `RoslynAnalyzer` label sat on the asmdef, which Unity ignores — it honours that label on a

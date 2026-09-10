@@ -97,6 +97,25 @@ namespace BH.SDK.Tests
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.VeryEasy)]
+        public void SpawnTime_IsThreeTenths()
+            => Assert.AreEqual(0.3f, AvatarRules.SpawnTime, Tolerance);
+
+        // THE CEILING, AND IT SPANS TWO ASSEMBLIES so nothing but a test can hold it: above
+        // CheckpointService.RampSeconds the departure is still playing when the rewind seeks, the
+        // arrival replaces it mid-way, and the avatar is never removed at all. The number is
+        // restated rather than referenced - Services.Game is not visible from here, and it is the
+        // relation being pinned rather than either constant.
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.VeryEasy)]
+        public void TheSpawn_FitsInsideTheCheckpointRewind()
+            => Assert.LessOrEqual(AvatarRules.SpawnTime, 0.5f);
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.VeryEasy)]
         public void CollisionScale_IsFourTenths()
             => Assert.AreEqual(0.4f, AvatarRules.CollisionScale, Tolerance);
 
