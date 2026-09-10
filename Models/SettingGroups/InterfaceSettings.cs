@@ -66,6 +66,17 @@ namespace BH.SDK.Models.SettingGroups
         [JsonProperty(Names.StatsMemory)]
         public bool StatsMemory { get; set; }
 
+        // GATES A WALK TOO, and a heavier one than the level flag's: the census counts every element
+        // in the UI Toolkit panel, which on the editor screen is eighteen thousand of them. Off, it
+        // is not collected at all. It also has no effect whatsoever in a release build - every
+        // profiler marker in the project compiles out there, so the block has nothing to draw and
+        // the service that feeds it is never registered.
+
+        /// <summary> Whether the overlay draws the profiling block: pipeline stage timings and how
+        /// many elements the UI panel holds. </summary>
+        [JsonProperty(Names.StatsProfiling)]
+        public bool StatsProfiling { get; set; }
+
         /// <summary> Horizontal alignment of the statistics overlay: 0 is the left screen edge, 1 the
         /// right one. </summary>
         [JsonProperty(Names.StatsAlignmentX)]
@@ -146,6 +157,7 @@ namespace BH.SDK.Models.SettingGroups
             StatsFrameObjects = false;
             StatsLevelObjects = false;
             StatsMemory = false;
+            StatsProfiling = false;
             StatsAlignmentX = 0f;
             StatsAlignmentY = 1f;
             MenuBackground = MenuBackgroundKind.Bot;

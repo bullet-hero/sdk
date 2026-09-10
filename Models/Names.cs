@@ -1956,6 +1956,9 @@
         /// <summary> <c>"stats_memory"</c> - InterfaceSettings.StatsMemory. </summary>
         public const string StatsMemory = Stats + _ + Memory;
 
+        /// <summary> <c>"stats_profile"</c> - InterfaceSettings.StatsProfiling. </summary>
+        public const string StatsProfiling = Stats + _ + Profile;
+
         /// <summary> <c>"stats_alignment_x"</c> - InterfaceSettings.StatsAlignmentX. </summary>
         public const string StatsAlignmentX = Stats + _ + Alignment + _ + CoordX;
 
