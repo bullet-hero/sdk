@@ -1,7 +1,8 @@
 # Versions
 
-Historical snapshots and migrators for the model versioning system. See `Docs/VERSIONING.md` at the
-SDK root for the full design — what a generation is, which of the project's six versions this one is,
+Historical snapshots and migrators for the model versioning system. See `VERSIONING.md` in the SDK's own
+`Docs/` folder (`Assets/Plugins/BulletHeroSDK/Docs/VERSIONING.md` from the game project) for the
+full design — what a generation is, which of the project's six versions this one is,
 and why a nested envelope at another generation is refused rather than migrated. Short version: a
 generation lives only on aggregate roots (types carrying `[ModelGeneration]`), not on every class,
 so most models never appear here at all.
