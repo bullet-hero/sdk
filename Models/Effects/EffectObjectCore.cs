@@ -35,14 +35,28 @@ namespace BH.SDK.Models.Effects
         [JsonProperty(Names.RenderShort)]
         public bool Render { get; set; }
 
-        /// <summary> Whether emission restarts once the batch is spent, instead of running once.
-        /// </summary>
+        /// <summary> Whether the system emits continuously, instead of one batch that is never
+        /// refilled. Off, it has nothing left to draw past its own LifetimeBounds. </summary>
         [JsonProperty(Names.LoopShort)]
         public bool Loop { get; set; }
 
 
-        /// <summary> How many particles the system may have alive at once - the main cost knob, and
-        /// what a level's capacity hint ultimately counts. </summary>
+        // THE NAME IS A RATE, NOT A POPULATION, and the two differ by one multiplication that the
+        // graph does rather than this field. A looping system feeds this straight to a constant
+        // spawn rate, so what is alive settles at count x average lifetime; a one-shot feeds a
+        // single burst, which is handed that same product so both modes put the same number of
+        // particles on screen. Naming it a population instead is what made "Loop off" read as
+        // "the colour gradient stopped working" - the gradient was fine, the cloud was 1/lifetime
+        // of its looping size. Nothing in this library bounds the PRODUCT: ParticleCount_Max caps
+        // the rate, LimitHints counts emitters rather than particles, and the only ceiling on what
+        // is actually alive is the graph's own capacity, which clamps silently. So a legal rate
+        // with a long lifetime can ask for more than the runtime will hold, and that is the one
+        // thing this field cannot express. Renaming it is a format change nobody has asked for;
+        // correcting what it is documented to MEAN is this comment.
+
+        /// <summary> Particles emitted per second - the main cost knob. What is alive at once is
+        /// this times the average lifetime, in both modes: looping spawns at this rate, and a
+        /// one-shot bursts that whole product at once. </summary>
         [RuleInRange(EffectRules.Core.ParticleCount_Min, EffectRules.Core.ParticleCount_Max)]
         [JsonProperty(Names.ParticleCount)]
         public uint ParticleCount { get; set; }
