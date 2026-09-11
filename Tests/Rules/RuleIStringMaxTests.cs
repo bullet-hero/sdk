@@ -16,16 +16,14 @@ namespace BH.SDK.Tests.Rules
         [RuleContainer]
         private class Model
         {
-            [RuleIStringMax(5)]
-            public IString Value { get; set; } = new StringValue("abc");
+            [RuleIStringMax(5)] public IString Value { get; set; } = new StringValue("abc");
         }
 
         /// <summary> A property of a type the rule does not apply to, so it must decline rather than refuse. </summary>
         [RuleContainer]
         private class WrongTypeModel
         {
-            [RuleIStringMax(5)]
-            public string Value { get; set; } = string.Empty;
+            [RuleIStringMax(5)] public string Value { get; set; } = string.Empty;
         }
 
         [Test]
@@ -138,6 +136,40 @@ namespace BH.SDK.Tests.Rules
         {
             var model = new Model { Value = new StringValue(null) };
             Assert.Throws<NullReferenceException>(() => Analyze(model));
+        }
+
+        // Same cut, same hazard as RuleStringMax's: the ceiling counts code units, an astral
+        // character is two of them, and a cut between the halves leaves one that is not a character
+        // at all. Both IString variants go through the same clamp.
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Easy)]
+        public void TestFixNeverLeavesALoneSurrogate()
+        {
+            const string thumb = "👍"; // U+1F44D, one character, two code units
+
+            var model = new Model { Value = new StringValue("ab" + thumb + thumb) };
+            AssertFixedTo(model, () => ((StringValue)model.Value).Value, "ab" + thumb);
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Easy)]
+        public void TestLocalizedFixNeverLeavesALoneSurrogate()
+        {
+            const string thumb = "👍";
+
+            var model = new Model
+            {
+                Value = new StringLocalized(new[] { new StringLanguage("en", "ab" + thumb + thumb) }),
+            };
+
+            Fix(model);
+
+            var localized = (StringLocalized)model.Value;
+            Assert.AreEqual("ab" + thumb, localized.Strings[0].Value);
         }
 
         [Test]

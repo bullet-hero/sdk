@@ -10,7 +10,9 @@ the `IModel<T>` contract and the cross-folder effect/audio/theme model.
 `Fillments` (how much of the text is written) and `Appearings` (how much of it hides behind
 `AppearingMask`), both plain `List<FloatKey>`, plus the non-keyframed `FillDirection`
 (`Forward`/`Backward`/`FromCenter`/`ToCenter`), `AppearingMode` (`Random`=0/`Forward`/`Backward`) and
-`AppearingMask` (an author-set string, default `"X"`, capped by `TextRules.MaxAppearingMask`). They
+`AppearingMask` (an author-set string, default `"X"`, capped by `TextRules.MaxAppearingMask` — a cap
+on CODE UNITS, so an astral character costs two of them; the consumer picks whole characters out of
+it, never halves, so an emoji mask is legal and simply takes the room of two). They
 are resolved over the string itself by the consumer's text job rather than by the keyframe→transform
 path. **Both fallbacks in `TextRules` mean "effect off"** (`Fillment_Fallback` = 1,
 `Appearing_Fallback` = 0) — an empty track has to read as unchanged, or every text authored before

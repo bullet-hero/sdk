@@ -380,5 +380,83 @@ namespace BH.SDK.Tests.Services
 
             Assert.AreEqual(2, ids.Count);
         }
+
+        // ==================== Astral characters ====================
+
+        // This set is WRITTEN INTO level.json, so a surrogate half in it is a broken character in the
+        // file rather than a rendering artifact. An astral character reaches here by both doors - a
+        // text object's own string, and an appearing mask, which may legitimately carry one since
+        // TextComposeJob picks whole characters out of it.
+
+        /// <summary> U+1F44D THUMBS UP - one character, two code units, escaped so the fixture never
+        /// depends on this file's own encoding. </summary>
+        private const string Thumb = "👍";
+
+        /// <summary> Fails on any surrogate not sitting beside its own other half. </summary>
+        private static void AssertNoLoneSurrogate(string value)
+        {
+            for (var index = 0; index < value.Length; index++)
+            {
+                var character = value[index];
+                if (char.IsHighSurrogate(character))
+                {
+                    Assert.IsTrue(index + 1 < value.Length && char.IsLowSurrogate(value[index + 1]),
+                        $"A high surrogate at {index} of the set has no low half");
+                    index++;
+                    continue;
+                }
+
+                Assert.IsFalse(char.IsLowSurrogate(character),
+                    $"A low surrogate at {index} of the set has no high half");
+            }
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Normal)]
+        public void Build_TextCarryingAnAstralCharacter_KeepsItWhole()
+        {
+            var level = CreateLevel();
+            AddText(level, FontA, "a" + Thumb + "b");
+
+            var set = BuildPlain(level, FontA);
+
+            AssertNoLoneSurrogate(set);
+            StringAssert.Contains(Thumb, set);
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Normal)]
+        public void Build_MaskCarryingAnAstralCharacter_KeepsItWhole()
+        {
+            var level = CreateLevel();
+            var text = AddText(level, FontA, "ab");
+            text.AppearingMask = Thumb;
+
+            var set = BuildPlain(level, FontA);
+
+            AssertNoLoneSurrogate(set);
+            StringAssert.Contains(Thumb, set);
+        }
+
+        // Sorting moved from code unit to code point with the fix, and a set is only worth trusting
+        // if it is reproducible: the same characters in any authored order produce the same string.
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Normal)]
+        public void Build_AstralCharacters_AreOrderedReproducibly()
+        {
+            var first = CreateLevel();
+            AddText(first, FontA, Thumb + "a");
+
+            var second = CreateLevel();
+            AddText(second, FontA, "a" + Thumb);
+
+            Assert.AreEqual(BuildPlain(first, FontA), BuildPlain(second, FontA));
+        }
     }
 }

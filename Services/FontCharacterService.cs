@@ -8,6 +8,7 @@ using BH.SDK.Models.Objects;
 using BH.SDK.Models.Primitives.Resources;
 using BH.SDK.Models.Values;
 using BH.SDK.Rules;
+using BH.SDK.Utils;
 
 namespace BH.SDK.Services
 {
@@ -47,6 +48,7 @@ namespace BH.SDK.Services
                 var characters = sets.ToValue();
                 if (characters != null) built.Add(fontResourceId, new CachedFontText(fontResourceId, characters));
             }
+
             return built;
         }
 
@@ -109,21 +111,31 @@ namespace BH.SDK.Services
                     sets = new CharacterSets();
                     collected.Add(textObject.FontResourceId, sets);
                 }
+
                 sets.Add(textObject);
             }
+
             return collected;
         }
 
         // SortedSet everywhere rather than HashSet: the output is written to a file that the author
         // diffs and version-controls, so re-saving an unchanged level must produce an unchanged
         // line. Hash iteration order is not contractually stable across runtimes, so it would not.
+        //
+        // The sets hold CODE POINTS, not chars, and that is about what lands in the FILE rather than
+        // about the atlas: a set accumulated per code unit stores the two halves of an astral
+        // character as two entries, sorts them among the BMP ones, and writes a level.json carrying
+        // surrogates that pair with nothing. A reader then warms U+FFFD - harmless, since an unwarmed
+        // glyph still rasterizes on demand, and invisible, since the hint is advisory. Storing the
+        // whole character costs one branch and cannot produce that file at all.
 
         /// <summary> One font's accumulating character sets - a shared one for text that reads the
         /// same in every language, plus one per language that doesn't. </summary>
         private sealed class CharacterSets
         {
-            private readonly SortedSet<char> _shared = new();
-            private readonly SortedDictionary<string, SortedSet<char>> _perLanguage =
+            private readonly SortedSet<int> _shared = new();
+
+            private readonly SortedDictionary<string, SortedSet<int>> _perLanguage =
                 new(System.StringComparer.Ordinal);
 
             // The appearing mask goes into the SHARED set, not a language's: a mask character is
@@ -136,7 +148,7 @@ namespace BH.SDK.Services
             public void Add(TextObject textObject)
             {
                 Add(textObject.Text);
-                AddChars(_shared, textObject.AppearingMask);
+                AddCharacters(_shared, textObject.AppearingMask);
             }
 
             private void Add(IString text)
@@ -144,7 +156,7 @@ namespace BH.SDK.Services
                 switch (text)
                 {
                     case StringValue value:
-                        AddChars(_shared, value.Value);
+                        AddCharacters(_shared, value.Value);
                         break;
 
                     case StringLocalized localized:
@@ -159,11 +171,13 @@ namespace BH.SDK.Services
 
                             if (!_perLanguage.TryGetValue(code, out var set))
                             {
-                                set = new SortedSet<char>();
+                                set = new SortedSet<int>();
                                 _perLanguage.Add(code, set);
                             }
-                            AddChars(set, entry.Value);
+
+                            AddCharacters(set, entry.Value);
                         }
+
                         break;
                     }
                 }
@@ -181,28 +195,49 @@ namespace BH.SDK.Services
                 return new StringLocalized(strings);
             }
 
-            private static void AddChars(ISet<char> set, string text)
+            // A surrogate half with no partner is stored as itself rather than repaired or dropped:
+            // it is authored damage this service did not cause, and a census that silently mends its
+            // input stops being a census. Join writes such an entry back out unchanged.
+            private static void AddCharacters(ISet<int> set, string text)
             {
                 if (string.IsNullOrEmpty(text)) return;
-                foreach (var character in text)
+
+                for (var index = 0; index < text.Length; index++)
+                {
+                    var character = text[index];
+                    if (SurrogateUtils.IsLead(character) && index + 1 < text.Length
+                                                         && SurrogateUtils.IsTrail(text[index + 1]))
+                    {
+                        set.Add(char.ConvertToUtf32(character, text[index + 1]));
+                        index++;
+                        continue;
+                    }
+
                     set.Add(character);
+                }
             }
 
             // Truncation is silent and deliberate: the set is advisory, so a CJK level that overruns
             // the cap warms a prefix and renders the rest on demand, which is strictly better than
             // refusing to build a set at all. Merging happens before the cap so a shared character
-            // can't be dropped in favour of a language-specific one that sorts earlier.
-            private static string Join(SortedSet<char> own, SortedSet<char> shared)
+            // can't be dropped in favour of a language-specific one that sorts earlier. The cap
+            // counts code units, since it bounds what lands in the FILE - and a character is taken
+            // whole or not at all, so the prefix can never end on half of one.
+            private static string Join(SortedSet<int> own, SortedSet<int> shared)
             {
-                var merged = shared == null ? own : new SortedSet<char>(own);
+                var merged = shared == null ? own : new SortedSet<int>(own);
                 if (shared != null) merged.UnionWith(shared);
 
                 var builder = new StringBuilder(merged.Count);
-                foreach (var character in merged)
+                foreach (var codePoint in merged)
                 {
-                    if (builder.Length == TextRules.MaxFontBufferSize) break;
-                    builder.Append(character);
+                    var width = codePoint > char.MaxValue ? 2 : 1;
+                    if (builder.Length + width > TextRules.MaxFontBufferSize) break;
+
+                    if (width == 1) builder.Append((char)codePoint);
+                    else builder.Append(char.ConvertFromUtf32(codePoint));
                 }
+
                 return builder.ToString();
             }
         }

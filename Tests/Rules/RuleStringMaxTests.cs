@@ -13,24 +13,21 @@ namespace BH.SDK.Tests.Rules
         [RuleContainer]
         private class Model
         {
-            [RuleStringMax(5)]
-            public string Value { get; set; } = string.Empty;
+            [RuleStringMax(5)] public string Value { get; set; } = string.Empty;
         }
 
         /// <summary> A ceiling of zero, where only the empty string passes. </summary>
         [RuleContainer]
         private class ZeroModel
         {
-            [RuleStringMax(0)]
-            public string Value { get; set; } = string.Empty;
+            [RuleStringMax(0)] public string Value { get; set; } = string.Empty;
         }
 
         /// <summary> A property of a type the rule does not apply to, so it must decline rather than refuse. </summary>
         [RuleContainer]
         private class WrongTypeModel
         {
-            [RuleStringMax(5)]
-            public int Value { get; set; }
+            [RuleStringMax(5)] public int Value { get; set; }
         }
 
         [Test]
@@ -103,6 +100,23 @@ namespace BH.SDK.Tests.Rules
         {
             AssertValid(new ZeroModel { Value = string.Empty });
             AssertInvalid<RuleStringMaxAttribute>(new ZeroModel { Value = "a" });
+        }
+
+        // The ceiling counts CODE UNITS, and an astral character is two of them, so a cut landing
+        // between the halves leaves a character that is not one. Truncation gives the shorter answer
+        // rather than the broken one - the rule is already a Warning precisely because its repair is
+        // destructive, and one code unit more destroyed is the cheaper of the two outcomes.
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Easy)]
+        public void TestFixNeverLeavesALoneSurrogate()
+        {
+            const string thumb = "👍"; // U+1F44D, one character, two code units
+
+            // Five code units of ceiling, and the fifth lands inside the third pair.
+            var model = new Model { Value = "ab" + thumb + thumb };
+            AssertFixedTo(model, () => model.Value, "ab" + thumb);
         }
 
         [Test]

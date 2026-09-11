@@ -3,6 +3,7 @@ using System.Reflection;
 using BH.SDK.Models.Enums.Values;
 using BH.SDK.Models.Interfaces.Values;
 using BH.SDK.Models.Values;
+using BH.SDK.Utils;
 
 namespace BH.SDK.Rules.Attributes
 {
@@ -30,7 +31,7 @@ namespace BH.SDK.Rules.Attributes
         /// <summary> Applies to authored string properties. </summary>
         protected override bool IsValidTypeInternal(PropertyInfo property)
             => typeof(IString).IsAssignableFrom(property.PropertyType);
-        
+
         /// <summary> Passes when every language's text is within the length ceiling. </summary>
         protected override bool IsValidInternal(object value, RuleContext context)
         {
@@ -48,27 +49,32 @@ namespace BH.SDK.Rules.Attributes
                     var localizedValue = (StringLocalized)value;
                     foreach (var stringLanguage in localizedValue.Strings)
                     {
-                        if (stringLanguage.Value.Length > MaxLength) 
+                        if (stringLanguage.Value.Length > MaxLength)
                             return false;
                     }
+
                     return true;
                 }
                 default: throw new ArgumentOutOfRangeException();
             }
         }
 
+        // Both branches go through SurrogateUtils for the reason RuleStringMax does: the ceiling
+        // counts code units, an astral character is two of them, and a cut between the halves
+        // satisfies the bound with something that is not a character.
+
         /// <summary> Truncates each of them, so a localized value keeps every language it had. </summary>
         protected override void FixInternal(object target, PropertyInfo property, RuleContext context)
         {
             var value = property.GetValue(target);
             if (value is not IString str) return;
-            
+
             switch (str.GetModelType())
             {
                 case StringType.Value:
                 {
                     var valueValue = (StringValue)value;
-                    valueValue.Value = valueValue.Value[..MaxLength];
+                    valueValue.Value = SurrogateUtils.Truncate(valueValue.Value, MaxLength);
                     break;
                 }
                 case StringType.Localized:
@@ -76,9 +82,10 @@ namespace BH.SDK.Rules.Attributes
                     var localizedValue = (StringLocalized)value;
                     foreach (var stringLanguage in localizedValue.Strings)
                     {
-                        if (stringLanguage.Value.Length > MaxLength) 
-                            stringLanguage.Value = stringLanguage.Value[..MaxLength];
+                        if (stringLanguage.Value.Length > MaxLength)
+                            stringLanguage.Value = SurrogateUtils.Truncate(stringLanguage.Value, MaxLength);
                     }
+
                     break;
                 }
                 default: throw new ArgumentOutOfRangeException();

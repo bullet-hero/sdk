@@ -41,3 +41,13 @@ layer-wide conventions. This file is folder-local.
   load-bearing (clamp → weld → drop malformed → drop degenerate → trim → drop orphans → fix
   winding): every step can reintroduce a problem an earlier one fixed, and this is the order in
   which none does.
+
+  **`SurrogateUtils`** — where a string may be cut. Every length ceiling in this format counts UTF-16
+  CODE UNITS, and an astral character (every emoji) is two of them, so a cut between the halves
+  satisfies the bound with something that is not a character; a consumer then renders U+FFFD and
+  reports nothing. `ClampLength`/`Truncate` give the shorter answer instead, and `IsLead`/`IsTrail`/
+  `IsPair` are plain `char` arithmetic, which is what lets the consumer's Burst text job share them
+  rather than restate them. Used by `RuleStringMax`/`RuleIStringMax`' fixes, by
+  `FontCharacterService`, and by `GamePlayer`'s `TextsProvider`/`TextComposeJob`. **It is NOT grapheme
+  clustering** (UAX #29): a combining mark is still its own index everywhere, deliberately — see
+  `Docs/Issues/PRE_RELEASE_STRUCTURAL_ANALYSIS.md` §7 for what that costs and what buying it would.
