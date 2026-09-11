@@ -80,10 +80,10 @@ namespace BH.SDK.Generators.Audio
                 new(parameters.UriType, parameters.AudioPath ?? string.Empty),
             });
 
-            // The track covers the whole timeline: a span of FrameDuration frames starting at zero,
-            // so it ends exactly on the level's end boundary and its last sounding frame is
-            // FrameDuration - 1. This used to be the easiest off-by-one in the format to write by
-            // accident, back when the end was a separate inclusive field.
+            // The track covers the whole timeline: a span of FrameDuration frames starting on the
+            // level's first frame, so it ends exactly on the level's end boundary and its last
+            // sounding frame is FrameDuration itself. This used to be the easiest off-by-one in the
+            // format to write by accident, back when the end was a separate inclusive field.
             var audioId = level.Settings.GetNextAudioId();
             level.Audio.Tracks[audioId] = new LevelTrack(audioId, resourceId,
                 new FrameSpan(FrameRules.MinFrame, level.Settings.FrameDuration), parameters.OffsetSeconds,
@@ -152,6 +152,7 @@ namespace BH.SDK.Generators.Audio
                 end = i;
                 break;
             }
+
             return path.Substring(start, end - start);
         }
 
@@ -173,19 +174,25 @@ namespace BH.SDK.Generators.Audio
         {
             /// <summary> Name the new level is created under. </summary>
             public IString LevelName = new StringValue();
+
             /// <summary> Its description. </summary>
             public IString LevelDescription = new StringValue();
+
             /// <summary> Frames per second the song's seconds are resolved into. </summary>
             public int Framerate = 60;
+
             /// <summary> How far into the timeline the song starts. </summary>
             public float OffsetSeconds;
+
             /// <summary> How much level is left after it ends. </summary>
             public float TailSeconds = 2f;
 
             /// <summary> Where the file is; filled by the host, not by the author. </summary>
             public string AudioPath = string.Empty;
+
             /// <summary> How that path is read - inside the level folder, or somewhere else on the device. </summary>
             public ResourceUriType UriType = ResourceUriType.LevelPath;
+
             /// <summary> How long the clip is; filled by the host, and what the timeline length follows. </summary>
             public float DurationSeconds;
 
@@ -194,11 +201,13 @@ namespace BH.SDK.Generators.Audio
                 get => AudioPath;
                 set => AudioPath = value;
             }
+
             ResourceUriType IAudioFileInput.UriType
             {
                 get => UriType;
                 set => UriType = value;
             }
+
             float IAudioFileInput.DurationSeconds
             {
                 get => DurationSeconds;

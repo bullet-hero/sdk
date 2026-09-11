@@ -21,8 +21,9 @@ namespace BH.SDK.Rules
         // It used to be validated as a level frame, which tied an effect's internal duration to
         // wherever it happened to be placed.
 
-        /// <summary> Lower bound of EffectData.StopLocalFrame. </summary>
-        public const int StopLocalFrame_Min = 0;
+        /// <summary> Lower bound of EffectData.StopLocalFrame - it is a LOCAL FRAME, so it counts from
+        /// the emitter's own first frame like every other frame in the format. </summary>
+        public const int StopLocalFrame_Min = FrameRules.MinFrame;
         /// <summary> Upper bound of EffectData.StopLocalFrame. </summary>
         public const int StopLocalFrame_Max = 100_000;
         /// <summary> The stop local frame used when nothing says otherwise, read by EffectData. </summary>

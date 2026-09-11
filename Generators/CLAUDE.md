@@ -67,7 +67,8 @@ authoring automation: a generator produces level content from a few parameters.
   window** (`CanSpawn` — the overflow used to clamp onto the last frame as one-frame ghosts), and
   **a lifetime clamped to one frame gets one key per track**, not two — see
   `BaseSpawnGenerator.CanAnimate`, and note that `Estimate` has to apply the same clamp. A third,
-  format-wide: **`FrameDuration` is a count**, so the last legal frame is `FrameDuration - 1`
-  (`RuleLevelFrame`'s upper bound is exclusive).
+  format-wide: **`FrameDuration` is a count** and the timeline counts frames from
+  `FrameRules.MinFrame`, so the last legal frame IS `FrameDuration` — spell it
+  `FrameRules.LastFrameOf`, never by hand (`RuleLevelFrame`'s bounds are inclusive at both ends).
   Has its own `README.md`, and that README is now the design record: the spec it was written
   from is no longer present in the consuming project.

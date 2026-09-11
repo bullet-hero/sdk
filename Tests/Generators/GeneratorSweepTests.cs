@@ -235,8 +235,9 @@ namespace BH.SDK.Tests.Generators
                         for (var i = 0; i < track.Count; i++)
                         {
                             var frame = track.FrameAt(i);
-                            Assert.GreaterOrEqual(frame, 0, $"{generator.NameKey}: {obj.Name} key before its start");
-                            Assert.LessOrEqual(frame, span,
+                            Assert.GreaterOrEqual(frame, FrameRules.MinFrame,
+                                $"{generator.NameKey}: {obj.Name} key before its start");
+                            Assert.LessOrEqual(frame, FrameRules.LastFrameOf(span),
                                 $"{generator.NameKey}: {obj.Name} key at {frame} is past its own {span}-frame " +
                                 "lifetime - an absolute frame was stored where a local one belongs");
                         }

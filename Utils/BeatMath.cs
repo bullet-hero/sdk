@@ -52,6 +52,7 @@ namespace BH.SDK.Utils
                 segment = candidate;
                 return true;
             }
+
             return false;
         }
 
@@ -107,6 +108,7 @@ namespace BH.SDK.Utils
                 destination.Add(frame);
                 appended++;
             }
+
             return appended;
         }
 
@@ -124,6 +126,7 @@ namespace BH.SDK.Utils
                 total += CollectSegment(segments[i], framerate, division, fromFrame, toFrame,
                     destination, limit - total);
             }
+
             return total;
         }
 
@@ -131,7 +134,8 @@ namespace BH.SDK.Utils
         /// generator's beat input). Capped like every other collection here. </summary>
         public static int CollectBeats(IReadOnlyList<BeatSegment> segments, int framerate, List<int> destination,
             int limit = LevelRules.MaxBeatGridPoints) =>
-            CollectBeats(segments, framerate, 1, 0, FrameRules.MaxFrameDuration, destination, limit);
+            CollectBeats(segments, framerate, 1, FrameRules.MinFrame,
+                FrameRules.EndBoundaryOf(FrameRules.MaxFrameDuration), destination, limit);
 
         // A beat shorter than a frame is not a grid, it is a solid bar - and it would also make the
         // collectors below spin for as long as the limit allows. 1000 BPM at 30 fps is 1.8 frames,
@@ -142,6 +146,7 @@ namespace BH.SDK.Utils
         // own (it is clamp/lerp-shaped) - System.Math returns double and MidpointRounding.ToEven
         // would put a beat at x.5 on the wrong side of half the frames it lands on.
         private static int RoundToInt(float value) => (int)(value >= 0f ? value + 0.5f : value - 0.5f);
+
         private static int FloorToInt(float value)
         {
             var truncated = (int)value;

@@ -11,12 +11,14 @@ namespace BH.SDK.Models.Interfaces
     // scope it's bounding, same reasoning as IObjectScope/IObjectIdCounter's own split.
     //
     // FrameDuration is a COUNT, matching FrameSpan.FrameDuration: a timeline of N holds frames
-    // [0, N), so the last playable frame is N - 1 and N itself is the end boundary, not a frame.
+    // 1..N, so the last playable frame IS N and N + 1 is the end boundary rather than a frame.
+    // FrameRules.LastFrameOf/EndBoundaryOf spell both, so nothing has to write the relationship out.
 
     /// <summary> Owns a timeline of its own, and knows how long it is. </summary>
     public interface IFrameDuration
     {
-        /// <summary> How many frames the timeline holds - a count, so the last playable frame is one less. </summary>
+        /// <summary> How many frames the timeline holds - a count, and since the timeline counts
+        /// frames from one, also the number of its last playable frame. </summary>
         [RuleMinValue(FrameRules.MinFrameDuration)]
         [JsonProperty(Names.FrameDurationShort)]
         public int FrameDuration { get; set; }

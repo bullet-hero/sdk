@@ -29,7 +29,9 @@ namespace BH.SDK.Models.Statistics
         public float Progress { get; set; }
 
         /// <summary> The furthest frame reached - the exact form of <see cref="Progress"/>, kept
-        /// because the level's own length can change under a record. </summary>
+        /// because the level's own length can change under a record.
+        /// <see cref="FrameRules.NoFrame"/> when nothing was reached, which is why the floor here is
+        /// zero rather than <see cref="FrameRules.MinFrame"/>. </summary>
         [RuleMinValue(StatisticsRules.MinCount)]
         [JsonProperty(Names.Frame)]
         public int Frame { get; set; }
@@ -70,7 +72,7 @@ namespace BH.SDK.Models.Statistics
         public BestRun()
         {
             Progress = 0f;
-            Frame = 0;
+            Frame = FrameRules.NoFrame;
             Hits = 0;
             Dashes = 0;
             LivesLeft = 0;

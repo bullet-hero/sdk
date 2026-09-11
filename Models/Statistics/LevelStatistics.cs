@@ -195,7 +195,7 @@ namespace BH.SDK.Models.Statistics
             CheckpointRestarts = 0;
             Quits = 0;
 
-            BestFrame = 0;
+            BestFrame = FrameRules.NoFrame;
             BestProgress = 0f;
             FirstClearUtc = default;
 

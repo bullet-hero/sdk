@@ -13,7 +13,6 @@ namespace BH.SDK.Tests
         // shows two decimals, so a float key would file "1.00" and "1.00" under two different
         // records whenever the two floats differed in a bit nobody can see - and both would sit in
         // the file forever, each claiming to be the best run under the same conditions.
-        [Test]
         [TestCase(1f, 100)]
         [TestCase(0.999f, 100)]
         [TestCase(1.004f, 100)]

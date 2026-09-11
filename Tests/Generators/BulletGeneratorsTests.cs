@@ -56,8 +56,8 @@ namespace BH.SDK.Tests.Generators
             Assert.AreEqual(2, bullet.Positions.Count);
             Assert.AreEqual(-5f, PositionAt(bullet, 0).X, 0.001f);
             Assert.AreEqual(5f, PositionAt(bullet, 1).X, 0.001f);
-            Assert.AreEqual(0, bullet.Span.StartFrame);
-            Assert.AreEqual(60, bullet.Span.EndFrame);
+            Assert.AreEqual(FrameRules.MinFrame, bullet.Span.StartFrame);
+            Assert.AreEqual(FrameRules.MinFrame + 60, bullet.Span.EndFrame);
         }
 
         // Spacing spreads bullets ACROSS the travel direction. Firing along X must therefore vary Y,
@@ -94,7 +94,8 @@ namespace BH.SDK.Tests.Generators
                 Count = 4, TravelFrames = 30, StaggerFrames = 5, Spacing = 1f,
             });
 
-            var starts = level.Game.Objects.Values.Select(obj => obj.Span.StartFrame).OrderBy(f => f).ToList();
+            var starts = level.Game.Objects.Values
+                .Select(obj => obj.Span.StartFrame - FrameRules.MinFrame).OrderBy(f => f).ToList();
             CollectionAssert.AreEqual(new[] { 0, 5, 10, 15 }, starts);
         }
 

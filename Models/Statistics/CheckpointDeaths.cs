@@ -35,7 +35,7 @@ namespace BH.SDK.Models.Statistics
         /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public CheckpointDeaths()
         {
-            Frame = 0;
+            Frame = FrameRules.NoFrame;
             Deaths = 0;
         }
 

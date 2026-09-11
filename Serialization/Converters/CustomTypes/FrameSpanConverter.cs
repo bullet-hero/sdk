@@ -12,10 +12,11 @@ namespace BH.SDK.Serialization.Converters.CustomTypes
     // third party tools, and a start frame surfacing as -2147483548 would be unreadable to all of
     // them. So this writes the two LOGICAL numbers, sign-flipped when that edge is anchored.
     //
-    // The duration carries no offset because it cannot be zero (FrameDuration >= 1 by invariant),
-    // so its sign is free. The start CAN be zero, and -0 does not exist in JSON, so an
-    // anchored start is written as -(start + 1) - the one off-by-one in the format, confined to the
-    // negative branch so an ordinary unanchored span still reads as its own plain frame number.
+    // Neither number carries an offset, and that is a property of the timeline counting from one:
+    // FrameDuration >= 1 and StartFrame >= FrameRules.MinFrame, so neither can be zero and both
+    // signs are free. While frames started at zero the start had to be written as -(start + 1),
+    // because -0 exists in no format - that was the single off-by-one of the whole wire format, and
+    // it is gone.
     //
     // The array form (rather than an object with named keys) matches the rest of the wire format,
     // which is deliberately compact, and works identically under BSON.
@@ -27,7 +28,7 @@ namespace BH.SDK.Serialization.Converters.CustomTypes
         public override void WriteJson(JsonWriter writer, FrameSpan value, JsonSerializer serializer)
         {
             writer.WriteStartArray();
-            writer.WriteValue(value.IsAnchoredStart ? -(value.StartFrame + 1) : value.StartFrame);
+            writer.WriteValue(value.IsAnchoredStart ? -value.StartFrame : value.StartFrame);
             writer.WriteValue(value.IsAnchoredEnd ? -value.FrameDuration : value.FrameDuration);
             writer.WriteEndArray();
         }
@@ -56,7 +57,7 @@ namespace BH.SDK.Serialization.Converters.CustomTypes
             if (rawStart < 0) anchors |= FrameAnchor.Start;
             if (rawDuration < 0) anchors |= FrameAnchor.End;
 
-            var startFrame = rawStart < 0 ? -(rawStart + 1) : rawStart;
+            var startFrame = rawStart < 0 ? -rawStart : rawStart;
             var frameDuration = rawDuration < 0 ? -rawDuration : rawDuration;
 
             return new FrameSpan(startFrame, frameDuration, anchors);

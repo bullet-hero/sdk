@@ -28,7 +28,9 @@ risk on each write - and the menu only ever needs a handful of levels to draw a 
   "deaths at this fraction of the level", and that claim silently becomes false the moment the level
   changes length. The length the buckets were built against is stored beside them and a change clears
   them. `DeathsBeforeCheckpoint` is its own field rather than a key of `-1`, since `-1` is this
-  project's one reserved frame number (`FrameSpan.LastFrame`).
+  project's "not found" INDEX rather than a frame - a frame that is not a frame is
+  `FrameRules.NoFrame`, and it is zero, which a checkpoint dictionary keyed by frame would happily
+  accept as a key.
 - **Every timestamp is UTC**, written as `DateTime.UtcNow`. A statistics file travels between
   machines and is read by a person, so it stores an absolute instant in a readable form; unix seconds
   were rejected for the reason the file is JSON at all.

@@ -66,7 +66,7 @@ namespace BH.SDK.Generators.Modifiers
 
             var frameDuration = Math.Clamp(Remap(settings.FrameDuration, from, to),
                 FrameRules.MinFrameDuration, FrameRules.MaxFrameDuration);
-            var last = frameDuration - 1;
+            var last = FrameRules.LastFrameOf(frameDuration);
             var shift = Math.Clamp(parameters.MaxKeyShift, 0, last);
 
             // Both through the journal: a framerate left behind by an undo is a level that plays at
@@ -178,11 +178,11 @@ namespace BH.SDK.Generators.Modifiers
             var plan = Plan(frames, from, to, shift, last);
 
             for (var i = 0; i < count; i++)
-                if (plan[i] >= 0)
+                if (FrameRules.IsValidFrame(plan[i]))
                     track.SetFrameAt(i, plan[i]);
 
             for (var i = count - 1; i >= 0; i--)
-                if (plan[i] < 0)
+                if (!FrameRules.IsValidFrame(plan[i]))
                     track.RemoveAt(i);
         }
 
@@ -206,7 +206,7 @@ namespace BH.SDK.Generators.Modifiers
             var survivors = new List<TKey>(count);
             for (var i = 0; i < count; i++)
             {
-                if (plan[i] < 0) continue;
+                if (!FrameRules.IsValidFrame(plan[i])) continue;
                 var copy = track[i].Copy();
                 copy.Frame = plan[i];
                 survivors.Add(copy);
@@ -220,8 +220,8 @@ namespace BH.SDK.Generators.Modifiers
         // independent of the order a track happens to store its keys in, and so "nudge forward" only
         // ever competes with keys already placed.
 
-        /// <summary> Where each key ends up, indexed like the input. -1 means it could not be placed
-        /// within MaxKeyShift of its sampled frame and is dropped. </summary>
+        /// <summary> Where each key ends up, indexed like the input. <see cref="FrameRules.NoFrame"/>
+        /// means it could not be placed within MaxKeyShift of its sampled frame and is dropped. </summary>
         private static int[] Plan(int[] frames, int from, int to, int shift, int last)
         {
             var count = frames.Length;
@@ -232,6 +232,7 @@ namespace BH.SDK.Generators.Modifiers
                 order[i] = i;
                 keys[i] = frames[i];
             }
+
             Array.Sort(keys, order);
 
             var taken = new HashSet<int>();
@@ -239,16 +240,17 @@ namespace BH.SDK.Generators.Modifiers
 
             foreach (var index in order)
             {
-                var ideal = ClampFrame(Remap(frames[index], from, to), last);
+                var ideal = ClampFrame(RemapFrame(frames[index], from, to), last);
                 var slot = FindSlot(ideal, taken, shift, last);
                 plan[index] = slot;
-                if (slot >= 0) taken.Add(slot);
+                if (FrameRules.IsValidFrame(slot)) taken.Add(slot);
             }
+
             return plan;
         }
 
-        /// <summary> The nearest free frame within shift of ideal, forward before backward, or -1
-        /// when there is none. </summary>
+        /// <summary> The nearest free frame within shift of ideal, forward before backward, or
+        /// <see cref="FrameRules.NoFrame"/> when there is none. </summary>
         private static int FindSlot(int ideal, HashSet<int> taken, int shift, int last)
         {
             for (var distance = 0; distance <= shift; distance++)
@@ -261,17 +263,32 @@ namespace BH.SDK.Generators.Modifiers
                 var backward = ideal - distance;
                 if (backward >= FrameRules.MinFrame && !taken.Contains(backward)) return backward;
             }
-            return -1;
+
+            return FrameRules.NoFrame;
         }
 
-        /// <summary> The same frame, sampled at the new rate. Rounded rather than truncated: a
+        /// <summary> A COUNT of frames, sampled at the new rate. Rounded rather than truncated: a
         /// truncating remap pulls every key a little earlier, which accumulates into audible drift
         /// against a track that was not remapped. </summary>
-        private static int Remap(int frame, int from, int to)
+        private static int Remap(int frameCount, int from, int to)
+        {
+            if (from == to) return frameCount;
+            var value = (double)frameCount * to / from;
+            return (int)Math.Round(value, MidpointRounding.AwayFromZero);
+        }
+
+        // A FRAME IS NOT A COUNT HERE EITHER, and this is the one place where confusing them is not
+        // an off-by-one but a stretch: scaling a frame number directly would multiply the origin too,
+        // sending the level's first frame to to/from instead of leaving it where it is. What scales
+        // is the DISTANCE from the first frame, which the origin then goes back onto. An exclusive
+        // end boundary takes the same path on purpose - it is the instant after its last frame, and
+        // (b - MinFrame) is exactly the count of frames before it.
+
+        /// <summary> The same frame (or exclusive boundary), sampled at the new rate. </summary>
+        private static int RemapFrame(int frame, int from, int to)
         {
             if (from == to) return frame;
-            var value = (double)frame * to / from;
-            return (int)Math.Round(value, MidpointRounding.AwayFromZero);
+            return Remap(frame - FrameRules.MinFrame, from, to) + FrameRules.MinFrame;
         }
 
         // Both edges are remapped and the result rebuilt, rather than remapping the start and
@@ -280,8 +297,8 @@ namespace BH.SDK.Generators.Modifiers
         // end is clamped one higher than the start because it is an exclusive boundary.
         private static FrameSpan RemapSpan(in FrameSpan span, int from, int to, int last)
         {
-            var start = ClampFrame(Remap(span.StartFrame, from, to), last);
-            var end = ClampFrame(Remap(span.EndFrame, from, to), last + 1);
+            var start = ClampFrame(RemapFrame(span.StartFrame, from, to), last);
+            var end = ClampFrame(RemapFrame(span.EndFrame, from, to), last + 1);
             return FrameSpan.FromBounds(start, end, span.Anchors);
         }
 

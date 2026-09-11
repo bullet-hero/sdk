@@ -15,11 +15,18 @@ namespace BH.SDK.Models.Primitives
     // The convention is half-open, [Start, Start + Duration), and it is expressed by the type
     // rather than by agreement: nothing here can represent an inclusive end, and the only place in
     // the codebase allowed to convert to an inclusive last frame is LastFrame below.
+    //
+    // BOTH FIELDS ARE STORED BIASED BY THEIR OWN FLOOR - the start by FrameRules.MinFrame, the
+    // duration by FrameRules.MinFrameDuration - which is what makes the all-zero bit pattern the
+    // smallest LEGAL span rather than an illegal one. That matters more than it looks: default(T),
+    // Reset(), a struct field never assigned and a converter degrading a corrupt file all produce
+    // that pattern, and every one of them has to come back as a span the rest of the code can use.
 
     /// <summary>
     /// Half-open frame interval [StartFrame, StartFrame + FrameDuration) plus the anchor flags
     /// saying which of its edges follow the parent span's edges. Always satisfies
-    /// StartFrame &gt;= 0 and FrameDuration &gt;= 1 - no illegal value is representable.
+    /// StartFrame &gt;= FrameRules.MinFrame and FrameDuration &gt;= 1 - no illegal value is
+    /// representable, and default(FrameSpan) is the one-frame span on the timeline's first frame.
     /// </summary>
     public struct FrameSpan : IModel<FrameSpan>, IComparable<FrameSpan>
     {
@@ -30,10 +37,10 @@ namespace BH.SDK.Models.Primitives
         private int _rawDuration;
 
         /// <summary> First frame the span covers. </summary>
-        public readonly int StartFrame => _rawStart & ValueMask;
+        public readonly int StartFrame => (_rawStart & ValueMask) + FrameRules.MinFrame;
 
         /// <summary> How many frames the span covers, never below one. </summary>
-        public readonly int FrameDuration => (_rawDuration & ValueMask) + 1;
+        public readonly int FrameDuration => (_rawDuration & ValueMask) + FrameRules.MinFrameDuration;
 
         /// <summary> First frame AFTER the span - an exclusive boundary, never a covered frame. </summary>
         public readonly int EndFrame => StartFrame + FrameDuration;
@@ -61,20 +68,35 @@ namespace BH.SDK.Models.Primitives
         public FrameSpan(int startFrame, int frameDuration, FrameAnchor anchors = FrameAnchor.None)
         {
             var start = BHSDKMath.Clamp(startFrame, FrameRules.MinFrame, FrameRules.MaxFrame);
-            var duration = BHSDKMath.Clamp(frameDuration,
-                FrameRules.MinFrameDuration, FrameRules.MaxFrameDuration - start);
 
-            _rawStart = start | ((anchors & FrameAnchor.Start) != 0 ? AnchorFlag : 0);
-            _rawDuration = (duration - 1) | ((anchors & FrameAnchor.End) != 0 ? AnchorFlag : 0);
+            // The ceiling is "how many frames are left from start", i.e. MaxFrame - start + 1, and
+            // MaxFrame is MaxFrameDuration - so a span starting on the first frame may still cover a
+            // whole maximal timeline.
+            var duration = BHSDKMath.Clamp(frameDuration,
+                FrameRules.MinFrameDuration, FrameRules.MaxFrame - start + 1);
+
+            _rawStart = (start - FrameRules.MinFrame) | ((anchors & FrameAnchor.Start) != 0 ? AnchorFlag : 0);
+            _rawDuration = (duration - FrameRules.MinFrameDuration) |
+                           ((anchors & FrameAnchor.End) != 0 ? AnchorFlag : 0);
         }
+
+        // THE START IS CLAMPED BEFORE THE LENGTH IS TAKEN, and that is not a detail. Handing the raw
+        // difference to the constructor lets an out-of-range start silently LENGTHEN the span: a
+        // caller asking for [0, 100) would get a start raised to MinFrame and a duration of 100
+        // anyway, i.e. [1, 101), one frame longer than it asked for and overlapping whatever sits at
+        // 100. Since endFrame is the number the caller actually cares about - it is what "the first
+        // frame NOT covered" means - the end is what survives the clamp.
 
         /// <summary> Builds from a half-open pair, where endFrame is the first frame NOT covered. </summary>
         public static FrameSpan FromBounds(int startFrame, int endFrame) =>
-            new(startFrame, endFrame - startFrame);
+            FromBounds(startFrame, endFrame, FrameAnchor.None);
 
         /// <summary> Builds from a half-open pair, keeping the given anchors. </summary>
-        public static FrameSpan FromBounds(int startFrame, int endFrame, FrameAnchor anchors) =>
-            new(startFrame, endFrame - startFrame, anchors);
+        public static FrameSpan FromBounds(int startFrame, int endFrame, FrameAnchor anchors)
+        {
+            var start = BHSDKMath.Clamp(startFrame, FrameRules.MinFrame, FrameRules.MaxFrame);
+            return new FrameSpan(start, endFrame - start, anchors);
+        }
 
         /// <summary> True when the span covers that frame. </summary>
         public readonly bool Contains(int frame) => frame >= StartFrame && frame < EndFrame;
@@ -87,11 +109,16 @@ namespace BH.SDK.Models.Primitives
         public readonly bool Overlaps(in FrameSpan other) =>
             StartFrame < other.EndFrame && other.StartFrame < EndFrame;
 
+        // A local frame is a FRAME, not an offset, so it counts from FrameRules.MinFrame like every
+        // other frame in the format: the span's own first frame is local frame 1, and the keyframe
+        // inspector shows exactly that. An offset would have been the other reading and would have
+        // put a zero back in front of the author, which is the thing this convention exists to end.
+
         /// <summary> Absolute frame to one local to this span's start (the form keyframes store). </summary>
-        public readonly int ToLocalFrame(int globalFrame) => globalFrame - StartFrame;
+        public readonly int ToLocalFrame(int globalFrame) => globalFrame - StartFrame + FrameRules.MinFrame;
 
         /// <summary> Local frame back to absolute. </summary>
-        public readonly int ToGlobalFrame(int localFrame) => StartFrame + localFrame;
+        public readonly int ToGlobalFrame(int localFrame) => StartFrame + localFrame - FrameRules.MinFrame;
 
         /// <summary> The same span moved to a new start, keeping its length. </summary>
         public readonly FrameSpan WithStart(int startFrame) => new(startFrame, FrameDuration, Anchors);
@@ -120,7 +147,7 @@ namespace BH.SDK.Models.Primitives
             return FromBounds(start, end, Anchors);
         }
 
-        /// <summary> Back to the values the constructor writes. </summary>
+        /// <summary> Back to the smallest legal span - one frame, on the timeline's first frame. </summary>
         public void Reset()
         {
             _rawStart = 0;
@@ -129,6 +156,7 @@ namespace BH.SDK.Models.Primitives
 
         /// <summary> The untyped spelling of <c>Copy</c>. </summary>
         public readonly object Clone() => Copy();
+
         /// <summary> A deep copy, sharing nothing mutable with this one. </summary>
         public readonly FrameSpan Copy() => this;
 
@@ -145,9 +173,12 @@ namespace BH.SDK.Models.Primitives
         }
 
         /// <summary> Member by member. </summary>
-        public readonly bool Equals(FrameSpan other) => _rawStart == other._rawStart && _rawDuration == other._rawDuration;
+        public readonly bool Equals(FrameSpan other) =>
+            _rawStart == other._rawStart && _rawDuration == other._rawDuration;
+
         /// <summary> The same, boxed. </summary>
         public readonly override bool Equals(object obj) => obj is FrameSpan other && Equals(other);
+
         /// <summary> Matches the equality above. </summary>
         public readonly override int GetHashCode() => HashCode.Combine(_rawStart, _rawDuration);
 

@@ -11,10 +11,11 @@ namespace BH.SDK.Serialization.Json
 {
     // THE FOUR STRUCTS AND ONE CLASS A GENERATED WRITER CANNOT WRITE FOR ITSELF, and every one of
     // them reproduces an encoding that already exists on disk rather than inventing a new one.
-    // FrameSpan's is the only clever one and its cleverness is load-bearing: an anchored edge is the
-    // number NEGATED, and because -0 does not exist an anchored start is offset by one first. The
-    // other three are plain objects Newtonsoft's own contract would have written, spelled out here
-    // because a struct with get-only properties has nothing a member-driven generator can assign.
+    // FrameSpan's is the only clever one: an anchored edge is the number NEGATED, which works
+    // because neither number can be zero (the timeline counts frames from FrameRules.MinFrame and a
+    // duration is at least one) and -0 exists in no format. The other three are plain objects
+    // Newtonsoft's own contract would have written, spelled out here because a struct with get-only
+    // properties has nothing a member-driven generator can assign.
     //
     // The reads are deliberately as LENIENT as the converters they replace. FrameSpanConverter's
     // header says why: a corrupt file should cost the author one wrong object rather than a level
@@ -29,9 +30,9 @@ namespace BH.SDK.Serialization.Json
         public static void Write(JsonWriter writer, FrameSpan value)
         {
             writer.WriteStartArray();
-            // Negated when the edge is anchored; the start is offset by one first, since -0 exists
-            // in no format and a span may legitimately start at zero.
-            writer.WriteValue(value.IsAnchoredStart ? -(value.StartFrame + 1) : value.StartFrame);
+            // Negated when the edge is anchored; no offset is needed on either number, since neither
+            // can be zero and -0 exists in no format.
+            writer.WriteValue(value.IsAnchoredStart ? -value.StartFrame : value.StartFrame);
             writer.WriteValue(value.IsAnchoredEnd ? -value.FrameDuration : value.FrameDuration);
             writer.WriteEndArray();
         }
@@ -63,8 +64,9 @@ namespace BH.SDK.Serialization.Json
             if (start < 0)
             {
                 anchors |= FrameAnchor.Start;
-                start = -start - 1;
+                start = -start;
             }
+
             if (duration < 0)
             {
                 anchors |= FrameAnchor.End;
@@ -200,11 +202,12 @@ namespace BH.SDK.Serialization.Json
             {
                 case DateTime value: return value;
                 case DateTimeOffset offset: return offset.UtcDateTime;
-                case string text: return DateTime.TryParse(text,
-                    System.Globalization.CultureInfo.InvariantCulture,
-                    System.Globalization.DateTimeStyles.RoundtripKind, out var parsed)
-                    ? parsed
-                    : default;
+                case string text:
+                    return DateTime.TryParse(text,
+                        System.Globalization.CultureInfo.InvariantCulture,
+                        System.Globalization.DateTimeStyles.RoundtripKind, out var parsed)
+                        ? parsed
+                        : default;
                 default: return default;
             }
         }

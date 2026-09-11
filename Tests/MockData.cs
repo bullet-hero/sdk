@@ -154,7 +154,7 @@ namespace BH.SDK.Tests
             // carry.
             level.Settings.Orientation = LevelOrientation.Vertical;
 
-            level.Game.Events.ScreenLimits.Add(new ScreenLimitKey(new ScreenLimitBounds(), 0));
+            level.Game.Events.ScreenLimits.Add(new ScreenLimitKey(new ScreenLimitBounds(), FrameRules.MinFrame));
             level.Game.Events.Backgrounds.Add(new Color3Key());
             level.Game.Events.Checkpoints.Add(new Checkpoint
             {
@@ -168,9 +168,9 @@ namespace BH.SDK.Tests
                 Description = "First marker",
                 Color4 = new Color4Value(1f, 1f, 0f, 1f),
             });
-            level.Game.Events.Beats.Add(new BeatSegment(new FrameSpan(0, 240), 128f, 3.5f, 4,
+            level.Game.Events.Beats.Add(new BeatSegment(new FrameSpan(FrameRules.MinFrame, 240), 128f, 3.5f, 4,
                 "Intro", new Color4Value(0f, 1f, 1f, 1f)));
-            level.Game.Events.Themes.Add(new ThemeKeyframe(themeId, 0));
+            level.Game.Events.Themes.Add(new ThemeKeyframe(themeId, FrameRules.MinFrame));
             level.Game.CameraEvents.Positions.Add(new PosKey());
             level.Game.CameraEvents.Rotations.Add(new AngleKey());
             level.Game.CameraEvents.Shakes.Add(new ShakeKey());
@@ -195,8 +195,8 @@ namespace BH.SDK.Tests
             level.Game.PlayerEvents.Collisions.Add(new BoolKey());
             // Deliberately not the neutral 1: a round trip that dropped the track would still come
             // back equal against a default-valued key and prove nothing.
-            level.Game.PlayerEvents.Sizes.Add(new FloatKey(new FloatValue(2.5f), 0));
-            level.Game.PlayerEvents.Speeds.Add(new FloatKey(new FloatValue(0.5f), 0));
+            level.Game.PlayerEvents.Sizes.Add(new FloatKey(new FloatValue(2.5f), FrameRules.MinFrame));
+            level.Game.PlayerEvents.Speeds.Add(new FloatKey(new FloatValue(0.5f), FrameRules.MinFrame));
 
             var shapeObject = new ShapeObject()
             {
@@ -233,8 +233,8 @@ namespace BH.SDK.Tests
             textObject.FontSizes.Add(new AutoFontSizeKey(new FloatValue(0.25f), new FloatValue(3f), 10));
             // Non-default direction/mode on purpose: they live on the KEY, so a round trip that
             // dropped them would still pass with the defaults.
-            textObject.Fillments.Add(new FillmentKey(0.5f, 0, TextFillDirection.ToCenter));
-            textObject.Appearings.Add(new AppearingKey(0.25f, 0, TextAppearingMode.Backward));
+            textObject.Fillments.Add(new FillmentKey(0.5f, FrameRules.MinFrame, TextFillDirection.ToCenter));
+            textObject.Appearings.Add(new AppearingKey(0.25f, FrameRules.MinFrame, TextAppearingMode.Backward));
             level.Game.Objects.Add(new ObjectId(2), textObject);
 
             var effectObject = new EffectObject()
@@ -362,7 +362,7 @@ namespace BH.SDK.Tests
             trackEffects.Normalize.MaxAmp = 15f;
             trackEffects.ParamEQ.CenterFreq = 3000f;
 
-            var track = new LevelTrack(new AudioId(1), new AudioResourceId(-1), FrameSpan.FromBounds(0, 11),
+            var track = new LevelTrack(new AudioId(1), new AudioResourceId(-1), FrameSpan.FromBounds(FrameRules.MinFrame, FrameRules.MinFrame + 11),
                 0f, 1.5f, AudioRules.VolumeDefault, 0, "track", trackEffects);
             level.Audio.Tracks.Add(track.AudioId, track);
 
@@ -467,7 +467,7 @@ namespace BH.SDK.Tests
                 }));
 
             var trackEffects = new LevelTrackEffects();
-            var track = new LevelTrack(new AudioId(1), new AudioResourceId(0), FrameSpan.FromBounds(0, 1001),
+            var track = new LevelTrack(new AudioId(1), new AudioResourceId(0), FrameSpan.FromBounds(FrameRules.MinFrame, FrameRules.MinFrame + 1001),
                 0f, 5f, AudioRules.VolumeDefault, 0, "track", trackEffects);
             level.Audio.Tracks.Add(track.AudioId, track);
 
@@ -615,7 +615,7 @@ namespace BH.SDK.Tests
             var shape = new ShapeObject
             {
                 ObjectId = new ObjectId(id),
-                Span = new FrameSpan(id % 600, 120),
+                Span = new FrameSpan(FrameRules.MinFrame + id % 600, 120),
             };
             shape.Positions.Add(new PosKey());
             shape.Rotations.Add(new AngleKey());

@@ -4,6 +4,7 @@ using BH.SDK.Models;
 using BH.SDK.Models.Enums;
 using BH.SDK.Models.Objects;
 using BH.SDK.Models.Primitives;
+using BH.SDK.Rules;
 using NUnit.Framework;
 
 namespace BH.SDK.Tests.Generators
@@ -38,7 +39,7 @@ namespace BH.SDK.Tests.Generators
                 ObjectId = level.Settings.GetNextObjectId(),
                 ParentObjectId = parent,
                 Name = name,
-                Span = FrameSpan.FromBounds(startFrame, endFrame, anchors),
+                Span = FrameSpan.FromBounds(F(startFrame), F(endFrame), anchors),
             };
             level.Game.Objects.Add(obj.ObjectId, obj);
             return obj;
@@ -52,7 +53,7 @@ namespace BH.SDK.Tests.Generators
                 ObjectId = level.Settings.GetNextObjectId(),
                 ParentObjectId = parent,
                 Name = "placement",
-                Span = FrameSpan.FromBounds(startFrame, endFrame),
+                Span = FrameSpan.FromBounds(F(startFrame), F(endFrame)),
             };
             level.Game.Objects.Add(placement.ObjectId, placement);
             return placement;
@@ -60,7 +61,7 @@ namespace BH.SDK.Tests.Generators
 
         private static GeneratorContext Context(Level level, int windowStart = 0,
             int windowEnd = FrameDuration)
-            => new(level, FrameSpan.FromBounds(windowStart, windowEnd));
+            => new(level, FrameSpan.FromBounds(F(windowStart), F(windowEnd)));
 
         private static void Run(Level level, SpanFitGenerator.Parameters parameters,
             int windowStart = 0, int windowEnd = FrameDuration)
@@ -75,10 +76,15 @@ namespace BH.SDK.Tests.Generators
                 Invert = invert,
             };
 
+        // Bounds are given and read back as OFFSETS from the timeline's first frame - F puts one on
+        // the timeline - so what these tests pin is the fit's own arithmetic rather than where the
+        // timeline starts.
+        private static int F(int offset) => FrameRules.MinFrame + offset;
+
         private static void AssertSpan(RectObject obj, int startFrame, int endFrame, string message)
         {
-            Assert.AreEqual(startFrame, obj.Span.StartFrame, $"{message}: start");
-            Assert.AreEqual(endFrame, obj.Span.EndFrame, $"{message}: end");
+            Assert.AreEqual(F(startFrame), obj.Span.StartFrame, $"{message}: start");
+            Assert.AreEqual(F(endFrame), obj.Span.EndFrame, $"{message}: end");
         }
 
         #region Clamping

@@ -13,9 +13,16 @@ namespace BH.SDK.Rules.Attributes
     // out of requiring the context to literally be a Level - made the issue unfixable rather than
     // informative, since Fix had nothing to clamp against either.
 
+    // The bound is the SCOPE's length even for a keyframe whose Frame is local to its own object,
+    // which is looser than the truth: such a key is really bounded by the object's own span. The
+    // conflation is deliberate and predates the one-based timeline - narrowing it means giving the
+    // rule access to the owning object, which the property walk does not have. It only ever lets a
+    // wrong value through, never flags a right one.
+
     /// <summary>
-    /// A frame must sit inside its own scope's timeline: [0, FrameDuration). The upper bound is
-    /// exclusive - FrameDuration is a count, so the last playable frame is FrameDuration - 1.
+    /// A frame must sit inside its own scope's timeline: [FrameRules.MinFrame, FrameDuration], both
+    /// ends included - FrameDuration is a count, and a timeline that counts frames from one holds
+    /// exactly frames 1..FrameDuration.
     /// </summary>
     [AttributeUsage(PropertyTarget)]
     public class RuleLevelFrameAttribute : BasePropertyRuleAttribute
@@ -40,7 +47,7 @@ namespace BH.SDK.Rules.Attributes
             if (value is not int frame || frame < FrameRules.MinFrame) return false;
             if (context is not { HasScope: true }) return true;
 
-            return frame < context.FrameDuration;
+            return frame <= FrameRules.LastFrameOf(context.FrameDuration);
         }
 
         /// <summary> Clamps into that timeline; with no scope to ask, only the floor applies. </summary>
@@ -50,7 +57,7 @@ namespace BH.SDK.Rules.Attributes
 
             var hasTimeline = context is { HasScope: true }
                               && context.FrameDuration >= FrameRules.MinFrameDuration;
-            var maxFrame = hasTimeline ? context.FrameDuration - 1 : int.MaxValue;
+            var maxFrame = hasTimeline ? FrameRules.LastFrameOf(context.FrameDuration) : int.MaxValue;
 
             if (frame < FrameRules.MinFrame || frame > maxFrame)
                 property.SetValue(target, BHSDKMath.Clamp(frame, FrameRules.MinFrame, maxFrame));

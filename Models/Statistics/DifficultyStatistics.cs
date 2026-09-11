@@ -45,9 +45,11 @@ namespace BH.SDK.Models.Statistics
         [JsonProperty(Names.BucketFrameDuration)]
         public int BucketFrameDuration { get; set; }
 
-        // ITS OWN FIELD RATHER THAN A KEY OF -1 IN THE MAP BELOW. -1 is the project's one reserved
-        // frame number (FrameSpan.LastFrame), and giving that digit a second meaning here is the
-        // exact class of mistake FrameSpan's own header exists to prevent.
+        // ITS OWN FIELD RATHER THAN A SENTINEL KEY IN THE MAP BELOW. The map is keyed by a
+        // checkpoint's FRAME, and the format has exactly one number meaning "no frame at all" -
+        // FrameRules.NoFrame, which is zero and which a dictionary would accept as an ordinary key
+        // without a word. Giving any digit a second meaning here is the exact class of mistake
+        // FrameSpan's own header exists to prevent.
 
         /// <summary> Deaths that happened before any checkpoint was reached. </summary>
         [RuleMinValue(StatisticsRules.MinCount)]

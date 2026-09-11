@@ -7,6 +7,7 @@ using BH.SDK.Models.Keyframes;
 using BH.SDK.Models.Objects;
 using BH.SDK.Models.Primitives;
 using BH.SDK.Models.Values;
+using BH.SDK.Rules;
 using NUnit.Framework;
 
 namespace BH.SDK.Tests.Generators
@@ -356,7 +357,10 @@ namespace BH.SDK.Tests.Generators
 
         private static bool IsDangerous(Level level, ContentRemoverGenerator.Parameters parameters,
             int start = 0, int end = WholeEnd)
-            => new ContentRemoverGenerator().IsDangerous(new GeneratorContext(level, FrameSpan.FromBounds(start, end)), parameters);
+            => new ContentRemoverGenerator().IsDangerous(
+                new GeneratorContext(level,
+                    FrameSpan.FromBounds(FrameRules.MinFrame + start, FrameRules.MinFrame + end)),
+                parameters);
 
         [Test]
         [Author(Metadata.Author.Vertoker)]
@@ -402,8 +406,10 @@ namespace BH.SDK.Tests.Generators
             var level = CreateLevel();
             var prefab = new Prefab { FrameDuration = 100 };
 
-            var whole = new GeneratorContext(prefab, prefab, level.Settings, level.Resources, FrameSpan.FromBounds(0, 100));
-            var section = new GeneratorContext(prefab, prefab, level.Settings, level.Resources, FrameSpan.FromBounds(0, 50));
+            var whole = new GeneratorContext(prefab, prefab, level.Settings, level.Resources,
+                FrameSpan.FromBounds(FrameRules.MinFrame, FrameRules.EndBoundaryOf(100)));
+            var section = new GeneratorContext(prefab, prefab, level.Settings, level.Resources,
+                FrameSpan.FromBounds(FrameRules.MinFrame, FrameRules.MinFrame + 50));
             var generator = new ContentRemoverGenerator();
 
             Assert.IsTrue(generator.IsDangerous(whole, Inside()));

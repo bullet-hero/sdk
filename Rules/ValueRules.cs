@@ -328,9 +328,8 @@ namespace BH.SDK.Rules
         /// <summary> Highest shape point allowed, read by ABShapeMap, ShapeCatalogServiceTests, ShapeGeometryUtils and 1 more. </summary>
         public const float MaxShapePoint = 0.5f;
 
-        // A curve needs two keys to define a segment and a gradient two stops to define a blend.
-        // Below that there is nothing to interpolate between, and every consumer would have to
-        // invent a fallback of its own.
+        // A curve needs two keys to define a segment: below that there is nothing to interpolate
+        // between, and every consumer would have to invent a fallback of its own.
 
         /// <summary> Lower bound of CurveValue.KeyFrames. </summary>
         public const int MinCurveKeys = 2;
@@ -338,8 +337,14 @@ namespace BH.SDK.Rules
         /// <summary> Upper bound of CurveValue.KeyFrames. </summary>
         public const int MaxCurveKeys = 16;
 
+        // A GRADIENT IS THE OTHER CASE, and it used to be held to the curve's number for no reason
+        // beyond sitting next to it. One stop is a complete gradient - a constant colour, which
+        // every consumer already evaluates without a special case, UnityEngine.Gradient included -
+        // so demanding a second one refused a thing authors legitimately want and made the editor's
+        // own "remove key" illegal one step earlier than it looks.
+
         /// <summary> Lower bound of GradientValue.AlphaKeys, GradientValue.ColorKeys. </summary>
-        public const int MinGradientKeys = 2;
+        public const int MinGradientKeys = 1;
 
         /// <summary> Upper bound of GradientValue.AlphaKeys, GradientValue.ColorKeys. </summary>
         public const int MaxGradientKeys = 8;

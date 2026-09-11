@@ -20,7 +20,8 @@ namespace BH.SDK.Tests
         private static List<int> Collect(BeatSegment segment, int framerate, int division = 1)
         {
             var result = new List<int>();
-            BeatMath.CollectSegment(segment, framerate, division, 0, FrameRules.MaxFrameDuration, result);
+            BeatMath.CollectSegment(segment, framerate, division, FrameRules.MinFrame,
+                FrameRules.EndBoundaryOf(FrameRules.MaxFrameDuration), result);
             return result;
         }
 
@@ -68,9 +69,10 @@ namespace BH.SDK.Tests
         [Category(Metadata.Category.Easy)]
         public void CollectSegment_WholeBeats_StartsAtSpanStart()
         {
-            // 120 BPM at 60 fps = one beat every 30 frames, span [0, 120) holds four of them.
-            var beats = Collect(Segment(0, 120, 120f), 60);
-            CollectionAssert.AreEqual(new[] { 0, 30, 60, 90 }, beats);
+            // 120 BPM at 60 fps = one beat every 30 frames, and a 120-frame span starting on the
+            // timeline's first frame holds four of them.
+            var beats = Collect(Segment(FrameRules.MinFrame, 120, 120f), 60);
+            CollectionAssert.AreEqual(new[] { 1, 31, 61, 91 }, beats);
         }
 
         // The span is half-open, so a beat landing exactly on EndFrame belongs to whatever comes
@@ -81,11 +83,11 @@ namespace BH.SDK.Tests
         [Category(Metadata.Category.Easy)]
         public void CollectSegment_BeatOnEndFrame_IsExcluded()
         {
-            var beats = Collect(Segment(0, 121, 120f), 60);
-            CollectionAssert.AreEqual(new[] { 0, 30, 60, 90, 120 }, beats);
+            var beats = Collect(Segment(FrameRules.MinFrame, 121, 120f), 60);
+            CollectionAssert.AreEqual(new[] { 1, 31, 61, 91, 121 }, beats);
 
-            var exact = Collect(Segment(0, 120, 120f), 60);
-            CollectionAssert.DoesNotContain(exact, 120);
+            var exact = Collect(Segment(FrameRules.MinFrame, 120, 120f), 60);
+            CollectionAssert.DoesNotContain(exact, 121);
         }
 
         [Test]
@@ -94,8 +96,8 @@ namespace BH.SDK.Tests
         [Category(Metadata.Category.Easy)]
         public void CollectSegment_Offset_ShiftsWholeGrid()
         {
-            var beats = Collect(Segment(0, 120, 120f, 7f), 60);
-            CollectionAssert.AreEqual(new[] { 7, 37, 67, 97 }, beats);
+            var beats = Collect(Segment(FrameRules.MinFrame, 120, 120f, 7f), 60);
+            CollectionAssert.AreEqual(new[] { 8, 38, 68, 98 }, beats);
         }
 
         // A negative phase means the first beat sits BEFORE the segment - it simply isn't part of it,
@@ -118,8 +120,8 @@ namespace BH.SDK.Tests
         [Category(Metadata.Category.Easy)]
         public void CollectSegment_Division_SubdividesEachBeat()
         {
-            var beats = Collect(Segment(0, 60, 120f), 60, division: 2);
-            CollectionAssert.AreEqual(new[] { 0, 15, 30, 45 }, beats);
+            var beats = Collect(Segment(FrameRules.MinFrame, 60, 120f), 60, division: 2);
+            CollectionAssert.AreEqual(new[] { 1, 16, 31, 46 }, beats);
         }
 
         // Every frame is rounded from the segment's own start, never accumulated - so a tempo whose
@@ -134,11 +136,11 @@ namespace BH.SDK.Tests
             const int framerate = 60;
             var framesPerBeat = BeatMath.FramesPerBeat(bpm, framerate); // 25.714...
 
-            var beats = Collect(Segment(0, 6000, bpm), framerate);
+            var beats = Collect(Segment(FrameRules.MinFrame, 6000, bpm), framerate);
 
             for (var i = 0; i < beats.Count; i++)
             {
-                var exact = i * framesPerBeat;
+                var exact = FrameRules.MinFrame + i * framesPerBeat;
                 Assert.LessOrEqual(System.Math.Abs(beats[i] - exact), 0.5f,
                     $"beat {i} drifted: {beats[i]} vs {exact}");
             }
@@ -152,8 +154,8 @@ namespace BH.SDK.Tests
         public void CollectSegment_ViewportRange_ReturnsOnlyWhatIsInside()
         {
             var result = new List<int>();
-            BeatMath.CollectSegment(Segment(0, 1200, 120f), 60, 1, 300, 400, result);
-            CollectionAssert.AreEqual(new[] { 300, 330, 360, 390 }, result);
+            BeatMath.CollectSegment(Segment(FrameRules.MinFrame, 1200, 120f), 60, 1, 300, 400, result);
+            CollectionAssert.AreEqual(new[] { 301, 331, 361, 391 }, result);
         }
 
         [Test]
@@ -162,8 +164,8 @@ namespace BH.SDK.Tests
         [Category(Metadata.Category.Easy)]
         public void CollectSegment_UnusableSegment_ProducesNothing()
         {
-            Assert.AreEqual(0, Collect(Segment(0, 120, 0f), 60).Count);
-            Assert.AreEqual(0, Collect(Segment(0, 120, 120f), 0).Count);
+            Assert.AreEqual(0, Collect(Segment(FrameRules.MinFrame, 120, 0f), 60).Count);
+            Assert.AreEqual(0, Collect(Segment(FrameRules.MinFrame, 120, 120f), 0).Count);
             Assert.AreEqual(0, Collect(null, 60).Count);
         }
 
@@ -175,8 +177,9 @@ namespace BH.SDK.Tests
         public void CollectSegment_Limit_CutsCollectionOff()
         {
             var result = new List<int>();
-            var appended = BeatMath.CollectSegment(Segment(0, 100_000, 240f), 60, 1,
-                0, FrameRules.MaxFrameDuration, result, limit: 10);
+            var appended = BeatMath.CollectSegment(Segment(FrameRules.MinFrame, 100_000, 240f), 60, 1,
+                FrameRules.MinFrame, FrameRules.EndBoundaryOf(FrameRules.MaxFrameDuration),
+                result, limit: 10);
 
             Assert.AreEqual(10, appended);
             Assert.AreEqual(10, result.Count);
@@ -194,14 +197,14 @@ namespace BH.SDK.Tests
         {
             var segments = new List<BeatSegment>
             {
-                Segment(0, 60, 120f),   // every 30 frames
-                Segment(60, 60, 240f),  // every 15 frames
+                Segment(FrameRules.MinFrame, 60, 120f),      // every 30 frames
+                Segment(FrameRules.MinFrame + 60, 60, 240f), // every 15 frames
             };
 
             var result = new List<int>();
             BeatMath.CollectBeats(segments, 60, result);
 
-            CollectionAssert.AreEqual(new[] { 0, 30, 60, 75, 90, 105 }, result);
+            CollectionAssert.AreEqual(new[] { 1, 31, 61, 76, 91, 106 }, result);
         }
 
         // A hole between two segments is the whole reason this is a span list and not a keyframe
@@ -214,14 +217,14 @@ namespace BH.SDK.Tests
         {
             var segments = new List<BeatSegment>
             {
-                Segment(0, 60, 120f),
+                Segment(FrameRules.MinFrame, 60, 120f),
                 Segment(300, 60, 120f),
             };
 
             var result = new List<int>();
             BeatMath.CollectBeats(segments, 60, result);
 
-            CollectionAssert.AreEqual(new[] { 0, 30, 300, 330 }, result);
+            CollectionAssert.AreEqual(new[] { 1, 31, 300, 330 }, result);
         }
 
         #endregion
@@ -248,7 +251,7 @@ namespace BH.SDK.Tests
         [Category(Metadata.Category.VeryEasy)]
         public void IsDownbeat_EveryBeatsPerBar()
         {
-            var segment = Segment(0, 120, 120f, 0f, beatsPerBar: 3);
+            var segment = Segment(FrameRules.MinFrame, 120, 120f, 0f, beatsPerBar: 3);
 
             Assert.IsTrue(BeatMath.IsDownbeat(segment, 0));
             Assert.IsFalse(BeatMath.IsDownbeat(segment, 1));

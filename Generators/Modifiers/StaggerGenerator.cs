@@ -159,7 +159,7 @@ namespace BH.SDK.Generators.Modifiers
         private static int MaxFrame(GeneratorContext context)
         {
             var length = context?.Settings?.FrameDuration ?? FrameRules.MinFrameDuration;
-            return length - 1; // FrameDuration is a count - see RuleLevelFrame
+            return FrameRules.LastFrameOf(length);
         }
 
         private static int Clamp(int frame, int maxFrame)
@@ -182,8 +182,10 @@ namespace BH.SDK.Generators.Modifiers
         {
             /// <summary> How far apart consecutive objects are pushed. </summary>
             public int StepFrames = 4;
+
             /// <summary> What decides which object moves first. </summary>
             public StaggerOrder Order = StaggerOrder.Selection;
+
             /// <summary> Walks that order backwards. </summary>
             public bool Reverse;
 
@@ -198,8 +200,10 @@ namespace BH.SDK.Generators.Modifiers
 
             /// <summary> Which of an object's tracks move with it. </summary>
             public ObjectTrackMask Tracks = ObjectTrackMask.All;
+
             /// <summary> The point distance is measured from, for the distance orders. </summary>
             public float OriginX;
+
             /// <summary> Its vertical half. </summary>
             public float OriginY;
         }

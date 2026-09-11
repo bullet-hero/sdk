@@ -94,7 +94,8 @@ namespace BH.SDK.Generators.Modifiers
                 ? scope.FrameDuration
                 : context.Settings?.FrameDuration ?? 0;
 
-            return context.Span.StartFrame <= FrameRules.MinFrame && context.Span.EndFrame >= frameDuration;
+            return context.Span.StartFrame <= FrameRules.MinFrame
+                   && context.Span.EndFrame >= FrameRules.EndBoundaryOf(frameDuration);
         }
 
         private static void RemoveObjects(GeneratorContext context, in FrameSpan window, bool invert)

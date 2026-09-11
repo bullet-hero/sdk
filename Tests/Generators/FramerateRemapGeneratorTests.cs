@@ -54,10 +54,17 @@ namespace BH.SDK.Tests.Generators
                 RemapEvents = events,
             };
 
+        // Frames are given and read back as OFFSETS from the level's first frame - F puts one on the
+        // timeline, O takes it back off - so what these tests pin is the remap's own arithmetic
+        // rather than where the timeline starts.
+        private static int F(int offset) => FrameRules.MinFrame + offset;
+        private static int O(int frame) => frame - FrameRules.MinFrame;
+
         private static GeneratorResult Run(Level level, FramerateRemapGenerator.Parameters parameters)
         {
             var generator = new FramerateRemapGenerator();
-            var context = new GeneratorContext(level, new FrameSpan(0, level.Settings.FrameDuration));
+            var context = new GeneratorContext(level,
+                new FrameSpan(FrameRules.MinFrame, level.Settings.FrameDuration));
             return generator.Run(context, parameters);
         }
 
@@ -68,10 +75,10 @@ namespace BH.SDK.Tests.Generators
             {
                 ObjectId = level.Settings.GetNextObjectId(),
                 Name = "obj",
-                Span = FrameSpan.FromBounds(startFrame, endFrame),
+                Span = FrameSpan.FromBounds(F(startFrame), F(endFrame)),
             };
             foreach (var frame in positionFrames)
-                obj.Positions.Add(new PosKey(new Vector2Value(frame, 0f), frame));
+                obj.Positions.Add(new PosKey(new Vector2Value(frame, 0f), F(frame)));
             level.Game.Objects.Add(obj.ObjectId, obj);
             return obj;
         }
@@ -82,12 +89,12 @@ namespace BH.SDK.Tests.Generators
             var track = new LevelTrack
             {
                 AudioId = level.Settings.GetNextAudioId(),
-                Span = FrameSpan.FromBounds(startFrame, endFrame),
+                Span = FrameSpan.FromBounds(F(startFrame), F(endFrame)),
                 Name = "track",
                 OffsetTime = 1.25f,
             };
             foreach (var frame in volumeFrames)
-                track.Effects.Volumes.Add(new FloatKey(new FloatValue(1f), frame));
+                track.Effects.Volumes.Add(new FloatKey(new FloatValue(1f), F(frame)));
             level.Audio.Tracks.Add(track.AudioId, track);
             return track;
         }
@@ -95,7 +102,7 @@ namespace BH.SDK.Tests.Generators
         private static List<int> Frames(List<PosKey> track)
         {
             var frames = new List<int>(track.Count);
-            foreach (var key in track) frames.Add(key.Frame);
+            foreach (var key in track) frames.Add(O(key.Frame));
             return frames;
         }
 
@@ -181,7 +188,7 @@ namespace BH.SDK.Tests.Generators
             Run(level, parameters);
 
             Assert.AreEqual(FrameDuration / 2, level.Settings.FrameDuration);
-            Assert.AreEqual(50, ((ShapeObject)level.Game.Objects[obj.ObjectId]).Positions[0].Frame);
+            Assert.AreEqual(50, O(((ShapeObject)level.Game.Objects[obj.ObjectId]).Positions[0].Frame));
         }
 
         #endregion
@@ -200,8 +207,8 @@ namespace BH.SDK.Tests.Generators
             Run(level, Params(30));
 
             var remapped = (ShapeObject)level.Game.Objects[obj.ObjectId];
-            Assert.AreEqual(30, remapped.Span.StartFrame);
-            Assert.AreEqual(150, remapped.Span.EndFrame);
+            Assert.AreEqual(30, O(remapped.Span.StartFrame));
+            Assert.AreEqual(150, O(remapped.Span.EndFrame));
             CollectionAssert.AreEqual(new[] { 0, 10, 50 }, Frames(remapped.Positions));
         }
 
@@ -218,8 +225,8 @@ namespace BH.SDK.Tests.Generators
 
             var untouched = (ShapeObject)level.Game.Objects[obj.ObjectId];
             Assert.AreEqual(30, level.Settings.Fps, "the framerate itself still changes");
-            Assert.AreEqual(60, untouched.Span.StartFrame);
-            Assert.AreEqual(300, untouched.Span.EndFrame);
+            Assert.AreEqual(60, O(untouched.Span.StartFrame));
+            Assert.AreEqual(300, O(untouched.Span.EndFrame));
             CollectionAssert.AreEqual(new[] { 0, 20, 100 }, Frames(untouched.Positions));
         }
 
@@ -236,7 +243,7 @@ namespace BH.SDK.Tests.Generators
 
             Run(level, Params(30));
 
-            var last = level.Settings.FrameDuration - 1;
+            var last = FrameRules.LastFrameOf(level.Settings.FrameDuration);
             foreach (var obj in level.Game.Objects.Values)
             {
                 Assert.LessOrEqual(obj.Span.EndFrame, last + 1);
@@ -409,11 +416,11 @@ namespace BH.SDK.Tests.Generators
                 var frames = Frames(((ShapeObject)level.Game.Objects[obj.ObjectId]).Positions);
                 CollectionAssert.AllItemsAreUnique(frames, $"{Framerate}->{target}, shift {shift}");
 
-                var last = level.Settings.FrameDuration - 1;
+                var last = FrameRules.LastFrameOf(level.Settings.FrameDuration);
                 foreach (var frame in frames)
                 {
-                    Assert.GreaterOrEqual(frame, FrameRules.MinFrame, $"{Framerate}->{target}");
-                    Assert.LessOrEqual(frame, last, $"{Framerate}->{target}");
+                    Assert.GreaterOrEqual(F(frame), FrameRules.MinFrame, $"{Framerate}->{target}");
+                    Assert.LessOrEqual(F(frame), last, $"{Framerate}->{target}");
                 }
             }
         }
@@ -491,11 +498,11 @@ namespace BH.SDK.Tests.Generators
             Run(level, Params(30, audio: true));
 
             var remapped = level.Audio.Tracks[track.AudioId];
-            Assert.AreEqual(30, remapped.Span.StartFrame);
-            Assert.AreEqual(150, remapped.Span.EndFrame);
+            Assert.AreEqual(30, O(remapped.Span.StartFrame));
+            Assert.AreEqual(150, O(remapped.Span.EndFrame));
             CollectionAssert.AreEqual(new[] { 0, 10, 50 },
-                new List<int> { remapped.Effects.Volumes[0].Frame, remapped.Effects.Volumes[1].Frame,
-                    remapped.Effects.Volumes[2].Frame });
+                new List<int> { O(remapped.Effects.Volumes[0].Frame), O(remapped.Effects.Volumes[1].Frame),
+                    O(remapped.Effects.Volumes[2].Frame) });
         }
 
         /// <summary> OffsetTime is seconds INTO the clip, not a level frame: remapping it would move
@@ -526,9 +533,9 @@ namespace BH.SDK.Tests.Generators
             Run(level, Params(30));
 
             var untouched = level.Audio.Tracks[track.AudioId];
-            Assert.AreEqual(60, untouched.Span.StartFrame);
-            Assert.AreEqual(300, untouched.Span.EndFrame);
-            Assert.AreEqual(100, untouched.Effects.Volumes[2].Frame);
+            Assert.AreEqual(60, O(untouched.Span.StartFrame));
+            Assert.AreEqual(300, O(untouched.Span.EndFrame));
+            Assert.AreEqual(100, O(untouched.Effects.Volumes[2].Frame));
         }
 
         /// <summary> Audio automation goes through the same packer as everything else, so it loses
@@ -546,8 +553,8 @@ namespace BH.SDK.Tests.Generators
 
             var volumes = level.Audio.Tracks[track.AudioId].Effects.Volumes;
             Assert.AreEqual(2, volumes.Count);
-            Assert.AreEqual(0, volumes[0].Frame);
-            Assert.AreEqual(1, volumes[1].Frame);
+            Assert.AreEqual(0, O(volumes[0].Frame));
+            Assert.AreEqual(1, O(volumes[1].Frame));
         }
 
         #endregion
@@ -561,17 +568,17 @@ namespace BH.SDK.Tests.Generators
         public void RemapsEveryLevelGlobalTrackWhenAsked()
         {
             var level = CreateLevel();
-            level.Game.Events.Markers.Add(new Marker("m", string.Empty, new Color4Value(), 100));
-            level.Game.Events.Checkpoints.Add(new Checkpoint { Frame = 200 });
-            level.Game.CameraEvents.Zooms.Add(new ZoomKey { Frame = 60 });
-            level.Game.PlayerEvents.Visibilities.Add(new BoolKey { Frame = 300 });
+            level.Game.Events.Markers.Add(new Marker("m", string.Empty, new Color4Value(), F(100)));
+            level.Game.Events.Checkpoints.Add(new Checkpoint { Frame = F(200) });
+            level.Game.CameraEvents.Zooms.Add(new ZoomKey { Frame = F(60) });
+            level.Game.PlayerEvents.Visibilities.Add(new BoolKey { Frame = F(300) });
 
             Run(level, Params(30, events: true));
 
-            Assert.AreEqual(50, level.Game.Events.Markers[0].Frame);
-            Assert.AreEqual(100, level.Game.Events.Checkpoints[0].Frame);
-            Assert.AreEqual(30, level.Game.CameraEvents.Zooms[0].Frame);
-            Assert.AreEqual(150, level.Game.PlayerEvents.Visibilities[0].Frame);
+            Assert.AreEqual(50, O(level.Game.Events.Markers[0].Frame));
+            Assert.AreEqual(100, O(level.Game.Events.Checkpoints[0].Frame));
+            Assert.AreEqual(30, O(level.Game.CameraEvents.Zooms[0].Frame));
+            Assert.AreEqual(150, O(level.Game.PlayerEvents.Visibilities[0].Frame));
         }
 
         [Test]
@@ -581,11 +588,11 @@ namespace BH.SDK.Tests.Generators
         public void LeavesEventsAloneWhenNotAsked()
         {
             var level = CreateLevel();
-            level.Game.Events.Markers.Add(new Marker("m", string.Empty, new Color4Value(), 100));
+            level.Game.Events.Markers.Add(new Marker("m", string.Empty, new Color4Value(), F(100)));
 
             Run(level, Params(30));
 
-            Assert.AreEqual(100, level.Game.Events.Markers[0].Frame);
+            Assert.AreEqual(100, O(level.Game.Events.Markers[0].Frame));
         }
 
         [Test]
@@ -595,17 +602,17 @@ namespace BH.SDK.Tests.Generators
         public void PacksEventKeysByTheSameRule()
         {
             var level = CreateLevel();
-            level.Game.Events.Markers.Add(new Marker("a", string.Empty, new Color4Value(), 0));
-            level.Game.Events.Markers.Add(new Marker("b", string.Empty, new Color4Value(), 1));
-            level.Game.Events.Markers.Add(new Marker("c", string.Empty, new Color4Value(), 2));
+            level.Game.Events.Markers.Add(new Marker("a", string.Empty, new Color4Value(), F(0)));
+            level.Game.Events.Markers.Add(new Marker("b", string.Empty, new Color4Value(), F(1)));
+            level.Game.Events.Markers.Add(new Marker("c", string.Empty, new Color4Value(), F(2)));
 
             Run(level, Params(10, maxKeyShift: 1, events: true));
 
             Assert.AreEqual(2, level.Game.Events.Markers.Count);
             Assert.AreEqual("a", level.Game.Events.Markers[0].Name);
             Assert.AreEqual("b", level.Game.Events.Markers[1].Name);
-            Assert.AreEqual(0, level.Game.Events.Markers[0].Frame);
-            Assert.AreEqual(1, level.Game.Events.Markers[1].Frame);
+            Assert.AreEqual(0, O(level.Game.Events.Markers[0].Frame));
+            Assert.AreEqual(1, O(level.Game.Events.Markers[1].Frame));
         }
 
         #endregion
@@ -624,7 +631,7 @@ namespace BH.SDK.Tests.Generators
             var level = CreateLevel();
             AddObject(level, 60, 300, 0, 3, 4, 100);
             var track = AddTrack(level, 60, 300, 0, 20, 100);
-            level.Game.Events.Markers.Add(new Marker("m", string.Empty, new Color4Value(), 100));
+            level.Game.Events.Markers.Add(new Marker("m", string.Empty, new Color4Value(), F(100)));
 
             var gameBefore = level.Game.Copy();
             var audioBefore = level.Audio.Copy();
@@ -641,7 +648,7 @@ namespace BH.SDK.Tests.Generators
             Assert.AreEqual(FrameDuration, level.Settings.FrameDuration);
             Assert.IsTrue(gameBefore.Equals(level.Game), "revert must restore objects and events exactly");
             Assert.IsTrue(audioBefore.Equals(level.Audio), "revert must restore audio exactly");
-            Assert.AreEqual(100, level.Audio.Tracks[track.AudioId].Effects.Volumes[2].Frame);
+            Assert.AreEqual(100, O(level.Audio.Tracks[track.AudioId].Effects.Volumes[2].Frame));
 
             result.Log.Reapply();
 
@@ -661,9 +668,9 @@ namespace BH.SDK.Tests.Generators
         {
             var level = CreateLevel();
             var obj = AddObject(level, 0, 200, 0, 1, 2);
-            level.Game.Events.Markers.Add(new Marker("a", string.Empty, new Color4Value(), 0));
-            level.Game.Events.Markers.Add(new Marker("b", string.Empty, new Color4Value(), 1));
-            level.Game.Events.Markers.Add(new Marker("c", string.Empty, new Color4Value(), 2));
+            level.Game.Events.Markers.Add(new Marker("a", string.Empty, new Color4Value(), F(0)));
+            level.Game.Events.Markers.Add(new Marker("b", string.Empty, new Color4Value(), F(1)));
+            level.Game.Events.Markers.Add(new Marker("c", string.Empty, new Color4Value(), F(2)));
 
             var before = level.Game.Copy();
             var result = Run(level, Params(10, maxKeyShift: 0, events: true));

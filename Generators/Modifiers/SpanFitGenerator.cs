@@ -131,7 +131,9 @@ namespace BH.SDK.Generators.Modifiers
 
         private static void ExpandParents(GeneratorContext context, Parameters parameters)
         {
-            var limit = TimelineEnd(context);
+            // The ceiling is an EXCLUSIVE end, so it is the boundary past the timeline's last frame
+            // rather than its length: a parent may legally reach the level's final frame.
+            var limit = FrameRules.EndBoundaryOf(TimelineEnd(context));
 
             foreach (var id in OrderedByDepth(context, parameters, true))
             {
@@ -215,6 +217,7 @@ namespace BH.SDK.Generators.Modifiers
                 depth++;
                 id = parentId;
             }
+
             return depth;
         }
 
@@ -240,6 +243,7 @@ namespace BH.SDK.Generators.Modifiers
                 Clamp(context, id, bounds);
                 return;
             }
+
             DeleteSubtree(context, id);
         }
 
@@ -287,6 +291,7 @@ namespace BH.SDK.Generators.Modifiers
                     if (outer == id)
                         return true;
             }
+
             return false;
         }
 
@@ -307,7 +312,7 @@ namespace BH.SDK.Generators.Modifiers
         {
             if (context == null) return false;
             return context.Span.StartFrame <= FrameRules.MinFrame
-                   && context.Span.EndFrame >= TimelineEnd(context);
+                   && context.Span.EndFrame >= FrameRules.EndBoundaryOf(TimelineEnd(context));
         }
 
         #endregion

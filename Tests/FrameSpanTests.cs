@@ -8,10 +8,10 @@ using NUnit.Framework;
 namespace BH.SDK.Tests
 {
     // FrameSpan is the type that replaced the old StartFrame + EndFrame pair, and the whole point of
-    // it is that the two invariants (Start >= 0, Duration >= 1) and the half-open convention cannot
-    // be violated by any representable value. Most of what follows tests exactly that: the packing
-    // of the anchor flags into the sign bits and the bias-by-one duration are internal details, so
-    // they are checked through the public surface only.
+    // it is that the two invariants (Start >= MinFrame, Duration >= 1) and the half-open convention
+    // cannot be violated by any representable value. Most of what follows tests exactly that: the
+    // packing of the anchor flags into the sign bits and the bias-by-their-floor fields are internal
+    // details, so they are checked through the public surface only.
 
 
     /// <summary> That no representable FrameSpan can violate its two invariants or the half-open convention.
@@ -22,14 +22,14 @@ namespace BH.SDK.Tests
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.VeryEasy)]
-        public void Default_IsSingleFrameAtZero_WithoutAnchors()
+        public void Default_IsSingleFrameOnTheFirstFrame_WithoutAnchors()
         {
             var span = new FrameSpan();
 
-            Assert.AreEqual(0, span.StartFrame);
+            Assert.AreEqual(FrameRules.MinFrame, span.StartFrame);
             Assert.AreEqual(1, span.FrameDuration);
-            Assert.AreEqual(1, span.EndFrame);
-            Assert.AreEqual(0, span.LastFrame);
+            Assert.AreEqual(FrameRules.MinFrame + 1, span.EndFrame);
+            Assert.AreEqual(FrameRules.MinFrame, span.LastFrame);
             Assert.AreEqual(FrameAnchor.None, span.Anchors);
         }
 
@@ -43,7 +43,7 @@ namespace BH.SDK.Tests
             var zeroDuration = new FrameSpan(5, 0);
             var negativeDuration = new FrameSpan(5, -10);
 
-            Assert.AreEqual(0, negativeStart.StartFrame);
+            Assert.AreEqual(FrameRules.MinFrame, negativeStart.StartFrame);
             Assert.AreEqual(10, negativeStart.FrameDuration);
             Assert.AreEqual(FrameRules.MinFrameDuration, zeroDuration.FrameDuration);
             Assert.AreEqual(FrameRules.MinFrameDuration, negativeDuration.FrameDuration);
@@ -146,7 +146,7 @@ namespace BH.SDK.Tests
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.Easy)]
-        public void Withers_KeepAnchors_AndShiftedClampsAtZero()
+        public void Withers_KeepAnchors_AndShiftedClampsAtTheFirstFrame()
         {
             var span = new FrameSpan(10, 20, FrameAnchor.Both);
 
@@ -157,7 +157,7 @@ namespace BH.SDK.Tests
             Assert.AreEqual(FrameAnchor.End, span.WithAnchors(FrameAnchor.End).Anchors);
 
             Assert.AreEqual(15, span.Shifted(5).StartFrame);
-            Assert.AreEqual(0, span.Shifted(-100).StartFrame);
+            Assert.AreEqual(FrameRules.MinFrame, span.Shifted(-100).StartFrame);
             Assert.AreEqual(20, span.Shifted(-100).FrameDuration);
         }
 
@@ -169,9 +169,11 @@ namespace BH.SDK.Tests
         {
             var span = new FrameSpan(100, 40);
 
-            Assert.AreEqual(0, span.ToLocalFrame(100));
-            Assert.AreEqual(39, span.ToLocalFrame(139));
-            Assert.AreEqual(139, span.ToGlobalFrame(39));
+            // A local frame is a frame, so the span's own first frame is local MinFrame and its
+            // last is its FrameDuration - never a zero-based offset.
+            Assert.AreEqual(FrameRules.MinFrame, span.ToLocalFrame(100));
+            Assert.AreEqual(40, span.ToLocalFrame(139));
+            Assert.AreEqual(139, span.ToGlobalFrame(40));
         }
 
         [Test]
@@ -202,7 +204,7 @@ namespace BH.SDK.Tests
             var atLimit = new FrameSpan(FrameRules.MaxFrame, 1000);
 
             Assert.AreEqual(FrameRules.MaxFrame, atLimit.StartFrame);
-            Assert.AreEqual(FrameRules.MaxFrameDuration, atLimit.EndFrame);
+            Assert.AreEqual(FrameRules.MaxFrame + 1, atLimit.EndFrame);
             Assert.AreEqual(FrameRules.MinFrameDuration, atLimit.FrameDuration);
         }
 
@@ -244,29 +246,31 @@ namespace BH.SDK.Tests
 
             var anchored = new FrameSpan(45, 15, FrameAnchor.Both);
             var anchoredJson = JsonConvert.SerializeObject(anchored, converter);
-            Assert.AreEqual("[-46,-15]", anchoredJson);
+            Assert.AreEqual("[-45,-15]", anchoredJson);
             Assert.AreEqual(anchored, JsonConvert.DeserializeObject<FrameSpan>(anchoredJson, converter));
         }
 
-        // -0 exists in neither JSON nor BSON, so the start's sign alone cannot say "anchored at
-        // frame zero" - the case a child starting together with a parent at the very beginning of
-        // the level hits immediately. That is the whole reason the negative branch is offset by one.
+        // A child starting together with its parent at the very beginning of the level is the case
+        // the sign convention used to be unable to express, because -0 exists in neither JSON nor
+        // BSON and the start could legitimately BE zero. It cannot any more - the timeline counts
+        // from FrameRules.MinFrame - so the negated number stands on its own with no offset, and
+        // this pins that the simplification did not cost the case its round trip.
 
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.Easy)]
-        public void Json_AnchoredStartAtFrameZero_SurvivesRoundTrip()
+        public void Json_AnchoredStartOnTheFirstFrame_SurvivesRoundTrip()
         {
             var converter = new FrameSpanConverter();
 
-            var span = new FrameSpan(0, 1, FrameAnchor.Start);
+            var span = new FrameSpan(FrameRules.MinFrame, 1, FrameAnchor.Start);
             var json = JsonConvert.SerializeObject(span, converter);
 
             Assert.AreEqual("[-1,1]", json);
 
             var restored = JsonConvert.DeserializeObject<FrameSpan>(json, converter);
-            Assert.AreEqual(0, restored.StartFrame);
+            Assert.AreEqual(FrameRules.MinFrame, restored.StartFrame);
             Assert.AreEqual(1, restored.FrameDuration);
             Assert.AreEqual(FrameAnchor.Start, restored.Anchors);
         }

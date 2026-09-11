@@ -113,13 +113,13 @@ namespace BH.SDK.Generators.Spawn
 
         /// <summary> Absolute frame -> the object-relative frame a keyframe actually stores. Clamped
         /// to the object's own lifetime: a key before its start or after its end is unreachable, and
-        /// the format bounds a keyframe's Frame at zero anyway. </summary>
+        /// the format bounds a keyframe's Frame at <see cref="FrameRules.MinFrame"/> anyway. </summary>
         protected static int LocalFrame(RectObject obj, int frame)
         {
             var local = obj.Span.ToLocalFrame(frame);
-            if (local < 0) return 0;
+            if (local < FrameRules.MinFrame) return FrameRules.MinFrame;
 
-            var lastLocal = obj.Span.FrameDuration - 1;
+            var lastLocal = FrameRules.LastFrameOf(obj.Span.FrameDuration);
             return local > lastLocal ? lastLocal : local;
         }
 
@@ -143,6 +143,7 @@ namespace BH.SDK.Generators.Spawn
 
         private static float ClampPos(float value) => Clamp(value, ValueRules.MinPos, ValueRules.MaxPos);
         private static float ClampSize(float value) => Clamp(value, ValueRules.MinSca, ValueRules.MaxSca);
+
         private static int ClampLayer(int value)
             => value < ValueRules.MinLayer ? ValueRules.MinLayer
                 : value > ValueRules.MaxLayer ? ValueRules.MaxLayer : value;

@@ -73,13 +73,14 @@ namespace BH.SDK.Generators.Modifiers
                 foreach (var track in ObjectTracks.Of(obj, parameters.Tracks))
                 {
                     var taken = new HashSet<int>();
-                    for (var i = 0; i < track.Count; i++) taken.Add(obj.Span.StartFrame + track.FrameAt(i));
+                    for (var i = 0; i < track.Count; i++) taken.Add(obj.Span.ToGlobalFrame(track.FrameAt(i)));
 
                     for (var i = 0; i < track.Count; i++)
                     {
-                        var frame = obj.Span.StartFrame + track.FrameAt(i);
+                        var frame = obj.Span.ToGlobalFrame(track.FrameAt(i));
                         var snapped = Snap(frame, step, parameters.OffsetFrames, parameters.Mode);
-                        if (snapped < obj.Span.StartFrame) snapped = obj.Span.StartFrame; // a key cannot precede its object
+                        if (snapped < obj.Span.StartFrame)
+                            snapped = obj.Span.StartFrame; // a key cannot precede its object
                         if (snapped == frame) continue;
 
                         // The grid line is already occupied by a key this pass is not moving (or has
@@ -88,7 +89,7 @@ namespace BH.SDK.Generators.Modifiers
 
                         taken.Remove(frame);
                         taken.Add(snapped);
-                        track.SetFrameAt(i, snapped - obj.Span.StartFrame);
+                        track.SetFrameAt(i, obj.Span.ToLocalFrame(snapped));
                     }
                 }
             }
@@ -118,9 +119,14 @@ namespace BH.SDK.Generators.Modifiers
             return step < 1 ? 1 : step;
         }
 
+        // The grid is anchored on the timeline's FIRST FRAME, not on zero: with an offset of zero its
+        // lines are MinFrame, MinFrame + step, ... so line zero is the frame the level starts on and
+        // a beat-derived step lands where the beat actually is. Anchoring on a bare 0 would put every
+        // line one frame early and each of them on a fractional second.
         private static int Snap(int frame, int step, int offset, QuantizeMode mode)
         {
-            var relative = frame - offset;
+            var origin = offset + FrameRules.MinFrame;
+            var relative = frame - origin;
             var floor = FloorDiv(relative, step) * step;
 
             var snapped = mode switch
@@ -130,7 +136,7 @@ namespace BH.SDK.Generators.Modifiers
                 _ => relative - floor < step - (relative - floor) ? floor : floor + step,
             };
 
-            var result = snapped + offset;
+            var result = snapped + origin;
             return result < FrameRules.MinFrame ? FrameRules.MinFrame : result;
         }
 
@@ -156,6 +162,7 @@ namespace BH.SDK.Generators.Modifiers
         {
             /// <summary> Whether the grid is derived from a tempo rather than given in frames. </summary>
             public bool UseBpm = true;
+
             /// <summary> That tempo. </summary>
             public float Bpm = 120f;
 
@@ -165,11 +172,13 @@ namespace BH.SDK.Generators.Modifiers
             /// <summary> Grid spacing when UseBpm is off. </summary>
             public int StepFrames = 15;
 
-            /// <summary> Shifts the whole grid, for a song whose first beat is not on frame zero. </summary>
+            /// <summary> Shifts the whole grid, for a song whose first beat is not on the level's first
+            /// frame. A DELTA, so it counts from zero like any other. </summary>
             public int OffsetFrames;
 
             /// <summary> Which way a keyframe between two grid lines goes. </summary>
             public QuantizeMode Mode = QuantizeMode.Nearest;
+
             /// <summary> Which of an object's tracks are snapped. </summary>
             public ObjectTrackMask Tracks = ObjectTrackMask.All;
         }

@@ -2,6 +2,7 @@
 using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Enums;
 using BH.SDK.Models.Interfaces;
+using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
 using Newtonsoft.Json;
 
@@ -16,8 +17,9 @@ namespace BH.SDK.Models.Keyframes
     [GenerateModel]
     public partial class Keyframe : IKeyframe, IModel<Keyframe>
     {
-        /// <summary> Where a keyframe sits when nothing says otherwise. </summary>
-        public const int DefaultFrame = 0;
+        /// <summary> Where a keyframe sits when nothing says otherwise - the first frame of whatever it
+        /// belongs to, which is <see cref="FrameRules.MinFrame"/> and not zero. </summary>
+        public const int DefaultFrame = FrameRules.MinFrame;
 
         /// <summary> How it is blended into when nothing says otherwise. </summary>
         public const EaseType DefaultEase = EaseType.Linear;
@@ -39,6 +41,7 @@ namespace BH.SDK.Models.Keyframes
             Frame = DefaultFrame;
             Ease = DefaultEase;
         }
+
         /// <summary> Built from its frame and default ease. </summary>
         public Keyframe(int frame, EaseType ease = DefaultEase)
         {

@@ -50,22 +50,22 @@ namespace BH.SDK.Tests.Rules
         {
             var context = LevelContext(100);
 
-            Assert.IsTrue(Rule.IsValid(0, context));
+            Assert.IsTrue(Rule.IsValid(FrameRules.MinFrame, context));
             Assert.IsTrue(Rule.IsValid(50, context));
         }
 
-        // The upper bound is exclusive: FrameDuration is a count, so the last playable frame is
-        // FrameDuration - 1.
+        // Both ends are included: FrameDuration is a count and the timeline counts frames from one,
+        // so a 100-frame level holds frames 1..100.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.Easy)]
-        public void TestUpperBoundIsExclusive()
+        public void TestUpperBoundIsInclusive()
         {
             var context = LevelContext(100);
 
-            Assert.IsTrue(Rule.IsValid(99, context));
-            Assert.IsFalse(Rule.IsValid(100, context));
+            Assert.IsTrue(Rule.IsValid(100, context));
+            Assert.IsFalse(Rule.IsValid(101, context));
         }
 
         [Test]
@@ -75,6 +75,7 @@ namespace BH.SDK.Tests.Rules
         public void TestNegativeFrame()
         {
             Assert.IsFalse(Rule.IsValid(-1, LevelContext(100)));
+            Assert.IsFalse(Rule.IsValid(FrameRules.NoFrame, LevelContext(100)));
         }
 
         [Test]
@@ -87,11 +88,11 @@ namespace BH.SDK.Tests.Rules
 
             var overrun = new FrameModel { Frame = 500 };
             Rule.Fix(overrun, FrameProperty, context);
-            Assert.AreEqual(99, overrun.Frame);
+            Assert.AreEqual(100, overrun.Frame);
 
             var underrun = new FrameModel { Frame = -5 };
             Rule.Fix(underrun, FrameProperty, context);
-            Assert.AreEqual(0, underrun.Frame);
+            Assert.AreEqual(FrameRules.MinFrame, underrun.Frame);
         }
 
         // A prefab template validates against its own timeline, standalone, with no level anywhere.
@@ -103,8 +104,8 @@ namespace BH.SDK.Tests.Rules
         {
             var context = RuleContext.ForRoot(new Prefab { FrameDuration = 10 });
 
-            Assert.IsTrue(Rule.IsValid(9, context));
-            Assert.IsFalse(Rule.IsValid(10, context));
+            Assert.IsTrue(Rule.IsValid(10, context));
+            Assert.IsFalse(Rule.IsValid(11, context));
         }
 
         // Descending into a template rebases the bound even when the walk started at a level: 50 is
@@ -126,7 +127,7 @@ namespace BH.SDK.Tests.Rules
             CollectionAssert.IsNotEmpty(issues);
 
             Fix(level);
-            Assert.AreEqual(9, inner.Positions[0].Frame);
+            Assert.AreEqual(10, inner.Positions[0].Frame);
         }
 
         // With no scope to measure against - a LevelMeta, a UserSettings, a bare value model - the
@@ -141,21 +142,21 @@ namespace BH.SDK.Tests.Rules
         {
             var context = RuleContext.ForRoot(new object());
 
-            Assert.IsTrue(Rule.IsValid(0, context));
+            Assert.IsTrue(Rule.IsValid(FrameRules.MinFrame, context));
             Assert.IsTrue(Rule.IsValid(999_999, context));
-            Assert.IsFalse(Rule.IsValid(-1, context));
+            Assert.IsFalse(Rule.IsValid(FrameRules.NoFrame, context));
         }
 
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.Easy)]
-        public void TestNoScopeFixRaisesNegativeToZero()
+        public void TestNoScopeFixRaisesNegativeToTheFirstFrame()
         {
             var model = new FrameModel { Frame = -5 };
             Rule.Fix(model, FrameProperty, RuleContext.ForRoot(new object()));
 
-            Assert.AreEqual(0, model.Frame);
+            Assert.AreEqual(FrameRules.MinFrame, model.Frame);
         }
 
         [Test]
@@ -173,7 +174,7 @@ namespace BH.SDK.Tests.Rules
             CollectionAssert.IsNotEmpty(issues);
 
             Fix(level);
-            Assert.AreEqual(99, invalid.Positions[0].Frame);
+            Assert.AreEqual(100, invalid.Positions[0].Frame);
         }
 
         // Validating a template on its own no longer reports false failures - the whole reason the
@@ -185,7 +186,8 @@ namespace BH.SDK.Tests.Rules
         public void TestThroughAnalyzerOnStandalonePrefab()
         {
             var prefab = new Prefab { PrefabId = new PrefabId(Guid.NewGuid()), FrameDuration = 10 };
-            var inner = new RectObject { ObjectId = new ObjectId(1), Span = FrameSpan.FromBounds(0, 6) };
+            var inner = new RectObject
+                { ObjectId = new ObjectId(1), Span = FrameSpan.FromBounds(FrameRules.MinFrame, 6) };
             prefab.Objects.Add(inner.ObjectId, inner);
 
             AssertValid(prefab);
