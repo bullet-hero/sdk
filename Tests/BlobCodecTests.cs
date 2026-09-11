@@ -221,6 +221,231 @@ namespace BH.SDK.Tests
 
         #endregion
 
+        #region Forward and backward
+
+        // THE FUTURE IS FABRICATED FROM FILES, NEVER FROM TYPES. A future type the SDK knows about is
+        // not a future type, so every fixture here takes a file this build wrote and makes it claim
+        // something this build cannot answer. The offset of a root's generation is FOUND by reading
+        // the header back rather than counted by hand - `string domain, int generation, int length`
+        // is the only thing that has to stay true, and it is the thing the format promises.
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Normal)]
+        public void ARootFromTheFuture_IsSkippedAndItsSiblingsSurvive()
+        {
+            var level = MockData.CreateTestLevel();
+            var payload = Payload(Write(level));
+            PatchInt(payload, GenerationOffset(payload, ModelDomains.GameLevel), MockData.FabricatedGeneration);
+
+            var report = new SerializationReport();
+            Level read;
+            using (SerializationReport.Begin(report)) read = Read(Rehash(payload));
+
+            Assert.AreEqual(0, read.Game.Objects.Count, "the unreadable root should be at its defaults");
+            Assert.AreEqual(level.Settings.Fps, read.Settings.Fps, "a sibling root must survive it");
+            Assert.IsTrue(level.Audio.Equals(read.Audio), "a sibling root must survive it");
+            Assert.That(report.Entries,
+                Has.Some.Matches<SerializationSubstitution>(e =>
+                    e.Kind == SubstitutionKind.UnknownGeneration && e.Domain == ModelDomains.GameLevel));
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Normal)]
+        public void AFutureBuildAppendedMembers_AreSkippedToTheDeclaredEnd()
+        {
+            const int appended = 7;
+
+            var level = MockData.CreateTestLevel();
+            var payload = Payload(Write(level));
+
+            var generation = GenerationOffset(payload, ModelDomains.LevelSettings);
+            var lengthOffset = generation + sizeof(int);
+            var length = BitConverter.ToInt32(payload, lengthOffset);
+
+            // Members this build does not read, written where a future build would put them: LAST,
+            // inside the root that declared them. That is rule one of the two the format took on.
+            var spliced = new byte[payload.Length + appended];
+            var contentEnd = lengthOffset + sizeof(int) + length;
+            Buffer.BlockCopy(payload, 0, spliced, 0, contentEnd);
+            Buffer.BlockCopy(payload, contentEnd, spliced, contentEnd + appended,
+                payload.Length - contentEnd);
+            PatchInt(spliced, lengthOffset, length + appended);
+
+            // EVERY ENCLOSING ROOT'S LENGTH MOVES WITH IT, because a length counts the bytes of a
+            // whole subtree. A fixture that patched only the inner one would be testing a file no
+            // build could write - and would fail at the OUTER root rather than at the inner one.
+            var outer = GenerationOffset(spliced, ModelDomains.Level) + sizeof(int);
+            PatchInt(spliced, outer, BitConverter.ToInt32(spliced, outer) + appended);
+
+            var report = new SerializationReport();
+            Level read;
+            using (SerializationReport.Begin(report)) read = Read(Rehash(spliced));
+
+            Assert.AreEqual(level.Settings.Fps, read.Settings.Fps, "everything this build knows still landed");
+            Assert.IsTrue(level.Game.Equals(read.Game), "the root after it must still be found");
+            Assert.That(report.Entries,
+                Has.Some.Matches<SerializationSubstitution>(e =>
+                    e.Kind == SubstitutionKind.ShortContent && e.Domain == ModelDomains.LevelSettings));
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Normal)]
+        public void ContentLongerThanDeclared_IsRefusedAtTheOutermostRoot()
+        {
+            var payload = Payload(Write(MockData.CreateTestLevel()));
+
+            var lengthOffset = GenerationOffset(payload, ModelDomains.Level) + sizeof(int);
+            PatchInt(payload, lengthOffset, BitConverter.ToInt32(payload, lengthOffset) - 1);
+
+            // A reader that ran past the end it was handed did not meet a newer format; it lost its
+            // place, and every byte after it means something else. Nothing encloses the outermost
+            // root, so there is nowhere to recover TO and the refusal stands.
+            Assert.Throws<BlobFormatException>(() => Read(Rehash(payload)));
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Normal)]
+        public void ContentLongerThanDeclaredInsideARoot_DegradesTheRootAroundIt()
+        {
+            // THE SAME DAMAGE ONE LEVEL DOWN OPENS INSTEAD OF THROWING, and the recovery happens at
+            // the ENCLOSING root rather than at the broken one: a reader that ran past its declared
+            // end lost its place, so nothing inside that subtree can be trusted - but the root above
+            // still knows where its own content ends, and skipping to there is a real recovery.
+            //
+            // Here that root is Level itself, so the level comes back holding almost nothing. That is
+            // the guarantee working rather than failing: the file opens, and the loss is reported.
+            var payload = Payload(Write(MockData.CreateTestLevel()));
+
+            var lengthOffset = GenerationOffset(payload, ModelDomains.LevelSettings) + sizeof(int);
+            PatchInt(payload, lengthOffset, BitConverter.ToInt32(payload, lengthOffset) - 1);
+
+            var report = new SerializationReport();
+            Level read;
+            using (SerializationReport.Begin(report)) read = Read(Rehash(payload));
+
+            Assert.IsNotNull(read, "the file still opens");
+            Assert.AreEqual(0, read.Game.Objects.Count, "the degraded root is at its defaults");
+            Assert.That(report.Entries,
+                Has.Some.Matches<SerializationSubstitution>(e =>
+                    e.Kind == SubstitutionKind.UnreadableContent && e.Domain == ModelDomains.Level));
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Normal)]
+        public void AnUnreadableRoot_DegradesAloneAndIsReported()
+        {
+            // A POSITIONAL FORMAT CANNOT SKIP ONE VALUE IT DOES NOT UNDERSTAND - what it skips is the
+            // root that carried it. That is why an unknown polymorphic tag needs no framing of its
+            // own, and why rule two (a new variant bumps its domain's generation) is what makes this
+            // sufficient: such a tag only ever arrives inside a root whose generation already moved.
+            //
+            // The desync is made at the one place a shape can be broken without knowing where any
+            // tag sits: GameEvents' own domain string, which GameLevel's content reads first.
+            var level = MockData.CreateTestLevel();
+            var payload = Payload(Write(level));
+            var events = GenerationOffset(payload, ModelDomains.GameEvents);
+
+            PatchInt(payload, events - ModelDomains.GameEvents.Length - sizeof(int), int.MaxValue / 2);
+
+            var report = new SerializationReport();
+            Level read;
+            using (SerializationReport.Begin(report)) read = Read(Rehash(payload));
+
+            Assert.IsNotNull(read.Game);
+            Assert.AreEqual(0, read.Game.Objects.Count, "the unreadable root should be at its defaults");
+            Assert.AreEqual(level.Settings.Fps, read.Settings.Fps, "a sibling root must survive it");
+            Assert.IsTrue(level.Audio.Equals(read.Audio), "a sibling root must survive it");
+            Assert.That(report.Entries, Has.Some.Matches<SerializationSubstitution>(e =>
+                e.Domain == ModelDomains.GameLevel
+                && e.Kind == SubstitutionKind.UnreadableContent));
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Hard)]
+        public void AV0Level_MigratesThroughTheBlobAsItDoesThroughJson()
+        {
+            // The .blob half of the migration path, which could not exist at all until a snapshot
+            // carried its own codec: written from the real LevelV0 type, so the bytes claim
+            // generation 0 because the type does, not because anything patched them.
+            var bytes = Blob.SerializeEnvelope(ModelDomains.Level,
+                new EnvelopeData(ModelGenerations.Test, MockData.CreateTestLevelV0()));
+
+            var report = new SerializationReport();
+            Level read;
+            using (SerializationReport.Begin(report)) read = Read(bytes);
+
+            Assert.IsNotNull(read);
+            Assert.IsNotNull(read.Game);
+            Assert.IsNotNull(read.Audio);
+            Assert.IsNotNull(read.Resources);
+            Assert.That(report.Entries,
+                Has.Some.Matches<SerializationSubstitution>(e =>
+                    e.Kind == SubstitutionKind.MigratedGeneration && e.Domain == ModelDomains.Level));
+        }
+
+        #endregion
+
+        #region Fabrication
+
+        /// <summary> The payload without the file header, which is where every root envelope lives. </summary>
+        private static byte[] Payload(byte[] file)
+        {
+            var payload = new byte[file.Length - BlobFormat.HeaderLength];
+            Buffer.BlockCopy(file, BlobFormat.HeaderLength, payload, 0, payload.Length);
+            return payload;
+        }
+
+        /// <summary> A patched payload back inside a valid header - the hash covers the payload, so a
+        /// fabrication that did not rewrite it would be refused as damage before anything read it. </summary>
+        private static byte[] Rehash(byte[] payload)
+        {
+            var file = new BlobWriter(payload.Length + BlobFormat.HeaderLength);
+            BlobFormat.WriteHeader(ref file, payload.Length, BlobFormat.Hash(payload));
+            file.WriteBytes(payload, 0, payload.Length);
+            return file.ToArray();
+        }
+
+        /// <summary> Where a named root writes its generation, found by matching the length-prefixed
+        /// domain string the envelope actually carries rather than by counting bytes. </summary>
+        private static int GenerationOffset(byte[] payload, string domain)
+        {
+            var name = System.Text.Encoding.UTF8.GetBytes(domain);
+
+            for (var i = 0; i + sizeof(int) + name.Length <= payload.Length; i++)
+            {
+                if (BitConverter.ToInt32(payload, i) != name.Length) continue;
+
+                var match = true;
+                for (var j = 0; j < name.Length; j++)
+                    if (payload[i + sizeof(int) + j] != name[j])
+                    {
+                        match = false;
+                        break;
+                    }
+
+                if (match) return i + sizeof(int) + name.Length;
+            }
+
+            throw new AssertionException($"no '{domain}' envelope in the payload");
+        }
+
+        private static void PatchInt(byte[] payload, int offset, int value)
+            => Buffer.BlockCopy(BitConverter.GetBytes(value), 0, payload, offset, sizeof(int));
+
+        #endregion
+
         #region The hash itself
 
         [Test]
@@ -266,6 +491,7 @@ namespace BH.SDK.Tests
                     var inner = new TextObject { ObjectId = new ObjectId(j + 1), Layer = j };
                     prefab.Objects[inner.ObjectId] = inner;
                 }
+
                 level.Resources.Prefabs[new PrefabId(Guid.NewGuid())] = prefab;
             }
 

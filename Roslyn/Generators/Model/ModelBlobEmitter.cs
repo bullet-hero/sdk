@@ -24,8 +24,10 @@ namespace BH.SDK.Roslyn.Model
         {
             builder.Append(indent).AppendLine("#region Generated blob codec");
             builder.AppendLine();
-            builder.Append(indent).Append("partial void OnWriteBlob(ref ").Append(Blob).AppendLine(".BlobWriter writer);");
-            builder.Append(indent).Append("partial void OnReadBlob(ref ").Append(Blob).AppendLine(".BlobReader reader);");
+            builder.Append(indent).Append("partial void OnWriteBlob(ref ").Append(Blob)
+                .AppendLine(".BlobWriter writer);");
+            builder.Append(indent).Append("partial void OnReadBlob(ref ").Append(Blob)
+                .AppendLine(".BlobReader reader);");
             builder.AppendLine();
 
             EmitWrite(builder, indent, spec);
@@ -56,9 +58,12 @@ namespace BH.SDK.Roslyn.Model
 
             if (spec.Domain != null)
             {
-                builder.Append(indent).AppendLine("    // An aggregate root carries its own generation, exactly as it does in");
-                builder.Append(indent).AppendLine("    // JSON, and a length so a reader can tell a short payload from a");
-                builder.Append(indent).AppendLine("    // wrong one. The domain is written as text rather than as a number:");
+                builder.Append(indent)
+                    .AppendLine("    // An aggregate root carries its own generation, exactly as it does in");
+                builder.Append(indent)
+                    .AppendLine("    // JSON, and a length so a reader can tell a short payload from a");
+                builder.Append(indent)
+                    .AppendLine("    // wrong one. The domain is written as text rather than as a number:");
                 builder.Append(indent).AppendLine("    // a numbering would be a second registry to keep in step with");
                 builder.Append(indent).AppendLine("    // ModelDomains, and the bytes it saves are a rounding error.");
                 builder.Append(indent).Append("    writer.WriteString(\"").Append(spec.Domain).AppendLine("\");");
@@ -225,21 +230,47 @@ namespace BH.SDK.Roslyn.Model
                 builder.Append(indent).Append("        throw new ").Append(Blob)
                     .Append(".BlobFormatException($\"expected domain '").Append(spec.Domain)
                     .AppendLine("', found '{domain}'\");");
-                builder.Append(indent).AppendLine("    // A generation tag is written on every envelope so a future one CAN");
-                builder.Append(indent).AppendLine("    // be migrated. None can exist yet - no build has ever written a");
-                builder.Append(indent).AppendLine("    // .blob - so an unknown one is refused rather than guessed at, and");
-                builder.Append(indent).AppendLine("    // the .json beside it is the recovery path.");
-                builder.Append(indent).Append("    if (generation != ").Append(spec.Generation).AppendLine(")");
-                builder.Append(indent).Append("        throw new ").Append(Blob)
-                    .Append(".BlobFormatException($\"").Append(spec.Domain)
-                    .Append(" is generation {generation}, this build reads ").Append(spec.Generation)
-                    .AppendLine("\");");
                 builder.Append(indent).AppendLine("    var contentStart = reader.Position;");
-                builder.Append(indent).Append("    ReadBlob").Append(spec.Name).AppendLine("(ref reader);");
-                builder.Append(indent).AppendLine("    if (reader.Position - contentStart != length)");
-                builder.Append(indent).Append("        throw new ").Append(Blob)
-                    .Append(".BlobFormatException(\"").Append(spec.Domain)
-                    .AppendLine(" read a different number of bytes than it declared\");");
+                builder.Append(indent)
+                    .AppendLine("    // A KNOWN GENERATION MIGRATES, AN UNKNOWN ONE DEGRADES. The length");
+                builder.Append(indent)
+                    .AppendLine("    // three lines up is what makes both affordable: a root this build");
+                builder.Append(indent)
+                    .AppendLine("    // cannot read is stepped over whole, leaving its siblings intact.");
+                builder.Append(indent).Append("    if (generation != ").Append(spec.Generation).AppendLine(")");
+                builder.Append(indent).AppendLine("    {");
+                builder.Append(indent).Append("        var migrated = ").Append(Blob)
+                    .Append(".BlobEnvelopes.OtherGeneration<").Append(spec.QualifiedName)
+                    .Append(">(ref reader, \"").Append(spec.Domain)
+                    .AppendLine("\", generation, contentStart, length);");
+                builder.Append(indent).AppendLine("        if (migrated != null) Update(migrated);");
+                builder.Append(indent).AppendLine("        else Reset();");
+                builder.Append(indent).AppendLine("        return;");
+                builder.Append(indent).AppendLine("    }");
+                builder.Append(indent)
+                    .AppendLine("    // ANYTHING THAT THROWS IN HERE IS A VERSION PROBLEM, NOT DAMAGE -");
+                builder.Append(indent)
+                    .AppendLine("    // damage was already answered by the file header's magic, codec");
+                builder.Append(indent)
+                    .AppendLine("    // generation, declared length and payload hash. A positional format");
+                builder.Append(indent)
+                    .AppendLine("    // cannot skip ONE unknown polymorphic tag, so it skips the root that");
+                builder.Append(indent).AppendLine("    // carried it. BlobEnvelopes' header is the record.");
+                builder.Append(indent).AppendLine("    try");
+                builder.Append(indent).AppendLine("    {");
+                builder.Append(indent).Append("        ReadBlob").Append(spec.Name).AppendLine("(ref reader);");
+                builder.Append(indent).AppendLine("    }");
+                builder.Append(indent).Append("    catch (").Append(Blob).AppendLine(".BlobFormatException error)");
+                builder.Append(indent).AppendLine("    {");
+                builder.Append(indent).Append("        ").Append(Blob)
+                    .Append(".BlobEnvelopes.Unreadable(ref reader, \"").Append(spec.Domain)
+                    .AppendLine("\", contentStart, length, error);");
+                builder.Append(indent).AppendLine("        Reset();");
+                builder.Append(indent).AppendLine("        return;");
+                builder.Append(indent).AppendLine("    }");
+                builder.Append(indent).Append("    ").Append(Blob)
+                    .Append(".BlobEnvelopes.Finish(ref reader, \"").Append(spec.Domain)
+                    .AppendLine("\", contentStart, length);");
             }
             else
             {
@@ -248,6 +279,17 @@ namespace BH.SDK.Roslyn.Model
 
             builder.Append(indent).AppendLine("}");
             builder.AppendLine();
+
+            if (spec.Domain != null)
+            {
+                builder.Append(indent)
+                    .AppendLine(
+                        "/// <summary> The content without the envelope, for a reader that has already read one. </summary>");
+                builder.Append(indent).Append("void ").Append(Blob)
+                    .Append(".IBinaryEnvelope.ReadContent(ref ").Append(Blob)
+                    .Append(".BlobReader reader) => ReadBlob").Append(spec.Name).AppendLine("(ref reader);");
+                builder.AppendLine();
+            }
 
             EmitReadHelper(builder, indent, spec);
         }
@@ -310,8 +352,10 @@ namespace BH.SDK.Roslyn.Model
                     builder.Append(indent).Append("        var map = new ").Append(member.Type).AppendLine("(count);");
                     builder.Append(indent).AppendLine("        for (var i = 0; i < count; i++)");
                     builder.Append(indent).AppendLine("        {");
-                    builder.Append(indent).Append("            var key = ").Append(ReadValue(member.Key)).AppendLine(";");
-                    builder.Append(indent).Append("            map[key] = ").Append(ReadValue(member.Element)).AppendLine(";");
+                    builder.Append(indent).Append("            var key = ").Append(ReadValue(member.Key))
+                        .AppendLine(";");
+                    builder.Append(indent).Append("            map[key] = ").Append(ReadValue(member.Element))
+                        .AppendLine(";");
                     builder.Append(indent).AppendLine("        }");
                     builder.Append(indent).Append("        ").Append(member.Name).AppendLine(" = map;");
                     builder.Append(indent).AppendLine("    }");
@@ -324,7 +368,8 @@ namespace BH.SDK.Roslyn.Model
             string construct, string mode, string tail)
         {
             builder.Append(indent).AppendLine("{");
-            builder.Append(indent).Append("    var count = reader.ReadCount(").Append(Stride(member.Element)).AppendLine(");");
+            builder.Append(indent).Append("    var count = reader.ReadCount(").Append(Stride(member.Element))
+                .AppendLine(");");
             builder.Append(indent).Append("    if (count == ").Append(Blob)
                 .Append(".BlobWriter.NullLength) ").Append(member.Name).AppendLine(" = null;");
             builder.Append(indent).AppendLine("    else");

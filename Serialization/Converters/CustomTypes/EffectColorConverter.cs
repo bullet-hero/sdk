@@ -22,7 +22,7 @@ namespace BH.SDK.Serialization.Converters.CustomTypes
                 EffectColorType.RandomUniform => typeof(EffectColorRandomUniform),
                 EffectColorType.RandomPerComponent => typeof(EffectColorRandomPerComponent),
                 EffectColorType.GradientRandom => typeof(EffectColorGradientRandom),
-                _ => throw new ArgumentOutOfRangeException(nameof(customType), customType, null)
+                _ => Fallback(customType, typeof(EffectColorValue))
             };
         }
     }

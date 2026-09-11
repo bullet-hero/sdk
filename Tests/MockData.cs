@@ -26,6 +26,7 @@ using BH.SDK.Models.SettingGroups;
 using BH.SDK.Models.Values;
 using BH.SDK.Rules;
 using BH.SDK.Serialization;
+using BH.SDK.Versions;
 using BH.SDK.Versions.V0;
 using Newtonsoft.Json.Linq;
 
@@ -362,7 +363,8 @@ namespace BH.SDK.Tests
             trackEffects.Normalize.MaxAmp = 15f;
             trackEffects.ParamEQ.CenterFreq = 3000f;
 
-            var track = new LevelTrack(new AudioId(1), new AudioResourceId(-1), FrameSpan.FromBounds(FrameRules.MinFrame, FrameRules.MinFrame + 11),
+            var track = new LevelTrack(new AudioId(1), new AudioResourceId(-1),
+                FrameSpan.FromBounds(FrameRules.MinFrame, FrameRules.MinFrame + 11),
                 0f, 1.5f, AudioRules.VolumeDefault, 0, "track", trackEffects);
             level.Audio.Tracks.Add(track.AudioId, track);
 
@@ -467,7 +469,8 @@ namespace BH.SDK.Tests
                 }));
 
             var trackEffects = new LevelTrackEffects();
-            var track = new LevelTrack(new AudioId(1), new AudioResourceId(0), FrameSpan.FromBounds(FrameRules.MinFrame, FrameRules.MinFrame + 1001),
+            var track = new LevelTrack(new AudioId(1), new AudioResourceId(0),
+                FrameSpan.FromBounds(FrameRules.MinFrame, FrameRules.MinFrame + 1001),
                 0f, 5f, AudioRules.VolumeDefault, 0, "track", trackEffects);
             level.Audio.Tracks.Add(track.AudioId, track);
 
@@ -479,6 +482,7 @@ namespace BH.SDK.Tests
             var meta = new LevelMeta();
             meta.LevelId = LevelId.NewGuid();
             meta.LevelVersion = new Version(1, 0);
+            meta.MinGeneration = LevelGenerations.Required();
             meta.LevelName = new StringValue("cool level");
             meta.LevelDescription = new StringValue("cool description");
             meta.LevelLogo = new ResourceKey(ResourceUriType.DirectUrl, "https://example.com/logo.png");
@@ -832,6 +836,25 @@ namespace BH.SDK.Tests
 
         #region Generation 0
 
+        // THE FUTURE IS FABRICATED FROM FILES, NEVER FROM TYPES, and the number is DERIVED rather
+        // than written down. A literal 2 would quietly turn every forward fixture into a backward one
+        // the day a domain takes generation 2 - the tests would still pass, and they would have
+        // stopped testing the thing they were written for. ModelGenerationsTests pins that nothing
+        // is registered here.
+
+        /// <summary> A generation no build has ever written, for the forward-compatibility fixtures. </summary>
+        public const int FabricatedGeneration = ModelGenerations.Current + 1000;
+
+        // THE TAG CANNOT BE DERIVED THE SAME WAY, because a tag is not free to be any number: the
+        // blob writes it as ONE BYTE with 0xFF reserved for null, and the generator refuses anything
+        // above 0xFE. So the fabricated tag is the highest a family may legally reach, which is the
+        // furthest a real one can be from it - and a number that big arriving as an int would be
+        // TRUNCATED to a byte by the reflective path and not by the generated one, which is the
+        // divergence the parity fixtures exist to catch rather than to create.
+
+        /// <summary> A polymorphic tag no family claims, for the forward-compatibility fixtures. </summary>
+        public const int FabricatedTag = byte.MaxValue - 1;
+
         // Mock data for the Versions/V0 migration-test generation (see Docs/VERSIONING.md, "a real
         // (test) generation exists", and TestLevelV0Migration in SerializationTests.cs). Built from
         // the actual LevelSettingsV0/GameEventsV0/GameLevelV0/LevelResourcesV0 snapshot
@@ -857,7 +880,7 @@ namespace BH.SDK.Tests
 
         public static LevelResourcesV0 CreateTestLevelResourcesV0() => new()
         {
-            Resources = new Dictionary<int, object>(),
+            Resources = new Dictionary<int, string>(),
         };
 
         public static AudioLevelV0 CreateTestAudioLevelV0() => new();

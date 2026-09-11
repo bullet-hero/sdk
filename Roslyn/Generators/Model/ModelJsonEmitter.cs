@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 
 namespace BH.SDK.Roslyn.Model
 {
@@ -422,12 +422,13 @@ namespace BH.SDK.Roslyn.Model
                 case ValueKind.Struct:
                     return Primitives + ".Read" + SimpleName(value.Type) + "(reader)";
                 case ValueKind.ModelSealed:
-                    // The generation is passed so the reader can REFUSE another one. It cannot
-                    // migrate - that needs a type this codec is not - so the alternative was reading
-                    // an old payload by property name into today's class and returning defaults.
+                    // BOTH the domain and the generation go across: the generation says a file
+                    // disagrees, and only the domain says what to resolve it against. A known
+                    // generation then migrates through the snapshot's own generated codec, and an
+                    // unknown one is read by property name into today's class and reported.
                     if (value.Generation >= 0)
-                        return Json + ".JsonModels.ReadEnveloped<" + value.Type + ">(reader, "
-                               + value.Generation + ")";
+                        return Json + ".JsonModels.ReadEnveloped<" + value.Type + ">(reader, \""
+                               + value.Domain + "\", " + value.Generation + ")";
                     if (value.Family.Length > 0)
                         return "(" + value.Type + ")" + JsonDispatcher(value.Family) + ".Read(reader)";
                     return Json + ".JsonModels.Read<" + value.Type + ">(reader)";

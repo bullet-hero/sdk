@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 namespace BH.SDK.Roslyn.Model
 {
@@ -64,7 +64,8 @@ namespace BH.SDK.Roslyn.Model
     {
         /// <summary> One value's type as the emitters see it - what it is, and what it wraps where that matters. </summary>
         public ValueSpec(string type, ValueKind kind, ValueKind underlying = ValueKind.None,
-            string accessor = "", int generation = ModelGenerationValues.Invalid, string family = "")
+            string accessor = "", int generation = ModelGenerationValues.Invalid, string family = "",
+            string domain = "")
         {
             Type = type;
             Kind = kind;
@@ -72,6 +73,7 @@ namespace BH.SDK.Roslyn.Model
             Accessor = accessor;
             Generation = generation;
             Family = family;
+            Domain = domain;
         }
 
         /// <summary> Fully qualified, global::-prefixed. </summary>
@@ -93,6 +95,11 @@ namespace BH.SDK.Roslyn.Model
         /// and with it the migration path an older file still needs. </summary>
         public int Generation { get; }
 
+        /// <summary> The domain name beside that generation, empty otherwise. The reader needs BOTH to
+        /// migrate: the generation says a file disagrees, and only the domain says what to resolve it
+        /// against. It was already read here and thrown away while a nested envelope could only refuse. </summary>
+        public string Domain { get; }
+
         /// <summary> The value-family interface this leaf's type implements, when it has one.
         /// A member declared as the CONCRETE type is still written `[tag, payload]` in JSON -
         /// ConverterRouter resolves by the value's RUNTIME type and the family converter matches
@@ -106,7 +113,7 @@ namespace BH.SDK.Roslyn.Model
         /// <summary> Compared by VALUE: an incremental generator that compares its specs by reference re-emits every model on every keystroke. </summary>
         public bool Equals(ValueSpec other) => Type == other.Type && Kind == other.Kind
             && Underlying == other.Underlying && Accessor == other.Accessor
-            && Generation == other.Generation && Family == other.Family;
+            && Generation == other.Generation && Family == other.Family && Domain == other.Domain;
 
         /// <summary> The same, boxed. </summary>
         public override bool Equals(object obj) => obj is ValueSpec other && Equals(other);
@@ -114,6 +121,6 @@ namespace BH.SDK.Roslyn.Model
         /// <summary> Compared by VALUE: an incremental generator that compares its specs by reference re-emits every model on every keystroke. </summary>
         public override int GetHashCode() => unchecked((Type?.GetHashCode() ?? 0) * 397
             ^ (int)Kind * 31 ^ (int)Underlying ^ (Accessor?.GetHashCode() ?? 0)
-            ^ Generation ^ (Family?.GetHashCode() ?? 0));
+            ^ Generation ^ (Family?.GetHashCode() ?? 0) ^ (Domain?.GetHashCode() ?? 0));
     }
 }

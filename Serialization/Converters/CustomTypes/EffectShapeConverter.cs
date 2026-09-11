@@ -22,7 +22,7 @@ namespace BH.SDK.Serialization.Converters.CustomTypes
                 EffectShapeType.Line => typeof(EffectShapeLine),
                 EffectShapeType.Cone => typeof(EffectShapeCone),
                 EffectShapeType.Torus => typeof(EffectShapeTorus),
-                _ => throw new ArgumentOutOfRangeException(nameof(customType), customType, null)
+                _ => Fallback(customType, typeof(EffectShapePoint))
             };
         }
     }

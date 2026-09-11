@@ -21,7 +21,7 @@ namespace BH.SDK.Serialization.Converters.CustomTypes
                 EffectScaleType.CurvesBySpeed => typeof(EffectScaleCurvesBySpeed),
                 EffectScaleType.RandomUniform => typeof(EffectScaleRandomUniform),
                 EffectScaleType.RandomPerComponent => typeof(EffectScaleRandomPerComponent),
-                _ => throw new ArgumentOutOfRangeException(nameof(customType), customType, null)
+                _ => Fallback(customType, typeof(EffectScaleValue))
             };
         }
     }

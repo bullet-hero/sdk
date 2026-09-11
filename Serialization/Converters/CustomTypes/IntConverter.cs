@@ -19,7 +19,7 @@ namespace BH.SDK.Serialization.Converters.CustomTypes
                 IntType.Value => typeof(IntValue),
                 IntType.RandomMinMax => typeof(IntMinMax),
                 IntType.RandomMinMaxStep => typeof(IntMinMaxStep),
-                _ => throw new ArgumentOutOfRangeException(nameof(customType), customType, null)
+                _ => Fallback(customType, typeof(IntValue))
             };
         }
     }

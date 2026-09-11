@@ -35,7 +35,7 @@ namespace BH.SDK.Tests
 
         private static bool IsModelOf(Type type, Type argument) => type.GetInterfaces().Any(i =>
             i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IModel<>)
-            && i.GetGenericArguments()[0] == argument);
+                            && i.GetGenericArguments()[0] == argument);
 
         /// <summary> Every concrete model addressing IModel by its OWN type, i.e. everything the
         /// contract is total for. </summary>
@@ -45,11 +45,15 @@ namespace BH.SDK.Tests
             foreach (var type in typeof(IModel<>).Assembly.GetTypes())
             {
                 if (type.IsAbstract || type.IsInterface || type.IsGenericTypeDefinition) continue;
-                if (type.Namespace == null || type.Namespace.Contains(".Versions.")) continue;
+                // The frozen snapshots used to be excluded here, because they were free-form
+                // deserialization targets rather than models. They carry [GenerateModel] now, so they
+                // get all seven bodies and must satisfy the same contract every other one does.
+                if (type.Namespace == null) continue;
                 if (!IsModelOf(type, type)) continue;
                 if (!type.IsValueType && type.GetConstructor(Type.EmptyTypes) == null) continue;
                 types.Add(type);
             }
+
             return types;
         }
 
@@ -271,7 +275,11 @@ namespace BH.SDK.Tests
                     var source = Activator.CreateInstance(type);
                     var copy = type.GetMethod("Copy", BindingFlags.Public | BindingFlags.Instance,
                         null, Type.EmptyTypes, null)?.Invoke(source, null);
-                    if (copy == null) { failures.Add($"{type.Name}: no public Copy()"); continue; }
+                    if (copy == null)
+                    {
+                        failures.Add($"{type.Name}: no public Copy()");
+                        continue;
+                    }
 
                     var updated = Activator.CreateInstance(type);
                     var pulled = Activator.CreateInstance(type);

@@ -117,51 +117,48 @@ two different things — and a mechanical rewrite of that file would silently de
 number. See "The other three axes" below.
 
 The binary format writes the same two things: the domain as text, then the generation as one `int`,
-then a length. `BlobDataSerializer`'s header explains why an unknown generation is REFUSED there
-rather than migrated.
+then a length. That length is what lets a reader step over a root it cannot read, which is how the
+binary format degrades at domain granularity - see `BlobEnvelopes`.
 
-### A nested generation is REFUSED, not migrated
+### A known generation migrates, an unknown one degrades
 
-**The top level migrates; a nested domain does not.** `VersionedEnvelopeConverter` owns the outer
-envelope and does the whole job — resolve the generation to its snapshot type, read that, walk the
-migration chain. `IJsonModel.ReadEnveloped<T>`, which the generated codec uses for every NESTED
-domain, checks the generation against the one this build writes and **throws** on anything else.
+One sentence, and it holds in both formats and at both levels. "Known" means
+`VersionedTypeRegistry` resolves the generation to a snapshot type **and** the migration chain from
+it is complete; that is the whole of the backward direction and it is exact. Everything else is the
+forward direction and is lossy by design.
 
-**Why it cannot migrate instead.** Migrating means reading a type that is not this one, and a
-generated codec only ever reads ITSELF: it holds a bare `JsonReader` and no `JsonSerializer`, which
-is exactly what makes it fast, and a snapshot class is deliberately not a generated model. Handing
-the codec a serializer would change what `IJsonModel` is.
+| Site | What it does |
+|---|---|
+| `VersionedTypeRegistry.Resolve` | resolves, or falls back to the domain's CURRENT type and reports. An unknown DOMAIN still throws — it has nothing to fall back to |
+| `VersionedTypeRegistry.TryResolve` | the same lookup answering `null`, for the read paths that must branch rather than be handed a substitute |
+| `VersionedTypeRegistry.TryUpgradeToLatest` | walks what it can, says whether it arrived, and reports when it did not |
+| `JsonModels.ReadEnveloped` (nested) | migrates through the snapshot's own generated codec when the generation resolves; otherwise reads the payload into today's class by property name and reports |
+| the generated `.blob` root | migrates, or skips the whole root by its declared length and leaves the model at constructor defaults |
 
-**What it did before, and why refusing is the improvement.** The generation used to be `Skip()`ed.
-The payload was then matched by property name against today's class, every field missed, and the
-object came back as **constructor defaults** — no exception, no warning. Measured: a nested
-`LevelSettings` written at generation 0 read back `fps=60` through the generated codec and `fps=61`
-through the reflective one. The same file, two answers, and the silent one was the default path.
-That also means `SerializationSettings.useGeneratedCodecs`, which is supposed to be a switch that
-changes nothing, changed the result — and the parity tests could not see it, because the whole corpus
-sits at one generation and had nothing to disagree about.
+**A snapshot carries `[GenerateModel]` now, which is what made the nested half possible.** It reads
+itself with its own generated codec, so `ReadEnveloped` still holds a bare `JsonReader` and no
+`JsonSerializer` — the thing `IJsonModel`'s identity rests on. In `.blob` the snapshot is read
+through `IBinaryEnvelope.ReadContent` rather than `IBinaryModel.Read`, because the caller has already
+consumed the envelope that told it to migrate.
 
-`.blob` has always refused this case (`ModelBlobEmitter` emits the same check), so the two formats
-now agree.
+**Migration needs the generation BEFORE the payload**, which every writer this format has provides —
+`WriteEnvelope` emits `g` first. A document carrying `v` first (hand-edited, or written by another
+tool) takes the lossy half instead of a buffered `JToken`: nothing on the read path materializes a
+token tree, and `VersionedEnvelopeConverter` is that rule's single documented exception.
 
-**An absent tag is refused too.** Every writer this format has ever had emits one, so its absence is
-a damaged or foreign document rather than an old one; accepting it would reopen the hole above.
+**What must never come back is the SILENCE.** The refusal this replaced was itself replacing a
+`Skip()`: the payload was matched by property name against today's class, every field missed, and the
+object came back as **constructor defaults** with nothing thrown and nothing logged. Measured: a
+nested `LevelSettings` written at generation 0 read back `fps=60` through the generated codec and
+`fps=61` through the reflective one — the same file, two answers, and the quiet one was the default
+path. The tolerant read is back; the silence is not. Every substitution goes to
+`SerializationReport`, and **both codec stacks must degrade to the same value and report the same
+substitutions**, or `useGeneratedCodecs` stops being a switch that changes nothing.
 
-**What is still open** is the migration itself, and it is deliberately not being built against a
-placeholder. `Versions/V0` is a scaffold, so a mechanism written for it would be proved by the very
-thing that proves nothing. The options, when a real second snapshot exists:
+**An absent tag degrades too**: it is reported, and the payload is read as-is.
 
-- **Snapshots become `[GenerateModel]` too.** Then `ReadEnveloped` needs no serializer at all: resolve
-  the type through `VersionedTypeRegistry`, read it with its own generated codec, migrate. The cost is
-  that a snapshot stops being free-form — it has to be something the generator can encode, and
-  `LevelResourcesV0.Resources` (a `Dictionary<int, object>`) already is not.
-- **Pass the `JsonSerializer` into the generated read path.** Keeps snapshots free-form, and breaks
-  what `IJsonModel` says about itself in its own header.
-- **Send nested domains back through `VersionedEnvelopeConverter`.** Same requirement as above, minus
-  the fast path. Cheaper than it sounds — envelopes are ~1.4% of the nodes in a level (266 of 19 341
-  in volcano) and their payloads return to the generated codec immediately.
-
-`EnvelopeShapeTests` pins the refusal in both its forms.
+`EnvelopeShapeTests`, `SerializationReportTests`, `BlobCodecTests` and `JsonParityTests` pin all of
+it. `Docs/Issues/FORWARD_COMPATIBILITY_HISTORY.md` in the consuming project is the design record.
 
 ### Changing a domain's shape
 
@@ -178,9 +175,30 @@ landed, silently, so whatever local content matters is re-saved.
 4. and leaves every other domain alone.
 
 `Versions/README.md` carries the folder convention and the traps in full — a nested property must
-stay typed as the CURRENT class, a snapshot skips the `IModel<T>` contract, and a domain that was not
-yet an envelope at some generation gets a snapshot with no attribute at all. Read it before writing
-one.
+stay typed as the CURRENT class, a snapshot is a `[GenerateModel] sealed partial` class with its
+members constructed, and a domain that was not yet an envelope at some generation gets a snapshot
+with no `[ModelGeneration]` at all. Read it before writing one.
+
+### Two rules `.blob` takes on, both free now and frozen at release
+
+They are the price of degrading a binary format at domain granularity, and both are cheap only while
+nothing is on anyone's disk.
+
+1. **Member order in the blob is append-only.** A new member is written LAST. The generator writes
+   members in declaration order, so inserting one in the middle makes every trailing byte mean
+   something else and a short payload stops being recoverable. `Docs/NAMING.md` carries the
+   neighbouring half — never reorder a member while renaming it.
+2. **A domain's generation rises for a new polymorphic VARIANT too**, not only for a shape change — a
+   new `ObjectType`, a new `FloatType`, a new licence form. In JSON an unknown tag is survivable
+   because the payload is skippable; in the blob it is not, because a positional format has no length
+   to skip by. What the reader does instead is skip the whole ROOT that carried the tag, and this
+   rule is what makes that sufficient: such a tag only ever arrives inside a root whose generation
+   already moved.
+
+**The limit, named rather than papered over:** `BlobFormat.Generation` is the byte codec's own
+version. If it moves again there is nothing to degrade toward and the file is unreadable whole. No
+design makes "it opens" true there; what the format promises for that case is a sentence instead of a
+stack trace.
 
 ### The other three axes
 
@@ -213,6 +231,9 @@ version of anything on disk.
 | one migration step | `Versions/ModelMigration.cs`, `Versions/IMigration.cs` |
 | what an envelope read back holds | `Versions/EnvelopeData.cs` |
 | the JSON envelope | `Serialization/Converters/VersionedEnvelopeConverter.cs` |
+| what a degraded read substituted | `Serialization/SerializationReport.cs` |
+| the blob envelope's degrade/migrate half | `Serialization/Blob/BlobEnvelopes.cs`, `Serialization/Blob/IBinaryEnvelope.cs` |
+| what a level claims a client needs | `Versions/LevelGenerations.cs`, `LevelMeta.MinGeneration` |
 | the generated codecs' half | `Serialization/Json/IJsonModel.cs`, `Serialization/Blob/` |
 | the generator that emits them | `Roslyn/Generators/Model/` |
 

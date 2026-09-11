@@ -18,7 +18,7 @@ namespace BH.SDK.Serialization.Converters.CustomTypes
             {
                 FontSizeKeyType.Value => typeof(FontSizeKey),
                 FontSizeKeyType.Auto => typeof(AutoFontSizeKey),
-                _ => throw new ArgumentOutOfRangeException(nameof(customType), customType, null)
+                _ => Fallback(customType, typeof(FontSizeKey))
             };
         }
     }

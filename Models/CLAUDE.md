@@ -194,7 +194,8 @@ Neither is **virtual**, and `Copy()` being virtual is the contrast worth noticin
 *overload* (`Update(ShapeObject)` beside the inherited `Update(RectObject)`), so `Update` called
 through the base type writes the base half and leaves the rest — exactly what `Equals(RectObject)`
 already does. Address a model by its own type and it is total. `Tests/ModelHierarchyTests` pins both
-halves. **Frozen historical snapshot classes
-under `Versions/VX_Y/` deliberately skip all of this** — they're one-shot deserialization targets,
-not domain objects; don't expect every `[JsonProperty]`-bearing class in this codebase to implement
-`IModel<T>`.
+halves. **Frozen historical snapshot classes under `Versions/V<n>/` are generated models too** — they
+used to skip all of this as one-shot deserialization targets, and stopped being able to the moment a
+migrating reader needed to read one with a codec rather than with reflection. They carry
+`[GenerateModel]`, declare `IModel<T>`, construct their members, and `ModelContractTests` sweeps them
+with everything else.

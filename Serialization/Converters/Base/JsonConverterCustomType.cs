@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using BH.SDK.Models;
+using BH.SDK.Versions;
 using Newtonsoft.Json;
 
 namespace BH.SDK.Serialization.Converters.Base
@@ -97,6 +98,25 @@ namespace BH.SDK.Serialization.Converters.Base
 
         /// <summary> The concrete class a tag names, or null when nothing does. </summary>
         public abstract Type GetType(TType customType);
+
+        // THE FALLBACK IS THE FAMILY'S LOWEST TAG, and it is a fallback rather than an invention
+        // because every family already puts its plain literal form there: FloatType.Value is
+        // FloatValue, ObjectType.RectObject is RectObject, LicenseType.NoSpecified is
+        // NoSpecifiedLicense. Nothing had to be declared for this.
+        //
+        // An unknown OBJECT is a visible hole - one rectangle missing from the screen - and the inert
+        // RectObject is preferred to skipping the entry, because it keeps the object's children
+        // parented where they were; skipping orphans them, and the consumer's BuildInstancesJob
+        // answers an orphan by not drawing it at all. An unknown VALUE is invisible instead, which is
+        // why the report is not optional decoration.
+
+        /// <summary> Stands the family's lowest tag in for one this build has no type for, and reports it. </summary>
+        protected Type Fallback(TType customType, Type fallback)
+        {
+            SerializationReport.Report(typeof(T).Name, customType.ToString(), fallback.Name,
+                ModelGenerations.Invalid, SubstitutionKind.UnknownTag);
+            return fallback;
+        }
 
         // `TType` is an enum on every one of the seventeen converters built on this, but nothing in the
         // signature can say so without constraining the type parameter and touching all of them, so the

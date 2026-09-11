@@ -7,16 +7,15 @@ namespace BH.SDK.Serialization.Serializers
 {
     // THE THIRD IMPLEMENTATION OF A CONTRACT WRITTEN FOR EXACTLY THIS. IDataSerializer's own header
     // says a future format would slot in without touching VersionedTypeRegistry, and this is that
-    // format - except that it does not use the registry at all, and the reason is worth stating:
-    // a JSON envelope has to resolve a version to a historical TYPE because Newtonsoft binds
-    // members by name and a snapshot class is how an old shape is described. A blob's payload is
-    // read by generated code that is the type, so an old generation is not something this build can
-    // decode at all. The generation tags are written anyway - every envelope carries its domain and
-    // its generation - so the day a domain bumps, the machinery has somewhere to attach.
+    // format - except that it reaches the registry from inside the GENERATED root read rather than
+    // from here. A JSON envelope resolves a version to a historical TYPE because Newtonsoft binds
+    // members by name; a blob's payload is read by generated code that IS the type, so the same
+    // resolve happens one level down, where the domain and the generation have just been read off
+    // the envelope. BlobEnvelopes is that half.
     //
-    // NO .blob OF AN OLDER GENERATION CAN EXIST, because no build has ever written one. That is why
-    // refusing is honest here rather than a gap: the .json beside it is the recovery path, and it
-    // is the format the project promises longevity for.
+    // SO THIS CLASS IS NOT WHERE VERSIONS ARE ANSWERED, and the split is worth keeping straight: it
+    // checks the FILE (magic, codec generation, declared length, payload hash, nothing left over),
+    // and every DOMAIN question - migrate, degrade, skip - belongs to the root that carries it.
 
     /// <summary> Reads and writes the binary level format. </summary>
     public sealed class BlobDataSerializer : IDataSerializer

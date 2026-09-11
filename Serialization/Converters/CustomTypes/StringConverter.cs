@@ -18,7 +18,7 @@ namespace BH.SDK.Serialization.Converters.CustomTypes
             {
                 StringType.Value => typeof(StringValue),
                 StringType.Localized => typeof(StringLocalized),
-                _ => throw new ArgumentOutOfRangeException(nameof(customType), customType, null)
+                _ => Fallback(customType, typeof(StringValue))
             };
         }
     }

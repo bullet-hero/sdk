@@ -1,5 +1,6 @@
 using System;
 using BH.SDK.Models;
+using BH.SDK.Versions;
 using Newtonsoft.Json;
 
 namespace BH.SDK.Serialization.Json
@@ -74,31 +75,32 @@ namespace BH.SDK.Serialization.Json
             writer.WriteEndObject();
         }
 
-        // A NESTED GENERATION IS CHECKED AND REFUSED, NEVER MIGRATED, and the asymmetry with the
-        // TOP-LEVEL envelope is the thing to understand here. VersionedEnvelopeConverter resolves an
-        // old generation to its snapshot type and walks the migration chain; this cannot, because
-        // migrating means reading a type that is not this one, and a generated codec only ever reads
-        // ITSELF - it holds a bare JsonReader and no serializer, which is the whole of what makes it
-        // fast. Handing it one would change what IJsonModel is.
+        // A KNOWN GENERATION MIGRATES, AN UNKNOWN ONE DEGRADES, and this reads a nested domain exactly
+        // as VersionedEnvelopeConverter reads the top-level one. It became able to because a frozen
+        // snapshot carries [GenerateModel] now: it reads ITSELF with its own generated codec, so this
+        // path still holds a bare JsonReader and no serializer, which is the whole of what makes it
+        // fast and is what IJsonModel's identity rests on.
         //
-        // So the choice is between refusing and lying, and it used to lie: the generation was
+        // WHAT MUST NOT COME BACK IS THE SILENCE. Before the refusal this stood on, the generation was
         // Skip()ed, the payload was read by property name into whatever type this build has, and a
         // domain that had moved came back as CONSTRUCTOR DEFAULTS with nothing thrown and nothing
-        // logged. Measured, before this: a nested LevelSettings written at generation 0 read back
-        // fps=60 through the generated codec and fps=61 through the reflective one - the same file,
-        // two answers, and the quiet one is the default path.
+        // logged. Measured, then: a nested LevelSettings written at generation 0 read back fps=60
+        // through the generated codec and fps=61 through the reflective one - the same file, two
+        // answers, and the quiet one was the default path. The tolerant read is back; the silence is
+        // not, and BOTH codec stacks must degrade to the same value or useGeneratedCodecs stops being
+        // a switch that changes nothing.
         //
-        // Refusing is what the .blob codec already does for the same case (ModelBlobEmitter), so the
-        // two formats now agree. What is still missing is the migration itself; Docs/VERSIONING.md
-        // carries the options and why closing it properly waits for a real second snapshot.
+        // MIGRATION NEEDS THE GENERATION BEFORE THE PAYLOAD, which every writer this format has ever
+        // had provides - WriteEnvelope emits `g` first. A document that carries `v` first (hand-edited,
+        // or written by another tool) takes the lossy half instead of a buffered JToken, because
+        // nothing on this read path materializes a token tree; that is a rule of the format, and
+        // VersionedEnvelopeConverter is its single documented exception.
         //
-        // AN ABSENT TAG IS ALSO A REFUSAL. Every writer this format has ever had emits one, so its
-        // absence is a damaged or foreign document rather than an old one - and treating it as "no
-        // objection" would reopen exactly the hole above.
+        // AN ABSENT TAG IS NO LONGER A REFUSAL EITHER. It is reported, and the payload is read as-is.
 
-        /// <summary> The other side of it: reads a nested domain written at the generation this build
-        /// expects, and refuses any other. </summary>
-        public static T ReadEnveloped<T>(JsonReader reader, int expectedGeneration)
+        /// <summary> The other side of it: reads a nested domain, migrating a generation that resolves and
+        /// degrading one that does not. </summary>
+        public static T ReadEnveloped<T>(JsonReader reader, string domain, int expectedGeneration)
             where T : class, IJsonModel, new()
         {
             if (reader.TokenType == JsonToken.Null) return null;
@@ -106,8 +108,10 @@ namespace BH.SDK.Serialization.Json
                 throw new JsonSerializationException(
                     $"Expected an envelope for {typeof(T).Name}, found {reader.TokenType}");
 
-            var value = new T();
+            T value = null;
+            var generation = ModelGenerations.Invalid;
             var hasGeneration = false;
+            var readAhead = false;
 
             while (reader.Read())
             {
@@ -117,37 +121,100 @@ namespace BH.SDK.Serialization.Json
                 var name = (string)reader.Value;
                 reader.Read();
 
-                if (name == Names.Value) ReadObject(reader, value);
-                else if (name == Names.Generation)
+                if (name == Names.Generation)
                 {
-                    CheckGeneration(reader, typeof(T), expectedGeneration);
-                    hasGeneration = true;
+                    hasGeneration = TryReadGeneration(reader, domain, typeof(T), out generation);
+                }
+                else if (name == Names.Value)
+                {
+                    if (hasGeneration && generation != expectedGeneration)
+                    {
+                        value = ReadOtherGeneration<T>(reader, domain, generation, expectedGeneration);
+                    }
+                    else
+                    {
+                        value = ReadHere<T>(reader);
+                        readAhead = !hasGeneration;
+                    }
                 }
                 else reader.Skip();
             }
 
-            // Checked at the END rather than before the payload, so a document that carries `v`
-            // first - hand-edited, or written by another tool - is refused for its generation rather
-            // than for its property order.
             if (!hasGeneration)
-                throw new JsonSerializationException(
-                    $"{typeof(T).Name} envelope carries no '{Names.Generation}' property");
+                SerializationReport.Report(domain, typeof(T).Name,
+                    $"no '{Names.Generation}' at all; read as today's shape", ModelGenerations.Invalid,
+                    SubstitutionKind.AbsentGeneration);
+            else if (readAhead && generation != expectedGeneration)
+                SerializationReport.Report(domain, typeof(T).Name,
+                    "the payload came before its generation, so it was read as today's shape", generation,
+                    SubstitutionKind.UnknownGeneration);
 
+            return value ?? new T();
+        }
+
+        private static T ReadHere<T>(JsonReader reader) where T : class, IJsonModel, new()
+        {
+            var value = new T();
+            ReadObject(reader, value);
             return value;
         }
 
-        private static void CheckGeneration(JsonReader reader, Type type, int expected)
+        // A KNOWN GENERATION MIGRATES, AN UNKNOWN ONE DEGRADES, and only the second half is lossy.
+        // Migration needs a type that is not this one, which is exactly what a snapshot carrying
+        // [GenerateModel] now is: it reads itself with its own generated codec, so this path still
+        // holds a bare reader and no serializer.
+        //
+        // Activator.CreateInstance once per out-of-date envelope is free at this scale - envelopes are
+        // ~1.4% of a level's nodes (266 of 19 341 in volcano) and this branch runs only when a file is
+        // actually old. The ordinary read never reaches it.
+
+        private static T ReadOtherGeneration<T>(JsonReader reader, string domain, int generation, int expected)
+            where T : class, IJsonModel, new()
         {
-            if (reader.TokenType != JsonToken.Integer)
-                throw new JsonSerializationException(
-                    $"{type.Name} envelope declares its generation as {reader.TokenType}, expected a number");
+            var type = VersionedTypeRegistry.TryResolve(domain, generation);
 
-            var generation = Convert.ToInt32(reader.Value);
-            if (generation == expected) return;
+            if (type != null && typeof(IJsonModel).IsAssignableFrom(type))
+            {
+                var snapshot = (IJsonModel)Activator.CreateInstance(type);
+                ReadObject(reader, snapshot);
 
-            throw new JsonSerializationException(
-                $"{type.Name} is generation {generation}, this build reads {expected}. A nested domain " +
-                "is refused rather than migrated - see Docs/VERSIONING.md");
+                if (VersionedTypeRegistry.TryUpgradeToLatest(domain, snapshot, generation, out var upgraded)
+                    && upgraded is T migrated)
+                {
+                    SerializationReport.Report(domain, type.Name, $"migrated to generation {expected}", generation,
+                        SubstitutionKind.MigratedGeneration);
+                    return migrated;
+                }
+
+                SerializationReport.Report(domain, type.Name, "left at its defaults", generation,
+                    SubstitutionKind.IncompleteChain);
+                return new T();
+            }
+
+            // The lossy half, and it is safe in JSON and nowhere else: every known key lands, every
+            // unknown key is stepped over whole, and every key that MOVED falls to the constructor's
+            // value. Nothing can migrate a shape no build has ever seen.
+            var value = ReadHere<T>(reader);
+            SerializationReport.Report(domain, typeof(T).Name, "read into today's shape by property name",
+                generation, SubstitutionKind.UnknownGeneration);
+            return value;
+        }
+
+        private static bool TryReadGeneration(JsonReader reader, string domain, Type type, out int generation)
+        {
+            generation = ModelGenerations.Invalid;
+
+            if (reader.TokenType == JsonToken.Integer)
+            {
+                generation = Convert.ToInt32(reader.Value);
+                return true;
+            }
+
+            SerializationReport.Report(domain, type.Name,
+                $"the generation is a {reader.TokenType} rather than a number", ModelGenerations.Invalid,
+                SubstitutionKind.AbsentGeneration);
+            reader.Skip();
+            return false;
         }
 
         /// <summary> A model whose declared type is sealed: null, or an object read into a fresh

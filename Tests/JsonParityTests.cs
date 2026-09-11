@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Reflection;
 using BH.SDK.Models;
@@ -136,6 +136,85 @@ namespace BH.SDK.Tests
 
             Assert.DoesNotThrow(() => Generated.DeserializeData<Level>(text));
         }
+
+        // A DEGRADED READ IS A READ OF BYTES NEITHER PATH WOULD WRITE, which is exactly the shape
+        // this fixture was built for, and exactly what the corpus could never supply: every file it
+        // holds sits at one generation and carries no unknown tag, so it has nothing to disagree
+        // about. That is how a real divergence between the two stacks survived 4494 self-consistent
+        // tests - the same nested LevelSettings reading back fps=60 one way and fps=61 the other.
+        //
+        // So both stacks must degrade to the SAME MODEL and report the SAME SUBSTITUTIONS. Agreeing
+        // about the second is the stronger half: two readers can arrive at identical defaults for
+        // opposite reasons, and only the report says which reason it was.
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Normal)]
+        public void AnUnknownGeneration_DegradesTheSameWayThroughBothStacks()
+        {
+            var text = Generated.SerializeData(MockData.CreateTestLevel())
+                .Replace("{\"g\":1,\"v\":{\"fps\"", "{\"g\":" + MockData.FabricatedGeneration + ",\"v\":{\"fps\"");
+
+            var reflective = new SerializationReport();
+            var generated = new SerializationReport();
+
+            Level fromReflective, fromGenerated;
+            using (SerializationReport.Begin(reflective)) fromReflective = Reflective.DeserializeData<Level>(text);
+            using (SerializationReport.Begin(generated)) fromGenerated = Generated.DeserializeData<Level>(text);
+
+            Assert.IsTrue(fromReflective.Equals(fromGenerated), "the two stacks degraded to different levels");
+            CollectionAssert.AreEquivalent(Described(reflective), Described(generated),
+                "the two stacks reported different substitutions");
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Normal)]
+        public void AnUnknownTag_DegradesTheSameWayThroughBothStacks()
+        {
+            // `[tag, payload]` is how every polymorphic value is written, so `"v":[0,` is a keyframe's
+            // own value at its family's lowest tag. Retagging them to a number nothing claims leaves
+            // the payloads untouched - the model must come back identical, and the report is the only
+            // evidence anything happened at all.
+            var text = Generated.SerializeData(MockData.CreateTestLevel())
+                .Replace("\"v\":[0,", "\"v\":[" + MockData.FabricatedTag + ",");
+
+            var reflective = new SerializationReport();
+            var generated = new SerializationReport();
+
+            Level fromReflective, fromGenerated;
+            using (SerializationReport.Begin(reflective)) fromReflective = Reflective.DeserializeData<Level>(text);
+            using (SerializationReport.Begin(generated)) fromGenerated = Generated.DeserializeData<Level>(text);
+
+            Assert.IsTrue(fromReflective.Equals(fromGenerated), "the two stacks degraded to different levels");
+            Assert.IsNotEmpty(generated.Entries, "the generated stack reported nothing");
+            CollectionAssert.AreEquivalent(Described(reflective), Described(generated),
+                "the two stacks reported different substitutions");
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Hard)]
+        public void AV0Level_MigratesToTheSameLevelThroughBothStacks()
+        {
+            // The backward direction through the same lens. It could not be written before either
+            // half of it existed: a snapshot had no codec, so the generated stack had nothing to read
+            // one WITH and the comparison had only one side.
+            var text = Generated.SerializeData(MockData.CreateTestLevelV0());
+
+            var fromReflective = Reflective.DeserializeData<Level>(text);
+            var fromGenerated = Generated.DeserializeData<Level>(text);
+
+            Assert.IsTrue(fromReflective.Equals(fromGenerated), "the two stacks migrated to different levels");
+        }
+
+        /// <summary> A report as text, so two of them can be compared without depending on the order
+        /// two readers happen to meet the same substitutions in. </summary>
+        private static string[] Described(SerializationReport report)
+            => report.Entries.Select(e => e.ToString()).ToArray();
 
         #endregion
 

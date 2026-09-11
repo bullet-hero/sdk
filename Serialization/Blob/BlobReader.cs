@@ -20,7 +20,14 @@ namespace BH.SDK.Serialization.Blob
     public sealed class BlobFormatException : Exception
     {
         /// <summary> Takes what to tell the caller; the envelope turns it into "this file could not be read". </summary>
-        public BlobFormatException(string message) : base(message) { }
+        public BlobFormatException(string message) : base(message)
+        {
+        }
+
+        /// <summary> The same, keeping the refusal a degraded read ran into before deciding it was damage. </summary>
+        public BlobFormatException(string message, Exception inner) : base(message, inner)
+        {
+        }
     }
 
     /// <summary> Reads a .blob payload out of a buffer. </summary>
@@ -41,7 +48,9 @@ namespace BH.SDK.Serialization.Blob
         }
 
         /// <summary> Reads a whole buffer. </summary>
-        public BlobReader(byte[] buffer) : this(buffer, 0, buffer?.Length ?? 0) { }
+        public BlobReader(byte[] buffer) : this(buffer, 0, buffer?.Length ?? 0)
+        {
+        }
 
         /// <summary> Bytes left. Every collection compares its own count against this BEFORE
         /// allocating, so a corrupt length costs an exception rather than a gigabyte. </summary>

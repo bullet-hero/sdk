@@ -85,45 +85,77 @@ namespace BH.SDK.Tests
         // nothing thrown. The two read paths gave two different answers for the same file and the
         // quiet one was the default.
         //
-        // Refusing is not the same as migrating, and is not meant to be - a generated codec reads
-        // only itself. Docs/VERSIONING.md carries what closing it properly would take.
+        // THESE TWO USED TO BE REFUSALS AND THE REASONING INVERTED, which is worth saying rather
+        // than quietly rewriting. The refusal replaced a Skip() that read an old payload into
+        // today's class and returned constructor defaults in SILENCE, and it was the silence that
+        // was the defect - not the tolerance. Both are back, both report, and the report is what
+        // these now assert. Docs/Issues/FORWARD_COMPATIBILITY_HISTORY.md is the record.
 
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.Normal)]
-        public void ANestedDomainAtAnotherGeneration_IsRefusedRatherThanReadAsDefaults()
+        public void ANestedDomainAtAKnownGeneration_MigratesRatherThanRefusing()
         {
             var service = new SerializationService();
-            var json = WithNestedSettingsGeneration(service, 0, "\"test_fps\":61");
+            var json = WithNestedSettingsGeneration(service, ModelGenerations.Test, "\"test_fps\":61");
 
-            var thrown = Assert.Throws<JsonSerializationException>(
-                () => service.DeserializeData<Level>(json));
+            var report = new SerializationReport();
+            Level level;
+            using (SerializationReport.Begin(report)) level = service.DeserializeData<Level>(json);
 
-            Assert.That(thrown.Message, Does.Contain("generation 0"));
-            Assert.That(thrown.Message, Does.Contain(nameof(LevelSettings)));
+            // Generation 0 resolves to LevelSettingsV0, whose migrator carries the framerate up.
+            Assert.AreEqual(61, level.Settings.Fps);
+            Assert.That(report.Entries, Has.Some.Matches<SerializationSubstitution>(
+                e => e.Kind == SubstitutionKind.MigratedGeneration
+                     && e.Domain == ModelDomains.LevelSettings));
         }
 
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.Normal)]
-        public void ANestedEnvelopeWithNoGenerationAtAll_IsRefusedToo()
+        public void ANestedDomainAtAnUnknownGeneration_DegradesAndIsReported()
         {
-            // Every writer this format has had emits the tag, so its absence is a damaged or foreign
-            // document rather than an old one - and accepting it would reopen the same hole.
+            var service = new SerializationService();
+            var json = WithNestedSettingsGeneration(service, MockData.FabricatedGeneration, "\"fps\":61");
+
+            var report = new SerializationReport();
+            Level level;
+            using (SerializationReport.Begin(report)) level = service.DeserializeData<Level>(json);
+
+            // Nothing can migrate a shape no build has ever seen, so the payload lands by property
+            // name: `fps` is today's key, and it is the one thing that survives.
+            Assert.IsNotNull(level.Settings);
+            Assert.AreEqual(61, level.Settings.Fps);
+            Assert.That(report.Entries, Has.Some.Matches<SerializationSubstitution>(
+                e => e.Kind == SubstitutionKind.UnknownGeneration
+                     && e.Domain == ModelDomains.LevelSettings
+                     && e.Generation == MockData.FabricatedGeneration));
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Normal)]
+        public void ANestedEnvelopeWithNoGenerationAtAll_DegradesAndIsReported()
+        {
             var service = new SerializationService();
 
             var json = service.SerializeData(new Level());
             var start = json.IndexOf("\"settings\":{", StringComparison.Ordinal);
             var open = json.IndexOf('{', start + 11);
             var end = MatchingBrace(json, open);
-            json = json.Substring(0, open) + "{\"v\":{}}" + json.Substring(end + 1);
+            json = json.Substring(0, open) + "{\"v\":{\"fps\":61}}" + json.Substring(end + 1);
 
-            var thrown = Assert.Throws<JsonSerializationException>(
-                () => service.DeserializeData<Level>(json));
+            var report = new SerializationReport();
+            Level level;
+            using (SerializationReport.Begin(report)) level = service.DeserializeData<Level>(json);
 
-            Assert.That(thrown.Message, Does.Contain(Names.Generation));
+            Assert.AreEqual(61, level.Settings.Fps);
+            Assert.That(report.Entries, Has.Some.Matches<SerializationSubstitution>(
+                e => e.Kind == SubstitutionKind.AbsentGeneration
+                     && e.Domain == ModelDomains.LevelSettings));
         }
 
         /// <summary> The document a level is, with its nested settings envelope rewritten to claim

@@ -78,6 +78,16 @@ namespace BH.SDK.Versions
         public string Domain { get; }
         public int Generation { get; }
     }
+
+    // Mirrors the real constants rather than restating them: the generated code names Invalid at
+    // every degradation site, so a stub without it compiles nothing that degrades.
+    public static class ModelGenerations
+    {
+        public const int Invalid = -1;
+        public const int Test = 0;
+        public const int Release = 1;
+        public const int Current = Release;
+    }
 }
 
 namespace BH.SDK.Utils
@@ -154,6 +164,28 @@ namespace BH.SDK.Utils
     }
 }
 
+namespace BH.SDK.Serialization
+{
+    // The degradation report, cut to what generated code calls: one static, and the enum member it
+    // passes. Everything the real one does with the entry is invisible from here.
+    public enum SubstitutionKind : byte
+    {
+        UnknownGeneration = 0,
+        MigratedGeneration = 1,
+        IncompleteChain = 2,
+        AbsentGeneration = 3,
+        UnknownTag = 4,
+        UnreadableContent = 5,
+        ShortContent = 6
+    }
+
+    public static class SerializationReport
+    {
+        public static void Report(string domain, string site, string substituted, int generation,
+            SubstitutionKind kind) { }
+    }
+}
+
 namespace BH.SDK.Serialization.Blob
 {
     using System;
@@ -212,6 +244,24 @@ namespace BH.SDK.Serialization.Blob
         void Read(ref BlobReader reader);
     }
 
+    // An aggregate root reads its content WITHOUT the envelope for a caller that has already read
+    // one - which is every migrating read, since the generation is what told it to migrate.
+    public interface IBinaryEnvelope
+    {
+        void ReadContent(ref BlobReader reader);
+    }
+
+    public static class BlobEnvelopes
+    {
+        public static void Finish(ref BlobReader reader, string domain, int contentStart, int length) { }
+
+        public static void Unreadable(ref BlobReader reader, string domain, int contentStart, int length,
+            BlobFormatException error) { }
+
+        public static T OtherGeneration<T>(ref BlobReader reader, string domain, int generation,
+            int contentStart, int length) where T : class => null;
+    }
+
     public static class BlobModels
     {
         public static T Read<T>(ref BlobReader reader) where T : class, IBinaryModel, new() => null;
@@ -245,7 +295,7 @@ namespace BH.SDK.Serialization.Json
         public static void ReadObject(JsonReader reader, IJsonModel model) { }
         public static void WriteEnvelope(JsonWriter writer, IJsonModel value, int generation) { }
         public static T Read<T>(JsonReader reader) where T : class, IJsonModel, new() => null;
-        public static T ReadEnveloped<T>(JsonReader reader, int generation) where T : class, IJsonModel, new() => null;
+        public static T ReadEnveloped<T>(JsonReader reader, string domain, int generation) where T : class, IJsonModel, new() => null;
     }
 
     public static class JsonPrimitives

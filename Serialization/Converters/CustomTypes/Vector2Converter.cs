@@ -21,7 +21,7 @@ namespace BH.SDK.Serialization.Converters.CustomTypes
                 VectorType.RandomRect => typeof(Vector2Rect),
                 VectorType.RandomRectStep => typeof(Vector2RectStep),
                 VectorType.RandomCircle => typeof(Vector2Circle),
-                _ => throw new ArgumentOutOfRangeException(nameof(customType), customType, null)
+                _ => Fallback(customType, typeof(Vector2Value))
             };
         }
     }

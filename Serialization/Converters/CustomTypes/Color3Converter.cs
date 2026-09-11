@@ -19,7 +19,7 @@ namespace BH.SDK.Serialization.Converters.CustomTypes
                 ColorType.Value => typeof(Color3Value),
                 ColorType.ThemeRef => typeof(Color3ThemeRef),
                 ColorType.RandomMinMax => typeof(Color3MinMax),
-                _ => throw new ArgumentOutOfRangeException(nameof(customType), customType, null)
+                _ => Fallback(customType, typeof(Color3Value))
             };
         }
     }

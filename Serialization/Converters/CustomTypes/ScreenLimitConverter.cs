@@ -19,7 +19,7 @@ namespace BH.SDK.Serialization.Converters.CustomTypes
                 ScreenLimitType.None => typeof(ScreenLimitNone),
                 ScreenLimitType.Fixed => typeof(ScreenLimitFixed),
                 ScreenLimitType.Bounds => typeof(ScreenLimitBounds),
-                _ => throw new ArgumentOutOfRangeException(nameof(customType), customType, null)
+                _ => Fallback(customType, typeof(ScreenLimitNone))
             };
         }
     }

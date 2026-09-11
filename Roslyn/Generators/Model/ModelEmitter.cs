@@ -45,7 +45,15 @@ namespace BH.SDK.Roslyn.Model
                 // what the generator DOES, so a model saying so in its own file would be a claim
                 // it does not keep on its own.
                 .Append(" : global::BH.SDK.Serialization.Blob.IBinaryModel")
-                .AppendLine(", global::BH.SDK.Serialization.Json.IJsonModel");
+                .Append(", global::BH.SDK.Serialization.Json.IJsonModel");
+
+            // An aggregate root can also be read WITHOUT its envelope, which is the only way a
+            // migrating reader can read a snapshot at all - it has already consumed the envelope that
+            // told it to migrate. See IBinaryEnvelope's own header.
+            if (spec.Domain != null && !spec.IsAbstract)
+                builder.Append(", global::BH.SDK.Serialization.Blob.IBinaryEnvelope");
+
+            builder.AppendLine();
             builder.Append(indent).AppendLine("{");
 
             var body = indent + "    ";
@@ -100,10 +108,14 @@ namespace BH.SDK.Roslyn.Model
 
             builder.Append(indent).Append("public ").Append(Modifier(spec)).AppendLine("void Reset()");
             builder.Append(indent).AppendLine("{");
-            builder.Append(indent).AppendLine("    // The constructor is the single source of every default, so they are");
-            builder.Append(indent).AppendLine("    // read from a fresh instance rather than restated. One instance for the");
-            builder.Append(indent).AppendLine("    // whole chain, and a fresh one each time - LevelMeta's constructor draws");
-            builder.Append(indent).AppendLine("    // a new LevelId, which a shared prototype would hand out over and over.");
+            builder.Append(indent)
+                .AppendLine("    // The constructor is the single source of every default, so they are");
+            builder.Append(indent)
+                .AppendLine("    // read from a fresh instance rather than restated. One instance for the");
+            builder.Append(indent)
+                .AppendLine("    // whole chain, and a fresh one each time - LevelMeta's constructor draws");
+            builder.Append(indent)
+                .AppendLine("    // a new LevelId, which a shared prototype would hand out over and over.");
             builder.Append(indent).Append("    var defaults = new ").Append(spec.Name).AppendLine("();");
             builder.Append(indent).Append("    ").Append(helper).AppendLine("(defaults);");
             builder.Append(indent).AppendLine("    OnReset();");
@@ -228,7 +240,8 @@ namespace BH.SDK.Roslyn.Model
 
         private static void EmitPull(StringBuilder builder, string indent, ModelSpec spec)
         {
-            builder.Append(indent).AppendLine("/// <summary> Become src without invalidating anything pointing inside. </summary>");
+            builder.Append(indent)
+                .AppendLine("/// <summary> Become src without invalidating anything pointing inside. </summary>");
             builder.Append(indent).Append("public void Pull(").Append(spec.Name).AppendLine(" src)");
             builder.Append(indent).AppendLine("{");
             if (spec.BaseModel != null) builder.Append(indent).AppendLine("    base.Pull(src);");
@@ -273,6 +286,7 @@ namespace BH.SDK.Roslyn.Model
                 if (!member.Assignable) continue;
                 builder.Append(indent).Append("    ").AppendLine(HashStatement(member));
             }
+
             builder.Append(indent).AppendLine("    return hash.ToHashCode();");
             builder.Append(indent).AppendLine("}");
             builder.AppendLine();
@@ -313,6 +327,7 @@ namespace BH.SDK.Roslyn.Model
                 builder.Append(indent).Append("public bool Equals(").Append(family.InterfaceType)
                     .Append(" other) => other is ").Append(spec.Name).AppendLine(" value && Equals(value);");
             }
+
             if (!spec.Families.IsEmpty) builder.AppendLine();
 
             builder.Append(indent).Append(HelperAccess(spec)).Append("bool ").Append(helper)
@@ -327,6 +342,7 @@ namespace BH.SDK.Roslyn.Model
                 if (!member.Assignable) continue;
                 builder.AppendLine().Append(indent).Append("        && ").Append(EqualsExpression(member));
             }
+
             builder.AppendLine(";");
             builder.Append(indent).AppendLine("}");
             builder.AppendLine();
@@ -386,7 +402,7 @@ namespace BH.SDK.Roslyn.Model
                     return Utils + ".CopyArrayUnmanaged(" + access + ")";
                 case MemberShape.ModelDictionary:
                     return Utils + (member.KeyIsModel ? ".CopyDictionaryManaged(" : ".CopyDictionary(")
-                           + access + ")";
+                                 + access + ")";
                 case MemberShape.ValueDictionary:
                     return "new " + member.Type + "(" + access + ")";
                 default:

@@ -157,11 +157,16 @@ default nowhere.
   apart); a one-byte tag for a polymorphic value with `0xFF` reserved for null. **The tag is the
   model's own `GetModelType()`** - the generator reads the enum member that method names - so the
   blob and the JSON `[tag, payload]` carry the same discriminator and cannot drift apart.
-- **Every `[ModelGeneration]` aggregate writes its own envelope**: domain as text, `major`, `minor`, and
-  a byte length the reader checks the content against. The version tags are written so that the day
-  a domain bumps there is somewhere to attach a migration; today an unknown version is REFUSED,
-  which is honest rather than a gap - no build has ever written a `.blob`, so none of an older
-  generation can exist, and the `.json` beside it is the recovery path.
+- **Every `[ModelGeneration]` aggregate writes its own envelope**: domain as text, a generation, and
+  a byte length the reader checks the content against. That length is what makes degrading
+  affordable, and it is paid for at all twenty roots whether or not anything degrades: a root whose
+  generation this build cannot read is SKIPPED whole and left at its defaults, so a level from the
+  future opens with, say, `GameLevel` empty and its three siblings intact. Anything that throws
+  INSIDE a root's content is treated the same way, and that is safe rather than lax - damage was
+  already answered by the header's magic, codec generation, declared length and payload hash, so a
+  byte that survived all four and then fails to parse is a shape this build does not know.
+  `BlobEnvelopes` is the whole of it. The one case that stays a refusal is content read LONGER than
+  declared: that reader lost its place.
 - **The file header is checked in one order and nothing is allocated before it passes**: magic,
   codec generation, declared length against the real one, then an xxHash64 of the payload. Four
   distinct refusals, because "this file is damaged" and "this file is from a newer build" ask
@@ -221,18 +226,19 @@ domain's *current* type" rule). Read those first; this section only adds what th
   have to work the day the game ships. "Current" is the live, un-suffixed class carrying
   `[ModelGeneration(..., ModelGenerations.Release)]` directly, and a migrator filename like
   `LevelV0ToV1.cs` names that live class by convention rather than an actual file.
-- **A NESTED DOMAIN IS REFUSED AT ANOTHER GENERATION, NOT MIGRATED.** The top-level envelope
-  migrates (that is `VersionedEnvelopeConverter`'s job); `IJsonModel.ReadEnveloped<T>`, which the
-  generated codec uses for every nested domain, checks the generation and throws on anything else -
-  a generated codec reads only ITSELF, holds no `JsonSerializer`, and a snapshot is not a generated
-  model. It used to `Skip()` the tag instead, which read an old payload by property name into today's
-  class and returned CONSTRUCTOR DEFAULTS silently: a nested `LevelSettings` at generation 0 came back
-  `fps=60` through the generated codec and `fps=61` through the reflective one, so
-  `useGeneratedCodecs` - a switch that must change nothing - changed the answer, and the parity tests
-  could not see it with the whole corpus at one generation. `.blob` always refused this case, so the
-  two formats agree now. Migration for nested domains is still open by decision, and waits for a real
-  second snapshot rather than being built against the `V0` scaffold - `Assets/Plugins/BulletHeroSDK/Docs/VERSIONING.md` carries the
-  three options.
+- **A KNOWN GENERATION MIGRATES, AN UNKNOWN ONE DEGRADES**, in both formats and at both levels. A
+  frozen snapshot carries `[GenerateModel]` now, so it reads ITSELF with its own generated codec -
+  which is what let `IJsonModel.ReadEnveloped<T>` start migrating a nested domain without ever
+  holding a `JsonSerializer`. In `.blob` a snapshot is read through `IBinaryEnvelope.ReadContent`
+  rather than `IBinaryModel.Read`, because the caller has already consumed the envelope that told it
+  to migrate. What does not resolve degrades: JSON reads the payload into today's class by property
+  name, `.blob` skips the whole root by its declared length, and **every one of those substitutions
+  is reported** through `SerializationReport`. That last clause is the whole difference from what
+  this replaced - a `Skip()` that returned CONSTRUCTOR DEFAULTS in silence, and made a nested
+  `LevelSettings` at generation 0 come back `fps=60` through the generated codec and `fps=61` through
+  the reflective one. `JsonParityTests` now compares the two stacks' REPORTS as well as their models,
+  because two readers can reach identical defaults for opposite reasons.
+  `Assets/Plugins/BulletHeroSDK/Docs/VERSIONING.md` is the record.
 - Replaces an older `CompatibilityService`/`SaveData<T>`/`JsonConverterData<T>` design — those names
   are fully gone from the codebase (only survive in a comment explaining what replaced them); don't
   reintroduce or reference them as if live.

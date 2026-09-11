@@ -21,7 +21,7 @@ namespace BH.SDK.Serialization.Converters.CustomTypes
                 EffectAngleType.CurvesBySpeed => typeof(EffectAngleCurvesBySpeed),
                 EffectAngleType.RandomUniform => typeof(EffectAngleRandomUniform),
                 EffectAngleType.RandomPerComponent => typeof(EffectAngleRandomPerComponent),
-                _ => throw new ArgumentOutOfRangeException(nameof(customType), customType, null)
+                _ => Fallback(customType, typeof(EffectAngleValue))
             };
         }
     }

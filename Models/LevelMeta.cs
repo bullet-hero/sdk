@@ -54,11 +54,11 @@ namespace BH.SDK.Models
         [RuleNotNull(1, 0)]
         [JsonProperty(Names.Version)]
         public Version LevelVersion { get; set; }
-        
+
         // Level can have any license, but typical it's a 2 choice
         // CC BY-NC or CC BY-NC-SA, they both have incompatible resources (because of ShareAlike)
         // If you don't know what to choose - choose CC BY-NC
-        
+
         /// <summary> Terms the level as a whole is published under - separate from, and constrained
         /// by, the licenses of the resources it uses. </summary>
         [RuleNotNull(typeof(TypicalLicense), TypicalLicenseType.CC_BY_NC_4_0)]
@@ -124,6 +124,26 @@ namespace BH.SDK.Models
         [JsonProperty(Names.Duration)]
         public float LevelDuration { get; set; }
 
+        // THE WARNING THAT COSTS NO READ, and the reason it lives HERE rather than in level.json:
+        // metadata.json is its own file and its own aggregate, and the browser already reads it per
+        // level without touching the level itself. Without this key the sequence is - the player
+        // presses Play, the game reads thirteen megabytes, and only then finds out it cannot read
+        // them; with it the card says so before anything is opened.
+        //
+        // IT HAS TO SHIP IN THE FIRST RELEASED CLIENT. The key is additive and can be added at any
+        // time; what cannot be added later is a shipped client that knows to look at it.
+        //
+        // COMPUTED AT SAVE FROM THE REGISTRY, NEVER TYPED BY HAND - LevelGenerations.Required() is
+        // the one answer, and ModelGenerations.Invalid is what a file that makes no claim holds:
+        // authored before the key existed, or written by another tool. Zero cannot mean that, since
+        // zero is a real generation.
+
+        /// <summary> The highest model generation any domain in this level uses - what a client must
+        /// support to read it whole - or <see cref="ModelGenerations.Invalid"/> when the file makes no claim. </summary>
+        [RuleMinValue(ModelGenerations.Invalid)]
+        [JsonProperty(Names.MinGeneration)]
+        public int MinGeneration { get; set; }
+
         /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public LevelMeta()
         {
@@ -139,7 +159,9 @@ namespace BH.SDK.Models
             LevelContentDescriptors = ContentDescriptor.None;
             LevelTags = new List<string>();
             LevelDuration = 0f;
+            MinGeneration = ModelGenerations.Invalid;
         }
+
         /// <summary> Every member at once, in declaration order. </summary>
         public LevelMeta(LevelId levelId, IString levelName, IString levelDescription, ResourceKey levelLogo,
             Version levelVersion, ILicense levelLicense, List<Author> levelAuthors, List<ResourceMeta> resourcesMeta,
@@ -158,6 +180,7 @@ namespace BH.SDK.Models
             LevelContentDescriptors = levelContentDescriptors;
             LevelTags = new List<string>();
             LevelDuration = 0f;
+            MinGeneration = ModelGenerations.Invalid;
         }
     }
 }

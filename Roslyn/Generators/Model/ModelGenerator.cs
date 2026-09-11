@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
@@ -24,6 +24,10 @@ namespace BH.SDK.Roslyn.Model
     [Generator]
     public sealed class ModelGenerator : IIncrementalGenerator
     {
+        private const string Report = "global::BH.SDK.Serialization.SerializationReport.Report";
+        private const string Unknown = "global::BH.SDK.Serialization.SubstitutionKind.UnknownTag";
+        private const string Invalid = "global::BH.SDK.Versions.ModelGenerations.Invalid";
+
         /// <summary> Builds the pipeline: find the marked types, turn each into a spec, emit from the spec alone. </summary>
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
@@ -306,6 +310,13 @@ namespace BH.SDK.Roslyn.Model
             if (rootSpec != null && !rootSpec.IsAbstract) cases.Add(rootSpec);
             if (cases.Count == 0) return;
 
+            // THE FALLBACK IS THE FAMILY'S LOWEST TAG, and it is a fallback rather than an invention
+            // because every family already puts its plain literal form there: FloatType.Value is
+            // FloatValue, ObjectType.RectObject is RectObject. Nothing had to be declared for it, and
+            // the reflective converters take the same one - the two stacks must agree about a
+            // degraded read exactly as they agree about an ordinary one.
+            var fallback = cases.OrderBy(s => s.TypeTag).First();
+
             builder.AppendLine("    /// <summary> The [tag, payload] encoding of a " + name + ". </summary>");
             builder.AppendLine("    internal static class " + name + "Json");
             builder.AppendLine("    {");
@@ -354,8 +365,10 @@ namespace BH.SDK.Roslyn.Model
                                    + spec.QualifiedName + "(); break;");
 
             builder.AppendLine("                default:");
-            builder.AppendLine("                    throw new global::Newtonsoft.Json.JsonSerializationException(");
-            builder.AppendLine("                        $\"{tag} is not a known " + name + "\");");
+            builder.AppendLine("                    value = new " + fallback.QualifiedName + "();");
+            builder.AppendLine("                    " + Report + "(\"" + name + "\", $\"{tag}\", \""
+                               + fallback.Name + "\", " + Invalid + ", " + Unknown + ");");
+            builder.AppendLine("                    break;");
             builder.AppendLine("            }");
             builder.AppendLine();
             builder.AppendLine("            reader.Read();");
@@ -375,8 +388,9 @@ namespace BH.SDK.Roslyn.Model
                     + "\", global::System.StringComparison.OrdinalIgnoreCase)) return "
                     + spec.TypeTag + ";");
 
-            builder.AppendLine("                throw new global::Newtonsoft.Json.JsonSerializationException(");
-            builder.AppendLine("                    $\"'{text}' is not a known " + name + "\");");
+            builder.AppendLine("                " + Report + "(\"" + name + "\", text, \""
+                               + fallback.Name + "\", " + Invalid + ", " + Unknown + ");");
+            builder.AppendLine("                return " + fallback.TypeTag + ";");
             builder.AppendLine("            }");
             builder.AppendLine();
             builder.AppendLine("            return global::System.Convert.ToInt32(reader.Value);");
@@ -406,6 +420,7 @@ namespace BH.SDK.Roslyn.Model
 
             /// <summary> What to emit, or null when the type was refused. </summary>
             public ModelSpec Spec { get; }
+
             /// <summary> Why it was refused, where it was. </summary>
             public ImmutableArray<Diagnostic> Diagnostics { get; }
 

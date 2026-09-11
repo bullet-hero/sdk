@@ -19,7 +19,7 @@ namespace BH.SDK.Serialization.Converters.CustomTypes
                 LicenseType.NoSpecified => typeof(NoSpecifiedLicense),
                 LicenseType.Typical => typeof(TypicalLicense),
                 LicenseType.Custom => typeof(CustomLicense),
-                _ => throw new ArgumentOutOfRangeException(nameof(customType), customType, null)
+                _ => Fallback(customType, typeof(NoSpecifiedLicense))
             };
         }
     }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
 using BH.SDK.Models;
@@ -34,7 +34,8 @@ namespace BH.SDK.Serialization.Converters
 
         /// <summary> True for a versioning boundary - except the domain being written one level up, or every envelope would wrap itself forever. </summary>
         public override bool CanConvert(Type objectType) =>
-            VersionedTypeRegistry.CanConvert(objectType) && !_activeDomains.Contains(VersionedTypeRegistry.GetDomain(objectType));
+            VersionedTypeRegistry.CanConvert(objectType) &&
+            !_activeDomains.Contains(VersionedTypeRegistry.GetDomain(objectType));
 
         /// <summary> Wraps the payload as <c>{g, v}</c>, at the domain's current generation. </summary>
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
@@ -61,9 +62,10 @@ namespace BH.SDK.Serialization.Converters
             // a second converter for it is a second push. It never fired while the inner call
             // landed on the contract, and fired immediately once a converter answered for it.
             //
-            // The _activeDomains dance below is still needed for the other path: a historical
-            // snapshot is deliberately NOT a generated model, so it is read and written reflectively
-            // and would otherwise re-enter this converter and wrap itself twice.
+            // The _activeDomains dance below is the guard for anything that reaches this converter
+            // WITHOUT a generated codec, which would otherwise re-enter it and wrap itself twice.
+            // Historical snapshots used to be exactly that and no longer are - they carry
+            // [GenerateModel] now, so they take the branch above like every other model.
             writer.WritePropertyName(Names.Value);
             if (value is Json.IJsonModel model)
             {
@@ -72,8 +74,14 @@ namespace BH.SDK.Serialization.Converters
             else
             {
                 _activeDomains.Add(attribute.Domain);
-                serializer.Serialize(writer, value);
-                _activeDomains.Remove(attribute.Domain);
+                try
+                {
+                    serializer.Serialize(writer, value);
+                }
+                finally
+                {
+                    _activeDomains.Remove(attribute.Domain);
+                }
             }
 
             writer.WriteEndObject();
@@ -89,7 +97,8 @@ namespace BH.SDK.Serialization.Converters
         // until the generation that types it arrives.
 
         /// <summary> Resolves the generation tag to its snapshot type, reads that, and walks the migration chain up to today's shape. </summary>
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue,
+            JsonSerializer serializer)
         {
             if (reader.TokenType == JsonToken.Null) return null;
             if (reader.TokenType != JsonToken.StartObject)
@@ -131,10 +140,42 @@ namespace BH.SDK.Serialization.Converters
             }
 
             if (!hasGeneration)
-                throw new JsonSerializationException($"Missing '{Names.Generation}' property for domain '{domain}'");
+            {
+                SerializationReport.Report(domain, objectType.Name,
+                    $"no '{Names.Generation}' at all; read as today's shape", ModelGenerations.Invalid,
+                    SubstitutionKind.AbsentGeneration);
 
-            return VersionedTypeRegistry.UpgradeToLatest(domain, raw, generation);
+                if (pendingValue != null) raw = ReadPayload(pendingValue, domain, generation, serializer);
+            }
+
+            if (raw == null) return null;
+
+            // NOTHING RESOLVED MEANS THERE IS NO CHAIN TO WALK, and the payload in hand was already
+            // read into today's shape by property name - which is the lossy half working, not a
+            // migration that failed. Walking from here would find no step, report a second finding
+            // and throw away everything the name match did land, while the generated codec kept it:
+            // the two stacks would disagree about a degraded file, which is the one thing they may
+            // never do.
+            if (VersionedTypeRegistry.TryResolve(domain, generation) == null)
+                return objectType.IsInstanceOfType(raw) ? raw : Activator.CreateInstance(objectType);
+
+            if (VersionedTypeRegistry.TryUpgradeToLatest(domain, raw, generation, out var upgraded)
+                && objectType.IsInstanceOfType(upgraded))
+                return upgraded;
+
+            // The chain stopped short, so what is in hand is a shape nothing above can use. It became
+            // a default instance rather than an exception for the same reason everything else here
+            // did: the file opens, and the loss is reported instead of thrown.
+            SerializationReport.Report(domain, objectType.Name, "left at its defaults", generation,
+                SubstitutionKind.IncompleteChain);
+            return Activator.CreateInstance(objectType);
         }
+
+        // THE GUARD IS RELEASED IN A finally, AND IT HAS TO BE. A throw mid-payload used to leave the
+        // domain in _activeDomains for the life of this converter instance, which silently turns
+        // CanConvert off for it - every later envelope of that domain then reads as plain fields. It
+        // was unreachable while every failure here was a refusal that ended the whole read; the
+        // tolerant paths are what make it reachable.
 
         private object ReadPayload(JsonReader reader, string domain, int generation, JsonSerializer serializer)
         {
@@ -143,9 +184,14 @@ namespace BH.SDK.Serialization.Converters
             var concreteType = VersionedTypeRegistry.Resolve(domain, generation);
 
             _activeDomains.Add(domain);
-            var raw = serializer.Deserialize(reader, concreteType);
-            _activeDomains.Remove(domain);
-            return raw;
+            try
+            {
+                return serializer.Deserialize(reader, concreteType);
+            }
+            finally
+            {
+                _activeDomains.Remove(domain);
+            }
         }
 
         private object ReadPayload(JToken token, string domain, int generation, JsonSerializer serializer)
@@ -155,9 +201,14 @@ namespace BH.SDK.Serialization.Converters
             var concreteType = VersionedTypeRegistry.Resolve(domain, generation);
 
             _activeDomains.Add(domain);
-            var raw = token.ToObject(concreteType, serializer);
-            _activeDomains.Remove(domain);
-            return raw;
+            try
+            {
+                return token.ToObject(concreteType, serializer);
+            }
+            finally
+            {
+                _activeDomains.Remove(domain);
+            }
         }
     }
 }

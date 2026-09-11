@@ -113,5 +113,27 @@ namespace BH.SDK.Tests
             Assert.AreEqual(0, ModelGenerations.Test);
             Assert.Greater(ModelGenerations.Release, ModelGenerations.Test);
         }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.VeryEasy)]
+        public void NothingIsRegisteredAtTheFabricatedGeneration()
+        {
+            // THE GUARD UNDER EVERY FORWARD FIXTURE. They claim a generation no build has ever
+            // written, and they are only testing the forward direction for as long as that stays
+            // true - the day a domain reaches the fabricated number, every one of them quietly
+            // becomes a backward test that still passes and no longer covers what it was written for.
+            Assert.Greater(MockData.FabricatedGeneration, ModelGenerations.Current);
+
+            foreach (var domain in Declared())
+                Assert.IsNull(VersionedTypeRegistry.TryResolve(domain, MockData.FabricatedGeneration), domain);
+        }
+
+        /// <summary> Every domain name ModelDomains declares. </summary>
+        private static IEnumerable<string> Declared() => typeof(ModelDomains)
+            .GetFields(BindingFlags.Public | BindingFlags.Static)
+            .Where(f => f.IsLiteral && f.FieldType == typeof(string))
+            .Select(f => (string)f.GetRawConstantValue());
     }
 }

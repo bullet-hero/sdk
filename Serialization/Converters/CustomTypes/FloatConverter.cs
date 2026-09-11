@@ -19,7 +19,7 @@ namespace BH.SDK.Serialization.Converters.CustomTypes
                 FloatType.Value => typeof(FloatValue),
                 FloatType.RandomMinMax => typeof(FloatMinMax),
                 FloatType.RandomMinMaxStep => typeof(FloatMinMaxStep),
-                _ => throw new ArgumentOutOfRangeException(nameof(customType), customType, null)
+                _ => Fallback(customType, typeof(FloatValue))
             };
         }
     }

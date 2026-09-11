@@ -1,6 +1,7 @@
 using System;
 using BH.SDK.Models;
 using BH.SDK.Models.Objects;
+using BH.SDK.Serialization;
 using BH.SDK.Versions;
 using BH.SDK.Versions.V0;
 using NUnit.Framework;
@@ -31,14 +32,40 @@ namespace BH.SDK.Tests
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.Normal)]
-        public void Resolve_RefusesAnUnknownDomainAndAnUnknownGeneration()
+        public void TryResolve_AnswersNullRatherThanASubstitute()
         {
-            // Two different mistakes, and both have to be refusals rather than a fallback to the
-            // current shape: reading a payload as a type it was not written in is silent corruption.
-            Assert.Throws<NotSupportedException>(
-                () => VersionedTypeRegistry.Resolve("not_a_domain", ModelGenerations.Release));
-            Assert.Throws<NotSupportedException>(
-                () => VersionedTypeRegistry.Resolve(ModelDomains.Level, 999));
+            // The branch both migrating read paths take. They must be able to tell "no snapshot" from
+            // "here is one", and a fallback handed to them silently would be read as the file's own
+            // shape - which is the corruption the refusal this replaced was guarding against.
+            Assert.IsNull(VersionedTypeRegistry.TryResolve("not_a_domain", ModelGenerations.Release));
+            Assert.IsNull(VersionedTypeRegistry.TryResolve(ModelDomains.Level, MockData.FabricatedGeneration));
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Normal)]
+        public void Resolve_FallsBackToTodaysShapeAndSaysSo()
+        {
+            // THIS TEST'S RATIONALE INVERTED, and that is worth writing down rather than deleting.
+            // It used to argue that both mistakes must be refusals "rather than a fallback to the
+            // current shape: reading a payload as a type it was not written in is silent corruption"
+            // - which was correct, and the word carrying it was SILENT. The fallback is back because
+            // a file has to open; the silence is not, and the report below is the difference.
+            var report = new SerializationReport();
+
+            using (SerializationReport.Begin(report))
+                Assert.AreEqual(typeof(Level),
+                    VersionedTypeRegistry.Resolve(ModelDomains.Level, MockData.FabricatedGeneration));
+
+            Assert.That(report.Entries, Has.Some.Matches<SerializationSubstitution>(e =>
+                e.Kind == SubstitutionKind.UnknownGeneration && e.Domain == ModelDomains.Level));
+
+            // An unknown DOMAIN keeps the refusal, and the asymmetry is not an oversight: an unknown
+            // generation of a known domain has a current shape to fall back to, and a domain nothing
+            // has ever heard of has nothing at all.
+            Assert.Throws<NotSupportedException>(() =>
+                VersionedTypeRegistry.Resolve("not_a_domain", ModelGenerations.Release));
         }
 
         [Test]

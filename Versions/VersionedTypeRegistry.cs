@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using BH.SDK.Serialization;
 
 namespace BH.SDK.Versions
 {
@@ -31,6 +32,7 @@ namespace BH.SDK.Versions
                     generations = new Dictionary<int, Type>();
                     Types[attribute.Domain] = generations;
                 }
+
                 generations[attribute.Generation] = type;
 
                 if (!LatestAttributes.TryGetValue(attribute.Domain, out var latest)
@@ -77,42 +79,102 @@ namespace BH.SDK.Versions
             throw new NotSupportedException($"Unknown data domain: '{domain}'");
         }
 
-        /// <summary> The snapshot class one generation names, so a file can be read as the shape it was written in. </summary>
-        public static Type Resolve(string domain, int generation)
+        /// <summary> The snapshot class one generation names, or null when nothing does - for the callers that
+        /// must BRANCH on the answer rather than be handed a substitute they would then read a file into. </summary>
+        public static Type TryResolve(string domain, int generation)
         {
             if (Types.TryGetValue(domain, out var generations) && generations.TryGetValue(generation, out var type))
                 return type;
-            throw new NotSupportedException($"Unsupported generation {generation} for domain '{domain}'");
+            return null;
         }
 
-        /// <summary> Walks the registered steps from the generation a file claimed up to today's, one at a time.
-        /// A missing step throws rather than being skipped - a half-migrated document is worse than a refusal. </summary>
-        public static object UpgradeToLatest(string domain, object instance, int fromGeneration)
+        // THIS USED TO REFUSE, AND THE REVERSAL IS NARROWER THAN IT LOOKS. The refusal's own reasoning
+        // was that reading a payload as a type it was not written in is SILENT corruption, and the
+        // word carrying it was `silent`. What comes back here is the tolerant read; what does not
+        // come back is the silence - every substitution is reported, and Docs/Issues/
+        // FORWARD_COMPATIBILITY_HISTORY.md is why that is the position the format takes.
+        //
+        // An unknown DOMAIN still throws, and the asymmetry is not an oversight: an unknown
+        // generation of a known domain has a current shape to fall back to, and a domain nothing has
+        // ever heard of has nothing at all.
+
+        /// <summary> The snapshot class one generation names. An unknown generation falls back to the domain's
+        /// CURRENT shape and reports the substitution; an unknown domain has nothing to fall back to. </summary>
+        public static Type Resolve(string domain, int generation)
         {
-            if (instance == null) return null;
+            var type = TryResolve(domain, generation);
+            if (type != null) return type;
 
             var latest = GetLatestAttribute(domain);
-            var current = instance;
+            var current = Types[domain][latest.Generation];
+
+            // Worded exactly as IJsonModel.ReadOtherGeneration words the same substitution, and that
+            // is load-bearing rather than tidy: JsonParityTests compares the two stacks' REPORTS, not
+            // only their models, because two readers can reach identical defaults for opposite
+            // reasons and only the report says which reason it was.
+            SerializationReport.Report(domain, current.Name, "read into today's shape by property name",
+                generation, SubstitutionKind.UnknownGeneration);
+            return current;
+        }
+
+        /// <summary> Walks the registered steps from the generation a file claimed up to today's, one at a time,
+        /// and returns whatever it reached - which is the instance unchanged when the chain is missing a step. </summary>
+        public static object UpgradeToLatest(string domain, object instance, int fromGeneration)
+        {
+            TryUpgradeToLatest(domain, instance, fromGeneration, out var upgraded);
+            return upgraded;
+        }
+
+        // THE WALK STOPS RATHER THAN THROWS, AND THE CALLER IS THE ONE THAT DECIDES. A missing step is
+        // a file this build cannot fully understand, which is a version problem and not a damaged
+        // document - so it degrades and reports like every other one. What the caller must NOT do is
+        // assume the result is today's type: check it, and fall back to a default instance when it is
+        // not. Every call site in this repo does.
+
+        /// <summary> The same walk, saying whether it actually arrived. False leaves <paramref name="result"/>
+        /// holding the furthest instance the chain reached, which may still be the snapshot itself. </summary>
+        public static bool TryUpgradeToLatest(string domain, object instance, int fromGeneration, out object result)
+        {
+            result = instance;
+            if (instance == null) return true;
+
+            var latest = GetLatestAttribute(domain);
             var currentGeneration = fromGeneration;
+            HashSet<Type> visited = null;
 
             while (currentGeneration != latest.Generation)
             {
-                var currentType = current.GetType();
-                if (!MigrationsByFromType.TryGetValue(currentType, out var migration))
-                    throw new NotSupportedException(
-                        $"No migration registered from '{currentType}' towards domain '{domain}' generation {latest.Generation}");
+                var currentType = result.GetType();
 
-                current = migration.MigrateUntyped(current);
+                if (!MigrationsByFromType.TryGetValue(currentType, out var migration))
+                {
+                    SerializationReport.Report(domain, currentType.Name,
+                        $"no migration towards generation {latest.Generation}", currentGeneration,
+                        SubstitutionKind.IncompleteChain);
+                    return false;
+                }
+
+                // A cycle is a registration bug rather than a file's fault, but it is the one shape
+                // that would hang the read instead of failing it, so it is answered here too.
+                visited ??= new HashSet<Type>();
+                if (!visited.Add(currentType))
+                {
+                    SerializationReport.Report(domain, currentType.Name,
+                        "the migration chain loops back on itself", currentGeneration,
+                        SubstitutionKind.IncompleteChain);
+                    return false;
+                }
 
                 var toAttribute = migration.ToType.GetCustomAttribute<ModelGenerationAttribute>();
                 if (toAttribute == null)
                     throw new InvalidOperationException(
                         $"Migration target '{migration.ToType}' must carry a [ModelGeneration] attribute");
 
+                result = migration.MigrateUntyped(result);
                 currentGeneration = toAttribute.Generation;
             }
 
-            return current;
+            return true;
         }
     }
 }

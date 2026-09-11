@@ -20,7 +20,7 @@ namespace BH.SDK.Serialization.Converters.CustomTypes
                 EffectShapeSpreadType.Loop => typeof(EffectShapeSpreadLoop),
                 EffectShapeSpreadType.PingPong => typeof(EffectShapeSpreadPingPong),
                 EffectShapeSpreadType.Sine => typeof(EffectShapeSpreadSine),
-                _ => throw new ArgumentOutOfRangeException(nameof(customType), customType, null)
+                _ => Fallback(customType, typeof(EffectShapeSpreadRandom))
             };
         }
     }

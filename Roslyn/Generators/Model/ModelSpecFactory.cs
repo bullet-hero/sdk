@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -384,7 +384,8 @@ namespace BH.SDK.Roslyn.Model
             if (IsModelReference(type))
                 return new ValueSpec(name,
                     type.IsSealed ? ValueKind.ModelSealed : ValueKind.ModelPolymorphic,
-                    ValueKind.None, string.Empty, LeafGeneration(type), LeafFamily(type));
+                    ValueKind.None, string.Empty, LeafGeneration(type), LeafFamily(type),
+                    LeafDomain(type));
 
             if (type.IsValueType) return new ValueSpec(name, ValueKind.Struct);
 
@@ -412,6 +413,14 @@ namespace BH.SDK.Roslyn.Model
 
             var domain = ResolveDomain(named, out var generation);
             return domain is null ? ModelGenerationValues.Invalid : generation;
+        }
+
+        /// <summary> The domain beside that generation - what a nested envelope resolves a disagreeing
+        /// generation against, and therefore the difference between migrating one and refusing it. </summary>
+        private static string LeafDomain(ITypeSymbol type)
+        {
+            if (!(type is INamedTypeSymbol named)) return string.Empty;
+            return ResolveDomain(named, out _) ?? string.Empty;
         }
 
         private static ValueSpec Primitive(ITypeSymbol type)

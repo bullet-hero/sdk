@@ -2858,6 +2858,15 @@
         /// <summary> <c>"content_descriptors"</c> - LevelMeta.LevelContentDescriptors. </summary>
         public const string ContentDescriptors = Content + _ + Descriptors;
 
+        // SPELLED OUT RATHER THAN COMPOSED, and the difference matters here more than anywhere else
+        // in this file. `Min + _ + Generation` would read `"min_g"`, because Generation is the
+        // ENVELOPE's one-character key - a MULTIPLE key, paid for on every envelope in a level. This
+        // one appears once per metadata.json, beside `duration`, `age_rating` and
+        // `content_descriptors`, so the rule asks for full words.
+
+        /// <summary> <c>"min_generation"</c> - LevelMeta.MinGeneration. </summary>
+        public const string MinGeneration = "min_generation";
+
         /// <summary> <c>"permission_scope"</c> - PermissionGrant.Scope. </summary>
         public const string PermissionScope = Permission + _ + Scope;
 

@@ -20,7 +20,7 @@ namespace BH.SDK.Serialization.Converters.CustomTypes
                 Color4X4KeyType.Horizontal => typeof(ColorHorizontalKey),
                 Color4X4KeyType.Vertical => typeof(ColorVerticalKey),
                 Color4X4KeyType.BariCentrical => typeof(Color4X4Key),
-                _ => throw new ArgumentOutOfRangeException(nameof(customType), customType, null)
+                _ => Fallback(customType, typeof(Color4Key))
             };
         }
     }

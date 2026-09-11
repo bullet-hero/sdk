@@ -62,16 +62,30 @@ Rules that keep this from turning into a mess as more generations pile up:
   domain, always named `<Domain>V{from}ToV{to}.cs` (e.g. `LevelV0ToV1.cs`) — spelling out both ends in
   the name even for a single-step chain, so it stays unambiguous once a domain accumulates more than
   one historical generation.
-- Frozen snapshot classes never need the `IModel<T>` boilerplate (`Copy`/`Clone`/`Equals`/
-  `GetHashCode`/`Reset`) that live models have — they're transient deserialization targets, not domain
-  objects. Plain properties + `[JsonProperty]` (using literal strings, not the shared `Names.Xxx`
-  constants, since those track *current* naming) is enough.
+- **A snapshot IS a generated model**: `[GenerateModel] public sealed partial class Xv0 : IModel<XV0>`,
+  exactly like a live one, and it gets all seven contract bodies plus both codecs. They are dead
+  weight on a transient type, and that is the price of the thing having codecs at all — which is what
+  lets `ReadEnveloped` and the generated `.blob` root read a snapshot with no serializer and no
+  reflection. Keys stay literal strings, not the shared `Names.Xxx` constants, since those track
+  *current* naming.
+- **A snapshot holds only what `ModelGenerator` can encode.** `LevelResourcesV0.Resources` was a
+  `Dictionary<int, object>` and could not stay one; it maps to nothing, so retyping it cost only
+  keystrokes. A member the generator cannot name is a `BHS1003`, not a member quietly skipped.
+- **A snapshot constructs its members**, like every live model: the constructor is the single source
+  of every default the generated `Reset`/`Copy`/`Update` read from, so a member left null is a
+  `NullReferenceException` in bodies a free-form deserialization target never had.
+- A nested leaf frozen alongside its container (`AudioLevelV0`) still needs no `[ModelGeneration]` —
+  but it **does** need `[GenerateModel]`, because the generator refuses a member type it does not own,
+  so everything reachable from a snapshot is generated or the snapshot does not compile.
 
 ## V0 is a scaffold, and that is why it is kept
 
 `V0` is not real shipped format history: its `NamesV0` keys are placeholders (`"test_settings"`,
-`"test_fps"`) and its snapshot classes are near-identical to today's. It is kept because it is the
-**only** thing that still proves `VersionedTypeRegistry` and `IMigration` work at all — the two real
+`"test_fps"`) and its snapshot classes are near-identical to today's. It stopped being a thing the
+suite merely TOUCHES once the snapshots gained codecs — it is now what the suite MEASURES migration
+with, in three ways it could not before: a `.blob` half, a nested half, and a cross-path identity
+(the same V0 bytes through JSON and through `.blob` must arrive at the same instance). It is kept
+because it is the **only** thing that still proves `VersionedTypeRegistry` and `IMigration` work at all — the two real
 snapshots this repo once had were deleted along with the bumps that needed them (pre-release, nothing
 on anyone's disk is worth migrating; the main project's `CLAUDE.md` Rule 11 says when that stops being
 true). `VersionedTypeRegistryTests` and `SerializationTests.TestLevelV0Migration` are what exercise it.

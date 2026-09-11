@@ -355,12 +355,19 @@ namespace Fixture
             Assert.That(aggregate, Does.Contain("if (generation != 1)"));
             Assert.That(aggregate, Does.Not.Contain("WriteUShort"));
 
+            // The content is also readable WITHOUT the envelope, which is the only way a migrating
+            // reader can read a snapshot at all: it has already consumed the envelope that told it
+            // to migrate, so IBinaryModel.Read would look for a second one.
+            Assert.That(aggregate, Does.Contain("IBinaryEnvelope.ReadContent(ref"));
+
             // The JSON half is wrapped by whoever HOLDS it, never by the aggregate itself - and the
-            // reader is handed the generation, which is what lets it refuse another one instead of
-            // reading an old payload into today's class.
+            // reader is handed BOTH the domain and the generation. The generation says a file
+            // disagrees; only the domain says what to resolve it against, which is the difference
+            // between migrating an old payload and reading it into today's class by name.
             var holder = run.Sources.Single(s => s.Key.Contains("Holder")).Value;
             Assert.That(holder, Does.Contain("WriteEnvelope(writer, Inner, 1);"));
-            Assert.That(holder, Does.Contain("ReadEnveloped<global::Fixture.Aggregate>(reader, 1)"));
+            Assert.That(holder,
+                Does.Contain("ReadEnveloped<global::Fixture.Aggregate>(reader, \"test_domain\", 1)"));
         }
 
         [Test]
