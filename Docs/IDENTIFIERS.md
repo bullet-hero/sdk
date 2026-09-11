@@ -128,11 +128,16 @@ Both are deliberate, and neither is a candidate for one.
   keyframe by `KeyId` = track + frame. The cost is stated where it is paid: an edit that moves one
   changes its identity, so whoever held it re-selects at the new frame. An id would buy stability
   across a move that nothing needs.
-- **By field path.** `ModificationKey` is a template-inner `ObjectId` plus a dotted string
-  (`"pos[0].v"`), resolved through each property's `[JsonProperty]` name. **This is the most fragile
-  address in the format** — more so than any id — because renaming a serialized key under `NAMING.md`
-  silently invalidates every prefab override written against the old spelling, in every level already
-  on disk. Weigh that before renaming a key on anything a `PrefabObject` can override.
+- **By field number.** `ModificationKey` is a template-inner `ObjectId` plus a stable
+  `ModificationFields` id and an element index. It *was* a dotted string (`"pos[0].v"`) resolved
+  through each property's `[JsonProperty]` name, and that made it the most fragile address in the
+  format — renaming a serialized key silently invalidated every prefab override written against the
+  old spelling. It is not an exception any more: the number belongs to the declaration, is
+  append-only, and a key rename costs an override nothing.
+
+  The id is hand-written at the member and enforced by `BH.SDK.Roslyn` (BHS1201–BHS1203). It is not
+  in class B below despite living in the build, because nothing outside this repo hands one out and
+  the generator refuses a collision — see `Docs/Issues/MODIFICATION_FIELD_IDS_HISTORY.md`.
 
 A slot inside a palette is a third case and is a plain `int` index
 (`Color4ThemeRef.ThemeColorIndex`): it is a position inside one addressed object, not an object.
@@ -140,8 +145,9 @@ A slot inside a palette is a third case and is a plain `int` index
 ### Stability: where an id's meaning lives
 
 The `Guid`/`int` question is settled above and is not where this format's stability is decided.
-What decides it is **where the thing an id points at is written down**, and that gives three classes.
-Only one of them can drift, and it contains both spellings.
+What decides it is **where the thing an id points at is written down**, and that gave three classes.
+Only one of the two remaining can drift, and it contains both spellings; the third was retired rather
+than fixed, and its entry below says how.
 
 **A — the meaning is in the same file (or in the file the id names).** `ObjectId`, `AudioId`,
 user-defined resources (negative), and every randomly generated `Guid`: `LevelId`, `ThemeId`,
@@ -171,16 +177,23 @@ one rewrote every level after it.
   search offers these presets to authors (`SearchOrigin.Game`), so a level can and does reference
   them, and a level referencing a shifted id plays a different sound with nothing to report.
 
-**C — the meaning is in the spelling of JSON keys.** `ModificationKey.Path` alone. It is resolved
-through `[JsonProperty]` names at read time, and `ModificationService` answers an unresolvable path
-with `null`/`false` — silently, which is correct at that layer and is what makes the failure
-invisible. Renaming a serialized key on any type a `PrefabObject` can override therefore voids every
-override already written against the old name, in every level already on disk. `NAMING.md` allows
-key renames; this is the one place where that permission has a cost that outlives the release.
+**C — the meaning is in the spelling of JSON keys. THIS CLASS NO LONGER EXISTS, and that is worth
+recording rather than deleting.** It held exactly one member, `ModificationKey.Path`: a dotted
+string resolved through `[JsonProperty]` names at read time, answered with `null`/`false` when it
+did not resolve — silently, which is correct at that layer and is what made the failure invisible.
+Renaming a serialized key on any type a `PrefabObject` could override voided every override written
+against the old name, in every level on disk, so `NAMING.md`'s permission to rename a key carried a
+cost that would have outlived the release.
+
+It was replaced by a numeric field id before that could happen
+(`Docs/Issues/MODIFICATION_FIELD_IDS_HISTORY.md`). The class is gone by construction: an id belongs
+to the declaration rather than to the spelling, so there is nothing left for a rename to invalidate.
+The measured cost of leaving it was higher than the design predicted — three of the twenty-eight
+live paths did not resolve at all, and nobody could see it.
 
 **So the work stability actually asks for is not a change of id type.** It is: freeze the
-game-defined audio numbering, assert uniqueness of both preset tiers, and treat a key rename on an
-overridable member as a breaking change.
+game-defined audio numbering and assert uniqueness of both preset tiers. The third item — treat a
+key rename on an overridable member as a breaking change — is done, by removing the reason for it.
 
 ### What the choice costs, measured
 
@@ -238,4 +251,7 @@ Nothing currently on the roadmap, and the two directions are not symmetric.
   renumbers every id in a template on materialization, so a global one would be discarded on arrival.
 - The int spaces are signed 32-bit and nowhere near exhausted, so no id moves for range.
 
-The realistic long-term risk to this format is not the id types. It is `ModificationKey.Path`, above.
+The realistic long-term risk to this format was never the id types. It was `ModificationKey.Path`,
+and class C above records what became of it: the address is a stable field number now, so the
+risk is closed rather than outstanding. What is left in its place is smaller and named in class
+B - the game-defined audio numbering, which is still positional.

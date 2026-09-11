@@ -268,7 +268,7 @@ namespace BH.SDK.Tests.Rules
             template.ObjectIdCounter = 2;
 
             var placement = new PrefabObject { ObjectId = new ObjectId(1), PrefabId = template.PrefabId };
-            var key = new ModificationKey(new ObjectId(42), "pos[0].v");
+            var key = new ModificationKey(new ObjectId(42), ModificationFields.Positions);
             placement.Modifications.Add(key, new Modification(key, 1L));
 
             var level = LevelWith(placement);

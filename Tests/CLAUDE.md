@@ -15,7 +15,8 @@ layer-wide conventions. This file is folder-local.
   `Metadata.cs` the author/category constants (neither is a test) — read `MockData.cs`'s header
   comment before writing new tests that need a `Level`/`Prefab`/etc. Root-level files cover
   serialization (`SerializationTests`, `SerializationTypeExtensionsTests`), modification
-  (`ModificationTests`), validation (`ValidatorTests`), capacity (`LevelCapacityUtilsTests`),
+  (`ModificationApplyTests`, `ModificationFieldsTests`, `ModificationValuesTests` — the layer file
+  says what they are for), validation (`ValidatorTests`), capacity (`LevelCapacityUtilsTests`),
   cryptography, text formatting, `ShapeIdTests`, `ShapeGeometryUtilsTests` and `AvatarRulesTests`, plus
 `Tests/Services/ShapeCatalogServiceTests` (the built-in shape library — id round trip, retired and
 future-axis ids refused, and the two geometric invariants a person cannot eyeball across five

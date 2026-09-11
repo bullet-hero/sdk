@@ -80,27 +80,34 @@ namespace BH.SDK.Serialization.Json
 
         #region ModificationKey
 
-        /// <summary> The template object it addresses plus the field path. </summary>
+        // THE INDEX IS WRITTEN UNCONDITIONALLY, at -1 as at anything else. Omitting a default here
+        // would need DefaultValueHandling on the reflective writer and an if on this one - two
+        // spellings of the same rule, which is the divergence JsonParityTests exists to catch.
+
+        /// <summary> The template object it addresses, the field, and which element of it. </summary>
         public static void Write(JsonWriter writer, ModificationKey value)
         {
             writer.WriteStartObject();
             writer.WritePropertyName(Names.ObjectId);
             writer.WriteValue(value.ObjectId.value);
-            writer.WritePropertyName(Names.PathShort);
-            writer.WriteValue(value.Path);
+            writer.WritePropertyName(Names.FieldShort);
+            writer.WriteValue(value.Field);
+            writer.WritePropertyName(Names.IndexShort);
+            writer.WriteValue(value.Index);
             writer.WriteEndObject();
         }
 
-        /// <summary> Rebuilds the key through its constructor, since its properties are get-only. </summary>
+        /// <summary> Rebuilds the key through its constructor, tolerating a payload of any other shape. </summary>
         public static ModificationKey ReadModificationKey(JsonReader reader)
         {
             var objectId = ObjectId.Null;
-            var path = string.Empty;
+            var field = ModificationFields.None;
+            var index = ModificationKey.WholeField;
 
             if (reader.TokenType != JsonToken.StartObject)
             {
                 reader.Skip();
-                return new ModificationKey(objectId, path);
+                return new ModificationKey(objectId, field, index);
             }
 
             while (reader.Read() && reader.TokenType != JsonToken.EndObject)
@@ -110,11 +117,12 @@ namespace BH.SDK.Serialization.Json
                 reader.Read();
 
                 if (name == Names.ObjectId) objectId = new ObjectId(Convert.ToInt32(reader.Value));
-                else if (name == Names.PathShort) path = reader.Value as string;
+                else if (name == Names.FieldShort) field = Convert.ToInt32(reader.Value);
+                else if (name == Names.IndexShort) index = Convert.ToInt32(reader.Value);
                 else reader.Skip();
             }
 
-            return new ModificationKey(objectId, path);
+            return new ModificationKey(objectId, field, index);
         }
 
         #endregion

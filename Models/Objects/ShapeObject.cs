@@ -35,23 +35,27 @@ namespace BH.SDK.Models.Objects
 
         /// <summary> Shape to draw, from the shared library. Null draws nothing at all - which,
         /// combined with a real ColliderId, is how an invisible hitbox is authored. </summary>
+        [ModificationField(ModificationFields.ShapeId)]
         [JsonProperty(Names.ShapeId)]
         public ShapeId ShapeId { get; set; }
 
         /// <summary> Collision shape from the shared library. Null means the object is decoration -
         /// drawn, never collided with. </summary>
+        [ModificationField(ModificationFields.ColliderId)]
         [JsonProperty(Names.ColliderId)]
         public ShapeId ColliderId { get; set; }
 
         /// <summary> Which render path to ask for. Auto lets the consumer decide from this object's
         /// own alpha, and is what every object gets until an author says otherwise. </summary>
         [RuleEnumValid(ShaderType.Auto)]
+        [ModificationField(ModificationFields.Shader)]
         [JsonProperty(Names.Shader)]
         public ShaderType ShaderType { get; set; }
         
         /// <summary> Image painted onto the shape. Null draws no image at all - the shape is filled
         /// with its own colour, which is what most objects want. </summary>
         [RuleReferenceExists(ResourceReferenceKind.Texture, true)]
+        [ModificationField(ModificationFields.TextureResourceId)]
         [JsonProperty(Names.TextureResourceId)]
         public TextureResourceId TextureResourceId { get; set; }
 
@@ -59,6 +63,7 @@ namespace BH.SDK.Models.Objects
         /// horizontally, vertically or per-corner graded, and switch between those over time. </summary>
         [RuleNotNull, RuleCollectionMaxCount(LevelRules.MaxObjectKeys)]
         [RuleCollectionUnique(nameof(IColor4X4Key.Frame))]
+        [ModificationField(ModificationFields.ShapeColors)]
         [JsonProperty(Names.Color)]
         public List<IColor4X4Key> Colors { get; set; }
 
@@ -66,6 +71,7 @@ namespace BH.SDK.Models.Objects
         /// while the rect itself stays put. </summary>
         [RuleNotNull, RuleCollectionMaxCount(LevelRules.MaxObjectKeys)]
         [RuleCollectionUnique(nameof(UVKey.Frame))]
+        [ModificationField(ModificationFields.UVs)]
         [JsonProperty(Names.UV)]
         public List<UVKey> UVs { get; set; }
 

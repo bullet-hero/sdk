@@ -81,7 +81,7 @@ anything older, never newer - a component built against a newer Roslyn is silent
 - `Analyzers/SandboxProbeAnalyzer.cs`, `Generators/SandboxProbeGenerator.cs` - a probe kept
   deliberately: `BHS0001` on any type named `*RoslynProbe`, and a generated `RoslynSandboxStamp`
   in every assembly in scope. Between them they answer "is Roslyn working right now" in one glance.
-  Two real generators have landed since; the probe is kept anyway, because "is Roslyn working" is
+  Three real generators have landed since; the probe is kept anyway, because "is Roslyn working" is
   still the first question when a generated member goes missing.
 - `Generators/Model/` - `ModelGenerator`, which writes the whole `IModel<T>` contract plus the
   `.blob` and JSON codecs for every `[GenerateModel]` type. `BHS1001`-`BHS1008`.
@@ -92,6 +92,15 @@ anything older, never newer - a component built against a newer Roslyn is silent
   exists for, and both errored on the private nested fixtures in `Tests/Rules` that are that
   fallback's only coverage. What they claimed is asserted by `BH.SDK.Tests`'
   `RuleContainerCoverageTests` instead, where it can be scoped to the format's own models.
+- `Generators/Modification/` - `ModificationTableGenerator`, which writes `ModificationTable` from
+  every member carrying `[ModificationField]`: a flat switch that applies a prefab override by its
+  stable field id, so the apply path holds no reflection and no dotted-path parser. `BHS1201`-`BHS1203`
+  are what make a hand-written id safe - a collision, a member that is not serialized or not
+  writable, and a zero or a band belonging to another declaring type. It replaced
+  `ModificationRegistryGenerator` (`ModificationImplementations`, the interface-to-implementations
+  table the old reflective walk descended through): the walk is gone, so the thing it needed is too.
+  `Docs/Issues/MODIFICATION_FIELD_IDS_HISTORY.md` carries the reasoning, including what brings that
+  generator back if the address is ever widened again.
 - `Tests~/` - the components' own tests, see below.
 
 ## Testing

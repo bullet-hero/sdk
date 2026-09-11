@@ -58,6 +58,29 @@ namespace BH.SDK.Models.Attributes
 
     [System.AttributeUsage(System.AttributeTargets.Property)]
     public sealed class GenerateModelMergeAttribute : System.Attribute { }
+
+    [System.AttributeUsage(System.AttributeTargets.Property)]
+    public sealed class ModificationFieldAttribute : System.Attribute
+    {
+        public ModificationFieldAttribute(int field) { Field = field; }
+        public int Field { get; }
+    }
+}
+
+namespace BH.SDK.Models
+{
+    // The real table is twenty-nine constants; a fixture needs only enough of a band map to be a
+    // band map. The generator never reads these NAMES - it reads the value the attribute was handed
+    // - so a stub that agrees with the real one about shape is as good as one that copies it.
+    public static class ModificationFields
+    {
+        public const int None = 0x0000;
+        public const int Name = 0x0101;
+        public const int Layer = 0x0104;
+        public const int Positions = 0x0106;
+        public const int ShapeId = 0x0201;
+        public const int ShapeColors = 0x0205;
+    }
 }
 
 namespace BH.SDK.Versions
@@ -87,6 +110,22 @@ namespace BH.SDK.Versions
         public const int Test = 0;
         public const int Release = 1;
         public const int Current = Release;
+    }
+}
+
+namespace BH.SDK.Utils
+{
+    // Hand-written in the real SDK, and stubbed to its SIGNATURE only: what the conversion does is
+    // BH.SDK.Tests' ModificationValuesTests' business, and what matters here is that generated code
+    // calls it with a type argument the compiler accepts.
+    public static class ModificationValues
+    {
+        public static bool TryConvert<T>(object value, out T result)
+        {
+            if (value is T typed) { result = typed; return true; }
+            result = default;
+            return false;
+        }
     }
 }
 

@@ -43,8 +43,8 @@ namespace BH.SDK.Models.Objects
         // WHICH object (inner/template ObjectId) and WHICH field (Path) this override applies to -
         // see ModificationKey's own doc comment. Also PrefabObject.Modifications' dictionary key.
 
-        /// <summary> Target of the override (template object id + field path). </summary>
-        [RuleModificationKeyValid(ValueRules.MaxModificationPath)]
+        /// <summary> Target of the override (template object id + field id + element index). </summary>
+        [RuleModificationKeyValid]
         [JsonProperty(Names.Key)]
         public ModificationKey Key { get; set; }
 
@@ -75,13 +75,13 @@ namespace BH.SDK.Models.Objects
         /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public Modification()
         {
-            Key = new ModificationKey(ObjectId.Null, string.Empty);
+            Key = new ModificationKey(ObjectId.Null, ModificationFields.None);
             Value = null;
         }
-        /// <summary> Built from its id, path and value. </summary>
-        public Modification(ObjectId objectId, string path, object value)
+        /// <summary> Built from its id, field and value. </summary>
+        public Modification(ObjectId objectId, int field, object value)
         {
-            Key = new ModificationKey(objectId, path);
+            Key = new ModificationKey(objectId, field);
             Value = value;
         }
         /// <summary> Built from its key and value. </summary>

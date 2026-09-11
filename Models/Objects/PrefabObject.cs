@@ -45,14 +45,14 @@ namespace BH.SDK.Models.Objects
         public Dictionary<ObjectId, ObjectId> ObjectIds { get; set; } // inner id -> this instance's outer id
 
         // Per-instance field overrides on this placement's own materialized children, keyed by
-        // ModificationKey (TEMPLATE's inner ObjectId + field Path) - see
+        // ModificationKey (TEMPLATE's inner ObjectId + field id + element index) - see
         // BH.Core.Services.PrefabMaterializer.ApplyModifications (re-applied after every
         // materialize/resync, on top of the fresh template copy) and GameEditor's
         // EditObjectOperation.RecordModification (what records one here whenever a direct edit lands
         // on a materialized child outside Prefab Mode). One Modification per (object, field) pair -
         // a child can have several fields overridden at once, but only one override per field.
 
-        /// <summary> Per-placement field overrides, keyed by (template object, field path). </summary>
+        /// <summary> Per-placement field overrides, keyed by (template object, field, element). </summary>
         [GenerateModelKeyed(nameof(Modification.Key))]
         [RuleNotNull, RuleCollectionMaxCount(PrefabRules.MaxModifications)]
         [JsonProperty(Names.Mod)]

@@ -1,31 +1,36 @@
+using BH.SDK.Models;
 using BH.SDK.Models.Primitives;
 using BH.SDK.Rules.Attributes;
 using NUnit.Framework;
 
 namespace BH.SDK.Tests.Rules
 {
+    // WHAT THIS FIXTURE ASKS CHANGED WITH THE ADDRESS, and the change is the point rather than a
+    // side effect. A dotted path could only be asked whether it was non-empty and under a length
+    // ceiling - questions about a string, answerable without the model. A field id is asked whether
+    // it is a field of anything at all, which is the real question, because ModificationTable
+    // answers it at compile time. The length cases below are gone with the string, and the fix
+    // cases with them: an unregistered id cannot be repaired into a registered one.
+
     /// <summary>
     /// RuleModificationKeyValid: the only reach the property-level rules have into ModificationKey,
     /// which is otherwise doubly invisible - a struct, and used as a dictionary key.
     /// </summary>
     public class RuleModificationKeyValidTests : BaseRuleTests
     {
-        private const int MaxPath = 16;
-
-        /// <summary> A prefab-override key, whose object id and field path are both checked. </summary>
+        /// <summary> A prefab-override key, whose object id and field are both checked. </summary>
         [RuleContainer]
         private class Model
         {
-            [RuleModificationKeyValid(MaxPath)]
-            public ModificationKey Key { get; set; } = new(new ObjectId(1), "pos[0].v");
+            [RuleModificationKeyValid]
+            public ModificationKey Key { get; set; } = new(new ObjectId(1), ModificationFields.Layer);
         }
 
         /// <summary> A property of a type the rule does not apply to, so it must decline rather than refuse. </summary>
         [RuleContainer]
         private class WrongTypeModel
         {
-            [RuleModificationKeyValid(MaxPath)]
-            public string Key { get; set; } = string.Empty;
+            [RuleModificationKeyValid] public string Key { get; set; } = string.Empty;
         }
 
         [Test]
@@ -34,7 +39,7 @@ namespace BH.SDK.Tests.Rules
         [Category(Metadata.Category.Easy)]
         public void TestValid()
         {
-            AssertValid(new Model { Key = new ModificationKey(new ObjectId(1), "pos[0].v") });
+            AssertValid(new Model { Key = new ModificationKey(new ObjectId(1), ModificationFields.Layer) });
         }
 
         // The id addresses an object inside the template, so it must be a user-space id - the
@@ -46,7 +51,7 @@ namespace BH.SDK.Tests.Rules
         public void TestNullObjectId()
         {
             AssertInvalid<RuleModificationKeyValidAttribute>(
-                new Model { Key = new ModificationKey(ObjectId.Null, "pos[0].v") });
+                new Model { Key = new ModificationKey(ObjectId.Null, ModificationFields.Layer) });
         }
 
         [Test]
@@ -56,57 +61,63 @@ namespace BH.SDK.Tests.Rules
         public void TestReservedObjectId()
         {
             AssertInvalid<RuleModificationKeyValidAttribute>(
-                new Model { Key = new ModificationKey(ObjectId.PrefabRoot, "pos[0].v") });
+                new Model { Key = new ModificationKey(ObjectId.PrefabRoot, ModificationFields.Layer) });
         }
 
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.Easy)]
-        public void TestEmptyPath()
+        public void TestNoField()
         {
             AssertInvalid<RuleModificationKeyValidAttribute>(
-                new Model { Key = new ModificationKey(new ObjectId(1), string.Empty) });
+                new Model { Key = new ModificationKey(new ObjectId(1), ModificationFields.None) });
+        }
+
+        // A number in no band at all. This is the case the length ceiling used to stand in for, and
+        // it is a stronger one: the old rule would happily pass "no_such_field".
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Easy)]
+        public void TestUnregisteredField()
+        {
             AssertInvalid<RuleModificationKeyValidAttribute>(
-                new Model { Key = new ModificationKey(new ObjectId(1), null) });
+                new Model { Key = new ModificationKey(new ObjectId(1), 0x7F01) });
         }
 
+        // An index is legal on a collection field and on nothing else - addressing element 0 of a
+        // scalar is an address the table could never answer.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.Easy)]
-        public void TestPathBoundary()
+        public void TestIndexBelongsToCollectionsOnly()
         {
-            AssertValid(new Model { Key = new ModificationKey(new ObjectId(1), new string('a', MaxPath)) });
+            AssertValid(new Model { Key = new ModificationKey(new ObjectId(1), ModificationFields.Positions, 0) });
             AssertInvalid<RuleModificationKeyValidAttribute>(
-                new Model { Key = new ModificationKey(new ObjectId(1), new string('a', MaxPath + 1)) });
+                new Model { Key = new ModificationKey(new ObjectId(1), ModificationFields.Layer, 0) });
         }
 
-        // Truncation moves the problem from "malformed" to "dangling", which is where the graph pass
-        // can see it - the path almost certainly no longer resolves.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.Easy)]
-        public void TestFixTruncatesPath()
+        public void TestNegativeIndexBelowWholeField()
         {
-            var model = new Model { Key = new ModificationKey(new ObjectId(1), new string('a', 100)) };
-            AssertFixed(model);
-
-            Assert.AreEqual(MaxPath, model.Key.Path.Length);
-            Assert.AreEqual(1, model.Key.ObjectId.value);
+            AssertInvalid<RuleModificationKeyValidAttribute>(
+                new Model { Key = new ModificationKey(new ObjectId(1), ModificationFields.Positions, -2) });
         }
 
-        // A broken id is deliberately left alone: repointing it would apply the author's override to
-        // a different object, silently and plausibly. Dropping the entry belongs to whoever owns the
-        // dictionary, so the issue stays reported.
+        // Nothing here is repairable and the rule says so, which is what keeps a broken override
+        // reported rather than silently repointed at a different field.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.Easy)]
-        public void TestFixLeavesBrokenObjectIdAlone()
+        public void TestFixLeavesEverythingAlone()
         {
-            var model = new Model { Key = new ModificationKey(ObjectId.Null, "pos[0].v") };
+            var model = new Model { Key = new ModificationKey(ObjectId.Null, ModificationFields.Layer) };
             Fix(model);
 
             Assert.AreEqual(ObjectId.NullValue, model.Key.ObjectId.value);

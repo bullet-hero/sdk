@@ -25,8 +25,7 @@ layer-wide conventions. This file is folder-local.
   it IS the file. `Serialization/Blob/` is that format; `LevelObjectCodec`, the object tree written
   out by hand, was its worked example and is no longer needed.
   Also `CryptographyService`
-  (AES-256-CBC, and NOT what protects a level any more — see its own header), `ModificationService` (reflection path-based get/set, see "Modification system"
-  below), `TextFormatService` (`{variable}` string templating), `FontCharacterService` (builds
+  (AES-256-CBC, and NOT what protects a level any more — see its own header), `TextFormatService` (`{variable}` string templating), `FontCharacterService` (builds
   `LevelHints.FontCharacters`, see below), and **`Shapes/ShapeCatalogService`** + `ShapeParameters`
   — the game's own built-in shape library, which lives HERE rather than in the consumer because it
   is what a `ShapeId` means: 497 shapes as the cross product of a form, a sector, a thickness rung

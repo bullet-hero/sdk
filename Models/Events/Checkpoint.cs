@@ -50,6 +50,25 @@ namespace BH.SDK.Models.Events
         [JsonProperty(Names.Space)]
         public CheckpointSpace Space { get; set; }
 
+        // WHAT CROSSING THE CHECKPOINT GRANTS, which is not what respawning at it does - a respawn
+        // already refills the run's lives unconditionally (Services.Game's CheckpointService). This
+        // is the mid-run heal: reach an authored checkpoint with it on and the life count goes back
+        // to what the launch gave the run. Off by default, so every checkpoint already on disk keeps
+        // meaning exactly what it meant.
+
+        /// <summary> Whether reaching this checkpoint refills the run's lives. </summary>
+        [JsonProperty(Names.Heal)]
+        public bool RestoreHealth { get; set; }
+
+        // TODO post-alpha: revive dead allies on reaching the checkpoint. There are no allies in the
+        // game yet - no model, no simulation, nothing to bring back - so the key stays unwritten
+        // rather than shipping a field nothing can act on. It appends AFTER RestoreHealth when it
+        // lands: the blob writes members in declaration order and that order is append-only.
+        //
+        // /// <summary> Whether reaching this checkpoint brings dead allies back. </summary>
+        // [JsonProperty(Names.Revive)]
+        // public bool ReviveAllies { get; set; }
+
         /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public Checkpoint()
         {
@@ -59,13 +78,14 @@ namespace BH.SDK.Models.Events
             Color4 = Color4Value.white;
             Position = Vector2Value.Zero;
             Space = CheckpointSpace.World;
+            RestoreHealth = false;
         }
         /// <summary> Built from its name, active, 4 and frame. </summary>
         public Checkpoint(string name, bool active, IColor4 color4, int frame)
             : this(name, active, color4, frame, Vector2Value.Zero, CheckpointSpace.World) { }
         /// <summary> Every member at once, in declaration order. </summary>
         public Checkpoint(string name, bool active, IColor4 color4, int frame,
-            IVector2 position, CheckpointSpace space)
+            IVector2 position, CheckpointSpace space, bool restoreHealth = false)
         {
             Frame = frame;
             Name = name;
@@ -73,6 +93,7 @@ namespace BH.SDK.Models.Events
             Color4 = color4;
             Position = position;
             Space = space;
+            RestoreHealth = restoreHealth;
         }
     }
 }

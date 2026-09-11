@@ -2,29 +2,28 @@ using BH.SDK.Models;
 using BH.SDK.Models.Objects;
 using BH.SDK.Models.Primitives;
 using BH.SDK.Rules;
-using BH.SDK.Services;
+using BH.SDK.Utils;
 using NUnit.Framework;
 
 namespace BH.SDK.Tests.Rules
 {
     // A per-instance override is the one write in the whole format that reaches a model without
-    // passing anything that could judge it - ModificationService resolves a path and assigns. So an
-    // override could hold a value outside its property's declared range while the level it belongs
-    // to validated clean, and nothing would notice until playback.
+    // passing anything that could judge it - the table resolves a field and assigns. So an override
+    // could hold a value outside its property's declared range while the level it belongs to
+    // validated clean, and nothing would notice until playback.
+    //
+    // THE MECHANISM MOVED AND THE CAPABILITY DID NOT. This used to walk a dotted path through
+    // ModificationService's reflection to reach a PropertyInfo; it now asks the generated table for
+    // the same PropertyInfo by field id. Both halves of the pair are still here on purpose: what a
+    // rule-checked write refuses is the whole point, and the fact that the PLAIN write still does
+    // not check is what makes opting in explicit rather than accidental.
 
     /// <summary>
-    /// ModificationService.IsValueAllowed / SetValueChecked: the rules of the target property,
+    /// ModificationUtils.IsValueAllowed / SetValueChecked: the rules of the target property,
     /// applied to a value on its way in.
     /// </summary>
     public class ModificationCheckedWriteTests
     {
-        private static ModificationService ServiceFor(params System.Type[] types)
-        {
-            var service = new ModificationService();
-            foreach (var type in types) service.Add(type);
-            return service;
-        }
-
         private static RuleContext ContextOfLength(int frameDuration)
         {
             var level = new Level();
@@ -32,16 +31,19 @@ namespace BH.SDK.Tests.Rules
             return RuleContext.ForRoot(level);
         }
 
+        private static Modification Override(RectObject obj, int field, object value)
+            => new(new ModificationKey(obj.ObjectId, field), value);
+
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.Normal)]
         public void TestAllowedValueIsWritten()
         {
-            var service = ServiceFor(typeof(RectObject));
             var obj = new RectObject { ObjectId = new ObjectId(1) };
 
-            Assert.IsTrue(service.SetValueChecked(obj, 50, Names.LayerShort, ContextOfLength(100)));
+            Assert.IsTrue(obj.SetValueChecked(Override(obj, ModificationFields.Layer, 50),
+                ContextOfLength(100)));
             Assert.AreEqual(50, obj.Layer);
         }
 
@@ -53,11 +55,10 @@ namespace BH.SDK.Tests.Rules
         [Category(Metadata.Category.Normal)]
         public void TestOutOfRangeValueIsRefused()
         {
-            var service = ServiceFor(typeof(RectObject));
             var obj = new RectObject { ObjectId = new ObjectId(1), Layer = 10 };
 
-            Assert.IsFalse(service.SetValueChecked(obj, ValueRules.MaxLayer + 1, Names.LayerShort,
-                ContextOfLength(100)));
+            Assert.IsFalse(obj.SetValueChecked(
+                Override(obj, ModificationFields.Layer, ValueRules.MaxLayer + 1), ContextOfLength(100)));
             Assert.AreEqual(10, obj.Layer, "A refused write must change nothing");
         }
 
@@ -67,13 +68,10 @@ namespace BH.SDK.Tests.Rules
         [Category(Metadata.Category.Normal)]
         public void TestOutOfRangeLayerIsRefused()
         {
-            var service = ServiceFor(typeof(RectObject));
-            var obj = new RectObject { ObjectId = new ObjectId(1) };
-
-            Assert.IsFalse(service.IsValueAllowed(obj, ValueRules.MaxLayer + 1, Names.LayerShort,
-                ContextOfLength(100)));
-            Assert.IsTrue(service.IsValueAllowed(obj, ValueRules.MaxLayer, Names.LayerShort,
-                ContextOfLength(100)));
+            Assert.IsFalse(ModificationUtils.IsValueAllowed(ModificationFields.Layer,
+                ValueRules.MaxLayer + 1, ContextOfLength(100)));
+            Assert.IsTrue(ModificationUtils.IsValueAllowed(ModificationFields.Layer,
+                ValueRules.MaxLayer, ContextOfLength(100)));
         }
 
         [Test]
@@ -82,10 +80,8 @@ namespace BH.SDK.Tests.Rules
         [Category(Metadata.Category.Normal)]
         public void TestNullIntoNotNullPropertyIsRefused()
         {
-            var service = ServiceFor(typeof(RectObject));
-            var obj = new RectObject { ObjectId = new ObjectId(1) };
-
-            Assert.IsFalse(service.IsValueAllowed(obj, null, Names.Name, ContextOfLength(100)));
+            Assert.IsFalse(ModificationUtils.IsValueAllowed(ModificationFields.Name, null,
+                ContextOfLength(100)));
         }
 
         // The plain write is left as it was: existing callers keep their behaviour, and opting into
@@ -96,24 +92,25 @@ namespace BH.SDK.Tests.Rules
         [Category(Metadata.Category.Normal)]
         public void TestUncheckedWriteStillBypassesRules()
         {
-            var service = ServiceFor(typeof(RectObject));
             var obj = new RectObject { ObjectId = new ObjectId(1) };
 
-            Assert.IsTrue(service.SetValue(obj, ValueRules.MaxLayer + 1, Names.LayerShort));
+            Assert.IsTrue(obj.Apply(Override(obj, ModificationFields.Layer, ValueRules.MaxLayer + 1)));
             Assert.AreEqual(ValueRules.MaxLayer + 1, obj.Layer);
         }
 
+        // What used to be an unresolvable PATH is an unregistered ID now, and the answer is the
+        // same: refused by both halves, with nothing written.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.Normal)]
-        public void TestUnresolvablePathIsRefused()
+        public void TestUnregisteredFieldIsRefused()
         {
-            var service = ServiceFor(typeof(RectObject));
             var obj = new RectObject { ObjectId = new ObjectId(1) };
+            const int noSuchField = 0x7F01;
 
-            Assert.IsFalse(service.IsValueAllowed(obj, 1, "no_such_field", ContextOfLength(100)));
-            Assert.IsFalse(service.SetValueChecked(obj, 1, "no_such_field", ContextOfLength(100)));
+            Assert.IsFalse(ModificationUtils.IsValueAllowed(noSuchField, 1, ContextOfLength(100)));
+            Assert.IsFalse(obj.SetValueChecked(Override(obj, noSuchField, 1), ContextOfLength(100)));
         }
     }
 }

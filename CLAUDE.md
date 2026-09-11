@@ -25,7 +25,7 @@ tilde):
 | Project | Target | What it builds |
 |---|---|---|
 | `BH.SDK.csproj` | netstandard2.1 | The library: everything except `Roslyn/`, `Tests/` and `UnityExtensions/`. **`UnityIntegration/` is included WHOLE** — every file there is dual by contract (`#if BHSDK_UNITY`), and this build is what enforces it; see its `README.md` |
-| `Tests/BH.SDK.Tests.csproj` | net8.0 | Every fixture the Unity Test Runner runs, under `dotnet test` — **1791 passing** outside Unity. Its `Compile` include is RECURSIVE; while it was the folder root alone, `Tests/Rules` and `Tests/Services` were silently absent and the run reported a green 454 |
+| `Tests/BH.SDK.Tests.csproj` | net8.0 | Every fixture the Unity Test Runner runs, under `dotnet test` — **2030 passing** outside Unity. Its `Compile` include is RECURSIVE; while it was the folder root alone, `Tests/Rules` and `Tests/Services` were silently absent and the run reported a green 454 |
 | `Roslyn/BH.SDK.Roslyn.csproj` | netstandard2.0 | The analyzers and generators — see `Roslyn/README.md` |
 | `Roslyn/Tests~/BH.SDK.Roslyn.Tests.csproj` | net8.0 | Tests for the components themselves. **Invisible to Unity by the tilde**, and has to be — the asmdef above it would otherwise swallow the fixtures |
 
@@ -140,11 +140,14 @@ their string values are ordinal-prefixed (`"1_very_easy"` … `"5_extreme"`) so 
 sorts cheapest-first. The consuming Unity project states this as a hard rule and applies the same
 convention to its own test assemblies — see its root `CLAUDE.md`.
 
-`ModificationTests` covers only `ModificationService`'s path resolution (`TestGet`/`TestSet`/
-`TestJToken`, against two local throwaway models) — **not** `Modification.Value`'s long/double
-normalization, nor a `PrefabObject.Modifications` round trip through
-`DictionaryModificationsConverter`; both are worth adding, since a path that fails to resolve
-degrades to "the override silently doesn't apply" rather than throwing.
+**The modification fixtures are the worked example of what this suite is for**, and of what it
+missed for as long as they did not exist. `ModificationApplyTests` drives one field of each kind
+through `Apply` - in memory and after a serializer round trip - and it is what found that an int
+override never applied at all while an enum and an id stopped applying once they had been through
+the serializer. `ModificationValuesTests` pins the conversion that fixed them,
+`ModificationFieldsTests` the id table from both sides (the constants, and the members claiming
+them), and `Rules/ModificationCheckedWriteTests` the one write in the format that reaches a model
+with nothing to judge it. `Docs/Issues/MODIFICATION_FIELD_IDS_HISTORY.md` is the record.
 
 Per the SDK's own `TODO.md`: `SerializationService`'s stability across all keyframe/value/effect type
 combinations (round-trip + real saved level files) is explicitly flagged as not yet fully verified,

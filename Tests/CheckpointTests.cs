@@ -130,5 +130,79 @@ namespace BH.SDK.Tests
             Assert.AreEqual(CheckpointSpace.World, checkpoint.Space);
             Assert.AreEqual(0f, ((Vector2Value)checkpoint.Position).X);
         }
+
+        // RestoreHealth arrived the same way the position did - a new key on a model that never
+        // bumped its generation - so it owes the same two proofs. Off is the value that means "what
+        // this checkpoint always meant", which is exactly why an absent key must read as off.
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.VeryEasy)]
+        public void Default_DoesNotRestoreHealth()
+        {
+            Assert.IsFalse(new Checkpoint().RestoreHealth);
+            Assert.IsFalse(new Checkpoint("Mid", true, Color4Value.white, 10).RestoreHealth);
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Easy)]
+        public void Deserialize_DocumentWithoutTheHealKey_ReadsAsOff()
+        {
+            var json =
+                $"{{\"{Names.Generation}\":1,\"{Names.Value}\":{{\"checkpoints\":[{{\"f\":42,\"name\":\"Old\",\"a\":true}}]}}}}";
+
+            var events = new SerializationService().DeserializeData<GameEvents>(json);
+
+            Assert.IsFalse(events.Checkpoints[0].RestoreHealth);
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Easy)]
+        public void Serialize_RoundTripsRestoreHealth()
+        {
+            var events = new GameEvents();
+            events.Checkpoints.Add(new Checkpoint("Mid", true, Color4Value.white, 10,
+                new Vector2Value(1f, 1f), CheckpointSpace.World, true));
+
+            var service = new SerializationService();
+            var read = service.DeserializeData<GameEvents>(service.SerializeData(events));
+
+            Assert.IsTrue(read.Checkpoints[0].RestoreHealth);
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Easy)]
+        public void Copy_And_Equals_AccountForRestoreHealth()
+        {
+            var source = new Checkpoint("Mid", true, Color4Value.white, 10,
+                new Vector2Value(1f, 1f), CheckpointSpace.World, true);
+            var off = new Checkpoint("Mid", true, Color4Value.white, 10,
+                new Vector2Value(1f, 1f), CheckpointSpace.World);
+
+            Assert.IsTrue(source.Copy().RestoreHealth);
+            Assert.AreEqual(source, source.Copy());
+            Assert.AreNotEqual(source, off);
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Easy)]
+        public void Reset_TurnsRestoreHealthBackOff()
+        {
+            var checkpoint = new Checkpoint("Mid", true, Color4Value.white, 10,
+                new Vector2Value(1f, 1f), CheckpointSpace.Camera, true);
+
+            checkpoint.Reset();
+
+            Assert.IsFalse(checkpoint.RestoreHealth);
+        }
     }
 }

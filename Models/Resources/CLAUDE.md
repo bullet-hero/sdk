@@ -28,10 +28,12 @@ in the **same** `Objects` dictionary as everything else, discriminated only by
 placement diverges from its template without breaking the link. Three pieces:
 
 - `ModificationKey` (`Models/Primitives/`) — the *address*: `ObjectId` (the **template's inner** id,
-  not the materialized outer one, so the key survives re-materialization) + `string Path` (dotted/
-  indexed field path like `"pos[0].v"`, resolved through each property's `[JsonProperty]` name).
-  Being the dictionary key is what makes "one override per (object, field) pair" a structural
-  guarantee rather than a rule to enforce.
+  not the materialized outer one, so the key survives re-materialization) + `int Field` (a stable
+  `ModificationFields` number, NOT a JSON key spelling) + `int Index` (which element of a collection
+  field, or `WholeField` = -1). Being the dictionary key is what makes "one override per (object,
+  field) pair" a structural guarantee rather than a rule to enforce. It was a dotted string
+  (`"pos[0].v"`) until a key rename's cost outgrew it - `Docs/Issues/MODIFICATION_FIELD_IDS_HISTORY.md`
+  carries why, including the three spellings that never resolved at all.
 - `Modification` (`Models/Objects/`) — `Key` + an untyped `object Value`. The `Value` setter
   **normalizes integrals to `long` and floating-point to `double`** on assignment, deliberately
   matching what Newtonsoft always produces when deserializing a raw JSON number into an `object`
@@ -39,8 +41,13 @@ placement diverges from its template without breaking the link. Three pieces:
   a round trip. Its file header also lists the design limits still in force: only `RectObject`/
   `Prefab` targets, no parenting a `RectObject` *into* a prefab's inner objects (only the reverse),
   and no deep inheritance — an override applies only within the prefab scope it lives in.
-- `Services/ModificationService.cs` — the generic reflection get/set by path string that resolves a
-  `Key.Path` against a live model instance.
+- `Utils/ModificationUtils.cs` + the generated `ModificationTable` — applying one. The table is a
+  flat switch written by `BH.SDK.Roslyn`'s `ModificationTableGenerator` from every member carrying
+  `[ModificationField]`, so the apply path is reflection-free; `ModificationValues.TryConvert`
+  converts the untyped value back through the serializer that shaped it, which is what makes an int,
+  an enum and an id override land at all. `ModificationUtils` keeps the rule-checked write
+  (`IsValueAllowed`/`SetValueChecked`), the one place a `PropertyInfo` is still needed - an override
+  writes past every rule the target property carries, and nothing else can judge it.
 
 Overrides are **re-applied on top of a fresh template copy after every materialize/resync**
 (Unity-side: `Core`'s `PrefabMaterializer.ApplyModifications`; recorded by `GameEditor`'s

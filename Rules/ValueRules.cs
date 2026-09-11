@@ -417,11 +417,5 @@ namespace BH.SDK.Rules
 
         /// <summary> Upper bound of CustomLicense.LicenseText. </summary>
         public const int MaxLicenseText = 65_536;
-
-        // A Modification's field path ("pos[0].v"). Depth is what makes a path long, and the model
-        // tree is nowhere near deep enough to need more than this.
-
-        /// <summary> Upper bound of Modification.Key. </summary>
-        public const int MaxModificationPath = 256;
     }
 }

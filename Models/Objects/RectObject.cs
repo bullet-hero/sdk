@@ -36,11 +36,13 @@ namespace BH.SDK.Models.Objects
         /// <summary> Whose transform this one is relative to. Null means level space; reserved
         /// negative ids attach to the camera, the local player, or a prefab's root. </summary>
         [RuleParentObjectIdValid]
+        [ModificationField(ModificationFields.ParentObjectId)]
         [JsonProperty(Names.ParentObjectId)]
         public ObjectId ParentObjectId { get; set; }
 
         /// <summary> Editor-facing label. Not unique and not an identity - ObjectId is. </summary>
         [RuleNotNull, RuleStringMax(ValueRules.MaxEditorName)]
+        [ModificationField(ModificationFields.Name)]
         [JsonProperty(Names.Name)]
         public string Name { get; set; }
 
@@ -52,17 +54,20 @@ namespace BH.SDK.Models.Objects
 
         /// <summary> Whether the object participates at all - drawn and collided against. Applies
         /// down the hierarchy: an inactive parent takes its whole subtree with it. </summary>
+        [ModificationField(ModificationFields.Active)]
         [JsonProperty(Names.ActiveShort)]
         public bool Active { get; set; }
 
         /// <summary> Half-open lifetime [Start, End) on the owning scope's timeline. Outside it the
         /// object is not simulated at all, which is what keeps a long level cheap. </summary>
+        [ModificationField(ModificationFields.Span)]
         [JsonProperty(Names.SpanShort)]
         public FrameSpan Span { get; set; }
 
         /// <summary> Draw order among siblings - higher draws in front. Static here; LayerKey
         /// animates it where a track is wired up. </summary>
         [RuleInRange(ValueRules.MinLayer, ValueRules.MaxLayer)]
+        [ModificationField(ModificationFields.Layer)]
         [JsonProperty(Names.LayerShort)]
         public int Layer { get; set; }
 
@@ -71,12 +76,14 @@ namespace BH.SDK.Models.Objects
         /// <summary> Position track, in parent space. </summary>
         [RuleNotNull, RuleCollectionMaxCount(LevelRules.MaxObjectKeys)]
         [RuleCollectionUnique(nameof(PosKey.Frame))]
+        [ModificationField(ModificationFields.Positions)]
         [JsonProperty(Names.Position)]
         public List<PosKey> Positions { get; set; }
 
         /// <summary> Rotation track, in degrees around the pivot. </summary>
         [RuleNotNull, RuleCollectionMaxCount(LevelRules.MaxObjectKeys)]
         [RuleCollectionUnique(nameof(AngleKey.Frame))]
+        [ModificationField(ModificationFields.Rotations)]
         [JsonProperty(Names.Rotation)]
         public List<AngleKey> Rotations { get; set; }
 
@@ -84,12 +91,14 @@ namespace BH.SDK.Models.Objects
         /// scales children. </summary>
         [RuleNotNull, RuleCollectionMaxCount(LevelRules.MaxObjectKeys)]
         [RuleCollectionUnique(nameof(ScaKey.Frame))]
+        [ModificationField(ModificationFields.Scales)]
         [JsonProperty(Names.Scale)]
         public List<ScaKey> Scales { get; set; }
 
         /// <summary> Size track - the rect's own extents before scaling, in the parent's units. </summary>
         [RuleNotNull, RuleCollectionMaxCount(LevelRules.MaxObjectKeys)]
         [RuleCollectionUnique(nameof(ScaKey.Frame))]
+        [ModificationField(ModificationFields.Sizes)]
         [JsonProperty(Names.Size)]
         public List<ScaKey> Sizes { get; set; }
 
@@ -97,6 +106,7 @@ namespace BH.SDK.Models.Objects
         /// sticks to. Together with AnchorsMax this is what makes layouts survive aspect changes. </summary>
         [RuleNotNull, RuleCollectionMaxCount(LevelRules.MaxObjectKeys)]
         [RuleCollectionUnique(nameof(AlignmentKey.Frame))]
+        [ModificationField(ModificationFields.AnchorsMin)]
         [JsonProperty(Names.AnchorMin)]
         public List<AlignmentKey> AnchorsMin { get; set; }
 
@@ -104,6 +114,7 @@ namespace BH.SDK.Models.Objects
         /// means "stretch between the two". </summary>
         [RuleNotNull, RuleCollectionMaxCount(LevelRules.MaxObjectKeys)]
         [RuleCollectionUnique(nameof(AlignmentKey.Frame))]
+        [ModificationField(ModificationFields.AnchorsMax)]
         [JsonProperty(Names.AnchorMax)]
         public List<AlignmentKey> AnchorsMax { get; set; }
 
@@ -111,6 +122,7 @@ namespace BH.SDK.Models.Objects
         /// position refers to. </summary>
         [RuleNotNull, RuleCollectionMaxCount(LevelRules.MaxObjectKeys)]
         [RuleCollectionUnique(nameof(AlignmentKey.Frame))]
+        [ModificationField(ModificationFields.Pivots)]
         [JsonProperty(Names.PivotShort)]
         public List<AlignmentKey> Pivots { get; set; }
 

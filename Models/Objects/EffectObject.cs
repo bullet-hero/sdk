@@ -26,6 +26,7 @@ namespace BH.SDK.Models.Objects
 
         /// <summary> Which EffectData of Level.Resources.Effects to play. Several objects sharing one
         /// id share one definition, not one running instance. </summary>
+        [ModificationField(ModificationFields.EffectId)]
         [JsonProperty(Names.EffectId)]
         public EffectId EffectId { get; set; }
         

@@ -792,8 +792,11 @@
         /// <summary> Word kept in the key vocabulary; nothing is built from it today. </summary>
         public const string Path = "path";
 
-        /// <summary> ModificationKey.Path. </summary>
-        public const string PathShort = "p";
+        /// <summary> ModificationKey.Field. </summary>
+        public const string FieldShort = "f";
+
+        /// <summary> ModificationKey.Index. </summary>
+        public const string IndexShort = "i";
 
         /// <summary> Word kept in the key vocabulary; nothing is built from it today. </summary>
         public const string Order = "order";
@@ -1025,6 +1028,13 @@
 
         /// <summary> Checkpoint.Space. </summary>
         public const string Space = "spc";
+
+        // A MULTIPLE key, so no underscore and no spelled-out phrase - but already four characters
+        // as a whole word, which rule 1 of Docs/NAMING.md leaves alone. "rsthlth" would cost more
+        // and read worse. The C# member is RestoreHealth because a model member is read by a person.
+
+        /// <summary> Checkpoint.RestoreHealth. </summary>
+        public const string Heal = "heal";
 
         /// <summary> EffectShapeCircle.Aspect, ScreenLimitFixed.Aspect. </summary>
         public const string Aspect = "asp";

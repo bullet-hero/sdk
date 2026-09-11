@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using BH.SDK.Models;
 using BH.SDK.Models.Data;
 using BH.SDK.Models.Objects;
 using BH.SDK.Models.Values;
@@ -87,7 +88,7 @@ namespace BH.SDK.Tests
             placement.ObjectIds.Add(new ObjectId(5), new ObjectId(50));
             placement.ObjectIds.Add(new ObjectId(6), new ObjectId(60));
 
-            var key = new ModificationKey(new ObjectId(5), "lay");
+            var key = new ModificationKey(new ObjectId(5), ModificationFields.Layer);
             placement.Modifications.Add(key, new Modification(key, 3L));
 
             var other = new PrefabObject { ObjectId = new ObjectId(2) };

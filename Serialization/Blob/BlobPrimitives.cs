@@ -51,18 +51,25 @@ namespace BH.SDK.Serialization.Blob
 
         #region ModificationKey
 
-        /// <summary> The template object it addresses plus the field path, as written state has no setters. </summary>
+        // THE INDEX IS WRITTEN LAST AND NEVER MOVES, per NAMING.md's positional rule: the blob
+        // writes no names, so inserting a member anywhere but the end makes every trailing byte
+        // mean something else. Field took the place the path held rather than being appended,
+        // which is legal only because nothing on disk predates it.
+
+        /// <summary> The template object it addresses, the field, and which element of it. </summary>
         public static void Write(ref BlobWriter writer, ModificationKey value)
         {
             writer.WriteInt(value.ObjectId.value);
-            writer.WriteString(value.Path);
+            writer.WriteInt(value.Field);
+            writer.WriteInt(value.Index);
         }
 
-        /// <summary> Rebuilds the key through its constructor, since its properties are get-only. </summary>
+        /// <summary> Rebuilds the key through its constructor, in the order Write laid it down. </summary>
         public static ModificationKey ReadModificationKey(ref BlobReader reader)
         {
             var objectId = new ObjectId(reader.ReadInt());
-            return new ModificationKey(objectId, reader.ReadString());
+            var field = reader.ReadInt();
+            return new ModificationKey(objectId, field, reader.ReadInt());
         }
 
         #endregion

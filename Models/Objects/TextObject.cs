@@ -31,6 +31,7 @@ namespace BH.SDK.Models.Objects
         /// <summary> The text to show, localizable - a level can read differently per language
         /// without duplicating the object. </summary>
         [RuleNotNull(typeof(StringValue)), RuleIStringMax(ValueRules.MaxGameString)]
+        [ModificationField(ModificationFields.Text)]
         [JsonProperty(Names.Text)]
         public IString Text { get; set; }
 
@@ -40,6 +41,7 @@ namespace BH.SDK.Models.Objects
         /// <summary> Typeface, defaulting to the bundled one so a level always renders even without
         /// its own font shipped alongside. </summary>
         [RuleIPrimitiveIntNotNull, RuleReferenceExists(ResourceReferenceKind.Font)]
+        [ModificationField(ModificationFields.FontResourceId)]
         [JsonProperty(Names.FontResourceId)]
         public FontResourceId FontResourceId { get; set; }
 
@@ -47,6 +49,7 @@ namespace BH.SDK.Models.Objects
         /// uses - glyphs have no quad to grade across. </summary>
         [RuleNotNull, RuleCollectionMaxCount(LevelRules.MaxObjectKeys)]
         [RuleCollectionUnique(nameof(Color4Key.Frame))]
+        [ModificationField(ModificationFields.TextColors)]
         [JsonProperty(Names.Color)]
         public List<Color4Key> Colors { get; set; }
 
@@ -61,6 +64,7 @@ namespace BH.SDK.Models.Objects
         /// glyphs, the other stretches the whole rendered block. </summary>
         [RuleNotNull, RuleCollectionMaxCount(LevelRules.MaxObjectKeys)]
         [RuleCollectionUnique(nameof(Keyframe.Frame)), RuleCollectionNoNullItems]
+        [ModificationField(ModificationFields.FontSizes)]
         [JsonProperty(Names.FontSize)]
         public List<IFontSizeKey> FontSizes { get; set; }
 
@@ -77,6 +81,7 @@ namespace BH.SDK.Models.Objects
         /// direction it is written from. </summary>
         [RuleNotNull, RuleCollectionMaxCount(LevelRules.MaxObjectKeys)]
         [RuleCollectionUnique(nameof(FillmentKey.Frame)), RuleCollectionNoNullItems]
+        [ModificationField(ModificationFields.Fillments)]
         [JsonProperty(Names.Fillment)]
         public List<FillmentKey> Fillments { get; set; }
 
@@ -85,6 +90,7 @@ namespace BH.SDK.Models.Objects
         /// not removed. </summary>
         [RuleNotNull, RuleCollectionMaxCount(LevelRules.MaxObjectKeys)]
         [RuleCollectionUnique(nameof(AppearingKey.Frame)), RuleCollectionNoNullItems]
+        [ModificationField(ModificationFields.Appearings)]
         [JsonProperty(Names.Appearing)]
         public List<AppearingKey> Appearings { get; set; }
 
@@ -92,20 +98,24 @@ namespace BH.SDK.Models.Objects
         /// character censors, several decode. Object-wide, unlike the mode - it is the text's own
         /// alphabet, not something to animate. </summary>
         [RuleNotNull, RuleStringMax(TextRules.MaxAppearingMask)]
+        [ModificationField(ModificationFields.AppearingMask)]
         [JsonProperty(Names.AppearingMask)]
         public string AppearingMask { get; set; }
 
         /// <summary> Whether long lines wrap at the rect's width instead of overflowing it. </summary>
+        [ModificationField(ModificationFields.WordWrap)]
         [JsonProperty(Names.WordWrap)]
         public bool WordWrap { get; set; }
 
         /// <summary> Horizontal placement of the text inside its rect. </summary>
         [RuleEnumValid(TextRules.HorizontalAlignment_Default)]
+        [ModificationField(ModificationFields.HorizontalAlignment)]
         [JsonProperty(Names.HorizontalAlignment)]
         public TextObjectHorizontalAlignment HorizontalAlignment { get; set; }
 
         /// <summary> Vertical placement of the text inside its rect. </summary>
         [RuleEnumValid(TextRules.VerticalAlignment_Default)]
+        [ModificationField(ModificationFields.VerticalAlignment)]
         [JsonProperty(Names.VerticalAlignment)]
         public TextObjectVerticalAlignment VerticalAlignment { get; set; }
 

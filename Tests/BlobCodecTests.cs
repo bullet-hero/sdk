@@ -497,8 +497,8 @@ namespace BH.SDK.Tests
 
             var placement = new PrefabObject { ObjectId = new ObjectId(90000) };
             placement.ObjectIds[new ObjectId(1)] = new ObjectId(90001);
-            placement.Modifications[new ModificationKey(new ObjectId(1), "layer")] =
-                new Modification(new ObjectId(1), "layer", 7);
+            placement.Modifications[new ModificationKey(new ObjectId(1), ModificationFields.Layer)] =
+                new Modification(new ObjectId(1), ModificationFields.Layer, 7);
             level.Game.Objects[placement.ObjectId] = placement;
 
             return level;
