@@ -9,6 +9,7 @@ using BH.SDK.Serialization.Serializers;
 using BH.SDK.Services.Archive;
 using BH.SDK.Services.Content;
 using BH.SDK.Services.Crypto;
+using BH.SDK.Utils;
 
 namespace BH.SDK.Services.Package
 {
@@ -111,7 +112,14 @@ namespace BH.SDK.Services.Package
                 ArchiveEntrySource.FromBytes(metaName, serialization.SerializeEnvelope(plan.Meta, options.MetaFormat)),
             };
 
-            var levelBytes = serialization.SerializeEnvelope(plan.Level, options.LevelFormat);
+            // THINNED LIKE ANY OTHER LEVEL WRITE. A package's level document is a level.json by
+            // another name, so a placement's materialized copies stay out of it and are rebuilt on
+            // import (LevelPackageGenerator). The host's own writes go through
+            // BH.Core.Services.FileLoaderService, which does the same thing one line down; this path
+            // never reaches it, and a package holding the copies would be the one shape of this
+            // format that still carried them.
+            var levelBytes = serialization.SerializeEnvelope(
+                PrefabVirtualizationUtils.Thin(plan.Level), options.LevelFormat);
 
             if (passphrase == null || passphrase.Length == 0)
             {

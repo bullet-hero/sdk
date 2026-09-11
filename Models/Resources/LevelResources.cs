@@ -91,9 +91,10 @@ namespace BH.SDK.Models.Resources
             CompositeShapes = new Dictionary<ShapeId, CompositeShape>();
             Themes = new Dictionary<ThemeId, ThemeData>();
             Effects = new Dictionary<EffectId, EffectData>();
-            
+
             Prefabs = new Dictionary<PrefabId, Prefab>();
         }
+
         /// <summary> Every member at once, in declaration order. </summary>
         public LevelResources(Dictionary<TextureResourceId, TextureResource> textures,
             Dictionary<FontResourceId, FontResource> fonts,
@@ -111,5 +112,9 @@ namespace BH.SDK.Models.Resources
             Effects = effects;
             Prefabs = prefabs;
         }
+
+        /// <summary> A copy sharing every member instance - see <see cref="Level.ShallowClone"/> for
+        /// what it is for and why it is not <c>Copy</c>. </summary>
+        internal LevelResources ShallowClone() => (LevelResources)MemberwiseClone();
     }
 }

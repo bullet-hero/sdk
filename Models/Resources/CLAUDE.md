@@ -15,6 +15,15 @@ have no game-defined preset tier. The editor's prefab picker offers it as its ow
 (`SearchOrigin.Library`); choosing an entry imports the resource, creates the placement and
 materializes the template as ONE undo step.
 
+**A placement's materialized copies are not in the FILE.** They are dropped before a write and
+rebuilt after a read by `Utils/PrefabVirtualizationUtils` (`Thin`/`Expand`), from `pfid` + `ids` +
+`mod` — which is all that is needed, and was worth 62-82% of four corpus levels' bytes. Nothing about
+the model changed and nothing else learns that a load-time step exists: by the time the editor, the
+runtime or a validator sees a level, the scope is flat exactly as it always was. The one rule to keep
+straight is where an outer id is BORN — at edit time, in the consumer's `PrefabMaterializer`; the
+expander reads the table and refuses rather than minting. `Docs/Issues/PREFAB_VIRTUALIZATION_HISTORY.md`
+is the record.
+
 `Prefab` (`Models/Objects/Prefab.cs`, a `Level.Resources.Prefabs` entry) is the *template*: its own
 `Objects`/`ObjectIdCounter`, plus its own authored `Name`/`FrameDuration`. `PrefabObject` (a
 `RectObject` subclass) is the *placement*: `PrefabId` (which template) +

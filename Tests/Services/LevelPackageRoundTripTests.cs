@@ -12,6 +12,7 @@ using BH.SDK.Serialization.Serializers;
 using BH.SDK.Services.Archive;
 using BH.SDK.Services.Content;
 using BH.SDK.Services.Package;
+using BH.SDK.Utils;
 using NUnit.Framework;
 
 namespace BH.SDK.Tests.Services
@@ -84,8 +85,17 @@ namespace BH.SDK.Tests.Services
             return LevelPackageReader.ReadAsync(source, passphrase, token: CancellationToken.None);
         }
 
-        private static Level Deserialize(LevelPackageContent content) =>
-            Serialization.DeserializeEnvelope<Level>(content.LevelBytes, content.LevelFormat);
+        // READING A LEVEL DOCUMENT IS TWO STEPS, and a package's is a level document like any other:
+        // the bytes carry a placement rather than the copies it stands for, so a reader that stops
+        // at the deserializer holds a level that is missing everything every prefab contributes.
+        // LevelPackageGenerator - the real importer - does exactly this pair; so does
+        // LevelLoaderService on the host side.
+        private static Level Deserialize(LevelPackageContent content)
+        {
+            var level = Serialization.DeserializeEnvelope<Level>(content.LevelBytes, content.LevelFormat);
+            PrefabVirtualizationUtils.Expand(level);
+            return level;
+        }
 
         private static LevelMeta DeserializeMeta(LevelPackageContent content) =>
             Serialization.DeserializeEnvelope<LevelMeta>(content.MetaBytes, content.MetaFormat);

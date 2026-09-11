@@ -21,7 +21,11 @@ layer-wide conventions. This file is folder-local.
 `Tests/Services/ShapeCatalogServiceTests` (the built-in shape library — id round trip, retired and
 future-axis ids refused, and the two geometric invariants a person cannot eyeball across five
 hundred entries: a shape and its inverse tile the sector they were cut from, and slices tile the
-whole). **`Tests/Rules/` is the bulk** — 54 files,
+whole) and `Tests/Utils/PrefabVirtualizationTests` (the pair that keeps a prefab placement's copies
+out of the file — both directions, the report's four findings, idempotence, and the two cases a
+reader has to survive: a file written before the change that still carries its copies, and a
+capacity hint swept off a thinned level. `Docs/Issues/PREFAB_VIRTUALIZATION_HISTORY.md` is the
+record). **`Tests/Rules/` is the bulk** — 54 files,
   roughly one per `[RuleXxx]` attribute on top of `BaseRuleTests` (the shared analyze/fix harness),
   `RuleCoverageTests` (fails if a rule has no test file), `RuleContextTests`, `RulesConsistencyTests`,
   `LevelGraphAnalyzerTests`, `ValidationFacadeTests`, `ModificationCheckedWriteTests`. Five of them

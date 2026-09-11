@@ -26,6 +26,7 @@ using BH.SDK.Models.SettingGroups;
 using BH.SDK.Models.Values;
 using BH.SDK.Rules;
 using BH.SDK.Serialization;
+using BH.SDK.Utils;
 using BH.SDK.Versions;
 using BH.SDK.Versions.V0;
 using Newtonsoft.Json.Linq;
@@ -263,7 +264,7 @@ namespace BH.SDK.Tests
             var prefab = new Prefab()
             {
                 PrefabId = PrefabId.NewGuid(),
-                ObjectIdCounter = 5,
+                ObjectIdCounter = 6,
             };
             prefab.Objects.Add(new ObjectId(1), new ShapeObject()
             {
@@ -278,13 +279,29 @@ namespace BH.SDK.Tests
                 ObjectId = new ObjectId(3),
             });
             var innerPrefabObject = new PrefabObject { ObjectId = new ObjectId(4), PrefabId = innerPrefab.PrefabId };
-            innerPrefabObject.ObjectIds.Add(new ObjectId(1), new ObjectId(2));
+            innerPrefabObject.ObjectIds.Add(new ObjectId(1), new ObjectId(5));
             prefab.Objects.Add(innerPrefabObject.ObjectId, innerPrefabObject);
             level.Resources.Prefabs.Add(prefab.PrefabId, prefab);
 
+            // EVERY REMAP TABLE HERE DESCRIBES A REAL COPY, which it did not have to before and now
+            // does: a placement's children are rebuilt from this table on every read
+            // (PrefabVirtualizationUtils), so a table naming an object that is not a copy of that
+            // template object is not a quirk of a fixture any more - it is a level that changes
+            // shape when it is written and read back. One entry per object of the template it
+            // places, including the one the template's own nested placement contributes.
             var prefabObject = new PrefabObject { ObjectId = new ObjectId(4), PrefabId = prefab.PrefabId };
-            prefabObject.ObjectIds.Add(new ObjectId(1), new ObjectId(3));
+            prefabObject.ObjectIds.Add(new ObjectId(1), new ObjectId(5));
+            prefabObject.ObjectIds.Add(new ObjectId(2), new ObjectId(6));
+            prefabObject.ObjectIds.Add(new ObjectId(3), new ObjectId(7));
+            prefabObject.ObjectIds.Add(new ObjectId(4), new ObjectId(8));
+            prefabObject.ObjectIds.Add(new ObjectId(5), new ObjectId(9));
             level.Game.Objects.Add(prefabObject.ObjectId, prefabObject);
+            level.Settings.ObjectIdCounter = 10;
+
+            // The fixture is a level as it PLAYS, not as it is written - the copies exist, exactly
+            // as they do the moment any reader opens the file. Building them by hand would restate
+            // the expander's own rules and agree with it by construction rather than by test.
+            PrefabVirtualizationUtils.Expand(level);
 
             level.Resources.Themes.Add(themeId, new ThemeData(themeId));
 

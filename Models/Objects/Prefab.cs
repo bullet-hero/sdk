@@ -40,7 +40,7 @@ namespace BH.SDK.Models.Objects
         [RuleInRange(FrameRules.MinFrameDuration, PrefabRules.MaxFrameDuration)]
         [JsonProperty(Names.FrameDurationShort)]
         public int FrameDuration { get; set; }
-        
+
         // Nested PrefabObject placements (instances of OTHER prefabs, placed inside this template)
         // live directly in here too, already fully materialized - see IObjectScope's own comment.
 
@@ -75,8 +75,10 @@ namespace BH.SDK.Models.Objects
             ObjectIdCounter = ObjectId.MinLevelValue;
             FrameDuration = PrefabRules.DefaultFrameDuration;
         }
+
         /// <summary> Every member at once, in declaration order. </summary>
-        public Prefab(PrefabId prefabId, string name, Dictionary<ObjectId, RectObject> objects, int objectIdCounter, int frameDuration)
+        public Prefab(PrefabId prefabId, string name, Dictionary<ObjectId, RectObject> objects, int objectIdCounter,
+            int frameDuration)
         {
             PrefabId = prefabId;
             Name = name;
@@ -84,5 +86,9 @@ namespace BH.SDK.Models.Objects
             ObjectIdCounter = objectIdCounter;
             FrameDuration = frameDuration;
         }
+
+        /// <summary> A copy sharing every member instance - see <see cref="Level.ShallowClone"/> for
+        /// what it is for and why it is not <c>Copy</c>. </summary>
+        internal Prefab ShallowClone() => (Prefab)MemberwiseClone();
     }
 }

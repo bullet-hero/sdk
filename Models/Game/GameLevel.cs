@@ -42,7 +42,7 @@ namespace BH.SDK.Models.Game
         [RuleNotNull]
         [JsonProperty(Names.PlayerEvents)]
         public PlayerEvents PlayerEvents { get; set; }
-        
+
         /// <summary> Every object in the level, flat and keyed by id - hierarchy is expressed through
         /// each object's ParentObjectId, not by nesting. </summary>
         [GenerateModelKeyed(nameof(RectObject.ObjectId))]
@@ -62,6 +62,7 @@ namespace BH.SDK.Models.Game
 
             Objects = new Dictionary<ObjectId, RectObject>();
         }
+
         /// <summary> Every member at once, in declaration order. </summary>
         public GameLevel(GameEvents events, CameraEvents cameraEvents, PostProcessingEvents postProcessingEvents,
             PlayerEvents playerEvents, Dictionary<ObjectId, RectObject> objects)
@@ -73,5 +74,9 @@ namespace BH.SDK.Models.Game
 
             Objects = objects;
         }
+
+        /// <summary> A copy sharing every member instance - see <see cref="Level.ShallowClone"/> for
+        /// what it is for and why it is not <c>Copy</c>. </summary>
+        internal GameLevel ShallowClone() => (GameLevel)MemberwiseClone();
     }
 }

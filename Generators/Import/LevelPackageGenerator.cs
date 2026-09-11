@@ -5,6 +5,7 @@ using BH.SDK.Models;
 using BH.SDK.Models.Primitives;
 using BH.SDK.Serialization;
 using BH.SDK.Serialization.Serializers;
+using BH.SDK.Utils;
 
 namespace BH.SDK.Generators.Import
 {
@@ -34,6 +35,7 @@ namespace BH.SDK.Generators.Import
         private const string CodeUnreadable = "package.unreadable";
         private const string CodeNoMeta = "package.no_metadata";
         private const string CodeNewId = "package.new_level_id";
+        private const string CodePlacementsIncomplete = "package.placements_incomplete";
 
         // Its own instance rather than an injected one: a generator is constructed by a reflection
         // scan with no arguments, and this service is stateless configuration whose converter list
@@ -111,6 +113,15 @@ namespace BH.SDK.Generators.Import
                 return Empty();
             }
 
+            // A PACKAGE IS A LEVEL FILE, so it carries the same virtualized placements a level.json
+            // does and needs the same step on the way in. The host's own loader does this for a
+            // level it reads off disk; a generator reads its bytes itself, so it does it itself.
+            var expansion = PrefabVirtualizationUtils.Expand(level);
+            if (!expansion.IsEmpty)
+                report.Dropped(CodePlacementsIncomplete,
+                    $"{expansion.Count} prefab placement issue(s): part of the level's prefab content " +
+                    "could not be rebuilt and is missing.", parameters.SourcePath);
+
             return new GeneratedLevel(level, ReadMeta(parameters, report));
         }
 
@@ -184,10 +195,16 @@ namespace BH.SDK.Generators.Import
 
             if (level?.Resources == null) return GeneratorCost.Zero;
 
+            // Expanded before it is counted, or the number under-reports by every prefab copy in the
+            // package - which on a prefab-heavy level is most of it.
+            PrefabVirtualizationUtils.Expand(level);
+
             var resources = level.Resources.Textures.Count + level.Resources.Fonts.Count
-                            + level.Resources.Audios.Count + level.Resources.CompositeShapes.Count
-                            + level.Resources.Themes.Count + level.Resources.Effects.Count
-                            + level.Resources.Prefabs.Count;
+                                                           + level.Resources.Audios.Count +
+                                                           level.Resources.CompositeShapes.Count
+                                                           + level.Resources.Themes.Count +
+                                                           level.Resources.Effects.Count
+                                                           + level.Resources.Prefabs.Count;
 
             return new GeneratorCost(level.Game?.Objects?.Count ?? 0, 0, resources);
         }
@@ -211,14 +228,19 @@ namespace BH.SDK.Generators.Import
 
             /// <summary> The level document as it came out of the package. </summary>
             public byte[] LevelBytes = Array.Empty<byte>();
+
             /// <summary> Which format those bytes are in. </summary>
             public SerializationType LevelFormat = SerializationType.Json;
+
             /// <summary> The metadata document, where the package carried one. </summary>
             public byte[] MetaBytes;
+
             /// <summary> Which format that one is in. </summary>
             public SerializationType MetaFormat = SerializationType.Json;
+
             /// <summary> Where the package came from, for the report. </summary>
             public string SourcePath = string.Empty;
+
             /// <summary> What else the package held, so the import can tell a missing resource from one it never had. </summary>
             public string[] ResourceFileNames = Array.Empty<string>();
 

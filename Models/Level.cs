@@ -67,9 +67,12 @@ namespace BH.SDK.Models
             Resources = new LevelResources();
             Hints = new LevelHints();
         }
+
         /// <summary> Built from its settings, game, audio and resources. </summary>
         public Level(LevelSettings settings, GameLevel game, AudioLevel audio, LevelResources resources)
-            : this(settings, game, audio, resources, new LevelHints()) { }
+            : this(settings, game, audio, resources, new LevelHints())
+        {
+        }
 
         /// <summary> Every member at once, in declaration order. </summary>
         public Level(LevelSettings settings, GameLevel game, AudioLevel audio, LevelResources resources,
@@ -81,5 +84,18 @@ namespace BH.SDK.Models
             Resources = resources;
             Hints = hints;
         }
+
+        // A REFERENCE-SHARING COPY, AND THE ONLY CALLER IS PrefabVirtualizationUtils.Thin. Thinning
+        // a level for a write has to replace exactly two collections (a scope's Objects, and the
+        // prefab table holding scopes of their own) without touching the level anyone else is
+        // holding - the editor keeps editing straight through a save. Copy() is the wrong tool: it
+        // walks the whole graph, which is 124 ms on the largest level here and would be paid on
+        // every autosave. MemberwiseClone is used rather than a hand-written member list precisely
+        // because a member added later joins it by itself; a hand-written one would silently drop
+        // the new member from every written file. Shared instances are safe here because the writer
+        // only reads - it is NOT a substitute for the snapshot a save already takes.
+
+        /// <summary> A copy sharing every member instance, for replacing one or two of them. </summary>
+        internal Level ShallowClone() => (Level)MemberwiseClone();
     }
 }

@@ -25,7 +25,7 @@ tilde):
 | Project | Target | What it builds |
 |---|---|---|
 | `BH.SDK.csproj` | netstandard2.1 | The library: everything except `Roslyn/`, `Tests/` and `UnityExtensions/`. **`UnityIntegration/` is included WHOLE** — every file there is dual by contract (`#if BHSDK_UNITY`), and this build is what enforces it; see its `README.md` |
-| `Tests/BH.SDK.Tests.csproj` | net8.0 | Every fixture the Unity Test Runner runs, under `dotnet test` — **2030 passing** outside Unity. Its `Compile` include is RECURSIVE; while it was the folder root alone, `Tests/Rules` and `Tests/Services` were silently absent and the run reported a green 454 |
+| `Tests/BH.SDK.Tests.csproj` | net8.0 | Every fixture the Unity Test Runner runs, under `dotnet test` — **2051 passing** outside Unity. Its `Compile` include is RECURSIVE; while it was the folder root alone, `Tests/Rules` and `Tests/Services` were silently absent and the run reported a green 454 |
 | `Roslyn/BH.SDK.Roslyn.csproj` | netstandard2.0 | The analyzers and generators — see `Roslyn/README.md` |
 | `Roslyn/Tests~/BH.SDK.Roslyn.Tests.csproj` | net8.0 | Tests for the components themselves. **Invisible to Unity by the tilde**, and has to be — the asmdef above it would otherwise swallow the fixtures |
 
