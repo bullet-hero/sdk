@@ -133,6 +133,28 @@ namespace BH.SDK.Models.SettingGroups
         [JsonProperty(Names.ShowGameInterface)]
         public bool ShowGameInterface { get; set; }
 
+        // A SLIDER RATHER THAN A FLAG, and the one HUD element that is not on the screen edge at
+        // all: the hitbox ring is drawn on the avatar, at the collision radius, and it is ON by
+        // default because the picture without it LIES - the drawn body is 1x1 against a collision
+        // radius of AvatarRules.CollisionScale, so a player reading the silhouette as the hitbox
+        // overestimates it by more than half its area. Levels are balanced for someone who can see
+        // it.
+        //
+        // WHAT THE SLIDER IS FOR is how loud it is over whatever the level draws, which is a taste
+        // and legibility call rather than a difficulty one - 0 turns it off for a player who wants
+        // the clean picture, and that is the only sense in which it is optional. It mirrors
+        // EditorSelectionSettings.ColliderOpacityView, which does the same job for the editor's
+        // collider overlay.
+        //
+        // DEFAULTED ABOVE ZERO, so a settings file written before this key reads back as a visible
+        // ring rather than as a hidden one - the same additive shape the four flags above have, and
+        // the reason neither the generation nor a migrator moves.
+
+        /// <summary> How visible the avatar's hitbox ring is. 0 hides it entirely. </summary>
+        [JsonProperty(Names.HitboxRingOpacity)]
+        [RuleInRange(0f, 1f)]
+        public float HitboxRingOpacity { get; set; }
+
         // TRUE BY DEFAULT, like the three flags above and for the same reason: it names the
         // behaviour the game already had, so a settings file written before it reads back
         // unchanged and neither the generation nor a migrator moves.
@@ -148,6 +170,9 @@ namespace BH.SDK.Models.SettingGroups
         /// logged either way. </summary>
         [JsonProperty(Names.AlertOnException)]
         public bool AlertOnException { get; set; }
+
+        /// <summary> What the hitbox ring's opacity is worth before a player touches it. </summary>
+        public const float DefaultHitboxRingOpacity = 0.6f;
 
         /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public InterfaceSettings()
@@ -165,6 +190,7 @@ namespace BH.SDK.Models.SettingGroups
             ShowGameProgress = true;
             ShowGamePause = true;
             ShowGameInterface = true;
+            HitboxRingOpacity = DefaultHitboxRingOpacity;
             AlertOnException = true;
         }
 
@@ -188,6 +214,7 @@ namespace BH.SDK.Models.SettingGroups
             ShowGameProgress = true;
             ShowGamePause = true;
             ShowGameInterface = true;
+            HitboxRingOpacity = DefaultHitboxRingOpacity;
             AlertOnException = true;
         }
 

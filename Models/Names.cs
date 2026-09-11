@@ -139,6 +139,12 @@
         /// <summary> Word fragment, built into ShowGamePause. </summary>
         public const string Pause = "pause";
 
+        /// <summary> Word fragment, built into HitboxRingOpacity. </summary>
+        public const string Hitbox = "hitbox";
+
+        /// <summary> Word fragment, built into HitboxRingOpacity. </summary>
+        public const string Ring = "ring";
+
         /// <summary> AudioSettings.Game, Level.Game. </summary>
         public const string Game = "game";
 
@@ -1979,6 +1985,9 @@
 
         /// <summary> <c>"show_game_iface"</c> - InterfaceSettings.ShowGameInterface. </summary>
         public const string ShowGameInterface = Show + _ + Game + _ + Interface;
+
+        /// <summary> <c>"hitbox_ring_opacity"</c> - InterfaceSettings.HitboxRingOpacity. </summary>
+        public const string HitboxRingOpacity = Hitbox + _ + Ring + _ + Opacity;
 
         /// <summary> <c>"alert_on_exception"</c> - InterfaceSettings.AlertOnException. </summary>
         public const string AlertOnException = Alert + _ + On + _ + Exception;

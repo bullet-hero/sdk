@@ -42,6 +42,11 @@ namespace BH.SDK.Models.SettingGroups
         [JsonProperty(Names.Effects)]
         public EffectsGraphicsSettings Effects { get; set; }
 
+        /// <summary> How the player avatar is drawn - today, whether its body shatters as health falls. </summary>
+        [RuleNotNull]
+        [JsonProperty(Names.Avatar)]
+        public AvatarGraphicsSettings Avatar { get; set; }
+
         /// <summary> Per-effect switches for the post-processing stack. </summary>
         [RuleNotNull]
         [JsonProperty(Names.PostProcessing)]
@@ -82,6 +87,7 @@ namespace BH.SDK.Models.SettingGroups
             FpsFixed = 60;
             Audio = new AudioGraphicsSettings();
             Effects = new EffectsGraphicsSettings();
+            Avatar = new AvatarGraphicsSettings();
             PostProcessing = new PostProcessingGraphicsSettings();
             AntiAliasing = new AntiAliasingGraphicsSettings();
             Textures = new TexturesGraphicsSettings();
@@ -90,7 +96,7 @@ namespace BH.SDK.Models.SettingGroups
 
         /// <summary> Every member at once, in declaration order. </summary>
         public GraphicsSettings(FramerateTarget framerateTarget, int fixedFramerate,
-            AudioGraphicsSettings audio, EffectsGraphicsSettings effects,
+            AudioGraphicsSettings audio, EffectsGraphicsSettings effects, AvatarGraphicsSettings avatar,
             PostProcessingGraphicsSettings postProcessing, AntiAliasingGraphicsSettings antiAliasing,
             TexturesGraphicsSettings textures, DisplayGraphicsSettings display)
         {
@@ -98,6 +104,7 @@ namespace BH.SDK.Models.SettingGroups
             FpsFixed = fixedFramerate;
             Audio = audio;
             Effects = effects;
+            Avatar = avatar;
             PostProcessing = postProcessing;
             AntiAliasing = antiAliasing;
             Textures = textures;

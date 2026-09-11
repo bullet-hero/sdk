@@ -54,6 +54,16 @@ before the field reads back as the field's default, so the default is also what 
 addition needs a migrator. Opacity is the only part of its colour anyone authors; the hue is derived from the
 camera background live, which is why there is no grid colour here.
 
+`AvatarGraphicsSettings` is the smallest group here and carries no member of its own: the inherited
+`Render` IS the setting, and what it switches is whether the player avatar's body comes apart cell by
+cell as health falls (the consumer's `ShatterGridMath` - 25 squares for the body and 25 for its
+shadow) or collapses to one square each that health fades instead. Two readings of one number, one of
+them a twenty-fifth of the objects, which is what makes it a graphics option rather than a
+preference. **True on every platform**, phones included: 50 inframe squares are not much next to
+what a level draws, and it is the game's main piece
+of readable feedback about how a run is going. Additive like everything else here, so `UserSettings`
+stays at generation 1.
+
 `AntiAliasingGraphicsSettings` (`Type`/`Msaa`/`Hdr`) is the one graphics sub-group that does **not**
 derive from `BaseGraphicsSettings`, and the omission is deliberate: an inherited `Render` would mean
 "is anti-aliasing on", which is exactly what `Type = None` already says, and two switches for one
