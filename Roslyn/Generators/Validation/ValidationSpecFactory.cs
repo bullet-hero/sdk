@@ -15,7 +15,14 @@ namespace BH.SDK.Roslyn.Validation
 
         private const string PropertyRuleBase = "BH.SDK.Rules.Attributes.BasePropertyRuleAttribute";
         private const string ObjectRuleBase = "BH.SDK.Rules.Attributes.BaseObjectRuleAttribute";
-        private const string FrameScope = "BH.SDK.Models.Interfaces.IFrameScope";
+        // THE ONE MODEL TYPE THIS GENERATOR NAMES, and it names it because the format has exactly
+        // one object scope carrying a timeline of its own and that stopped being something a type
+        // can declare: a template's length is its root's span (Prefab.Root), so the IFrameScope
+        // marker it used to be detected by had nothing left to hold and was deleted. An interface
+        // with no members would be the alternative, and a marker no runtime code reads is a worse
+        // answer than one name in one generator - RuleContext.WithScope takes the same concrete
+        // type, so the emitted call would not compile for anything else anyway.
+        private const string PrefabScope = "BH.SDK.Models.Objects.Prefab";
         private const string Validatable = "BH.SDK.Validations.IValidatable";
 
         private const string ListType = "System.Collections.Generic.List<T>";
@@ -54,7 +61,7 @@ namespace BH.SDK.Roslyn.Validation
                 type.Name,
                 type.DeclaredAccessibility == Accessibility.Public ? "public" : "internal",
                 type.IsSealed,
-                type.AllInterfaces.Any(i => i.ToDisplayString() == FrameScope),
+                type.ToDisplayString() == PrefabScope,
                 HasObjectRules(type),
                 EquatableArray.From(properties),
                 HintName(type));

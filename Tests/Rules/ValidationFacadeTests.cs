@@ -1,10 +1,11 @@
+using System.Linq;
 using BH.SDK.Models;
 using BH.SDK.Models.Objects;
 using BH.SDK.Models.Primitives;
+using BH.SDK.Rules;
 using BH.SDK.Validations;
 using BH.SDK.Validations.Graph;
 using NUnit.Framework;
-using System.Linq;
 
 namespace BH.SDK.Tests.Rules
 {
@@ -90,7 +91,11 @@ namespace BH.SDK.Tests.Rules
         [Category(Metadata.Category.Hard)]
         public void TestStandalonePrefab()
         {
-            var prefab = new Prefab { PrefabId = PrefabId.NewGuid(), FrameDuration = 100 };
+            var prefab = new Prefab
+            {
+                PrefabId = PrefabId.NewGuid(),
+                Root = { Span = new FrameSpan(FrameRules.MinFrame, 100) },
+            };
             var inner = new RectObject { ObjectId = new ObjectId(1), Span = new FrameSpan(0, 51) };
             prefab.Objects.Add(inner.ObjectId, inner);
             prefab.ObjectIdCounter = 2;

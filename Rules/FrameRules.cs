@@ -35,7 +35,7 @@ namespace BH.SDK.Rules
         /// not yet set, a level holding no content. Never a frame the timeline can reach. </summary>
         public const int NoFrame = 0;
 
-        /// <summary> Lower bound of IFrameDuration.FrameDuration, LevelSettings.FrameDuration, Prefab.FrameDuration. </summary>
+        /// <summary> Lower bound of IFrameDuration.FrameDuration, LevelSettings.FrameDuration. </summary>
         public const int MinFrameDuration = 1;
 
         /// <summary> Lowest time allowed. </summary>

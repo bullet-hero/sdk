@@ -7,12 +7,16 @@ namespace BH.SDK.Rules
         // seconds" default by, so this is a flat frame count instead - matches LevelSettings'
         // own default (60fps * 10s) at a nominal 60fps.
 
-        /// <summary> The frame duration used when nothing says otherwise, read by Prefab. </summary>
+        /// <summary> The frame duration used when nothing says otherwise - the length Prefab's own
+        /// constructor gives Root.Span. </summary>
         public const int DefaultFrameDuration = 600;
 
         // A template's timeline is bounded exactly like a level's - same frames, same timeline UI.
+        // Nothing VALIDATES against this any more: the length is a FrameSpan's duration now
+        // (Prefab.Root.Span), and no illegal FrameSpan is representable. It stays as the bound the
+        // editor's own length field clamps to.
 
-        /// <summary> Upper bound of Prefab.FrameDuration. </summary>
+        /// <summary> Upper bound of a template's own timeline, Prefab.Root.Span's duration. </summary>
         public const int MaxFrameDuration = FrameRules.MaxFrameDuration;
 
         // A template is just another object scope, so it inherits the level's own object budget

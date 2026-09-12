@@ -75,14 +75,14 @@ namespace BH.SDK.Roslyn.Validation
     {
         /// <summary> Everything the emitter needs, and deliberately no ISymbol. </summary>
         public ValidationSpec(string ns, string name, string accessibility, bool isSealed,
-            bool isFrameScope, bool hasObjectRules, EquatableArray<PropertySpec> properties,
+            bool isPrefabScope, bool hasObjectRules, EquatableArray<PropertySpec> properties,
             string hintName)
         {
             Namespace = ns;
             Name = name;
             Accessibility = accessibility;
             IsSealed = isSealed;
-            IsFrameScope = isFrameScope;
+            IsPrefabScope = isPrefabScope;
             HasObjectRules = hasObjectRules;
             Properties = properties;
             HintName = hintName;
@@ -100,7 +100,7 @@ namespace BH.SDK.Roslyn.Validation
         /// <summary> Whether entering this object rebases the scope. Resolved here rather than at
         /// the call site because the walk dispatches on the RUNTIME type: a member declared
         /// RectObject or IObjectScope can hold a scope, so only the callee knows. </summary>
-        public bool IsFrameScope { get; }
+        public bool IsPrefabScope { get; }
 
         /// <summary> True when whole-object rules run before the properties. </summary>
         public bool HasObjectRules { get; }
@@ -118,7 +118,7 @@ namespace BH.SDK.Roslyn.Validation
         public bool Equals(ValidationSpec other) => other is not null
             && Namespace == other.Namespace && Name == other.Name
             && Accessibility == other.Accessibility && IsSealed == other.IsSealed
-            && IsFrameScope == other.IsFrameScope && HasObjectRules == other.HasObjectRules
+            && IsPrefabScope == other.IsPrefabScope && HasObjectRules == other.HasObjectRules
             && Properties.Equals(other.Properties) && HintName == other.HintName;
 
         /// <summary> The same, boxed. </summary>
@@ -127,6 +127,6 @@ namespace BH.SDK.Roslyn.Validation
         /// <summary> Compared by VALUE: an incremental generator that compares its specs by reference re-emits every model on every keystroke. </summary>
         public override int GetHashCode() => unchecked(
             (Namespace?.GetHashCode() ?? 0) * 397 ^ Name.GetHashCode()
-            ^ Properties.GetHashCode() ^ (IsFrameScope ? 2 : 0) ^ (HasObjectRules ? 4 : 0));
+            ^ Properties.GetHashCode() ^ (IsPrefabScope ? 2 : 0) ^ (HasObjectRules ? 4 : 0));
     }
 }

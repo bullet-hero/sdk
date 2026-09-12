@@ -1,5 +1,6 @@
 using System;
 using System.Reflection;
+using BH.SDK.Models;
 using BH.SDK.Models.Primitives;
 using BH.SDK.Utils;
 
@@ -21,8 +22,9 @@ namespace BH.SDK.Rules.Attributes
     // own item, not this one.
 
     /// <summary>
-    /// A modification key must address a real user-space object and a registered field, with an
-    /// index only where the field is a collection.
+    /// A modification key must address a real user-space object - or the template root, for a field
+    /// the template owns - and a registered field, with an index only where the field is a
+    /// collection.
     /// </summary>
     [AttributeUsage(PropertyTarget)]
     public class RuleModificationKeyValidAttribute : BasePropertyRuleAttribute
@@ -55,7 +57,7 @@ namespace BH.SDK.Rules.Attributes
         protected override bool IsValidInternal(object value, RuleContext context)
         {
             if (value is not ModificationKey key) return false;
-            if (!key.ObjectId.IsValid()) return false;
+            if (!IsAddressableObject(key)) return false;
             if (!ModificationTable.Exists(key.Field)) return false;
 
             return key.Index == ModificationKey.WholeField
@@ -65,6 +67,26 @@ namespace BH.SDK.Rules.Attributes
         /// <summary> Nothing - see <see cref="HasFix"/>. </summary>
         protected override void FixInternal(object target, PropertyInfo property, RuleContext context)
         {
+        }
+
+        // TWO KINDS OF OBJECT ARE ADDRESSABLE, and the second one is narrower than the first. An
+        // ordinary user-space id names one of the placement's materialized copies and may be
+        // overridden in any field that copy has. ObjectId.PrefabRoot names the template's own root,
+        // which materializes AS the placement rather than beside it - so an override there is
+        // writing onto the placement, and it may only touch what the template owns
+        // (ModificationFields.IsPrefabRootField). Span, Active and Layer are the placement's own
+        // authored fields and nothing copies them off the root, so an override on one of them would
+        // be a second way to say the same thing that additionally won, ApplyModifications running
+        // last.
+        //
+        // The other two reserved ids stay unaddressable: nothing is ever the camera or the avatar,
+        // so neither can be a thing a placement carries a copy of.
+        private static bool IsAddressableObject(ModificationKey key)
+        {
+            if (key.ObjectId.IsValid()) return true;
+
+            return key.ObjectId == ObjectId.PrefabRoot
+                   && ModificationFields.IsPrefabRootField(key.Field);
         }
     }
 }

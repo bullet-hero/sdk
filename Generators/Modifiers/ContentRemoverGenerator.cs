@@ -84,14 +84,15 @@ namespace BH.SDK.Generators.Modifiers
             => parameters.Invert || CoversWholeTimeline(context);
 
         // The active timeline, not always the level's: inside Prefab Mode the window is bounded by
-        // the template's own FrameDuration (Prefab implements IFrameDuration, Level.Game doesn't), which
-        // is the same rule the editor's own window clamp uses.
+        // the template's own length, which is its root's span (Prefab.Root) - the same rule the
+        // editor's own window clamp uses. Matched on the concrete Prefab rather than on an
+        // interface: a scope no longer declares a timeline, it holds a root that has one.
         private static bool CoversWholeTimeline(GeneratorContext context)
         {
             if (context == null) return false;
 
-            var frameDuration = context.Scope is IFrameDuration scope
-                ? scope.FrameDuration
+            var frameDuration = context.Scope is Prefab prefab
+                ? prefab.Root?.Span.FrameDuration ?? 0
                 : context.Settings?.FrameDuration ?? 0;
 
             return context.Span.StartFrame <= FrameRules.MinFrame

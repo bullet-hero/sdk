@@ -102,7 +102,7 @@ namespace BH.SDK.Tests.Interop.AfterBeat
             // The length is the template's own, not the level's - a placement covering the whole
             // timeline is unreadable in the editor and useless to trim.
             var template = result.Level.Resources.Prefabs.Values.Single();
-            Assert.AreEqual(template.FrameDuration, placement.Span.FrameDuration);
+            Assert.AreEqual(template.Root.Span.FrameDuration, placement.Span.FrameDuration);
         }
 
         // Real levels write ot = 0 for an ordinary hitting object; the documented table starts at 4.

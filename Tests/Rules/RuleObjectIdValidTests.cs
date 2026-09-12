@@ -9,8 +9,9 @@ using NUnit.Framework;
 namespace BH.SDK.Tests.Rules
 {
     /// <summary>
-    /// RuleObjectIdValid: an object's own identity must be a user-space id (>= 1). The reserved
-    /// negative ids are parent targets only - an object may attach to the camera, it may not be it.
+    /// RuleObjectIdValid: an object's own identity must be a user-space id (>= 1), or the reserved
+    /// PrefabRoot inside a template - Prefab.Root is a real object carrying that id. Camera and
+    /// LocalPlayer stay parent targets only: an object may attach to the camera, it may not be it.
     /// </summary>
     public class RuleObjectIdValidTests : BaseRuleTests
     {
@@ -60,19 +61,41 @@ namespace BH.SDK.Tests.Rules
             Assert.IsFalse(Rule.IsValid(ObjectId.PrefabRoot, LevelContext));
         }
 
-        // Identity means the same thing in every scope, so unlike the parent rule this one reads
-        // nothing off the context - it works standalone, inside a template, anywhere.
+        // Identity means the same thing in every scope for every value but ONE, and that one is
+        // Prefab.Root's: a template's root is a real object whose own id IS ObjectId.PrefabRoot, so
+        // the value is an identity inside a template and a parent target everywhere else. Camera and
+        // LocalPlayer gain nothing from the scope - nothing is ever either of them.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.Easy)]
-        public void TestScopeIndependent()
+        public void TestScopeIndependentExceptTheTemplateRoot()
         {
             Assert.IsTrue(Rule.IsValid(new ObjectId(1), PrefabContext));
             Assert.IsTrue(Rule.IsValid(new ObjectId(1), NoScopeContext));
 
             Assert.IsFalse(Rule.IsValid(ObjectId.Null, PrefabContext));
             Assert.IsFalse(Rule.IsValid(ObjectId.Null, NoScopeContext));
+
+            Assert.IsTrue(Rule.IsValid(ObjectId.PrefabRoot, PrefabContext),
+                "Prefab.Root's own identity");
+            Assert.IsFalse(Rule.IsValid(ObjectId.PrefabRoot, LevelContext));
+
+            Assert.IsFalse(Rule.IsValid(ObjectId.Camera, PrefabContext));
+            Assert.IsFalse(Rule.IsValid(ObjectId.LocalPlayer, PrefabContext));
+        }
+
+        // No scope resolved means no scope INVENTED, the same fallback RuleParentObjectIdValid takes:
+        // a standalone RectObject judged on its own could be a template's root, and refusing it here
+        // would report an issue on a value the rule cannot place.
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Easy)]
+        public void TestTemplateRootAcceptedWithNoScope()
+        {
+            Assert.IsTrue(Rule.IsValid(ObjectId.PrefabRoot, NoScopeContext));
+            Assert.IsFalse(Rule.IsValid(ObjectId.Camera, NoScopeContext));
         }
 
         [Test]

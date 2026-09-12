@@ -6,6 +6,7 @@ using BH.SDK.Models.Primitives;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 // ReSharper disable NonReadonlyMemberInGetHashCode
 
@@ -151,6 +152,20 @@ namespace BH.SDK.Models.Objects
             if (other is null) return false;
             if (ReferenceEquals(this, other)) return true;
             if (!Key.Equals(other.Key)) return false;
+
+            // A NON-SCALAR VALUE COMES BACK AS A JToken, by design (see the Blob region's header),
+            // and JContainer does not override Equals - so two structurally identical JArrays
+            // compare by REFERENCE and a level stopped equalling a second reading of itself. Not
+            // hypothetical: it is what CorpusLoadCostTests reported the moment the corpus first
+            // carried whole-track overrides, both between the two JSON readers and between JSON and
+            // blob. DeepEquals is the value comparison Newtonsoft does have.
+            //
+            // It does NOT make an in-memory List<TKeyframe> equal to the JArray a reading of it
+            // produces, and that is the documented boundary rather than an omission: the setter's
+            // "equals itself after a round trip" promise is about the scalars it widens.
+            if (Value is JToken token && other.Value is JToken otherToken)
+                return JToken.DeepEquals(token, otherToken);
+
             // List<T> has no value-equality override (default is reference equality) - a whole-track
             // override's Value needs element-wise comparison instead, same reasoning as CopyValue.
             if (Value is IEnumerable and not string && other.Value is IEnumerable and not string)

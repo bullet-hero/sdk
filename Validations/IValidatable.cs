@@ -22,7 +22,7 @@ namespace BH.SDK.Validations
     {
         /// <summary> Report this object's own findings into <paramref name="walk"/>, then descend.
         /// The context is the scope this object was reached in, already rebased by every
-        /// <c>IFrameScope</c> above it. </summary>
+        /// <c>Prefab</c> above it. </summary>
         void Validate(RuleWalk walk, RuleContext context);
     }
 }

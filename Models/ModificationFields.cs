@@ -86,5 +86,32 @@
         public const int EffectId = 0x0401;
 
         // PrefabObject - band 0x05, reserved and deliberately empty; see the band map above.
+
+        // THE ROOT IS ADDRESSABLE, BUT NOT FOR EVERYTHING, and this is the list. A Modification
+        // keyed to ObjectId.PrefabRoot lands on the PLACEMENT itself (PrefabRootUtils), so it may
+        // only address what the template owns and the placement therefore has no other say in:
+        // Name and the seven positional tracks.
+        //
+        // Span, Active, Layer and ParentObjectId are excluded because they are the PLACEMENT's own
+        // authored fields - nothing copies them off the root, the author edits them directly, and an
+        // override on one of them would be a second way to say the same thing that additionally
+        // overwrote the first, since ApplyModifications runs after everything else. The remaining
+        // bands are excluded by construction: a placement is a PrefabObject and has no shape,
+        // text or effect member to override.
+
+        /// <summary> Whether a <see cref="Primitives.ModificationKey"/> addressed at
+        /// <see cref="Primitives.ObjectId.PrefabRoot"/> may name this field. </summary>
+        public static bool IsPrefabRootField(int field) => field switch
+        {
+            Name => true,
+            Positions => true,
+            Rotations => true,
+            Scales => true,
+            Sizes => true,
+            AnchorsMin => true,
+            AnchorsMax => true,
+            Pivots => true,
+            _ => false,
+        };
     }
 }

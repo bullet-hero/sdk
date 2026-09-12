@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using BH.SDK.Models;
+using BH.SDK.Models.Keyframes;
 using BH.SDK.Models.Objects;
+using BH.SDK.Models.Values;
 using BH.SDK.Models.Primitives;
 using BH.SDK.Rules;
 using BH.SDK.Utils;
@@ -34,7 +36,8 @@ namespace BH.SDK.Tests.Utils
 
         private static Prefab CreateTemplate(Level level)
         {
-            var template = new Prefab { PrefabId = PrefabId.NewId(), Name = "template" };
+            var template = new Prefab { PrefabId = PrefabId.NewId() };
+            template.Root.Name = "template";
             level.Resources.Prefabs.Add(template.PrefabId, template);
             return template;
         }
@@ -451,6 +454,15 @@ namespace BH.SDK.Tests.Utils
             var placement = AddPlacement(level, template.PrefabId);
             Remap(level, placement, parent.ObjectId, child.ObjectId);
 
+            // THE PLACEMENT AGREES WITH THE TEMPLATE'S ROOT, which is what every file this game
+            // saves looks like: the editor resyncs a root edit onto every placement before the save
+            // (PrefabRootUtils.ApplyRoot). The next test is the other case - a file whose placement
+            // DISAGREES is normalized rather than preserved, so it is the agreeing one that round
+            // trips byte for byte. The LENGTH has to agree too, for the same reason and by the same
+            // rule - the start is the placement's own and is left where it is.
+            placement.Name = template.Root.Name;
+            placement.Span = placement.Span.WithDuration(template.Root.Span.FrameDuration);
+
             var key = new ModificationKey(child.ObjectId, ModificationFields.Layer);
             placement.Modifications[key] = new Modification(key, 7);
 
@@ -459,6 +471,60 @@ namespace BH.SDK.Tests.Utils
 
             Assert.IsTrue(written.Equals(PrefabVirtualizationUtils.Thin(level)),
                 "the file round trips: thin -> expand -> thin is the file it started as");
+        }
+
+        // The load path and the edit path have to agree about the root, or a level would look one way
+        // when it was saved and another when it was opened. Expand is the load-time half of what
+        // PrefabMaterializer.Resync does at edit time, so a stored value that disagrees loses.
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Normal)]
+        public void Expand_WritesTheTemplateRootOntoThePlacement()
+        {
+            var level = CreateLevel();
+            var template = CreateTemplate(level);
+            template.Root.Positions.Add(new PosKey(new Vector2Value(3f, 4f), FrameRules.MinFrame));
+            var inner = AddInner(template, "inner");
+
+            var placement = AddPlacement(level, template.PrefabId);
+            placement.Name = "whatever the file said";
+            Remap(level, placement, inner.ObjectId);
+
+            var placementStart = placement.Span.StartFrame;
+            PrefabVirtualizationUtils.Expand(level);
+
+            Assert.AreEqual("template", placement.Name, "the template owns the root's name");
+            Assert.AreEqual(1, placement.Positions.Count, "and its positional tracks");
+            Assert.AreEqual(template.Root.Span.FrameDuration, placement.Span.FrameDuration,
+                "and the root's own span length, which is the template's whole timeline");
+            Assert.AreEqual(placementStart, placement.Span.StartFrame,
+                "but not where it starts - that is the placement's own, and the anchor every copy is offset by");
+        }
+
+        // A Modification keyed to the root is the only way a placement keeps a value of its own for
+        // a template-owned field, and it applies to the PLACEMENT rather than to any copy - the root
+        // has no outer id, being the placement. Without PrefabRootUtils.TryGetModificationTarget it
+        // would be recorded, saved, listed as present and never applied.
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Normal)]
+        public void Expand_AppliesAModificationKeyedToTheRoot()
+        {
+            var level = CreateLevel();
+            var template = CreateTemplate(level);
+            var inner = AddInner(template, "inner");
+
+            var placement = AddPlacement(level, template.PrefabId);
+            Remap(level, placement, inner.ObjectId);
+
+            var key = new ModificationKey(ObjectId.PrefabRoot, ModificationFields.Name);
+            placement.Modifications[key] = new Modification(key, "this one only");
+
+            PrefabVirtualizationUtils.Expand(level);
+
+            Assert.AreEqual("this one only", placement.Name);
         }
 
         [Test]

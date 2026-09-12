@@ -89,8 +89,14 @@ namespace BH.SDK.Utils
 
         // A template's inner objects are copied into the host scope UNDER the placement, so the
         // template's own internal depth stacks onto the placement's. Inner parents are template-
-        // local: Null and the reserved PrefabRoot both mean "template root" (see
+        // local: Null and PrefabRoot both mean "the template's root" (see
         // PrefabVirtualizationUtils.RemapParents), and anything else names another inner object.
+        //
+        // THE ROOT COSTS NO DEPTH, and that holds only while Prefab.Root stays a FIELD: this walks
+        // Objects.Values, so the root is not one of the chains measured, and a chain that reaches it
+        // stops on PrefabRoot below WITHOUT incrementing. Were the root an entry in Objects instead
+        // it would be minted as an ordinary object under the placement - one more transform and one
+        // more level per placement - and every cap here would be off by one.
 
         /// <summary> Deepest chain inside a prefab template, measured from its own root: 0 when
         /// every object in it sits at the template's top level. </summary>

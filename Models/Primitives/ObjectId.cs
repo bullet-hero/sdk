@@ -118,16 +118,23 @@ namespace BH.SDK.Models.Primitives
         /// <summary> The local player's avatar, usable as an ordinary parent. </summary>
         public static readonly ObjectId LocalPlayer = new(-2);
 
-        // -3 => explicit "attach to this placement's own root" parent, only meaningful for an
-        // object living inside a Prefab template (Level.Resources.Prefabs[x].Objects) - resolves to
-        // the SAME id as an unset/Null ParentObjectId does there (see
-        // BH.Core.Services.PrefabMaterializer.RemapParents), just spelled out explicitly instead of
-        // relying on the "null auto-parents to the placement" fallback. Meaningless at level scope
-        // (GameLevel.Objects has no "root" to attach to), and RuleParentObjectIdValid rejects it
-        // there - just as it rejects Camera/LocalPlayer inside a prefab template, since those are
-        // level-runtime objects a template's inner object cannot reach.
+        // -3 => the template's own root. IT IS AN ADDRESS AND NOT A SENTINEL: Prefab.Root is a real
+        // RectObject whose own ObjectId is this value, and a placement of that template is what it
+        // materializes AS - so PrefabMaterializer.RemapParents resolving it to placement.ObjectId is
+        // translating an address, not standing in for something absent. It is therefore the one
+        // reserved id that appears as an IDENTITY as well as a parent (RuleObjectIdValid allows it
+        // inside a template and nowhere else), and the one a Modification may be keyed to.
+        //
+        // An unset/Null ParentObjectId inside a template still resolves to the same place, since
+        // "no parent in this template" and "attached to its root" describe one arrangement. The
+        // difference is which of the two an author SAID.
+        //
+        // Meaningless at level scope - GameLevel has no root to attach to or to be - and
+        // RuleParentObjectIdValid rejects it there, just as it rejects Camera/LocalPlayer inside a
+        // template, those being level-runtime objects an inner object cannot reach.
 
-        /// <summary> "This placement's own root" - meaningful only inside a prefab template. </summary>
+        /// <summary> The template's own root, as both a parent target and that object's own
+        /// identity - meaningful only inside a prefab template. </summary>
         public static readonly ObjectId PrefabRoot = new(-3);
 
         

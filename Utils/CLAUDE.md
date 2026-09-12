@@ -26,7 +26,27 @@ layer-wide conventions. This file is folder-local.
   **`ObjectDepthUtils`** — parent-chain depth math over an `IObjectScope`, bounded by
   `LevelRules.MaxObjectDepth`. It lives here rather than beside the edit-time materializer because
   the expander above has to refuse the same chains and cannot reach `BH.Core`; the consumer's
-  `BH.Core.Utils.HierarchyMath` is a forwarding facade over it.
+  `BH.Core.Utils.HierarchyMath` is a forwarding facade over it. **The template root costs no depth**,
+  and that holds only while `Prefab.Root` stays a field: `GetTemplateDepth` walks `Objects.Values`
+  alone and stops on `ObjectId.PrefabRoot` without incrementing.
+  **`PrefabRootUtils`** — the `Prefab.Root` ownership table AS CODE, and it is here for
+  `ObjectDepthUtils`' reason doubled: there are TWO consumers of it that only stay correct together,
+  the edit-time `PrefabMaterializer` and the load-time `Expand` above, and only the SDK is reachable
+  from both. `ApplyRoot` writes the template-owned half onto the placement that materializes it
+  (`Name`, the seven positional tracks copied not aliased, and the span's DURATION) and leaves the
+  span's start, `Active` and `Layer` alone - those are the placement's, and the last two are pinned
+  on the template by `RulePrefabRootFixed` precisely because nothing copies them.
+  `SetTemplateLength` is the one writer of that duration, and it exists so the pinned half of
+  `Root.Span` (start at `FrameRules.MinFrame`, no anchors) is spelled once rather than at every
+  caller - a template's whole timeline is that span, `Prefab` carrying no `FrameDuration` any more. `TryGetModificationTarget` is the
+  branch that makes a root-keyed `Modification` land at all: the root is never a key in
+  `placement.ObjectIds`, having no outer copy, so without it such an override is recorded, saved,
+  shown as present and silently never applied. `Docs/Issues/PREFAB_ROOT_HISTORY.md` is the record.
+  **`ObjectScopeExtensions`** — the ONE place an `ObjectId` becomes a `RectObject`
+  (`TryGetObject`/`GetObject`), and it exists for the same field-not-an-entry reason: nothing that
+  resolves an id through `scope.Objects` can see a template's root. Deliberately NOT applied to the
+  loops that ENUMERATE a scope - those ask what a template HOLDS, and the root is not content but
+  what content hangs off.
   `ShapeLoopUtils` (radial loops - the two emitters every
   built-in shape is built out of, a fan and a resampled annulus, plus sector clipping; its header
   explains why angles are always measured RELATIVE to a reference and why the annulus resamples both

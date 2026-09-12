@@ -18,7 +18,7 @@ namespace BH.SDK.Tests.Rules
     {
         // A level's scope is assembled from two different objects on purpose: GameLevel owns the
         // objects, LevelSettings owns the timeline. Nothing else in the SDK pairs them up, which is
-        // why a level cannot simply implement IFrameScope itself.
+        // why a level cannot simply carry a timeline of its own the way a template does.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
@@ -44,7 +44,7 @@ namespace BH.SDK.Tests.Rules
         [Category(Metadata.Category.Easy)]
         public void TestPrefabRootIsItsOwnScope()
         {
-            var prefab = new Prefab { FrameDuration = 42 };
+            var prefab = new Prefab { Root = { Span = new FrameSpan(FrameRules.MinFrame, 42) } };
 
             var context = RuleContext.ForRoot(prefab);
 
@@ -83,7 +83,7 @@ namespace BH.SDK.Tests.Rules
         {
             var level = new Level();
             level.Settings.FrameDuration = 250;
-            var prefab = new Prefab { FrameDuration = 42 };
+            var prefab = new Prefab { Root = { Span = new FrameSpan(FrameRules.MinFrame, 42) } };
 
             var context = RuleContext.ForRoot(level).WithScope(prefab);
 
@@ -106,7 +106,8 @@ namespace BH.SDK.Tests.Rules
             level.Settings.FrameDuration = 250;
             var outer = RuleContext.ForRoot(level);
 
-            var inner = outer.WithScope(new Prefab { FrameDuration = 42 });
+            var inner = outer.WithScope(
+                new Prefab { Root = { Span = new FrameSpan(FrameRules.MinFrame, 42) } });
 
             Assert.AreNotSame(outer, inner);
             Assert.AreEqual(250, outer.FrameDuration);
@@ -132,7 +133,11 @@ namespace BH.SDK.Tests.Rules
 
             var withTemplate = new Level();
             withTemplate.Settings.FrameDuration = 100;
-            var prefab = new Prefab { PrefabId = new PrefabId(Guid.NewGuid()), FrameDuration = 10 };
+            var prefab = new Prefab
+            {
+                PrefabId = new PrefabId(Guid.NewGuid()),
+                Root = { Span = new FrameSpan(FrameRules.MinFrame, 10) },
+            };
             var innerObject = new RectObject { ObjectId = new ObjectId(1) };
             innerObject.Positions.Add(new PosKey { Frame = 50 });
             prefab.Objects.Add(innerObject.ObjectId, innerObject);

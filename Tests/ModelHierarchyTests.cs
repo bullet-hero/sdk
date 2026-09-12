@@ -590,11 +590,13 @@ namespace BH.SDK.Tests
         [Category(Metadata.Category.Normal)]
         public void Pull_PrefabObjects_MergesInPlace()
         {
-            var target = new Prefab { Name = "before" };
+            var target = new Prefab();
+            target.Root.Name = "before";
             target.Objects.Add(new ObjectId(1), CreateShape(1, 1, ShapeId.Square.Fill));
             target.Objects.Add(new ObjectId(2), CreateShape(2, 2, ShapeId.Square.Fill));
 
-            var source = new Prefab { Name = "after" };
+            var source = new Prefab();
+            source.Root.Name = "after";
             source.Objects.Add(new ObjectId(1), CreateShape(1, 9, ShapeId.Circle.Fill));
 
             var objects = target.Objects;
@@ -606,7 +608,7 @@ namespace BH.SDK.Tests
             Assert.AreSame(kept, target.Objects[new ObjectId(1)]);
             Assert.AreEqual(ShapeId.Circle.Fill, kept.ShapeId, "the subclass half must travel");
             Assert.AreEqual(1, target.Objects.Count, "and the id the source dropped must go");
-            Assert.AreEqual("after", target.Name);
+            Assert.AreEqual("after", target.Root.Name, "the template-owned root travels too");
         }
 
         [Test]

@@ -104,7 +104,7 @@ namespace BH.SDK.Roslyn.Validation
                     .AppendLine("var properties = __ValidationTable.Properties;");
             }
 
-            if (spec.IsFrameScope)
+            if (spec.IsPrefabScope)
             {
                 builder.Append(body).AppendLine(
                     "// Entering a scope of its own rebases everything scope-relative - frames");

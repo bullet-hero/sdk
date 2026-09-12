@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using BH.SDK.Models.Interfaces;
+using BH.SDK.Models.Objects;
 using BH.SDK.Rules;
 using BH.SDK.Rules.Attributes;
 using BH.SDK.Utils;
@@ -131,7 +131,7 @@ namespace BH.SDK.Validations
             // Entering a scope of its own (a prefab template) rebases everything scope-relative -
             // frames against its own timeline, parent ids against its own reserved targets - for
             // this subtree and everything below it.
-            if (target is IFrameScope frameScope) context = context.WithScope(frameScope);
+            if (target is Prefab prefab) context = context.WithScope(prefab);
 
             // Object rules run before the property walk, so an issue spanning two properties is
             // reported against the object owning both - and lands in the trace before either of

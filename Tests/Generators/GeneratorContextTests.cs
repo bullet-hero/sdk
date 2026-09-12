@@ -425,7 +425,8 @@ namespace BH.SDK.Tests.Generators
         [Category(Metadata.Category.Easy)]
         public void PrefabScopedContext_HasNoGameOrAudio()
         {
-            var prefab = new Prefab { PrefabId = PrefabId.NewGuid(), Name = "template" };
+            var prefab = new Prefab { PrefabId = PrefabId.NewGuid() };
+            prefab.Root.Name = "template";
             var level = CreateLevel();
 
             var context = new GeneratorContext(prefab, prefab, level.Settings, level.Resources, FrameSpan.FromBounds(0, 60));
@@ -444,7 +445,8 @@ namespace BH.SDK.Tests.Generators
         [Category(Metadata.Category.Normal)]
         public void PrefabScopedRun_WritesIntoTheTemplate_NotTheLevel()
         {
-            var prefab = new Prefab { PrefabId = PrefabId.NewGuid(), Name = "template" };
+            var prefab = new Prefab { PrefabId = PrefabId.NewGuid() };
+            prefab.Root.Name = "template";
             var level = CreateLevel();
             var context = new GeneratorContext(prefab, prefab, level.Settings, level.Resources, FrameSpan.FromBounds(0, 60));
 

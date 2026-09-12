@@ -5,9 +5,11 @@ using BH.SDK.Generators.Modifiers;
 using BH.SDK.Models.Data;
 using BH.SDK.Models.Keyframes;
 using BH.SDK.Models.Objects;
+using BH.SDK.Models;
 using BH.SDK.Models.Primitives;
 using BH.SDK.Models.Values;
 using BH.SDK.Rules;
+using BH.SDK.Utils;
 
 namespace BH.SDK.Interop.AfterBeat.Import
 {
@@ -49,8 +51,8 @@ namespace BH.SDK.Interop.AfterBeat.Import
             var prefab = new Prefab
             {
                 PrefabId = ABIdMap.ToPrefabId(string.IsNullOrEmpty(source.Id) ? source.Name : source.Id),
-                Name = string.IsNullOrEmpty(source.Name) ? source.Id ?? string.Empty : source.Name,
             };
+            prefab.Root.Name = string.IsNullOrEmpty(source.Name) ? source.Id ?? string.Empty : source.Name;
 
             // A Prefab is one of the two places in this format where the scope and the id counter
             // are the SAME object - at level scope they are Level.Game and Level.Settings.
@@ -62,7 +64,7 @@ namespace BH.SDK.Interop.AfterBeat.Import
             };
 
             ABObjectImporter.ImportAll(source.Objects, context, $"{path}.objs");
-            prefab.FrameDuration = MeasureDuration(prefab);
+            PrefabRootUtils.SetTemplateLength(prefab, MeasureDuration(prefab));
 
             if (!string.IsNullOrEmpty(source.Preview))
                 report?.Dropped("prefab_preview",
@@ -177,8 +179,8 @@ namespace BH.SDK.Interop.AfterBeat.Import
             if (!context.Options.KeepObjectNames) return string.Empty;
 
             if (templates != null && templates.TryGetValue(prefabId, out var template)
-                                  && !string.IsNullOrEmpty(template?.Name))
-                return template.Name;
+                                  && !string.IsNullOrEmpty(template?.Root?.Name))
+                return template.Root.Name;
 
             return source.Id ?? string.Empty;
         }
@@ -222,8 +224,10 @@ namespace BH.SDK.Interop.AfterBeat.Import
             // table is no longer "not materialized yet", it is a placement that expands to nothing.
             // Minting is all that is needed: the ids are what the table means, and the copies
             // themselves are BH.SDK.Utils.PrefabVirtualizationUtils' work, here as everywhere else.
-            if (templates != null && templates.TryGetValue(prefabId, out var placed)
-                                  && placed?.Objects != null)
+            Prefab placed = null;
+            templates?.TryGetValue(prefabId, out placed);
+
+            if (placed?.Objects != null)
                 foreach (var innerId in placed.Objects.Keys)
                     placement.ObjectIds[innerId] = context.Mint(null);
 
@@ -245,12 +249,53 @@ namespace BH.SDK.Interop.AfterBeat.Import
             placement.Rotations.Add(new AngleKey(
                 new FloatValue(rotation * ABValueMap.DegreesToRadians), FrameRules.MinFrame));
 
+            RecordRootOverrides(placement, placed);
+
             if (string.IsNullOrEmpty(source.PrefabId))
                 context.Report.Approximated("placement_without_prefab",
                     "Some prefab placements name no prefab; Afterbeat removes those on load, and they were imported as empty placements.",
                     path);
 
             return placement;
+        }
+
+        // A PLACEMENT'S OWN TRANSFORM IS AN OVERRIDE NOW, not just a field, and without this every
+        // imported placement snapped to the origin the first time the level was opened. A template
+        // owns its root and a placement is that root's materialization (Prefab.Root), so
+        // PrefabRootUtils.ApplyRoot rewrites Name and all seven positional tracks from the template
+        // on every load and every resync - and an Afterbeat template's root is identity, the source
+        // format having no such object at all. Three tracks written onto the placement alone were
+        // therefore three tracks discarded by the very next expansion.
+        //
+        // THE VALUES STAY ON THE PLACEMENT AS WELL, deliberately: a reader that never expands (an
+        // export, a stats pass) sees the level the source described, and for one that does expand
+        // ApplyModifications puts the same numbers back afterwards. The override carries a COPY,
+        // since ApplyModifications assigns the stored list straight onto the object and a shared
+        // instance would make a later edit rewrite the override it came from.
+        //
+        // Only what DIFFERS from the root is recorded. For an Afterbeat import that is every
+        // non-empty track, since the root is identity - but the rule is the general one, so a
+        // template that gains a real root later records only the real divergence.
+        private static void RecordRootOverrides(PrefabObject placement, Prefab template)
+        {
+            var root = template?.Root;
+            if (root == null) return;
+
+            if (placement.Name != root.Name)
+                Record(ModificationFields.Name, placement.Name);
+
+            if (!placement.Positions.ListEquals(root.Positions))
+                Record(ModificationFields.Positions, placement.Positions.CopyList());
+            if (!placement.Rotations.ListEquals(root.Rotations))
+                Record(ModificationFields.Rotations, placement.Rotations.CopyList());
+            if (!placement.Scales.ListEquals(root.Scales))
+                Record(ModificationFields.Scales, placement.Scales.CopyList());
+
+            void Record(int field, object value)
+            {
+                var key = new ModificationKey(ObjectId.PrefabRoot, field);
+                placement.Modifications[key] = new Modification(key, value);
+            }
         }
 
         // A placement's own start is what times everything inside it: the template's objects are
@@ -278,7 +323,7 @@ namespace BH.SDK.Interop.AfterBeat.Import
 
             var duration = levelFrameDuration;
             if (templates != null && templates.TryGetValue(prefabId, out var template) && template != null)
-                duration = template.FrameDuration;
+                duration = template.Root.Span.FrameDuration;
 
             return ABTimeMap.FromFrames(startFrame, startFrame + duration);
         }

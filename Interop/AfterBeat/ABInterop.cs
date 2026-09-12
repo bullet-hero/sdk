@@ -125,7 +125,7 @@ namespace BH.SDK.Interop.AfterBeat
             var exported = new VgpPrefab
             {
                 Id = prefab?.PrefabId.value.ToString("N") ?? string.Empty,
-                Name = prefab?.Name ?? string.Empty,
+                Name = prefab?.Root?.Name ?? string.Empty,
                 Type = (int)ABPrefabType.Misc1,
                 Objects = ABObjectExporter.ExportAll(context, "objs"),
             };
