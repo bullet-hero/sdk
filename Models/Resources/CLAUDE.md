@@ -25,7 +25,8 @@ expander reads the table and refuses rather than minting. `Docs/Issues/PREFAB_VI
 is the record.
 
 `Prefab` (`Models/Objects/Prefab.cs`, a `Level.Resources.Prefabs` entry) is the *template*: its own
-`Objects`/`ObjectIdCounter`, plus its own authored `Name`/`FrameDuration`. `PrefabObject` (a
+`Objects`/`ObjectIdCounter` and its **`Root`**, which carries its name, its transform and its
+timeline. `PrefabObject` (a
 `RectObject` subclass) is the *placement*: `PrefabId` (which template) +
 `Dictionary<ObjectId, ObjectId> ObjectIds` (template-inner id → this placement's own materialized
 outer id) + `Dictionary<ModificationKey, Modification> Modifications` (per-instance field overrides,
@@ -33,11 +34,36 @@ below). Placements — whether at level scope or nested inside another `Prefab`'
 in the **same** `Objects` dictionary as everything else, discriminated only by
 `GetModelType() == ObjectType.PrefabObject`; there's no separate placement list.
 
+**A TEMPLATE OWNS ITS ROOT, and a placement is that root's materialization.** `Prefab.Root` is a
+`RectObject` that always exists, addressed by `ObjectId.PrefabRoot` - which is its own `ObjectId`,
+not a sentinel - and is what every inner object with an unset/`PrefabRoot` parent hangs off. It is a
+FIELD and never an entry in `Objects`, which is the one condition the whole design rests on: one in
+that dictionary would be minted as an ordinary object UNDER the placement, costing a transform and a
+level of depth per placement. `Prefab` has **no `Name` of its own** any more - `Root.Name` is the
+template's name, so renaming a template reaches every placement of it.
+
+**THE TEMPLATE'S TIMELINE IS `Root.Span`, and there is no second number for it.** `Prefab` carried a
+`FrameDuration` field of its own until that span was read by nothing — two spellings of one fact,
+free to drift — so the field is gone, `IFrameScope` with it, and `Prefab` is a plain `IObjectScope`.
+The span's **duration** is the authored half; its **start** is `FrameRules.MinFrame` and its anchors
+none, both pinned by `RulePrefabRootFixed` along with the root's identity, `Active` and `Layer`.
+`BH.SDK.Utils.PrefabRootUtils` is the ownership table and the one writer of the length
+(`SetTemplateLength`): the template owns `Name`, the seven positional tracks and the span's
+duration; the placement owns the span's **start**, its `Active` and its `Layer`.
+
+A placement therefore has **no length of its own** — `ApplyRoot` rewrites it from the root on every
+materialize and every load, `ModificationFields.Span` is not in `IsPrefabRootField` so no override
+can hold one, and `OpLevelObjectSpan` refuses that half of the edit outright. Changing a template's
+length moves every placement of it. `Docs/Issues/PREFAB_ROOT_HISTORY.md` is the record, including why
+a placement's own drag has to become a `Modification` now.
+
 **Per-instance overrides (`PrefabObject.Modifications`) are live and load-bearing** — this is how a
 placement diverges from its template without breaking the link. Three pieces:
 
 - `ModificationKey` (`Models/Primitives/`) — the *address*: `ObjectId` (the **template's inner** id,
-  not the materialized outer one, so the key survives re-materialization) + `int Field` (a stable
+  not the materialized outer one, so the key survives re-materialization - or
+  `ObjectId.PrefabRoot`, which addresses the placement ITSELF and is legal only for the fields the
+  template owns, `ModificationFields.IsPrefabRootField`) + `int Field` (a stable
   `ModificationFields` number, NOT a JSON key spelling) + `int Index` (which element of a collection
   field, or `WholeField` = -1). Being the dictionary key is what makes "one override per (object,
   field) pair" a structural guarantee rather than a rule to enforce. It was a dotted string

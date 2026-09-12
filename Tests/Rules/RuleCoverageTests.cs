@@ -70,6 +70,7 @@ namespace BH.SDK.Tests.Rules
 
             { typeof(RulePropertyOrderAttribute), nameof(RulePropertyOrderTests) },
             { typeof(RuleShapeGeometryAttribute), nameof(RuleShapeGeometryTests) },
+            { typeof(RulePrefabRootFixedAttribute), nameof(RulePrefabRootFixedTests) },
 
             { typeof(RuleControlPriorityAttribute), nameof(RuleControlPriorityTests) },
             { typeof(RuleAnyDeviceActiveAttribute), nameof(RuleAnyDeviceActiveTests) },

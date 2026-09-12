@@ -80,7 +80,12 @@ namespace BH.SDK.Utils
 
             if (copies.Count == 0) return objects;
 
-            var kept = new Dictionary<ObjectId, RectObject>(objects.Count - copies.Count);
+            // CAPACITY IS objects.Count AND NOT THE DIFFERENCE, because a copy id may name an object
+            // this scope does not hold: a level straight out of an importer has every placement's
+            // ObjectIds filled and none of the copies written yet - writing them is Expand's work -
+            // so the difference goes NEGATIVE and Dictionary's constructor throws on it. The
+            // over-allocation is one dictionary per scope per save.
+            var kept = new Dictionary<ObjectId, RectObject>(objects.Count);
             foreach (var pair in objects)
                 if (!copies.Contains(pair.Key))
                     kept.Add(pair.Key, pair.Value);
@@ -203,7 +208,17 @@ namespace BH.SDK.Utils
                 return;
             }
 
-            if (template.Objects.Count == 0) return;
+            // THE ROOT IS WRITTEN BEFORE - AND INDEPENDENTLY OF - the id table, because it needs no
+            // entry in one: the placement IS the root's copy (see PrefabRootUtils). So a template
+            // holding nothing but a root still materializes that much, and the two early returns
+            // below end the same way this method does rather than skipping the overrides.
+            PrefabRootUtils.ApplyRoot(placement, template);
+
+            if (template.Objects.Count == 0)
+            {
+                ApplyModifications(placement, hostScope);
+                return;
+            }
 
             // ONE FINDING FOR A WHOLE MISSING TABLE, one per entry for a partial one. A placement
             // that was never materialized - an Afterbeat import before its host resynced, or one
@@ -213,6 +228,7 @@ namespace BH.SDK.Utils
             {
                 report.Report(PrefabExpandProblem.RemapMissing, scopeName, placement.ObjectId,
                     $"placement owns no id table, so none of prefab {placement.PrefabId.value} is rebuilt");
+                ApplyModifications(placement, hostScope);
                 return;
             }
 
@@ -294,8 +310,8 @@ namespace BH.SDK.Utils
 
             foreach (var pair in placement.Modifications)
             {
-                if (!placement.ObjectIds.TryGetValue(pair.Key.ObjectId, out var outerId)) continue;
-                if (!hostScope.Objects.TryGetValue(outerId, out var outerObj)) continue;
+                if (!PrefabRootUtils.TryGetModificationTarget(placement, hostScope, pair.Key.ObjectId,
+                        out var outerObj)) continue;
                 outerObj.Apply(pair.Value);
             }
         }

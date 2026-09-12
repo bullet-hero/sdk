@@ -61,7 +61,37 @@ namespace BH.SDK.Tests.Rules
         public void TestReservedObjectId()
         {
             AssertInvalid<RuleModificationKeyValidAttribute>(
+                new Model { Key = new ModificationKey(ObjectId.Camera, ModificationFields.Layer) });
+            AssertInvalid<RuleModificationKeyValidAttribute>(
+                new Model { Key = new ModificationKey(ObjectId.LocalPlayer, ModificationFields.Layer) });
+        }
+
+        // THE TEMPLATE ROOT IS ADDRESSABLE AND USED TO NOT BE, and the half that stayed invalid is
+        // the point rather than a leftover. Prefab.Root is a real object now (see Prefab.Root), so
+        // an override may name it - but it materializes AS the placement, so it may only name what
+        // the template owns. Span, Active and Layer are the placement's own authored fields; an
+        // override on one of them would say a second time what the author already said directly,
+        // and would win, ApplyModifications running last.
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Easy)]
+        public void TestPrefabRootIsAddressableForTemplateOwnedFieldsOnly()
+        {
+            AssertValid(new Model { Key = new ModificationKey(ObjectId.PrefabRoot, ModificationFields.Name) });
+            AssertValid(new Model { Key = new ModificationKey(ObjectId.PrefabRoot, ModificationFields.Positions) });
+            AssertValid(new Model { Key = new ModificationKey(ObjectId.PrefabRoot, ModificationFields.Pivots) });
+
+            AssertInvalid<RuleModificationKeyValidAttribute>(
                 new Model { Key = new ModificationKey(ObjectId.PrefabRoot, ModificationFields.Layer) });
+            AssertInvalid<RuleModificationKeyValidAttribute>(
+                new Model { Key = new ModificationKey(ObjectId.PrefabRoot, ModificationFields.Active) });
+            AssertInvalid<RuleModificationKeyValidAttribute>(
+                new Model { Key = new ModificationKey(ObjectId.PrefabRoot, ModificationFields.Span) });
+            AssertInvalid<RuleModificationKeyValidAttribute>(
+                new Model { Key = new ModificationKey(ObjectId.PrefabRoot, ModificationFields.ParentObjectId) });
+            AssertInvalid<RuleModificationKeyValidAttribute>(
+                new Model { Key = new ModificationKey(ObjectId.PrefabRoot, ModificationFields.ShapeId) });
         }
 
         [Test]

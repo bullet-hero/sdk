@@ -558,6 +558,10 @@
         /// <summary> ClipboardData.Objects, GameLevel.Objects, Prefab.Objects. </summary>
         public const string Objects = "objs";
 
+        /// <summary> <c>"root"</c> - Prefab.Root. One per template, so docs/NAMING.md's shortening
+        /// rule 1 leaves the whole word: it is already four characters. </summary>
+        public const string Root = "root";
+
         /// <summary> Word fragment, built into StatsFrameObjects, StatsLevelObjects. The spelled-out
         /// twin of <see cref="Objects"/>, and the pair is the SINGLE/MULTIPLE split of docs/NAMING.md
         /// rather than an oversight: a level holds thousands of the abbreviated one, settings.json
@@ -1839,7 +1843,7 @@
         /// <summary> <c>"is_local"</c> - carried by no model today. </summary>
         public const string IsLocal = Is + _ + Local;
 
-        /// <summary> IFrameDuration.FrameDuration, LevelSettings.FrameDuration, Prefab.FrameDuration. </summary>
+        /// <summary> IFrameDuration.FrameDuration, LevelSettings.FrameDuration. </summary>
         public const string FrameDurationShort = "fdur";
 
         /// <summary> ScreenLimitKey.ScreenLimit. </summary>

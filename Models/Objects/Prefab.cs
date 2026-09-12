@@ -17,32 +17,25 @@ namespace BH.SDK.Models.Objects
     /// those two roles are split across GameLevel and LevelSettings.
     /// </summary>
     [RuleContainer]
+    [RulePrefabRootFixed]
     [ModelGeneration(ModelDomains.Prefab, ModelGenerations.Release)]
     [GenerateModel]
-    public sealed partial class Prefab : IFrameScope, IObjectIdCounter, IModel<Prefab>
+    public sealed partial class Prefab : IObjectScope, IObjectIdCounter, IModel<Prefab>
     {
         /// <summary> Identity of this template and the key of Level.Resources.Prefabs. </summary>
         [RuleIPrimitiveGuidNotNull]
         [JsonProperty(Names.PrefabId)]
         public PrefabId PrefabId { get; set; }
-
-        /// <summary> Editor-facing label of the template. </summary>
-        [RuleNotNull, RuleStringMax(ValueRules.MaxEditorName)]
-        [JsonProperty(Names.Name)]
-        public string Name { get; set; }
-
-        // This template's own local timeline length - has no live placement to derive one from
-        // (a template can be referenced by many/zero placements), so it's authored directly,
-        // mirroring LevelSettings.FrameDuration. Used both as the recommended/default duration for a
-        // newly-placed PrefabObject and as the Prefab Timeline's own editing bound.
-
-        /// <summary> Length of the template's own timeline, in frames. </summary>
-        [RuleInRange(FrameRules.MinFrameDuration, PrefabRules.MaxFrameDuration)]
-        [JsonProperty(Names.FrameDurationShort)]
-        public int FrameDuration { get; set; }
-
-        // Nested PrefabObject placements (instances of OTHER prefabs, placed inside this template)
-        // live directly in here too, already fully materialized - see IObjectScope's own comment.
+        
+        /// <summary> The object a placement of this template IS - what everything parented to
+        /// <see cref="ObjectId.PrefabRoot"/> hangs off, materialized onto the placement itself
+        /// rather than beside it, and carrying that same id as its own. Holds the template's name,
+        /// its positional tracks and - as its own Span's duration - the template's whole timeline;
+        /// a placement diverges from the tracks through its Modifications, and from the length not
+        /// at all. </summary>
+        [RuleNotNull]
+        [JsonProperty(Names.Root)]
+        public RectObject Root { get; set; }
 
         /// <summary> The template's own contents, keyed by ids local to this template - the same
         /// dictionary shape a level uses, which is why every editor operation works unchanged
@@ -70,21 +63,23 @@ namespace BH.SDK.Models.Objects
         public Prefab()
         {
             PrefabId = PrefabId.Null;
-            Name = string.Empty;
             Objects = new Dictionary<ObjectId, RectObject>();
             ObjectIdCounter = ObjectId.MinLevelValue;
-            FrameDuration = PrefabRules.DefaultFrameDuration;
+            Root = new RectObject
+            {
+                ObjectId = ObjectId.PrefabRoot,
+                Span = new FrameSpan(FrameRules.MinFrame, PrefabRules.DefaultFrameDuration),
+            };
         }
 
         /// <summary> Every member at once, in declaration order. </summary>
-        public Prefab(PrefabId prefabId, string name, Dictionary<ObjectId, RectObject> objects, int objectIdCounter,
-            int frameDuration)
+        public Prefab(PrefabId prefabId, Dictionary<ObjectId, RectObject> objects, int objectIdCounter,
+            RectObject root)
         {
             PrefabId = prefabId;
-            Name = name;
             Objects = objects;
             ObjectIdCounter = objectIdCounter;
-            FrameDuration = frameDuration;
+            Root = root;
         }
 
         /// <summary> A copy sharing every member instance - see <see cref="Level.ShallowClone"/> for

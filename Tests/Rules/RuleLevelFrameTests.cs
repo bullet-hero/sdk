@@ -102,7 +102,8 @@ namespace BH.SDK.Tests.Rules
         [Category(Metadata.Category.Easy)]
         public void TestStandalonePrefabUsesOwnLength()
         {
-            var context = RuleContext.ForRoot(new Prefab { FrameDuration = 10 });
+            var context = RuleContext.ForRoot(
+                new Prefab { Root = { Span = new FrameSpan(FrameRules.MinFrame, 10) } });
 
             Assert.IsTrue(Rule.IsValid(10, context));
             Assert.IsFalse(Rule.IsValid(11, context));
@@ -117,7 +118,11 @@ namespace BH.SDK.Tests.Rules
         public void TestPrefabInsideLevelUsesTemplateLength()
         {
             var level = LevelOfLength(100);
-            var prefab = new Prefab { PrefabId = new PrefabId(Guid.NewGuid()), FrameDuration = 10 };
+            var prefab = new Prefab
+            {
+                PrefabId = new PrefabId(Guid.NewGuid()),
+                Root = { Span = new FrameSpan(FrameRules.MinFrame, 10) },
+            };
             var inner = new RectObject { ObjectId = new ObjectId(1) };
             inner.Positions.Add(new PosKey { Frame = 50 });
             prefab.Objects.Add(inner.ObjectId, inner);
@@ -185,7 +190,11 @@ namespace BH.SDK.Tests.Rules
         [Category(Metadata.Category.Normal)]
         public void TestThroughAnalyzerOnStandalonePrefab()
         {
-            var prefab = new Prefab { PrefabId = new PrefabId(Guid.NewGuid()), FrameDuration = 10 };
+            var prefab = new Prefab
+            {
+                PrefabId = new PrefabId(Guid.NewGuid()),
+                Root = { Span = new FrameSpan(FrameRules.MinFrame, 10) },
+            };
             var inner = new RectObject
                 { ObjectId = new ObjectId(1), Span = FrameSpan.FromBounds(FrameRules.MinFrame, 6) };
             prefab.Objects.Add(inner.ObjectId, inner);

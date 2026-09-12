@@ -485,7 +485,8 @@ namespace BH.SDK.Tests
 
             for (var i = 0; i < 8; i++)
             {
-                var prefab = new Prefab { Name = "prefab " + i };
+                var prefab = new Prefab();
+                prefab.Root.Name = "prefab " + i;
                 for (var j = 0; j < 6; j++)
                 {
                     var inner = new TextObject { ObjectId = new ObjectId(j + 1), Layer = j };

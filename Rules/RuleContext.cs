@@ -1,5 +1,6 @@
 using BH.SDK.Models;
 using BH.SDK.Models.Interfaces;
+using BH.SDK.Models.Objects;
 
 namespace BH.SDK.Rules
 {
@@ -65,9 +66,13 @@ namespace BH.SDK.Rules
                     return new RuleContext(level, level, level.Game,
                         level.Settings.FrameDuration, false, true);
 
-                // A standalone template validates against its own timeline, with no level around it.
-                case IFrameScope scope:
-                    return new RuleContext(root, null, scope, scope.FrameDuration, true, true);
+                // A standalone template validates against its own timeline, with no level around
+                // it. Matched on the CONCRETE type, not on an interface: a template's timeline is
+                // its root's span now (see Prefab.Root), so "an object scope that also carries a
+                // timeline" stopped being something a type could declare - and there was only ever
+                // one such type.
+                case Prefab prefab:
+                    return new RuleContext(root, null, prefab, TimelineOf(prefab), true, true);
 
                 default:
                     return new RuleContext(root, null, null, 0, false, false);
@@ -76,10 +81,16 @@ namespace BH.SDK.Rules
 
         /// <summary> Context for a nested scope reached from this one - keeps the level for
         /// reference lookups, swaps everything scope-local. </summary>
-        public RuleContext WithScope(IFrameScope scope)
+        public RuleContext WithScope(Prefab scope)
         {
             if (scope == null) return this;
-            return new RuleContext(Root, Level, scope, scope.FrameDuration, true, true);
+            return new RuleContext(Root, Level, scope, TimelineOf(scope), true, true);
         }
+
+        // Zero for a template with no root at all, which is invalid data RuleNotNull reports on its
+        // own - every frame rule then degrades to "nothing fits", the same answer HasScope: false
+        // produces, rather than throwing inside the walk that was about to report the real problem.
+        private static int TimelineOf(Prefab prefab)
+            => prefab.Root?.Span.FrameDuration ?? 0;
     }
 }

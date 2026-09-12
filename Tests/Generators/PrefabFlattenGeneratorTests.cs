@@ -4,6 +4,7 @@ using BH.SDK.Models;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Models.Objects;
 using BH.SDK.Models.Primitives;
+using BH.SDK.Rules;
 using NUnit.Framework;
 
 namespace BH.SDK.Tests.Generators
@@ -30,7 +31,12 @@ namespace BH.SDK.Tests.Generators
 
         private static Prefab AddTemplate(Level level, string name)
         {
-            var template = new Prefab { PrefabId = PrefabId.NewId(), Name = name, FrameDuration = FrameDuration };
+            var template = new Prefab
+            {
+                PrefabId = PrefabId.NewId(),
+                Root = { Span = new FrameSpan(FrameRules.MinFrame, FrameDuration) },
+            };
+            template.Root.Name = name;
             level.Resources.Prefabs[template.PrefabId] = template;
             return template;
         }

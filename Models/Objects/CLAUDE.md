@@ -75,7 +75,18 @@ generically (the Unity project's `PrefabMaterializer`, `LevelEditorOperation.Tar
 `Prefab` case where one object satisfies both. Don't assume symmetry here.
 
 `ObjectId` has reserved negative constants beyond plain user ids: `Camera = -1` (player-runtime-only,
-invalid as an actual `ObjectId`), `LocalPlayer = -2` (a valid parent target), `PrefabRoot = -3`
-(only meaningful *inside* a `Prefab` template — same effect as an unset/`Null` `ParentObjectId`
-there). `RuleParentObjectIdValidAttribute` accepts all three everywhere, even where semantically
-meaningless (e.g. `PrefabRoot` at level scope) — a known leniency gap, not yet context-checked.
+invalid as an actual `ObjectId`), `LocalPlayer = -2` (a valid parent target), `PrefabRoot = -3`.
+
+**`PrefabRoot` is an ADDRESS, not a sentinel**, and it is the only reserved id that appears as an
+IDENTITY as well as a parent: `Prefab.Root` is a real `RectObject` carrying that value as its own
+`ObjectId`, and a placement of that template is what it materializes AS. An unset/`Null`
+`ParentObjectId` inside a template still resolves to the same place - "no parent here" and "attached
+to the root" describe one arrangement - so the difference is which of the two an author said.
+`Docs/Issues/PREFAB_ROOT_HISTORY.md` is the record.
+
+Both id rules are **context-checked**, each as narrowly as it can be:
+`RuleParentObjectIdValid` accepts `PrefabRoot` only in prefab scope and `Camera`/`LocalPlayer` only
+outside it, falling back to the plain range check when no scope is resolved;
+`RuleObjectIdValid` accepts `PrefabRoot` as an identity on the same terms and nothing else negative
+at all. What stops an inner object claiming that identity is `Prefab.Objects`' own
+`RuleDictionaryKeyMatches` - an id has to be the key it is filed under.

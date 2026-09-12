@@ -404,7 +404,7 @@ namespace BH.SDK.Tests.Generators
         public void Dangerous_InPrefabScope_MeasuredAgainstTheTemplateFrameDuration()
         {
             var level = CreateLevel();
-            var prefab = new Prefab { FrameDuration = 100 };
+            var prefab = new Prefab { Root = { Span = new FrameSpan(FrameRules.MinFrame, 100) } };
 
             var whole = new GeneratorContext(prefab, prefab, level.Settings, level.Resources,
                 FrameSpan.FromBounds(FrameRules.MinFrame, FrameRules.EndBoundaryOf(100)));

@@ -299,12 +299,13 @@ namespace BH.SDK.Generators.Modifiers
 
         #region Timeline
 
-        // The active timeline, not always the level's: inside Prefab Mode the bound is the template's
-        // own FrameDuration (Prefab implements IFrameDuration, Level.Game doesn't), which is the same
-        // rule the editor's own window clamp and mod_content_remover use.
+        // The active timeline, not always the level's: inside Prefab Mode the bound is the
+        // template's own length, which is its root's span (Prefab.Root) - the same rule the editor's
+        // own window clamp and mod_content_remover use.
         private static int TimelineEnd(GeneratorContext context)
         {
-            if (context.Scope is IFrameDuration scope) return scope.FrameDuration;
+            if (context.Scope is Prefab prefab)
+                return prefab.Root?.Span.FrameDuration ?? FrameRules.MinFrameDuration;
             return context.Settings?.FrameDuration ?? FrameRules.MinFrameDuration;
         }
 
