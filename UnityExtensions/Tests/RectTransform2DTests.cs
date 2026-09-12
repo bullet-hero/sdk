@@ -1,6 +1,7 @@
 ﻿using BH.SDK.Transforms;
 using NUnit.Framework;
 using Unity.Mathematics;
+using UnityEngine;
 
 namespace BH.SDK.UnityExtensions.Tests
 {
@@ -501,6 +502,58 @@ namespace BH.SDK.UnityExtensions.Tests
                 Assert.GreaterOrEqual(bounds.x, reach.x * 2f - 0.0001f, $"x at {degrees} deg");
                 Assert.GreaterOrEqual(bounds.y, reach.y * 2f - 0.0001f, $"y at {degrees} deg");
             }
+        }
+
+        // The overload effects ride: their graph draws its own particles, so the object's rect must
+        // not multiply into the scale - only where it sits may come from the rect. Both halves are
+        // pinned here because getting either wrong is silent, and in opposite directions: taking the
+        // size collapses a zero-sized effect to a point, and dropping the pivot offset would move
+        // every effect that has a size.
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Normal)]
+        public static void ApplyToNoSize_ScalesByScaleAloneAndPositionsExactlyAsApplyTo()
+        {
+            var rt = new RectTransform2D(new float2(3f, -2f), 7f, 0f, new float2(4f, 5f),
+                new float2(1.5f, 0.5f), new float2(0.5f, 0.5f), new float2(0.5f, 0.5f), new float2(0.5f, 0.5f));
+
+            var go = new GameObject(nameof(ApplyToNoSize_ScalesByScaleAloneAndPositionsExactlyAsApplyTo));
+            try
+            {
+                rt.ApplyTo(go.transform);
+                var withSize = go.transform.localPosition;
+
+                rt.ApplyToNoSize(go.transform);
+
+                Assert.AreEqual(rt.scale.x, go.transform.localScale.x, 0.0001f);
+                Assert.AreEqual(rt.scale.y, go.transform.localScale.y, 0.0001f);
+                Assert.AreEqual(1f, go.transform.localScale.z, 0.0001f);
+                Assert.AreEqual(withSize, go.transform.localPosition, "position is not what changed");
+            }
+            finally { Object.DestroyImmediate(go); }
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Normal)]
+        public static void ApplyToNoSize_WithNoSizeAtAll_StillLeavesAUsableScale()
+        {
+            var rt = new RectTransform2D(float2.zero, 0f, 0f, float2.zero, new float2(1f, 1f),
+                new float2(0.5f, 0.5f), new float2(0.5f, 0.5f), new float2(0.5f, 0.5f));
+
+            var go = new GameObject(nameof(ApplyToNoSize_WithNoSizeAtAll_StillLeavesAUsableScale));
+            try
+            {
+                rt.ApplyTo(go.transform);
+                Assert.AreEqual(0f, go.transform.localScale.x, 0.0001f, "the rect IS the quad, so it collapses");
+
+                rt.ApplyToNoSize(go.transform);
+                Assert.AreEqual(1f, go.transform.localScale.x, 0.0001f);
+                Assert.AreEqual(1f, go.transform.localScale.y, 0.0001f);
+            }
+            finally { Object.DestroyImmediate(go); }
         }
     }
 }

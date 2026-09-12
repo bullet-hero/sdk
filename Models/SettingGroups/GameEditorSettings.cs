@@ -17,7 +17,7 @@ namespace BH.SDK.Models.SettingGroups
     // and a migrator. Both are deleted and the domain is back at (1,0) - root CLAUDE.md Rule 11, the
     // game is pre-release. The shape it moved to is GraphicsSettings' own - a root holding nothing but
     // sub-groups - except that this one keeps no loose properties at all: every field belongs to
-    // exactly one of the nine.
+    // exactly one of the groups below.
 
     /// <summary>
     /// Preferences for the in-game level editor, per device. Belongs to the person editing, never to
@@ -62,6 +62,11 @@ namespace BH.SDK.Models.SettingGroups
         [JsonProperty(Names.Gizmos)]
         public EditorGizmosSettings Gizmos { get; set; }
 
+        /// <summary> What a newly created object is sized as, per type. </summary>
+        [RuleNotNull]
+        [JsonProperty(Names.Creation)]
+        public EditorCreationSettings Creation { get; set; }
+
         /// <summary> How the timelines respond to a pointer, and whether playback wraps. </summary>
         [RuleNotNull]
         [JsonProperty(Names.Timeline)]
@@ -87,6 +92,7 @@ namespace BH.SDK.Models.SettingGroups
             Effects = new EditorEffectsSettings();
             Selection = new EditorSelectionSettings();
             Gizmos = new EditorGizmosSettings();
+            Creation = new EditorCreationSettings();
             Timeline = new EditorTimelineSettings();
             Interface = new EditorInterfaceSettings();
             Serialization = new EditorSerializationSettings();
@@ -96,7 +102,7 @@ namespace BH.SDK.Models.SettingGroups
         public GameEditorSettings(EditorSavingsSettings savings, EditorCameraSettings camera,
             EditorPlayerSettings player, EditorGridSettings grid, EditorEffectsSettings effects,
             EditorSelectionSettings selection,
-            EditorGizmosSettings gizmos, EditorTimelineSettings timeline,
+            EditorGizmosSettings gizmos, EditorCreationSettings creation, EditorTimelineSettings timeline,
             EditorInterfaceSettings interfaceSettings, EditorSerializationSettings serialization)
         {
             Savings = savings;
@@ -106,6 +112,7 @@ namespace BH.SDK.Models.SettingGroups
             Effects = effects;
             Selection = selection;
             Gizmos = gizmos;
+            Creation = creation;
             Timeline = timeline;
             Interface = interfaceSettings;
             Serialization = serialization;

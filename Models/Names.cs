@@ -1570,6 +1570,9 @@
         /// <summary> GameEditorSettings.Gizmos. </summary>
         public const string Gizmos = "gizmos";
 
+        /// <summary> GameEditorSettings.Creation. </summary>
+        public const string Creation = "creation";
+
         /// <summary> Word fragment, built into RenderInframes. </summary>
         public const string Inframes = "inframes";
 
@@ -1905,6 +1908,24 @@
 
         /// <summary> <c>"pick_invisible_aabb"</c> - EditorSelectionSettings.PickInvisibleAABB. </summary>
         public const string PickInvisibleAABB = Pick + _ + Invisible + _ + AABB;
+
+        // SPELLED OUT rather than built from Shape + Size, and that is the naming rule rather than an
+        // oversight: those two fragments are the MULTIPLE-class spellings ("shp", "sz") because they
+        // are paid for on every object of every level, while a UserSettings key is paid for once per
+        // settings file. Docs/NAMING.md puts every settings group in the SINGLE class - full words,
+        // no abbreviations, readable by whoever opens settings.json.
+
+        /// <summary> <c>"shape_size_x"</c> - EditorCreationSettings.ShapeSizeX. </summary>
+        public const string ShapeSizeX = "shape_size_x";
+
+        /// <summary> <c>"shape_size_y"</c> - EditorCreationSettings.ShapeSizeY. </summary>
+        public const string ShapeSizeY = "shape_size_y";
+
+        /// <summary> <c>"text_size_x"</c> - EditorCreationSettings.TextSizeX. </summary>
+        public const string TextSizeX = "text_size_x";
+
+        /// <summary> <c>"text_size_y"</c> - EditorCreationSettings.TextSizeY. </summary>
+        public const string TextSizeY = "text_size_y";
 
         /// <summary> <c>"long_press_dly"</c> - EditorSelectionSettings.LongPressDelay. </summary>
         public const string LongPressDelay = Long + _ + Press + _ + Delay;

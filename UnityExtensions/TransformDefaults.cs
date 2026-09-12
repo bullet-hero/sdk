@@ -4,9 +4,14 @@ namespace BH.SDK
 {
     // THE TRANSFORM HALF OF BH.Shared.defaults, AND ONLY THAT HALF. Transform2D and RectTransform2D
     // live here now and read their own zero state from these; the consumer's `defaults` keeps every
-    // other field it has (color, uv, cameraZoom, shake, layer_int, scaleUniform) and DELEGATES these
-    // eight, so there is still one source of truth and every existing `defaults.position` call site is
+    // other field it has (color, uv, cameraZoom, shake, layer_int, scaleUniform) and DELEGATES seven of
+    // these eight, so there is one source of truth for each and every `defaults.position` call site is
     // untouched.
+    //
+    // `Size` IS THE ONE IT NO LONGER DELEGATES, and that split is load bearing: this one is what a
+    // TRANSFORM measures before anything is authored onto it, while `defaults.size` is what an OBJECT
+    // WITH NO SIZE KEYFRAMES reads, which is nothing at all. Reading them as one question is what let a
+    // gizmo handle and an empty track share a number they never shared a meaning with.
     //
     // MOVING `defaults` WHOLE WAS THE ALTERNATIVE AND IT DOES NOT FIT. That type reaches for
     // BH.Shared.alignment and BH.Shared.color, both of which stay in the consumer, and it is what every
@@ -31,7 +36,8 @@ namespace BH.SDK
         /// <summary> Additional local scale, on top of <see cref="Size"/>. </summary>
         public static readonly float2 Scale = new(1f, 1f);
 
-        /// <summary> Logical size of the rect, one world unit square. </summary>
+        /// <summary> Logical size of the rect, one world unit square - the zero state of a TRANSFORM,
+        /// and never the fallback for an empty size track (see the note above). </summary>
         public static readonly float2 Size = new(1f, 1f);
 
         /// <summary> Lower anchor - centred, so an unanchored child does not stretch with its parent. </summary>

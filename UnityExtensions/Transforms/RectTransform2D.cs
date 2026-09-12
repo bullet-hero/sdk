@@ -362,6 +362,49 @@ namespace BH.SDK.Transforms
             access.localScale = sca;
             access.SetLocalPositionAndRotation(pos, rot);
         }
+        
+        /// <summary> Writes it onto a Unity transform, its own size left out of the scale. </summary>
+        public void ApplyToNoSize(Transform transform)
+        {
+            var halfFullSize = FullSize * 0.5f;
+            var pivotPoint = math.lerp(-halfFullSize, halfFullSize, pivot); // apply sca
+            pivotPoint = Math2D.RotateVector(pivotPoint, rotation); // apply rot
+
+            var pos = new Vector3(position.x - pivotPoint.x, position.y - pivotPoint.y, layer);
+            var rot = Math2D.RotateZ(rotation);
+            var sca = new Vector3(scale.x, scale.y, 1f);
+
+            transform.localScale = sca;
+            transform.SetLocalPositionAndRotation(pos, rot);
+        }
+        /// <summary> Writes it onto a job's transform handle, its own size left out of the scale. </summary>
+        public void ApplyToNoSize(TransformHandle handle)
+        {
+            var halfFullSize = FullSize * 0.5f;
+            var pivotPoint = math.lerp(-halfFullSize, halfFullSize, pivot); // apply sca
+            pivotPoint = Math2D.RotateVector(pivotPoint, rotation); // apply rot
+
+            var pos = new Vector3(position.x - pivotPoint.x, position.y - pivotPoint.y, layer);
+            var rot = Math2D.RotateZ(rotation);
+            var sca = new Vector3(scale.x, scale.y, 1f);
+
+            handle.localScale = sca;
+            handle.SetLocalPositionAndRotation(pos, rot);
+        }
+        /// <summary> Writes it onto a job's transform access, its own size left out of the scale. </summary>
+        public void ApplyToNoSize(TransformAccess access)
+        {
+            var halfFullSize = FullSize * 0.5f;
+            var pivotPoint = math.lerp(-halfFullSize, halfFullSize, pivot); // apply sca
+            pivotPoint = Math2D.RotateVector(pivotPoint, rotation); // apply rot
+
+            var pos = new Vector3(position.x - pivotPoint.x, position.y - pivotPoint.y, layer);
+            var rot = Math2D.RotateZ(rotation);
+            var sca = new Vector3(scale.x, scale.y, 1f);
+
+            access.localScale = sca;
+            access.SetLocalPositionAndRotation(pos, rot);
+        }
         /// <summary> Writes it onto a Unity rect transform, anchors and pivot included. </summary>
         public void ApplyTo(RectTransform rectTransform)
         {

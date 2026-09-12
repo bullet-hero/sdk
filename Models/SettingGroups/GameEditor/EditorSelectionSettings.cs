@@ -73,6 +73,12 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
         // to whatever sits behind it. Turning this on gives every object its whole rect back, for an
         // author who would rather have a generous target than an exact one. Either way an object
         // carrying no geometry at all is picked by its rect - it has nothing else to be clicked by.
+        //
+        // IT IS NOT AN ESCAPE HATCH FOR AN OBJECT THAT CANNOT BE CLICKED. It hands the picker the
+        // whole rect, and a bare rect or a prefab placement with no size keyframes HAS no rect -
+        // an empty size track reads as zero, which is what those types are (see
+        // BH.Shared.defaults.size). They are selected from the hierarchy or a timeline, or given a
+        // size keyframe if the author wants one; this setting changes nothing for them either way.
 
         /// <summary> Whether a click picks an object by its whole rect instead of its own shape. </summary>
         [JsonProperty(Names.PickInvisibleAABB)]
