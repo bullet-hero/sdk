@@ -19,7 +19,7 @@ namespace BH.SDK.Models.Objects
     /// </summary>
     [RuleContainer]
     [GenerateModel]
-    public sealed partial class PrefabObject : RectObject, IModel<PrefabObject>, IUpdatable<PrefabObject>
+    public sealed partial class PrefabObject : RectObject, IModel<PrefabObject>
     {
         /// <summary> Which concrete form this is - the discriminator a converter writes and reads back. </summary>
         public override ObjectType GetModelType() => ObjectType.PrefabObject;
