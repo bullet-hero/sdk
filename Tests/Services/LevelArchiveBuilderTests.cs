@@ -12,7 +12,7 @@ using BH.SDK.Models.Primitives.Resources;
 using BH.SDK.Models.Resources;
 using BH.SDK.Services.Archive;
 using BH.SDK.Services.Content;
-using BH.SDK.Services.Package;
+using BH.SDK.Services.LevelArchive;
 using NUnit.Framework;
 
 namespace BH.SDK.Tests.Services
@@ -32,7 +32,7 @@ namespace BH.SDK.Tests.Services
 
     /// <summary> The four routes a resource reference can take out of a level, including the one that matters
     /// most in practice: a song outside the level folder, collected in with its key rewritten. </summary>
-    public class LevelPackageBuilderTests
+    public class LevelArchiveBuilderTests
     {
         private DirectoryInfo _tempDirectory;
 
@@ -40,7 +40,7 @@ namespace BH.SDK.Tests.Services
         public void SetUp()
         {
             _tempDirectory = new DirectoryInfo(
-                Path.Combine(Path.GetTempPath(), "BH_LevelPackageBuilderTests_" + Guid.NewGuid()));
+                Path.Combine(Path.GetTempPath(), "BH_LevelArchiveBuilderTests_" + Guid.NewGuid()));
             _tempDirectory.Create();
         }
 
@@ -81,8 +81,8 @@ namespace BH.SDK.Tests.Services
         private static bool HasCode(InteropReport report, string code) =>
             report.Issues.Any(issue => issue.Code == code);
 
-        private static PackageFile? Find(LevelPackagePlan plan, string packagePath) =>
-            plan.Files.Cast<PackageFile?>().FirstOrDefault(file => file.Value.PackagePath == packagePath);
+        private static ArchiveFile? Find(LevelArchivePlan plan, string archivePath) =>
+            plan.Files.Cast<ArchiveFile?>().FirstOrDefault(file => file.Value.ArchivePath == archivePath);
 
         [Test]
         [Author(Metadata.Author.Vertoker)]
@@ -97,7 +97,7 @@ namespace BH.SDK.Tests.Services
             meta.LevelLogo = new ResourceKey(ResourceUriType.LevelPath, FileNames.LogoFileNamePng);
             SetOnlySource(Texture(level), ResourceUriType.LevelPath, "texture.png");
 
-            var plan = await LevelPackageBuilder.BuildAsync(level, meta, store, CancellationToken.None);
+            var plan = await LevelArchiveBuilder.BuildAsync(level, meta, store, CancellationToken.None);
 
             Assert.IsNotNull(Find(plan, FileNames.LogoFileNamePng));
             Assert.IsNotNull(Find(plan, "texture.png"));
@@ -117,14 +117,14 @@ namespace BH.SDK.Tests.Services
             var songPath = WriteExternalFile("spider-dance.ogg");
             SetOnlySource(Audio(level), ResourceUriType.AbsolutePath, songPath);
 
-            var plan = await LevelPackageBuilder.BuildAsync(level, meta, store, CancellationToken.None);
+            var plan = await LevelArchiveBuilder.BuildAsync(level, meta, store, CancellationToken.None);
 
             var collected = Find(plan, "spider-dance.ogg");
             Assert.IsNotNull(collected, "the song outside the folder should have been collected");
             Assert.IsTrue(collected.Value.IsExternal);
             Assert.AreEqual(songPath, collected.Value.SourcePath);
 
-            // Rewritten in the EXPORTED copy, so the package is self-contained...
+            // Rewritten in the EXPORTED copy, so the archive is self-contained...
             var exported = Audio(plan.Level).Sources[0];
             Assert.AreEqual(ResourceUriType.LevelPath, exported.UriType);
             Assert.AreEqual("spider-dance.ogg", exported.Uri);
@@ -136,7 +136,7 @@ namespace BH.SDK.Tests.Services
         }
 
         // Two different songs that happen to share a file name are two files, and the second one
-        // must not overwrite the first inside the package.
+        // must not overwrite the first inside the archive.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
@@ -155,7 +155,7 @@ namespace BH.SDK.Tests.Services
             SetOnlySource(Audio(level), ResourceUriType.AbsolutePath, first);
             SetOnlySource(Texture(level), ResourceUriType.AbsolutePath, second);
 
-            var plan = await LevelPackageBuilder.BuildAsync(level, meta, store, CancellationToken.None);
+            var plan = await LevelArchiveBuilder.BuildAsync(level, meta, store, CancellationToken.None);
 
             Assert.IsNotNull(Find(plan, "song.ogg"));
             Assert.IsNotNull(Find(plan, "song_1.ogg"));
@@ -177,9 +177,9 @@ namespace BH.SDK.Tests.Services
             SetOnlySource(Texture(level), ResourceUriType.LevelPath, "texture.png");
             SetOnlySource(Font(level), ResourceUriType.LevelPath, "texture.png");
 
-            var plan = await LevelPackageBuilder.BuildAsync(level, meta, store, CancellationToken.None);
+            var plan = await LevelArchiveBuilder.BuildAsync(level, meta, store, CancellationToken.None);
 
-            Assert.AreEqual(1, plan.Files.Count(file => file.PackagePath == "texture.png"));
+            Assert.AreEqual(1, plan.Files.Count(file => file.ArchivePath == "texture.png"));
             Assert.AreEqual("texture.png", Font(plan.Level).Sources[0].Uri);
         }
 
@@ -197,9 +197,9 @@ namespace BH.SDK.Tests.Services
             SetOnlySource(Audio(level), ResourceUriType.AbsolutePath,
                 Path.Combine(_tempDirectory.FullName, "never-existed.ogg"));
 
-            var plan = await LevelPackageBuilder.BuildAsync(level, meta, store, CancellationToken.None);
+            var plan = await LevelArchiveBuilder.BuildAsync(level, meta, store, CancellationToken.None);
 
-            Assert.IsTrue(HasCode(plan.Report, "package.resource_missing"));
+            Assert.IsTrue(HasCode(plan.Report, "archive.resource_missing"));
             Assert.IsNull(Find(plan, "gone.png"));
             Assert.IsFalse(plan.Report.IsClean);
         }
@@ -219,9 +219,9 @@ namespace BH.SDK.Tests.Services
             const string url = "https://example.com/song.ogg";
             SetOnlySource(Audio(level), ResourceUriType.DirectUrl, url);
 
-            var plan = await LevelPackageBuilder.BuildAsync(level, meta, store, CancellationToken.None);
+            var plan = await LevelArchiveBuilder.BuildAsync(level, meta, store, CancellationToken.None);
 
-            Assert.IsTrue(HasCode(plan.Report, "package.resource_unreachable"));
+            Assert.IsTrue(HasCode(plan.Report, "archive.resource_unreachable"));
             Assert.AreEqual(ResourceUriType.DirectUrl, Audio(plan.Level).Sources[0].UriType);
             Assert.AreEqual(url, Audio(plan.Level).Sources[0].Uri);
         }
@@ -240,12 +240,12 @@ namespace BH.SDK.Tests.Services
             meta.LevelLogo = new ResourceKey(ResourceUriType.LevelPath, FileNames.LogoFileNamePng);
             SetOnlySource(Texture(level), ResourceUriType.LevelPath, "texture.png");
 
-            var plan = await LevelPackageBuilder.BuildAsync(level, meta, store, CancellationToken.None);
+            var plan = await LevelArchiveBuilder.BuildAsync(level, meta, store, CancellationToken.None);
 
             // level.json and metadata.json are regenerated rather than copied, so they are not
             // "unreferenced" - only the stray file is.
             Assert.AreEqual(1, plan.DroppedFileCount);
-            Assert.IsTrue(HasCode(plan.Report, "package.unreferenced_dropped"));
+            Assert.IsTrue(HasCode(plan.Report, "archive.unreferenced_dropped"));
             Assert.IsNull(Find(plan, "leftover.psd"));
         }
 
@@ -262,17 +262,17 @@ namespace BH.SDK.Tests.Services
             var meta = MockData.CreateTestLevelMeta();
             var store = CreateLevelStore();
 
-            var longName = new string('t', ArchivePolicy.MaxNameBytes + 40) + ".png";
+            var longName = new string('t', ArchivePolicy.MaxEntryNameBytes + 40) + ".png";
             store.Write(longName, Encoding.UTF8.GetBytes("a texture"));
             SetOnlySource(Texture(level), ResourceUriType.LevelPath, longName);
 
-            var plan = await LevelPackageBuilder.BuildAsync(level, meta, store, CancellationToken.None);
+            var plan = await LevelArchiveBuilder.BuildAsync(level, meta, store, CancellationToken.None);
 
             var packed = Texture(plan.Level).Sources[0].Uri;
             Assert.AreNotEqual(longName, packed);
             Assert.IsTrue(ArchivePolicy.FitsName(packed));
             Assert.IsTrue(packed.EndsWith(".png", StringComparison.Ordinal), "the extension has to survive");
-            Assert.IsTrue(HasCode(plan.Report, "package.resource_renamed"));
+            Assert.IsTrue(HasCode(plan.Report, "archive.resource_renamed"));
         }
 
         [Test]
@@ -287,10 +287,10 @@ namespace BH.SDK.Tests.Services
 
             SetOnlySource(Texture(level), ResourceUriType.LevelPath, "../../elsewhere.png");
 
-            var plan = await LevelPackageBuilder.BuildAsync(level, meta, store, CancellationToken.None);
+            var plan = await LevelArchiveBuilder.BuildAsync(level, meta, store, CancellationToken.None);
 
-            Assert.IsTrue(HasCode(plan.Report, "package.resource_bad_path"));
-            Assert.AreEqual(0, plan.Files.Count(file => file.PackagePath.Contains("elsewhere")));
+            Assert.IsTrue(HasCode(plan.Report, "archive.resource_bad_path"));
+            Assert.AreEqual(0, plan.Files.Count(file => file.ArchivePath.Contains("elsewhere")));
         }
 
         [Test]
@@ -305,13 +305,13 @@ namespace BH.SDK.Tests.Services
             meta.LevelLogo = new ResourceKey(ResourceUriType.LevelPath, FileNames.LogoFileNamePng);
             SetOnlySource(Texture(level), ResourceUriType.LevelPath, "texture.png");
 
-            var first = await LevelPackageBuilder.BuildAsync(level, meta, CreateLevelStore(), CancellationToken.None);
-            var second = await LevelPackageBuilder.BuildAsync(level, meta, CreateLevelStore(), CancellationToken.None);
+            var first = await LevelArchiveBuilder.BuildAsync(level, meta, CreateLevelStore(), CancellationToken.None);
+            var second = await LevelArchiveBuilder.BuildAsync(level, meta, CreateLevelStore(), CancellationToken.None);
 
             Assert.AreEqual(Names(first), Names(second));
         }
 
-        private static List<string> Names(LevelPackagePlan plan) =>
-            plan.Files.Select(file => file.PackagePath).ToList();
+        private static List<string> Names(LevelArchivePlan plan) =>
+            plan.Files.Select(file => file.ArchivePath).ToList();
     }
 }

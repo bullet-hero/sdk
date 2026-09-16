@@ -16,36 +16,36 @@ namespace BH.SDK.Generators.Import
     // OWN format is authoring automation like any other.
     //
     // THE REVERSE DIRECTION IS DELIBERATELY NOT A GENERATOR. A generator produces content; an export
-    // consumes a level and writes files, which is a host service (Services/Package's writer, driven
+    // consumes a level and writes files, which is a host service (Services/Archive's writer, driven
     // from the editor's Dangerous Zone).
     //
     // IT DESERIALIZES THROUGH THE ORDINARY SERVICE, which is the whole reason importing an older
-    // package costs nothing: DeserializeEnvelope walks VersionedTypeRegistry and migrates the
-    // document to the domain's current shape on the way in. A package written by a build from a year
+    // archive costs nothing: DeserializeEnvelope walks VersionedTypeRegistry and migrates the
+    // document to the domain's current shape on the way in. An archive written by a build from a year
     // ago opens as today's model, and this generator never learns that it was old.
     //
     // ExternalAnalysis for the reason every other one here needs it: the SDK does not open the file.
-    // The host reads the package - decrypting it if it was protected - and fills the bytes in.
+    // The host reads the archive - decrypting it if it was protected - and fills the bytes in.
     // Handed nothing, this produces an empty level and says why, never a plausible-looking one.
 
-    /// <summary> Builds a level out of a level package the host opened. </summary>
-    public class LevelPackageGenerator : BaseLevelGenerator<LevelPackageGenerator.Parameters>
+    /// <summary> Builds a level out of a level archive the host opened. </summary>
+    public class LevelArchiveGenerator : BaseLevelGenerator<LevelArchiveGenerator.Parameters>
     {
-        private const string CodeNoLevel = "package.no_level";
-        private const string CodeUnreadable = "package.unreadable";
-        private const string CodeNoMeta = "package.no_metadata";
-        private const string CodeNewId = "package.new_level_id";
-        private const string CodePlacementsIncomplete = "package.placements_incomplete";
+        private const string CodeNoLevel = "archive.no_level";
+        private const string CodeUnreadable = "archive.unreadable";
+        private const string CodeNoMeta = "archive.no_metadata";
+        private const string CodeNewId = "archive.new_level_id";
+        private const string CodePlacementsIncomplete = "archive.placements_incomplete";
 
         // Its own instance rather than an injected one: a generator is constructed by a reflection
         // scan with no arguments, and this service is stateless configuration whose converter list
         // is resolved once per instance. Static, so importing twice does not build it twice.
         private static readonly SerializationService Serialization = new SerializationService();
 
-        /// <summary> <c>"gen_level_package"</c>, the key a host lists this generator under. </summary>
-        public override string NameKey => "gen_level_package";
+        /// <summary> <c>"gen_level_archive"</c>, the key a host lists this generator under. </summary>
+        public override string NameKey => "gen_level_archive";
 
-        // Ahead of the foreign-format import at 10: this reads the project's own packages, which is
+        // Ahead of the foreign-format import at 10: this reads the project's own archives, which is
         // the commoner answer to "I was sent a level".
 
         /// <summary> Where this sits in a host's list; lower comes first. </summary>
@@ -99,7 +99,7 @@ namespace BH.SDK.Generators.Import
             }
             catch (Exception exception)
             {
-                // A package that opened and then would not deserialize is a real answer the author
+                // An archive that opened and then would not deserialize is a real answer the author
                 // needs: the archive was fine, the document inside it was not.
                 report.Failed(CodeUnreadable,
                     $"The level document could not be read: {exception.Message}", parameters.SourcePath);
@@ -129,7 +129,7 @@ namespace BH.SDK.Generators.Import
         {
             var meta = Deserialize(parameters, report);
 
-            // Minted by default, and the default is the safe one: a package is usually a copy of a
+            // Minted by default, and the default is the safe one: an archive is usually a copy of a
             // level the author may well already have, and importing it under the same id would point
             // two entries at one folder. Keeping the id is the deliberate choice - restoring a level
             // this machine used to hold.
@@ -142,7 +142,7 @@ namespace BH.SDK.Generators.Import
 
             // Clearing the authors is NOT anonymising somebody else's work - the level is still
             // theirs and its license still says so. It is for the case the author is importing their
-            // own package as a starting point, where their name is already about to be added.
+            // own archive as a starting point, where their name is already about to be added.
             if (!parameters.KeepAuthor) meta.LevelAuthors.Clear();
 
             return meta;
@@ -153,7 +153,7 @@ namespace BH.SDK.Generators.Import
             if (parameters.MetaBytes == null || parameters.MetaBytes.Length == 0)
             {
                 report.Approximated(CodeNoMeta,
-                    "The package carried no metadata, so the level was given fresh metadata of its own.",
+                    "The archive carried no metadata, so the level was given fresh metadata of its own.",
                     parameters.SourcePath);
                 return new LevelMeta();
             }
@@ -175,7 +175,7 @@ namespace BH.SDK.Generators.Import
         }
 
         // The level's real cost is only known once its document is read, and reading it twice is
-        // cheap next to showing the author a number that has nothing to do with their package.
+        // cheap next to showing the author a number that has nothing to do with their archive.
 
         /// <summary> What this run would add, answered before it runs. </summary>
         protected override GeneratorCost EstimateTyped(Parameters parameters)
@@ -196,7 +196,7 @@ namespace BH.SDK.Generators.Import
             if (level?.Resources == null) return GeneratorCost.Zero;
 
             // Expanded before it is counted, or the number under-reports by every prefab copy in the
-            // package - which on a prefab-heavy level is most of it.
+            // archive - which on a prefab-heavy level is most of it.
             PrefabVirtualizationUtils.Expand(level);
 
             var resources = level.Resources.Textures.Count + level.Resources.Fonts.Count
@@ -211,76 +211,76 @@ namespace BH.SDK.Generators.Import
 
         private static GeneratedLevel Empty() => new GeneratedLevel(new Level(), new LevelMeta());
 
-        /// <summary> Which package the host opened, and the passphrase when it is protected. Public mutable fields,
+        /// <summary> Which archive the host opened, and the passphrase when it is protected. Public mutable fields,
         /// like every parameters class here - a form binds to them and a preset serializes from them. </summary>
-        public class Parameters : ILevelPackageInput
+        public class Parameters : ILevelArchiveInput
         {
             /// <summary> Give the imported level an id of its own, so it cannot overwrite a level
             /// already on this machine. </summary>
             public bool NewLevelId = true;
 
-            /// <summary> Keep whoever the package says wrote it. </summary>
+            /// <summary> Keep whoever the archive says wrote it. </summary>
             public bool KeepAuthor = true;
 
-            /// <summary> Copy the package's own files - the cover, the song, the textures - into the
+            /// <summary> Copy the archive's own files - the cover, the song, the textures - into the
             /// new level's folder. </summary>
             public bool ImportResources = true;
 
-            /// <summary> The level document as it came out of the package. </summary>
+            /// <summary> The level document as it came out of the archive. </summary>
             public byte[] LevelBytes = Array.Empty<byte>();
 
             /// <summary> Which format those bytes are in. </summary>
             public SerializationType LevelFormat = SerializationType.Json;
 
-            /// <summary> The metadata document, where the package carried one. </summary>
+            /// <summary> The metadata document, where the archive carried one. </summary>
             public byte[] MetaBytes;
 
             /// <summary> Which format that one is in. </summary>
             public SerializationType MetaFormat = SerializationType.Json;
 
-            /// <summary> Where the package came from, for the report. </summary>
+            /// <summary> Where the archive came from, for the report. </summary>
             public string SourcePath = string.Empty;
 
-            /// <summary> What else the package held, so the import can tell a missing resource from one it never had. </summary>
+            /// <summary> What else the archive held, so the import can tell a missing resource from one it never had. </summary>
             public string[] ResourceFileNames = Array.Empty<string>();
 
-            byte[] ILevelPackageInput.LevelBytes
+            byte[] ILevelArchiveInput.LevelBytes
             {
                 get => LevelBytes;
                 set => LevelBytes = value;
             }
 
-            SerializationType ILevelPackageInput.LevelFormat
+            SerializationType ILevelArchiveInput.LevelFormat
             {
                 get => LevelFormat;
                 set => LevelFormat = value;
             }
 
-            byte[] ILevelPackageInput.MetaBytes
+            byte[] ILevelArchiveInput.MetaBytes
             {
                 get => MetaBytes;
                 set => MetaBytes = value;
             }
 
-            SerializationType ILevelPackageInput.MetaFormat
+            SerializationType ILevelArchiveInput.MetaFormat
             {
                 get => MetaFormat;
                 set => MetaFormat = value;
             }
 
-            string ILevelPackageInput.SourcePath
+            string ILevelArchiveInput.SourcePath
             {
                 get => SourcePath;
                 set => SourcePath = value;
             }
 
-            string[] ILevelPackageInput.ResourceFileNames
+            string[] ILevelArchiveInput.ResourceFileNames
             {
                 get => ResourceFileNames;
                 set => ResourceFileNames = value;
             }
 
-            bool ILevelPackageInput.ImportResources => ImportResources;
+            bool ILevelArchiveInput.ImportResources => ImportResources;
         }
     }
 }

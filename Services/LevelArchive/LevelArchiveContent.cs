@@ -1,11 +1,12 @@
 using System.Collections.Generic;
 using BH.SDK.Serialization.Serializers;
+using BH.SDK.Services.Archive;
 using BH.SDK.Services.Content;
 
-namespace BH.SDK.Services.Package
+namespace BH.SDK.Services.LevelArchive
 {
-    /// <summary> Why opening a level package ended the way it did. </summary>
-    public enum LevelPackageOpenResult
+    /// <summary> Why opening a level archive ended the way it did. </summary>
+    public enum LevelArchiveOpenResult
     {
         /// <summary> Opened. </summary>
         Ok = 0,
@@ -20,11 +21,11 @@ namespace BH.SDK.Services.Package
         /// <summary> It opened and failed its integrity check - altered or truncated. </summary>
         Damaged = 3,
 
-        /// <summary> Not a level package: not an archive, not an OpenPGP message, or an archive
+        /// <summary> Not a level archive: not an archive, not an OpenPGP message, or an archive
         /// with no level document in it. </summary>
-        NotAPackage = 4,
+        NotAnArchive = 4,
 
-        /// <summary> A real package this build cannot read - an encryption shape it does not
+        /// <summary> A real archive this build cannot read - an encryption shape it does not
         /// implement, or a document format it does not know. </summary>
         Unsupported = 5,
     }
@@ -38,20 +39,22 @@ namespace BH.SDK.Services.Package
     // document is Json or Blob according to the NAME it was stored under, which is the same
     // convention a level folder on disk uses.
 
-    /// <summary> Everything a level package held. </summary>
-    public sealed class LevelPackageContent
+    /// <summary> Everything a level archive held. </summary>
+    public sealed class LevelArchiveContent
     {
-        private LevelPackageContent(LevelPackageOpenResult result)
+        private LevelArchiveContent(LevelArchiveOpenResult result, ArchiveFormat format)
         {
             Result = result;
+            Format = format;
         }
 
         /// <summary> Every member at once, in declaration order. </summary>
-        public LevelPackageContent(byte[] levelBytes, SerializationType levelFormat, bool levelWasProtected,
+        public LevelArchiveContent(byte[] levelBytes, SerializationType levelFormat, bool levelWasProtected,
             byte[] metaBytes, SerializationType metaFormat, IContentStore payload,
-            IReadOnlyList<string> resourceFileNames)
+            IReadOnlyList<string> resourceFileNames, ArchiveFormat format = ArchiveFormat.Unknown)
         {
-            Result = LevelPackageOpenResult.Ok;
+            Result = LevelArchiveOpenResult.Ok;
+            Format = format;
             LevelBytes = levelBytes;
             LevelFormat = levelFormat;
             LevelWasProtected = levelWasProtected;
@@ -62,10 +65,18 @@ namespace BH.SDK.Services.Package
         }
 
         /// <summary> Why it ended the way it did. </summary>
-        public LevelPackageOpenResult Result { get; }
+        public LevelArchiveOpenResult Result { get; }
+
+        // THE CONTAINER TRAVELS WITH THE VERDICT, and a refusal is where it earns its place: a
+        // host that can say "this build does not read 7z yet" sends a person to re-zip their file,
+        // while one that can only say "unsupported" sends them looking for a fault in it. A folder
+        // answers Unknown, which is the truth - a folder is not a container.
+
+        /// <summary> Which container it turned out to be. </summary>
+        public ArchiveFormat Format { get; }
 
         /// <summary> Whether it opened. </summary>
-        public bool IsOk => Result == LevelPackageOpenResult.Ok;
+        public bool IsOk => Result == LevelArchiveOpenResult.Ok;
 
         /// <summary> The level document, ready to deserialize. </summary>
         public byte[] LevelBytes { get; }
@@ -73,7 +84,7 @@ namespace BH.SDK.Services.Package
         /// <summary> Which format <see cref="LevelBytes"/> is in. </summary>
         public SerializationType LevelFormat { get; }
 
-        /// <summary> Whether the level document was encrypted inside the package. </summary>
+        /// <summary> Whether the level document was encrypted inside the archive. </summary>
         public bool LevelWasProtected { get; }
 
         /// <summary> The metadata document, ready to deserialize. Never encrypted. </summary>
@@ -82,15 +93,17 @@ namespace BH.SDK.Services.Package
         /// <summary> Which format <see cref="MetaBytes"/> is in. </summary>
         public SerializationType MetaFormat { get; }
 
-        /// <summary> Everything else the package carried - the cover, the song, the textures. </summary>
+        /// <summary> Everything else the archive carried - the cover, the song, the textures. </summary>
         public IContentStore Payload { get; }
 
         /// <summary> Names of the files in <see cref="Payload"/> that are not documents. </summary>
         public IReadOnlyList<string> ResourceFileNames { get; }
 
-        /// <summary> Nothing was opened, and this is why. </summary>
-        public static LevelPackageContent Failed(LevelPackageOpenResult result) =>
-            new LevelPackageContent(result);
+        /// <summary> Nothing was opened, and this is why - naming the container where one was
+        /// recognised, since a refusal that can name the format is one a person can act on. </summary>
+        public static LevelArchiveContent Failed(LevelArchiveOpenResult result,
+            ArchiveFormat format = ArchiveFormat.Unknown) =>
+            new LevelArchiveContent(result, format);
 
         /// <summary> One line, for a log. </summary>
         public override string ToString() => IsOk

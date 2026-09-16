@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using BH.SDK.Models;
 using BH.SDK.Models.Audio;
@@ -505,7 +505,6 @@ namespace BH.SDK.Tests
             meta.LevelLogo = new ResourceKey(ResourceUriType.DirectUrl, "https://example.com/logo.png");
             meta.LevelLicense = new TypicalLicense(TypicalLicenseType.CC_BY_NC_4_0);
             meta.LevelAgeRating = AgeRating.Age12;
-            meta.LevelContentDescriptors = ContentDescriptor.Violence | ContentDescriptor.FlashingLights;
             meta.LevelAuthors = new List<Author>
             {
                 new(new StringValue("vertoker"), "vertoker.com"),
@@ -688,6 +687,7 @@ namespace BH.SDK.Tests
                         DashKeys = KeyBindingMask.Space | KeyBindingMask.KeyE,
                         CursorHideAbsolute = false,
                         CursorHideRelative = true,
+                        DashButton = MouseButton.Middle,
                     },
                     Touchscreen =
                     {

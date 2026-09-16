@@ -9,10 +9,21 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models.Values
 {
+    // THE SEVEN PERMISSION FLAGS ARE GONE AND ARE NOT COMING BACK AS A SHORTER SET. They existed so
+    // the game could "reason about a licence it has never seen", and nothing ever did: one branch in
+    // PublishReadinessAnalyzer read AllowsDistribution, one read RequiresAttribution, and both were
+    // asking the author to grade their own wording. A ticked box is not a fact about a licence - it
+    // is a claim nobody can check, indistinguishable in the file from one that was read carefully,
+    // and wrong more often than not, since whoever fills it in is rarely the rights holder.
+    //
+    // What is left is what an author can actually supply and a moderator can actually open: a name,
+    // an address, and the wording itself. A custom licence is therefore never auto-approved by any
+    // publish profile - a person reads it, which is what was really happening anyway.
+
     /// <summary>
-    /// ILicense variant for terms that no preset covers - the license text itself plus the individual
-    /// permissions spelled out as flags, so the game can reason about a license it has never seen.
-    /// The escape hatch of the ILicense family (NoSpecified / Typical / Custom).
+    /// ILicense variant for terms that no preset covers - the licence's name, where it is published,
+    /// and its full wording. The escape hatch of the ILicense family (NoSpecified / Typical /
+    /// Custom).
     /// </summary>
     [RuleContainer]
     [GenerateModel]
@@ -28,43 +39,16 @@ namespace BH.SDK.Models.Values
         [JsonProperty(Names.Url)]
         public string LicenseUrl { get; set; }
 
+        // UNCAPPED, and the only string in the format that is. Every other RuleStringMax truncates a
+        // field whose meaning survives truncation - a title, a description, a tag. A licence body
+        // does not: cutting it produces a different legal document that still reads like a whole one,
+        // and no cap can be picked that is generous enough for every steward's wording and still
+        // small enough to be worth having. The level file's own size limits are the real bound.
+
         /// <summary> Full license wording embedded in the level, so it survives the URL going dead. </summary>
-        [RuleNotNull, RuleStringMax(ValueRules.MaxLicenseText)]
+        [RuleNotNull]
         [JsonProperty(Names.Text)]
         public string LicenseText { get; set; }
-
-        /// <summary>
-        /// If true - "Copyleft", if false - "Permissive"
-        /// </summary>
-        [JsonProperty(Names.Aggressive)]
-        public bool Aggressive { get; set; }
-
-        /// <summary> May the work be shared as part of a level at all - the flag that decides whether
-        /// the level can be published anywhere. </summary>
-        [JsonProperty(Names.AllowsDistribution)]
-        public bool AllowsDistribution { get; set; }
-
-        /// <summary> May the work be altered (recolored, cropped, remixed) before use. </summary>
-        [JsonProperty(Names.AllowsModification)]
-        public bool AllowsModification { get; set; }
-
-        /// <summary> May the work ship in something sold or monetized. </summary>
-        [JsonProperty(Names.AllowsCommercialUse)]
-        public bool AllowsCommercialUse { get; set; }
-
-        /// <summary> Must the author be credited - what makes ResourceMeta.ResourceAuthors mandatory
-        /// rather than decorative. </summary>
-        [JsonProperty(Names.RequiresAttribution)]
-        public bool RequiresAttribution { get; set; }
-
-        /// <summary> Must sources/originals be published alongside the derived work. </summary>
-        [JsonProperty(Names.RequiresSourceDisclosure)]
-        public bool RequiresSourceDisclosure { get; set; }
-
-        /// <summary> Must derivatives carry this same license - the concrete consequence of
-        /// Aggressive being copyleft. </summary>
-        [JsonProperty(Names.RequiresSameLicense)]
-        public bool RequiresSameLicense { get; set; }
 
         /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public CustomLicense()
@@ -72,31 +56,15 @@ namespace BH.SDK.Models.Values
             LicenseName = string.Empty;
             LicenseUrl = string.Empty;
             LicenseText = string.Empty;
-            Aggressive = false;
-            AllowsDistribution = false;
-            AllowsModification = false;
-            AllowsCommercialUse = false;
-            RequiresAttribution = false;
-            RequiresSourceDisclosure = false;
-            RequiresSameLicense = false;
         }
         /// <summary> Every member at once, in declaration order. </summary>
-        public CustomLicense(string licenseName, string licenseUrl, string licenseText,
-            bool aggressive, bool allowsDistribution, bool allowsModification, bool allowsCommercialUse,
-            bool requiresAttribution, bool requiresSourceDisclosure, bool requiresSameLicense)
+        public CustomLicense(string licenseName, string licenseUrl, string licenseText)
         {
             LicenseName = licenseName;
             LicenseUrl = licenseUrl;
             LicenseText = licenseText;
-            Aggressive = aggressive;
-            AllowsDistribution = allowsDistribution;
-            AllowsModification = allowsModification;
-            AllowsCommercialUse = allowsCommercialUse;
-            RequiresAttribution = requiresAttribution;
-            RequiresSourceDisclosure = requiresSourceDisclosure;
-            RequiresSameLicense = requiresSameLicense;
         }
-        
+
         /// <summary> Which concrete form this is - the discriminator a converter writes and reads back. </summary>
         public LicenseType GetModelType() => LicenseType.Custom;
     }

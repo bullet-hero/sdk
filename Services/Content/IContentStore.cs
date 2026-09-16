@@ -31,7 +31,7 @@ namespace BH.SDK.Services.Content
     public interface IContentStore
     {
         /// <summary> What this store is, for a report or a log line to name ("level folder",
-        /// "package"). Never a path a player should not see. </summary>
+        /// "archive"). Never a path a player should not see. </summary>
         string Name { get; }
 
         /// <summary> Whether a blob exists at this path. </summary>

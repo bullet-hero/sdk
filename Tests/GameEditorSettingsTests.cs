@@ -113,6 +113,7 @@ namespace BH.SDK.Tests
             settings.Timeline.GlobalLoop = false;
             settings.Interface.RenderInframes = true;
             settings.Interface.SelectionAutoOpenActive = true;
+            settings.Interface.SyncTimelineExpansion = true;
             settings.Serialization.LevelMode = SerializationType.Blob;
 
             settings.Reset();
@@ -128,6 +129,7 @@ namespace BH.SDK.Tests
             Assert.IsTrue(settings.Timeline.GlobalLoop);
             Assert.IsFalse(settings.Interface.RenderInframes);
             Assert.IsFalse(settings.Interface.SelectionAutoOpenActive);
+            Assert.IsFalse(settings.Interface.SyncTimelineExpansion);
             Assert.AreEqual(SerializationType.Json, settings.Serialization.LevelMode);
         }
 
@@ -210,6 +212,7 @@ namespace BH.SDK.Tests
             AssertDiffers(a, s => s.Interface.LogValueClamps = false);
             AssertDiffers(a, s => s.Interface.LinkColliderToShape = true);
             AssertDiffers(a, s => s.Interface.SelectionAutoOpenActive = true);
+            AssertDiffers(a, s => s.Interface.SyncTimelineExpansion = true);
             AssertDiffers(a, s => s.Serialization.ResourcesMode = SerializationType.Blob);
         }
 
@@ -451,12 +454,14 @@ namespace BH.SDK.Tests
             settings.Interface.StatsActive = true;
             settings.GameEditor.Interface.RenderInframes = true;
             settings.GameEditor.Interface.LogValueClamps = false;
+            settings.GameEditor.Interface.SyncTimelineExpansion = true;
 
             var restored = service.DeserializeData<UserSettings>(service.SerializeData(settings));
 
             Assert.IsTrue(restored.Interface.StatsActive);
             Assert.IsTrue(restored.GameEditor.Interface.RenderInframes);
             Assert.IsFalse(restored.GameEditor.Interface.LogValueClamps);
+            Assert.IsTrue(restored.GameEditor.Interface.SyncTimelineExpansion);
         }
     }
 }

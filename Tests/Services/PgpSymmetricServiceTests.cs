@@ -138,7 +138,7 @@ namespace BH.SDK.Tests.Services
             Assert.AreEqual(PgpOpenResult.NotOpenPgp, outcome.Result);
         }
 
-        // The inner name is how a package tells a level.json from a level.bson without inventing a
+        // The inner name is how an archive tells a level.json from a level.bson without inventing a
         // header of its own - it is the same thing gpg restores the file as.
         [Test]
         [Author(Metadata.Author.Vertoker)]

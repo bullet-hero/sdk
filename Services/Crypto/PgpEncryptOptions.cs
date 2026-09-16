@@ -30,7 +30,7 @@ namespace BH.SDK.Services.Crypto
         public const int DefaultS2KWorkBytes = 16 * 1024 * 1024;
 
         /// <summary> The name recorded inside the message - what gpg restores the file as, and how
-        /// a package reader tells a level.json from a level.blob. </summary>
+        /// an archive reader tells a level.json from a level.blob. </summary>
         public string InnerFileName { get; set; } = string.Empty;
 
         // Zip for a level document, which compresses several times over in either format - JSON is
@@ -63,7 +63,7 @@ namespace BH.SDK.Services.Crypto
                 Compression = CompressionAlgorithmTag.Zip,
             };
 
-        /// <summary> Options for a package - a .tar.gz, already deflated, so compressing it again
+        /// <summary> Options for an archive - a .tar.gz, already deflated, so compressing it again
         /// would only make it slightly larger. </summary>
         public static PgpEncryptOptions ForArchive(string innerFileName) =>
             new PgpEncryptOptions

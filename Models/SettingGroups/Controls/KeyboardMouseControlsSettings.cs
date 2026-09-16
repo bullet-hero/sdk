@@ -66,6 +66,20 @@ namespace BH.SDK.Models.SettingGroups.Controls
         [JsonProperty(Names.CursorHideRelative)]
         public bool CursorHideRelative { get; set; }
 
+        // Declared LAST because the blob writes members in declaration order and that order is
+        // append-only (see the SDK's VERSIONING record), not because it belongs at the bottom.
+        //
+        // The point of it is playing with ONE hand: the left button already steers, so binding the
+        // dash to the right one makes the mouse a complete controller and the keyboard optional. It
+        // is deliberately NOT excluded when it equals HoldButton - a press is an edge and a hold is a
+        // level, so the same button can legitimately do both, exactly as DashOnDoubleClick already
+        // does with the hold button itself.
+
+        /// <summary> Which mouse button requests a dash; <see cref="MouseButton.None"/> unbinds it. </summary>
+        [RuleEnumValid(MouseButton.Right)]
+        [JsonProperty(Names.DashButton)]
+        public MouseButton DashButton { get; set; }
+
         /// <summary> This device's own mode as the device-independent one; the two enums line up by convention. </summary>
         public override ControlMode GeneralMode => (ControlMode)Mode;
         /// <summary> Which device these settings are for. </summary>
@@ -81,7 +95,7 @@ namespace BH.SDK.Models.SettingGroups.Controls
             float deadZone, float smoothing, bool invertX, bool invertY, KeyboardMouseControlMode mode,
             bool requireHold, MouseButton holdButton, bool dashOnDoubleClick,
             float doubleClickTime, KeyBindingMask dashKeys, bool hideCursorAbsolute,
-            bool hideCursorRelative)
+            bool hideCursorRelative, MouseButton dashButton)
             : base(active, sensitivity, deadZone, smoothing, invertX, invertY)
         {
             Mode = mode;
@@ -92,6 +106,7 @@ namespace BH.SDK.Models.SettingGroups.Controls
             DashKeys = dashKeys;
             CursorHideAbsolute = hideCursorAbsolute;
             CursorHideRelative = hideCursorRelative;
+            DashButton = dashButton;
         }
         private void ResetOwn()
         {
@@ -103,6 +118,7 @@ namespace BH.SDK.Models.SettingGroups.Controls
             DashKeys = KeyBindingMask.Space | KeyBindingMask.Shift;
             CursorHideAbsolute = true;
             CursorHideRelative = false;
+            DashButton = MouseButton.Right;
         }
 
         // The last slot is a nested Combine: HashCode.Combine tops out at eight arguments.

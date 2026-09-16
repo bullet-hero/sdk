@@ -82,17 +82,15 @@ namespace BH.SDK.Models
         // the same track is menu music in one level and a jump scare in another. Whoever imported it
         // would have to guess a number, and a guessed number folded into the level's own would make
         // the level's rating mean nothing.
+        //
+        // ONE NUMBER AND NOTHING ELSE. A ContentDescriptor flag set sat beside this and is gone: nine
+        // checkboxes an author ticked about their own level, shown to a player who had already read
+        // the number, and read by nothing. The age rating is the whole declaration.
 
         /// <summary> Minimum age the level is meant for - what a player is shown before playing. </summary>
         [RuleEnumValid]
         [JsonProperty(Names.AgeRating)]
         public AgeRating LevelAgeRating { get; set; }
-
-        /// <summary> What the level contains beyond the bare age number, including the accessibility
-        /// warnings (flashing visuals, loud audio). </summary>
-        [RuleEnumFlagsValid]
-        [JsonProperty(Names.ContentDescriptors)]
-        public ContentDescriptor LevelContentDescriptors { get; set; }
 
         // PLAIN STRINGS, NOT IString, and that is the one decision here worth arguing. Every
         // other piece of text on this model is localized because a player READS it; a tag is a
@@ -156,7 +154,6 @@ namespace BH.SDK.Models
             LevelAuthors = new List<Author>();
             ResourcesMeta = new List<ResourceMeta>();
             LevelAgeRating = AgeRating.Unrated;
-            LevelContentDescriptors = ContentDescriptor.None;
             LevelTags = new List<string>();
             LevelDuration = 0f;
             MinGeneration = ModelGenerations.Invalid;
@@ -165,8 +162,7 @@ namespace BH.SDK.Models
         /// <summary> Every member at once, in declaration order. </summary>
         public LevelMeta(LevelId levelId, IString levelName, IString levelDescription, ResourceKey levelLogo,
             Version levelVersion, ILicense levelLicense, List<Author> levelAuthors, List<ResourceMeta> resourcesMeta,
-            AgeRating levelAgeRating = AgeRating.Unrated,
-            ContentDescriptor levelContentDescriptors = ContentDescriptor.None)
+            AgeRating levelAgeRating = AgeRating.Unrated)
         {
             LevelId = levelId;
             LevelName = levelName;
@@ -177,7 +173,6 @@ namespace BH.SDK.Models
             LevelAuthors = levelAuthors;
             ResourcesMeta = resourcesMeta;
             LevelAgeRating = levelAgeRating;
-            LevelContentDescriptors = levelContentDescriptors;
             LevelTags = new List<string>();
             LevelDuration = 0f;
             MinGeneration = ModelGenerations.Invalid;

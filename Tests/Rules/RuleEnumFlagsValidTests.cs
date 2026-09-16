@@ -20,6 +20,16 @@ namespace BH.SDK.Tests.Rules
             Third = 1 << 2,
         }
 
+        /// <summary> A flags enum whose declared bits are contiguous, so every combination is legal. </summary>
+        [Flags]
+        private enum Dense : ushort
+        {
+            None = 0,
+            First = 1 << 0,
+            Second = 1 << 1,
+            Third = 1 << 2,
+        }
+
         // A signed underlying type with the sign bit declared: the case where reading the value as an
         // unsigned number without reinterpreting the bit pattern would overflow instead of comparing.
 
@@ -34,10 +44,10 @@ namespace BH.SDK.Tests.Rules
 
         /// <summary> A flags property whose whole declared mask is legal. </summary>
         [RuleContainer]
-        private class DescriptorModel
+        private class DenseModel
         {
             [RuleEnumFlagsValid]
-            public ContentDescriptor Value { get; set; } = ContentDescriptor.None;
+            public Dense Value { get; set; } = Dense.None;
         }
 
         /// <summary> A flags property over the sparse enum, where an unlisted bit must be refused. </summary>
@@ -80,9 +90,9 @@ namespace BH.SDK.Tests.Rules
         [Category(Metadata.Category.Easy)]
         public void TestCombinationIsValid()
         {
-            AssertValid(new DescriptorModel
+            AssertValid(new DenseModel
             {
-                Value = ContentDescriptor.Violence | ContentDescriptor.FlashingLights,
+                Value = Dense.First | Dense.Third,
             });
         }
 
@@ -92,7 +102,7 @@ namespace BH.SDK.Tests.Rules
         [Category(Metadata.Category.Easy)]
         public void TestNoneIsValid()
         {
-            AssertValid(new DescriptorModel { Value = ContentDescriptor.None });
+            AssertValid(new DenseModel { Value = Dense.None });
         }
 
         [Test]

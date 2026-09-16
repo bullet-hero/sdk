@@ -7,16 +7,24 @@ layer-wide conventions. This file is folder-local.
 ## Services/
 
 `SerializationService`-adjacent but SDK-root-level. **Four of its subfolders are
-  the level-package feature and only make sense read together** (design record:
-  `docs/issues/PACKAGE_HISTORY.md` in the consuming project): `Content/` (`IContentStore` — a named
+  the level-archive feature and only make sense read together** (design record:
+  `docs/issues/ARCHIVE_HISTORY.md` in the consuming project): `Content/` (`IContentStore` — a named
   set of blobs, ROOTED BY CONSTRUCTION, so "does this escape the folder" is a property of the type
   rather than a check at every call site; `DirectoryContentStore`/`MemoryContentStore` are two
   implementations rather than two parallel APIs, which is what lets the same pipeline serve a disk,
-  a test and a server), `Archive/` (tar.gz — and its unpack refuses a link entry, which is the one
-  attack surface tar has that ZIP did not), `Crypto/` (`PgpSymmetricService`, OpenPGP symmetric,
+  a test and a server), `Archive/` (**two containers behind one set of rules** — `TarGzService` and
+  `ZipService`, with `ArchiveFormatSniffer` deciding which a stream is from its first bytes and
+  naming 7z so a refusal can say so rather than call a good file corrupt. The four unpack checks are
+  the same four for both, and the differences decide how either is touched: tar carries LINK
+  ENTRIES, which no name check catches, while a zip's declared size is a CLAIM the archive makes
+  about itself — so its limits are enforced twice, cheaply from the central directory and then as a
+  hard counter during the copy — and two zip entries may SHARE A NAME, which is refused outright.
+  `NonSeekableWrite` is what keeps one input producing one output: ZipOutputStream writes a
+  different file when it can seek, and a desktop export can while an Android SAF export cannot),
+  `Crypto/` (`PgpSymmetricService`, OpenPGP symmetric,
   SEIPD v1 because GnuPG does not implement RFC 9580 — read its header before touching the
   `...Utf8` overloads, which are what make a Cyrillic passphrase interoperate with gpg at all), and
-  `Package/` (what a level package contains, written and read; the reader is also the future
+  `LevelArchive/` (what a level archive contains, written and read; the reader is also the future
   server's entry point, which is why every refusal is a value rather than an exception).
   **This is where the SDK started reading files**, so any header claiming it reads none is stale.
   **`Cache/` is GONE**, and what replaced it is a FORMAT rather than another layer: a side-car

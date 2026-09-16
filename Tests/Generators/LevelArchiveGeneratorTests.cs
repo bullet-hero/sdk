@@ -12,16 +12,16 @@ using BH.SDK.Models.Values;
 using BH.SDK.Serialization;
 using BH.SDK.Serialization.Serializers;
 using BH.SDK.Services.Content;
-using BH.SDK.Services.Package;
+using BH.SDK.Services.LevelArchive;
 using NUnit.Framework;
 
 namespace BH.SDK.Tests.Generators
 {
     // THE IMPORT'S OWN HALF, fed by the writer rather than by hand-built bytes: what is under test
-    // is that a package this project WROTE comes back as the level that went in, so producing the
+    // is that an archive this project WROTE comes back as the level that went in, so producing the
     // input any other way would only prove the generator agrees with a fixture.
     //
-    // Two of the three parameters are about not damaging what the author already has. A package is
+    // Two of the three parameters are about not damaging what the author already has. An archive is
     // usually a copy of a level they may well hold already, so importing under the same id would
     // point two entries at one folder - which is why NewLevelId defaults ON, and why the case that
     // needs testing is the one where it is turned off.
@@ -29,9 +29,9 @@ namespace BH.SDK.Tests.Generators
     // Everything the generator cannot read still has to produce a level the author can see is empty,
     // never a plausible-looking one - the same rule the Afterbeat import already states.
 
-    /// <summary> The import half, fed by this project's own writer - so what is proven is that a package we WROTE
+    /// <summary> The import half, fed by this project's own writer - so what is proven is that an archive we WROTE
     /// comes back as the level that went in, rather than that the reader agrees with a fixture. </summary>
-    public class LevelPackageGeneratorTests
+    public class LevelArchiveGeneratorTests
     {
         private static SerializationService Serialization => new SerializationService();
 
@@ -52,33 +52,33 @@ namespace BH.SDK.Tests.Generators
         }
 
         // Writer -> reader -> the generator's own input, which is exactly the chain the editor runs.
-        private static async Task<LevelPackageGenerator.Parameters> ImportedAsync(Level level, LevelMeta meta)
+        private static async Task<LevelArchiveGenerator.Parameters> ImportedAsync(Level level, LevelMeta meta)
         {
             var source = CreateLevelStore();
-            var plan = await LevelPackageBuilder.BuildAsync(level, meta, source, CancellationToken.None);
+            var plan = await LevelArchiveBuilder.BuildAsync(level, meta, source, CancellationToken.None);
 
             using var archive = new System.IO.MemoryStream();
-            await LevelPackageWriter.WriteArchiveAsync(plan, source, archive, Serialization,
+            await LevelArchiveWriter.WriteArchiveAsync(plan, source, archive, Serialization,
                 token: CancellationToken.None);
 
             archive.Position = 0;
-            var content = await LevelPackageReader.ReadAsync(archive, token: CancellationToken.None);
-            Assert.AreEqual(LevelPackageOpenResult.Ok, content.Result, "the package should have opened");
+            var content = await LevelArchiveReader.ReadAsync(archive, token: CancellationToken.None);
+            Assert.AreEqual(LevelArchiveOpenResult.Ok, content.Result, "the archive should have opened");
 
-            var parameters = new LevelPackageGenerator.Parameters();
-            ILevelPackageInput input = parameters;
+            var parameters = new LevelArchiveGenerator.Parameters();
+            ILevelArchiveInput input = parameters;
 
             input.LevelBytes = content.LevelBytes;
             input.LevelFormat = content.LevelFormat;
             input.MetaBytes = content.MetaBytes;
             input.MetaFormat = content.MetaFormat;
-            input.SourcePath = "package.tar.gz";
+            input.SourcePath = "archive.tar.gz";
             input.ResourceFileNames = content.ResourceFileNames.ToArray();
 
             return parameters;
         }
 
-        private static bool HasCode(LevelPackageGenerator generator, string code) =>
+        private static bool HasCode(LevelArchiveGenerator generator, string code) =>
             generator.LastReport != null && generator.LastReport.Issues.Any(issue => issue.Code == code);
 
         [Test]
@@ -90,7 +90,7 @@ namespace BH.SDK.Tests.Generators
             var (level, meta) = CreateLevel();
             var parameters = await ImportedAsync(level, meta);
 
-            var generator = new LevelPackageGenerator();
+            var generator = new LevelArchiveGenerator();
             var (imported, importedMeta) = generator.Create(parameters);
 
             Assert.AreEqual(level, imported);
@@ -110,11 +110,11 @@ namespace BH.SDK.Tests.Generators
 
             Assert.IsTrue(parameters.NewLevelId, "importing must not overwrite by default");
 
-            var generator = new LevelPackageGenerator();
+            var generator = new LevelArchiveGenerator();
             var (_, importedMeta) = generator.Create(parameters);
 
             Assert.AreNotEqual(meta.LevelId, importedMeta.LevelId);
-            Assert.IsTrue(HasCode(generator, "package.new_level_id"));
+            Assert.IsTrue(HasCode(generator, "archive.new_level_id"));
         }
 
         [Test]
@@ -127,7 +127,7 @@ namespace BH.SDK.Tests.Generators
             var parameters = await ImportedAsync(level, meta);
             parameters.NewLevelId = false;
 
-            var (_, importedMeta) = new LevelPackageGenerator().Create(parameters);
+            var (_, importedMeta) = new LevelArchiveGenerator().Create(parameters);
 
             Assert.AreEqual(meta.LevelId, importedMeta.LevelId);
         }
@@ -144,7 +144,7 @@ namespace BH.SDK.Tests.Generators
             var parameters = await ImportedAsync(level, meta);
             parameters.KeepAuthor = false;
 
-            var (_, importedMeta) = new LevelPackageGenerator().Create(parameters);
+            var (_, importedMeta) = new LevelArchiveGenerator().Create(parameters);
 
             Assert.IsEmpty(importedMeta.LevelAuthors);
         }
@@ -158,7 +158,7 @@ namespace BH.SDK.Tests.Generators
             var (level, meta) = CreateLevel();
             var parameters = await ImportedAsync(level, meta);
 
-            var cost = new LevelPackageGenerator().Estimate(null, parameters);
+            var cost = new LevelArchiveGenerator().Estimate(null, parameters);
 
             Assert.AreEqual(level.Game.Objects.Count, cost.Objects);
         }
@@ -171,12 +171,12 @@ namespace BH.SDK.Tests.Generators
         [Category(Metadata.Category.Easy)]
         public void Create_WithNoLevelDocument_SaysSo()
         {
-            var generator = new LevelPackageGenerator();
-            var (level, _) = generator.Create(new LevelPackageGenerator.Parameters());
+            var generator = new LevelArchiveGenerator();
+            var (level, _) = generator.Create(new LevelArchiveGenerator.Parameters());
 
             Assert.IsNotNull(level);
             Assert.IsEmpty(level.Game.Objects);
-            Assert.IsTrue(HasCode(generator, "package.no_level"));
+            Assert.IsTrue(HasCode(generator, "archive.no_level"));
             Assert.IsTrue(generator.LastReport.HasFailure);
         }
 
@@ -186,8 +186,8 @@ namespace BH.SDK.Tests.Generators
         [Category(Metadata.Category.Easy)]
         public void Create_WithUnreadableBytes_SaysSo()
         {
-            var generator = new LevelPackageGenerator();
-            var parameters = new LevelPackageGenerator.Parameters
+            var generator = new LevelArchiveGenerator();
+            var parameters = new LevelArchiveGenerator.Parameters
             {
                 LevelBytes = Encoding.UTF8.GetBytes("not a level document at all"),
                 LevelFormat = SerializationType.Json,
@@ -196,11 +196,11 @@ namespace BH.SDK.Tests.Generators
             var (level, _) = generator.Create(parameters);
 
             Assert.IsNotNull(level);
-            Assert.IsTrue(HasCode(generator, "package.unreadable"));
+            Assert.IsTrue(HasCode(generator, "archive.unreadable"));
             Assert.IsTrue(generator.LastReport.HasFailure);
         }
 
-        // A package with no metadata still imports: a name and a cover can be retyped, and refusing
+        // An archive with no metadata still imports: a name and a cover can be retyped, and refusing
         // the whole thing over them would throw away the half that matters.
         [Test]
         [Author(Metadata.Author.Vertoker)]
@@ -212,12 +212,12 @@ namespace BH.SDK.Tests.Generators
             var parameters = await ImportedAsync(level, meta);
             parameters.MetaBytes = null;
 
-            var generator = new LevelPackageGenerator();
+            var generator = new LevelArchiveGenerator();
             var (imported, importedMeta) = generator.Create(parameters);
 
             Assert.AreEqual(level, imported);
             Assert.IsNotNull(importedMeta);
-            Assert.IsTrue(HasCode(generator, "package.no_metadata"));
+            Assert.IsTrue(HasCode(generator, "archive.no_metadata"));
         }
     }
 }

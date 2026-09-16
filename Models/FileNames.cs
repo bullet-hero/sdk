@@ -89,7 +89,19 @@
         /// <summary> Appended to a document's own name when it is encrypted. </summary>
         public const string EncryptedExtension = ".gpg";
 
-        /// <summary> What a level package is called outside the game. </summary>
-        public const string PackageExtension = ".tar.gz";
+        // THREE CONTAINERS, ONE FEATURE. A level archive is named by whichever of them wrote it,
+        // and none of the three is the "real" one: tar.gz is what a shell opens, zip is what
+        // Windows Explorer opens on a double click, and 7z is what this build can so far only
+        // recognise well enough to refuse by name. What a file IS is still sniffed from its bytes -
+        // these constants name what an export WRITES, never what an import trusts.
+
+        /// <summary> What a level archive is called outside the game. </summary>
+        public const string TarGzExtension = ".tar.gz";
+
+        /// <summary> The same archive as a zip, the shape a desktop opens without a tool. </summary>
+        public const string ZipExtension = ".zip";
+
+        /// <summary> Named so a refusal can say which format it refused. Nothing writes it. </summary>
+        public const string SevenZipExtension = ".7z";
     }
 }

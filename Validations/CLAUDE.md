@@ -53,8 +53,9 @@ ordinary path pays a reference comparison; both walks go through the same `Check
 and generated paths cannot disagree about it. Null stays `RuleNotNull`'s question - `[RuleOptional]`
 is the opposite answer to the same one, written down instead of inferred from an absent attribute.
 
-`RuleEnumValid` covers single-choice enums only; `[Flags]` enums (today: `ContentDescriptor` on
-`LevelMeta`) go through `RuleEnumFlagsValid`, which asks "does this carry an undeclared bit" and
+`RuleEnumValid` covers single-choice enums only; `[Flags]` enums (today: `ClipboardContent` on
+`ClipboardData`, the device masks on the controls settings) go through `RuleEnumFlagsValid`, which
+asks "does this carry an undeclared bit" and
 whose `Fix` masks the unknown bits off instead of falling back to a default. Don't loosen
 `RuleEnumValid` to cover both — `Enum.IsDefined` rejects every legitimate flag combination.
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.CompilerServices;
 using BH.SDK.Models.Enums;
 
@@ -119,7 +119,7 @@ namespace BH.SDK.Rules
                 throw new Exception($"Frame must be at least {MinFrame}");
         }
 
-        // THE THREE DERIVATIONS EXIST SO NOBODY WRITES THE ORIGIN INLINE AGAIN. Before the timeline
+        // THE FOUR DERIVATIONS EXIST SO NOBODY WRITES THE ORIGIN INLINE AGAIN. Before the timeline
         // counted from one, "the last frame of a timeline N frames long" was spelled `N - 1` in
         // roughly twenty places, each of which had to be found and inverted by hand. Named, the
         // relationship is greppable and the next change to it is one line rather than twenty.
@@ -137,6 +137,32 @@ namespace BH.SDK.Rules
         /// i.e. what a FrameSpan covering all of it would report as its EndFrame. </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int EndBoundaryOf(int frameCount) => MinFrame + frameCount;
+
+        // PROGRESS IS MEASURED BETWEEN THE FIRST FRAME AND THE LAST, not against the level's LENGTH,
+        // and that is the whole of why it is a derivation rather than a division written inline. A
+        // playhead never reaches the end BOUNDARY - time becomes a frame number and is clamped to
+        // LastFrameOf - so `elapsed / frameCount` tops out at (N-1)/N and a player who survived the
+        // whole level was told they had done 99.9% of it. Dividing by the span between the two
+        // reachable ends instead makes the first frame 0 and the last exactly 1, at the price of one
+        // frame's worth of optimism everywhere in between, which no readout can resolve.
+
+        /// <summary> How far through a timeline of <paramref name="frameCount"/> frames a frame is, 0 to 1 -
+        /// <see cref="MinFrame"/> and below report 0, <see cref="LastFrameOf"/> and beyond report 1. </summary>
+        public static float ProgressOf(int frame, int frameCount)
+        {
+            if (frameCount <= 0) return 0f;
+
+            var lastFrame = LastFrameOf(frameCount);
+
+            // A one-frame timeline has no span to divide by: its only frame is both ends at once, so
+            // standing on it is standing at the end.
+            if (lastFrame <= MinFrame) return frame >= MinFrame ? 1f : 0f;
+
+            if (frame <= MinFrame) return 0f;
+            if (frame >= lastFrame) return 1f;
+
+            return (frame - MinFrame) / (float)(lastFrame - MinFrame);
+        }
 
         /// <summary> True when a playback speed is inside what the game offers - negatives play backwards. </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

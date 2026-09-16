@@ -184,13 +184,13 @@ namespace BH.SDK.Publishing
             }
         }
 
-        // Two independent reasons to demand a credit, and they are not the same requirement. A custom
-        // license that says RequiresAttribution is stating a term of the license itself, so it binds
-        // regardless of what the service asks for; the profile flag is the service additionally
-        // insisting on credits for works that do not demand them. Typical licenses are deliberately
-        // not decoded here - whether CC BY "requires attribution" is a fact, but which typical
-        // licenses a service accepts at all is already the profile's decision, and hard-coding a
-        // rights table next to it would put the same policy in two places.
+        // THE PROFILE IS NOW THE ONLY REASON TO DEMAND A CREDIT. A custom license used to state its
+        // own RequiresAttribution, and that bool is gone along with the other six - it was the
+        // author's own grading of their own wording, which is exactly the claim this analyzer cannot
+        // verify. Typical licenses are still deliberately not decoded: whether CC BY "requires
+        // attribution" is a fact, but which typical licenses a service accepts at all is already the
+        // profile's decision, and hard-coding a rights table next to it would put the same policy in
+        // two places.
 
         private static void AnalyzeAttribution(ResourceMeta resourceMeta, PublishProfile profile,
             string path, List<PublishIssue> issues)
@@ -198,17 +198,10 @@ namespace BH.SDK.Publishing
             var hasAuthors = resourceMeta.ResourceAuthors is { Count: > 0 };
             if (hasAuthors) return;
 
-            var licenseDemands = resourceMeta.ResourceLicense is CustomLicense
-            {
-                RequiresAttribution: true,
-            };
-
-            if (!licenseDemands && !profile.RequireAttribution) return;
+            if (!profile.RequireAttribution) return;
 
             issues.Add(new PublishIssue(PublishRule.ResourceAttributionMissing, RuleGroup.Error, path,
-                licenseDemands
-                    ? "The license requires attribution and the record credits nobody."
-                    : "The service requires every resource to credit somebody."));
+                "The service requires every resource to credit somebody."));
         }
 
         private static void AnalyzeSourceTrust(ResourceMeta resourceMeta, PublishProfile profile,
@@ -369,9 +362,13 @@ namespace BH.SDK.Publishing
 
         #region Shared
 
-        // A custom license is judged by its own AllowsDistribution flag rather than by the profile's
-        // list, which only knows the typical ones. That flag is not policy: a work whose terms forbid
-        // redistribution cannot be redistributed by any service, however permissive its profile.
+        // A CUSTOM LICENSE IS NEVER ACCEPTABLE AUTOMATICALLY, and that is the honest answer rather
+        // than a strict one. It used to be judged by its own AllowsDistribution bool, i.e. by the
+        // author's own reading of their own wording; the profile's list knows the typical licenses
+        // and nothing else, and no rule can grade prose it has never seen. So it lands as "not
+        // accepted", which the permission path below still downgrades to a review when a rights
+        // holder's grant stands behind it - a person reading the terms, which was the only thing
+        // that ever really happened here.
 
         private static bool IsLicenseAcceptable(ILicense license, PublishProfile profile,
             out bool unspecified)
@@ -388,8 +385,8 @@ namespace BH.SDK.Publishing
                 case TypicalLicense typical:
                     return profile.AllowsLicense(typical.Type);
 
-                case CustomLicense custom:
-                    return custom.AllowsDistribution;
+                case CustomLicense _:
+                    return false;
 
                 default:
                     unspecified = true;

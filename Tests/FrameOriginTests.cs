@@ -167,6 +167,30 @@ namespace BH.SDK.Tests
             Assert.AreEqual(0f, ABTimeMap.ToSeconds(FrameRules.MinFrame, 60), 1e-4f);
         }
 
+        // PROGRESS RUNS BETWEEN THE TWO REACHABLE ENDS, and the last frame is one of them. A playhead
+        // is clamped to LastFrameOf and never stands on the end boundary, so dividing by the level's
+        // own LENGTH left a finished run reporting (N-1)/N - the 99.9% a cleared level used to show.
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Easy)]
+        public void ProgressSpansTheFirstFrameToTheLast()
+        {
+            const int frameCount = 600;
+
+            Assert.AreEqual(0f, FrameRules.ProgressOf(FrameRules.MinFrame, frameCount), 1e-4f);
+            Assert.AreEqual(1f, FrameRules.ProgressOf(FrameRules.LastFrameOf(frameCount), frameCount), 1e-4f);
+            Assert.AreEqual(0.5f, FrameRules.ProgressOf(FrameRules.MinFrame + 300, 601), 1e-4f);
+
+            // Off both ends: nothing reached, and content playing past the level.
+            Assert.AreEqual(0f, FrameRules.ProgressOf(FrameRules.NoFrame, frameCount), 1e-4f);
+            Assert.AreEqual(1f, FrameRules.ProgressOf(FrameRules.EndBoundaryOf(frameCount), frameCount), 1e-4f);
+
+            // A one-frame timeline is both ends at once, and a zero-length one has no scale at all.
+            Assert.AreEqual(1f, FrameRules.ProgressOf(FrameRules.MinFrame, 1), 1e-4f);
+            Assert.AreEqual(0f, FrameRules.ProgressOf(FrameRules.MinFrame, 0), 1e-4f);
+        }
+
         // Everything relative is invariant under a uniform shift of the origin, and that invariance
         // is what made moving it affordable. If one of these ever starts depending on where the
         // timeline begins, something has read a frame number as an offset.

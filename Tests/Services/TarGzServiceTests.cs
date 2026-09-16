@@ -141,7 +141,7 @@ namespace BH.SDK.Tests.Services
         public async Task Pack_RefusesANameLongerThanAHeaderHolds()
         {
             var source = new MemoryContentStore("source");
-            var longName = new string('a', ArchivePolicy.MaxNameBytes) + ".json";
+            var longName = new string('a', ArchivePolicy.MaxEntryNameBytes) + ".json";
             source.Write(longName, Encoding.UTF8.GetBytes("{}"));
 
             var entries = Entries(source, longName);

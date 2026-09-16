@@ -10,7 +10,7 @@ using BH.SDK.Models.Resources;
 using BH.SDK.Services.Archive;
 using BH.SDK.Services.Content;
 
-namespace BH.SDK.Services.Package
+namespace BH.SDK.Services.LevelArchive
 {
     // WHAT GOES INTO A PACKAGE IS COMPUTED FROM THE MODEL, NEVER FROM A DIRECTORY LISTING. A level
     // folder accumulates: a texture the author swapped out, an export somebody unzipped into it, a
@@ -25,7 +25,7 @@ namespace BH.SDK.Services.Package
     // and there is no sound. So an absolute path is COPIED in and its key rewritten to LevelPath,
     // in the exported copy alone.
     //
-    // A URL IS LEFT EXACTLY AS IT IS. It cannot travel inside a package and it is not broken either
+    // A URL IS LEFT EXACTLY AS IT IS. It cannot travel inside an archive and it is not broken either
     // - it will resolve on the other machine as well as it does on this one, provided that machine
     // is online. Reporting it is the whole of what can be done about it.
     //
@@ -33,19 +33,19 @@ namespace BH.SDK.Services.Package
     // rooted store, deliberately; collecting is the operation that by definition reaches outside
     // one, on a path the author's own level supplied, on the author's own machine.
 
-    /// <summary> Decides what a level package will contain. </summary>
-    public static class LevelPackageBuilder
+    /// <summary> Decides what a level archive will contain. </summary>
+    public static class LevelArchiveBuilder
     {
-        private const string CodeMissingFile = "package.resource_missing";
-        private const string CodeCollected = "package.resource_collected";
-        private const string CodeUnreachable = "package.resource_unreachable";
-        private const string CodeBadPath = "package.resource_bad_path";
-        private const string CodeRenamed = "package.resource_renamed";
-        private const string CodeDropped = "package.unreferenced_dropped";
+        private const string CodeMissingFile = "archive.resource_missing";
+        private const string CodeCollected = "archive.resource_collected";
+        private const string CodeUnreachable = "archive.resource_unreachable";
+        private const string CodeBadPath = "archive.resource_bad_path";
+        private const string CodeRenamed = "archive.resource_renamed";
+        private const string CodeDropped = "archive.unreferenced_dropped";
 
-        /// <summary> Walks the level for everything it references and decides what the package
+        /// <summary> Walks the level for everything it references and decides what the archive
         /// carries, what is collected into it, and what cannot travel. </summary>
-        public static async Task<LevelPackagePlan> BuildAsync(Level level, LevelMeta meta,
+        public static async Task<LevelArchivePlan> BuildAsync(Level level, LevelMeta meta,
             IContentStore levelStore, CancellationToken token = default)
         {
             if (level == null) throw new ArgumentNullException(nameof(level));
@@ -71,10 +71,10 @@ namespace BH.SDK.Services.Package
                 report.Info(CodeDropped,
                     $"{dropped} file(s) in the level folder are referenced by nothing and were not packed.");
 
-            var files = new List<PackageFile>(context.Files);
-            files.Sort((left, right) => string.CompareOrdinal(left.PackagePath, right.PackagePath));
+            var files = new List<ArchiveFile>(context.Files);
+            files.Sort((left, right) => string.CompareOrdinal(left.ArchivePath, right.ArchivePath));
 
-            return new LevelPackagePlan(levelCopy, metaCopy, files, report, dropped);
+            return new LevelArchivePlan(levelCopy, metaCopy, files, report, dropped);
         }
 
         private static async Task RouteResourcesAsync(WalkContext context, LevelResources resources)
@@ -156,7 +156,7 @@ namespace BH.SDK.Services.Package
             private readonly InteropReport _report;
             private readonly CancellationToken _token;
 
-            private readonly Dictionary<string, string> _packagePathBySource =
+            private readonly Dictionary<string, string> _archivePathBySource =
                 new Dictionary<string, string>(StringComparer.Ordinal);
 
             private readonly HashSet<string> _takenNames = new HashSet<string>(StringComparer.Ordinal);
@@ -170,8 +170,8 @@ namespace BH.SDK.Services.Package
                 _token = token;
             }
 
-            /// <summary> What the package will hold, in the order it was collected. </summary>
-            public List<PackageFile> Files { get; } = new List<PackageFile>();
+            /// <summary> What the archive will hold, in the order it was collected. </summary>
+            public List<ArchiveFile> Files { get; } = new List<ArchiveFile>();
 
             /// <summary> Whether this path in the level's own folder is already being packed. </summary>
             public bool IsPackedFromStore(string storePath) => _packedStorePaths.Contains(storePath);
@@ -196,7 +196,7 @@ namespace BH.SDK.Services.Package
                     case ResourceUriType.DirectUrl:
                     case ResourceUriType.StreamingAssets:
                         _report.Deferred(CodeUnreachable,
-                            $"A {key.UriType} resource cannot travel inside a package and was left " +
+                            $"A {key.UriType} resource cannot travel inside an archive and was left " +
                             "pointing where it points now.", path);
                         return;
 
@@ -214,7 +214,7 @@ namespace BH.SDK.Services.Package
                 if (!ContentPath.TryValidate(storePath, out var error))
                 {
                     _report.Dropped(CodeBadPath,
-                        $"'{storePath}' is not a usable name inside a package: {error}.", path);
+                        $"'{storePath}' is not a usable name inside an archive: {error}.", path);
                     return;
                 }
 
@@ -225,11 +225,11 @@ namespace BH.SDK.Services.Package
                     return;
                 }
 
-                var packagePath = Take(SourceId(storePath, external: false),
-                    () => new PackageFile(Reserve(storePath, path), storePath, isExternal: false));
+                var archivePath = Take(SourceId(storePath, external: false),
+                    () => new ArchiveFile(Reserve(storePath, path), storePath, isExternal: false));
 
                 _packedStorePaths.Add(storePath);
-                key.Uri = packagePath;
+                key.Uri = archivePath;
             }
 
             private void Collect(ResourceKey key, string path)
@@ -243,29 +243,29 @@ namespace BH.SDK.Services.Package
                     return;
                 }
 
-                var packagePath = Take(SourceId(absolutePath, external: true), () =>
+                var archivePath = Take(SourceId(absolutePath, external: true), () =>
                 {
                     var name = Reserve(Path.GetFileName(absolutePath), path);
                     _report.Info(CodeCollected,
-                        $"'{absolutePath}' was copied into the package as '{name}'.", path);
-                    return new PackageFile(name, absolutePath, isExternal: true);
+                        $"'{absolutePath}' was copied into the archive as '{name}'.", path);
+                    return new ArchiveFile(name, absolutePath, isExternal: true);
                 });
 
                 key.UriType = ResourceUriType.LevelPath;
-                key.Uri = packagePath;
+                key.Uri = archivePath;
             }
 
             // One source is packed once. The second reference to it does not add a file and does not
             // take a second name - it is repointed at the copy that is already going in, which is
             // what makes a resource's fallback list cost nothing when its entries agree.
-            private string Take(string sourceId, Func<PackageFile> create)
+            private string Take(string sourceId, Func<ArchiveFile> create)
             {
-                if (_packagePathBySource.TryGetValue(sourceId, out var existing)) return existing;
+                if (_archivePathBySource.TryGetValue(sourceId, out var existing)) return existing;
 
                 var file = create();
-                _packagePathBySource.Add(sourceId, file.PackagePath);
+                _archivePathBySource.Add(sourceId, file.ArchivePath);
                 Files.Add(file);
-                return file.PackagePath;
+                return file.ArchivePath;
             }
 
             // A Windows path is one file however it is spelled, so two collected keys differing only
@@ -284,7 +284,7 @@ namespace BH.SDK.Services.Package
                 _takenNames.Add(candidate);
                 if (!string.Equals(candidate, preferred, StringComparison.Ordinal))
                     _report.Approximated(CodeRenamed,
-                        $"'{preferred}' was renamed to '{candidate}' inside the package.", path);
+                        $"'{preferred}' was renamed to '{candidate}' inside the archive.", path);
 
                 return candidate;
             }
@@ -304,7 +304,7 @@ namespace BH.SDK.Services.Package
                 }
 
                 // Unreachable in practice - a level would need two billion files of one name.
-                throw new InvalidOperationException($"Cannot find a free package name for '{candidate}'.");
+                throw new InvalidOperationException($"Cannot find a free archive name for '{candidate}'.");
             }
 
             private static string DirectoryOf(string path)
