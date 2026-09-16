@@ -7,7 +7,7 @@ using BH.SDK.Services.Content;
 namespace BH.SDK.Services.Archive
 {
     // Where one entry's bytes come from, expressed as "how to open it" rather than as the bytes
-    // themselves. A package is three kinds of thing at once - documents the export just REWROTE and
+    // themselves. An archive is three kinds of thing at once - documents the export just REWROTE and
     // that exist only in memory, media sitting in the level's own store, and files collected from
     // somewhere else on the machine - and the only one of the three that can be held as a byte[]
     // without regret is the smallest.

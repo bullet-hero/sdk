@@ -10,7 +10,7 @@
         LevelPath = 1,
 
         /// <summary> Somewhere else on this device - what creating a level around a song produces, and what
-        /// exporting a package collects in. </summary>
+        /// exporting an archive collects in. </summary>
         AbsolutePath = 2,
 
         /// <summary> Fetched over the network. </summary>

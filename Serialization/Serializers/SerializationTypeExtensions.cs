@@ -23,7 +23,7 @@ namespace BH.SDK.Serialization.Serializers
 
         // WHICH FILE WINS WHEN TWO EXIST, which is a different question from what an enum's numbers
         // happen to be and from what a settings dropdown lists. Every probe in the project - the
-        // game's own PathUtils, the package reader - used to spell this order out for itself, so a
+        // game's own PathUtils, the archive reader - used to spell this order out for itself, so a
         // third format meant finding three hand-written pairs of branches, and one of them being
         // missed would resolve a real level to "no file".
         //

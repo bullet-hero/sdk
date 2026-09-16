@@ -18,7 +18,8 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
     /// </summary>
     [RuleContainer]
     [GenerateModel]
-    public sealed partial class EditorInterfaceSettings : IModel<EditorInterfaceSettings>, IMoveable<EditorInterfaceSettings>
+    public sealed partial class EditorInterfaceSettings : IModel<EditorInterfaceSettings>,
+        IMoveable<EditorInterfaceSettings>
     {
         // The debounce every inspector field commits through. Zero is a legitimate choice - it means
         // "commit on every keystroke", which is what a slow-typing author wants and what an author
@@ -70,20 +71,34 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
         /// <summary> Whether picking a shape also writes it as that object's collider. </summary>
         [JsonProperty(Names.LinkColliderShape)]
         public bool LinkColliderToShape { get; set; }
-        
+
         /// <summary> Whether selecting something opens the editor's right panel by itself. </summary>
         [JsonProperty(Names.AutoOpen)]
         public bool SelectionAutoOpenActive { get; set; }
+
+        // Off by default, and the default is the whole of what this field decides - the two
+        // surfaces fold by the same rule either way, they simply keep separate answers. Folding is
+        // cheap and reversible in a TREE, where a closed row still occupies its slot and says what
+        // it hides; in a TIMELINE it removes rows outright, so the two surfaces want opposite
+        // starting states (the hierarchy opens collapsed, the timeline opens expanded) and tying
+        // them together means picking one. An author who navigates in both at once wants them tied;
+        // one who uses the tree to find things and the timeline to see everything does not.
+
+        /// <summary> Whether folding a row in the frame hierarchy also folds that object's subtree
+        /// out of the object timelines, and the other way round. </summary>
+        [JsonProperty(Names.SyncTimelineExpansion)]
+        public bool SyncTimelineExpansion { get; set; }
 
         /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public EditorInterfaceSettings()
         {
             ResetOwn();
         }
+
         /// <summary> Every member at once, in declaration order. </summary>
         public EditorInterfaceSettings(float dirtyFieldDelay, AngleDisplayUnit rotationDisplayUnit,
             bool logValueClamps, bool renderInframes, bool linkColliderToShape,
-            bool selectionAutoOpenActive)
+            bool selectionAutoOpenActive, bool syncTimelineExpansion)
         {
             DirtyFieldDelay = dirtyFieldDelay;
             RotationDisplayUnit = rotationDisplayUnit;
@@ -91,7 +106,9 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
             RenderInframes = renderInframes;
             LinkColliderToShape = linkColliderToShape;
             SelectionAutoOpenActive = selectionAutoOpenActive;
+            SyncTimelineExpansion = syncTimelineExpansion;
         }
+
         private void ResetOwn()
         {
             DirtyFieldDelay = 0.05f;
@@ -100,6 +117,7 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
             RenderInframes = false;
             LinkColliderToShape = false;
             SelectionAutoOpenActive = false;
+            SyncTimelineExpansion = false;
         }
     }
 }

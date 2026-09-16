@@ -27,8 +27,10 @@ namespace BH.SDK.Rules
     /// </summary>
     public static class AvatarRules
     {
-        // Roughly two thirds of the default camera height per second, which is what makes a screen
-        // crossable in about the time a bar of music lasts.
+        // EXACTLY THE DEFAULT CAMERA HEIGHT PER SECOND (ValueRules.DefaultZoom is 10, and that zoom
+        // is the full height rather than the half-extent), so the avatar crosses the screen top to
+        // bottom in one second - about the time a bar of music lasts. It is the number the rest of
+        // the balance is read against: the dash is five times it, the knockback three.
 
         /// <summary> Ordinary walking speed, in world units per second. </summary>
         public const float MoveSpeed = 10f;
@@ -41,9 +43,9 @@ namespace BH.SDK.Rules
         public const float SizeSpeedInfluence = 1f;
 
         // DashSpeed * DashTime = 7.5 world units, and that product is the real number levels are
-        // authored against - it is how far one dash reaches. Changing either factor without the other
-        // changes the reach; changing both to keep the product changes how long the avatar is
-        // uncontrollable. Neither is a free knob.
+        // authored against - it is how far one dash reaches: three quarters of the screen's height,
+        // in 0.15 s. Changing either factor without the other changes the reach; changing both to
+        // keep the product changes how long the avatar is uncontrollable. Neither is a free knob.
 
         /// <summary> Speed for the length of a dash, in world units per second. </summary>
         public const float DashSpeed = 50f;
@@ -51,33 +53,35 @@ namespace BH.SDK.Rules
         /// <summary> How long a dash lasts, in seconds. </summary>
         public const float DashTime = 0.15f;
 
-        // MEASURED FROM THE LAUNCH, NOT FROM THE LANDING, and it is LONGER THAN
-        // DashInvulnerabilityTime BY DESIGN - that difference IS the vulnerability window. Spending
-        // every dash the moment the cooldown allows buys speed at the price of control, and the
-        // 0.10 s in between is what the bargain costs: a player who never stops dashing is still
-        // exposed for a third of every cycle, and no input can close that gap.
+        // MEASURED FROM THE LAUNCH, NOT FROM THE LANDING, and it is EXACTLY DashInvulnerabilityTime
+        // - which is a deliberate change of kind, not a number that happens to match. The
+        // vulnerability window used to be a DURATION (0.30 against 0.20, a tenth of a second no
+        // input could close). It is now exactly ONE SAMPLED FRAME, whatever the frame rate, and the
+        // gap that carried it is gone: the wanted feel is an unbroken stream of dashes that still
+        // lets damage land between them.
         //
-        // IT WAS 0.25, WHICH LEFT ONLY 0.05 s. That is under one frame at 20 fps, and the collision
-        // pass is a per-frame point sample (GameAvatarService zeroes the radius while i-frames are
-        // up), so on a phone dropping frames the whole window fell BETWEEN two samples and dash
-        // spam really was free. It went to 0.35 for that, and back to 0.30 once
-        // AvatarMovement.Observe had made the guarantee independent of the duration entirely.
+        // WHAT MAKES ONE FRAME A GUARANTEE IS THE ORDER, NOT THE CLOCK, and the order runs across
+        // three files that must stay in lockstep. BaseAvatarService.DriveAvatar launches the dash
+        // BEFORE AvatarController.UpdateAvatar runs, UpdateAvatar calls AvatarMovement.Observe after
+        // the step, and GameAvatarService sizes the collider afterwards off the same window. So on
+        // the frame the i-frames lapse: the dash is refused (ExposedSinceDash is still false),
+        // Observe then sets it because that frame was touchable, the collider is sized REAL for that
+        // frame, and the dash is taken on the NEXT one. Damage gets a whole frame to land, at 10 fps
+        // and at 300 alike. Move the dash launch after Observe and the window silently becomes zero
+        // - the avatar would be observed exposed and then made invulnerable again within one frame.
         //
-        // 0.30 IS THE SHORTEST VALUE THIS MAY TAKE, and the floor is stated rather than felt: the
-        // window is then exactly the 0.1 s that AvatarRulesTests.TheVulnerabilityWindow_IsWiderThan
-        // AFrame requires, which is one frame at 10 fps. Anything shorter is a balance resting on
-        // the safety net instead of on the numbers - the dash still cannot become immunity, but how
-        // OFTEN it comes back starts depending on the device's frame rate.
+        // THE SAFETY NET IS NOW THE BALANCE, which is the trade this accepts out loud. The old note
+        // here said a cooldown this short rests on AvatarMovement.ExposedSinceDash instead of on the
+        // numbers; that is now the design. The cost is that how often a dash comes back depends on
+        // the frame rate (one frame, so a slow device waits longer in seconds) - it costs the player
+        // rather than paying them, which is the only direction this may fail in.
         //
-        // WHY IT MAY NOT SIMPLY BECOME DashTime, which is what "a dash with no cooldown" asks for.
-        // The i-frames have to outlast the dash for dashing THROUGH a solid obstacle to work at all
-        // (IFrames_OutlastTheDash), and the window needs the cooldown to outlast the i-frames - so
-        // cooldown > i-frames > dash holds by construction and the cooldown is always strictly the
-        // longer of the two. Equalising them makes the tail of the dash touchable WHILE the avatar
-        // is still travelling at DashSpeed, which is the tunnelling case a point-sampled narrowphase
-        // is worst at: at 0.2 s and 37.5 u/s one frame at 60 fps covers 0.6 world units, so the
-        // exposure is worth a fraction of the same duration spent standing still. The gap belongs
-        // after the dash, not inside it. docs/issues/MOVEMENT_HISTORY.md 13 is the record.
+        // IT STILL MAY NOT BECOME DashTime. The i-frames have to outlast the dash for dashing
+        // THROUGH a solid obstacle to work at all (IFrames_OutlastTheDash), and this tracks the
+        // i-frames, so cooldown = i-frames > dash holds by construction. Dropping to the dash's own
+        // length makes the tail of the dash touchable WHILE the avatar is still travelling at
+        // DashSpeed, which is the tunnelling case a point-sampled narrowphase is worst at. The gap
+        // belongs after the dash, not inside it. Docs/Issues/MOVEMENT_HISTORY.md 13 is the record.
 
         /// <summary> How long after a dash STARTS before another may be taken, in seconds. </summary>
         public const float DashCooldown = 0.3f;
@@ -90,21 +94,30 @@ namespace BH.SDK.Rules
         // are safe" are two feel decisions. Longer than the dash, as here, is a landing grace; 0 is the
         // global off switch, which a level authored against solid obstacles needs.
         //
-        // IT MUST STAY SHORTER THAN DashCooldown, and that is the one relation between these numbers
-        // that is a game rule rather than a feel decision: the difference is the only window in which
-        // a dashing player can be hit at all. Raise it to the cooldown and dash spam becomes literal
-        // immunity. AvatarRulesTests pins the ordering; AvatarMovement.Observe makes it hold at any
-        // frame rate, since a window that exists in seconds is worth nothing if no frame samples it.
+        // IT EQUALS DashCooldown, AND DASH SPAM IS STILL NOT IMMUNITY - but nothing in seconds says
+        // so any more, so read DashCooldown's note before touching either. The window in which a
+        // dashing player can be hit is one sampled frame, produced by the launch/Observe/collider
+        // order rather than by the difference between two durations. It MAY NOT EXCEED the cooldown:
+        // longer i-frames than cooldown means the next dash is available while the previous one is
+        // still protecting, and then no frame is ever observed touchable - that IS literal immunity,
+        // and it is the one arrangement AvatarRulesTests forbids outright.
 
         /// <summary> How long a dash keeps the avatar untouchable, in seconds. 0 means never. </summary>
-        public const float DashInvulnerabilityTime = 0.2f;
+        public const float DashInvulnerabilityTime = 0.3f;
 
-        // FIVE TIMES THE WALKING SPEED, and the shove is short rather than gentle: a knockback has to
-        // read as something that happened TO the player, and a slow one reads as the avatar wandering.
-        // The code default of 2 that this replaces was never what shipped.
+        // THREE TIMES THE WALKING SPEED, AND IT IS A HALVING OF WHAT IT WAS. At five times the walk
+        // the shove threw the avatar 10 world units off a hit - a full screen height, which on a
+        // dense level landed the player in the next hazard rather than clear of the first. At 30 the
+        // travel is 6 units over DamageTime: still unmistakably something that happened TO the
+        // player (a slow shove reads as the avatar wandering off), while leaving them somewhere they
+        // can recognise. The code default of 2 that this line once carried was never what shipped.
+        //
+        // IT IS NOT THE FEEL OF A HIT ON ITS OWN. DamageTime is what sells the hit - control is gone
+        // for that whole window whatever distance the body covers - and DamageTimeout is what keeps
+        // the next one off. This number only decides where the avatar lands.
 
         /// <summary> Speed of the shove a hit gives, in world units per second. </summary>
-        public const float KnockoutSpeed = 50f;
+        public const float KnockoutSpeed = 30f;
 
         /// <summary> How long that shove lasts, with the avatar answering no input, in seconds. </summary>
         public const float DamageTime = 0.2f;
@@ -153,12 +166,16 @@ namespace BH.SDK.Rules
         /// seconds. </summary>
         public const float SpawnTime = 0.3f;
 
-        // The hitbox is SMALLER than what is drawn, deliberately and by a fifth: a bullet that visibly
-        // clips the avatar's outline and does not kill reads as generous, while the reverse reads as
-        // broken. Every genre this game sits in makes the same call.
+        // The hitbox is SMALLER than what is drawn, deliberately and by well over a third: a bullet
+        // that visibly clips the avatar's outline and does not kill reads as generous, while the
+        // reverse reads as broken. Every genre this game sits in makes the same call, and this is
+        // where the genre actually sits - Just Shapes & Beats runs a hitbox 0.4 of its body's
+        // half-extent. At AvatarScale 0.5 this lands the radius at 0.15 world units against their
+        // 0.11, so the avatar is a touch less forgiving than theirs and much more so than the 0.2 it
+        // carried before.
 
         /// <summary> The collision radius as a fraction of the avatar's drawn scale. </summary>
-        public const float CollisionScale = 0.4f;
+        public const float CollisionScale = 0.3f;
 
         // Frame-rate dependent by construction (`lerp(current, target, speed * dt)`), which is why it
         // is 30 rather than a fraction: it is a per-second rate, not a per-frame one. It moves nothing -

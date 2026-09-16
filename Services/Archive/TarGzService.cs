@@ -9,7 +9,7 @@ using ICSharpCode.SharpZipLib.Tar;
 
 namespace BH.SDK.Services.Archive
 {
-    // POSIX tar inside gzip, and the container the whole package feature is built on. The reason it
+    // POSIX tar inside gzip, and the container the whole archive feature is built on. The reason it
     // is this and not ZIP is one sentence long: `tar -xzf`, Windows Explorer, 7-Zip, Keka and Ark
     // all open it, so a level a player was sent stays openable by tools they already have even if
     // this game is gone.
@@ -31,7 +31,7 @@ namespace BH.SDK.Services.Archive
     // copies are async, but deflate is CPU work and gains nothing from being awaited - and this
     // library never decides which thread that CPU work runs on. The caller does.
 
-    /// <summary> Packing and unpacking the tar.gz a level package is made of. </summary>
+    /// <summary> Packing and unpacking the tar.gz a level archive is made of. </summary>
     public static class TarGzService
     {
         private const int CopyBufferSize = 81920;
@@ -62,7 +62,7 @@ namespace BH.SDK.Services.Archive
 
                     if (!ArchivePolicy.FitsName(entry.Path))
                         throw new InvalidDataException(
-                            $"'{entry.Path}' is longer than the {ArchivePolicy.MaxNameBytes} bytes a tar " +
+                            $"'{entry.Path}' is longer than the {ArchivePolicy.MaxEntryNameBytes} bytes a tar " +
                             "header can hold. Rename it before packing.");
 
                     var length = await entry.GetLengthAsync(token);
@@ -212,7 +212,7 @@ namespace BH.SDK.Services.Archive
                 typeFlag == TarHeader.LF_DIR) return;
 
             throw new InvalidDataException(
-                $"Archive entry '{entry.Name}' is of type '{(char)typeFlag}', which a level package " +
+                $"Archive entry '{entry.Name}' is of type '{(char)typeFlag}', which a level archive " +
                 "may not carry - only plain files and directories are read.");
         }
 

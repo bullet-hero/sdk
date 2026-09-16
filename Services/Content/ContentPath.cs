@@ -10,8 +10,8 @@ namespace BH.SDK.Services.Content
     // a database or a hostile upload - the answer to a bad one is "no", not a guess at what was
     // meant.
     //
-    // Comparison is ORDINAL everywhere, case included: a package written on Linux has to read back
-    // as the same package on Windows, and a case-folding store would merge two entries a tar file
+    // Comparison is ORDINAL everywhere, case included: an archive written on Linux has to read back
+    // as the same archive on Windows, and a case-folding store would merge two entries a tar file
     // holds separately. What the file system underneath a DirectoryContentStore does about case is
     // its own answer and this cannot change it - a stated gap, not a claim.
 

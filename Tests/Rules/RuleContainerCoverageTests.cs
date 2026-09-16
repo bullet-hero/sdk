@@ -202,7 +202,7 @@ namespace BH.SDK.Tests.Rules
         // WHAT TRANSITIVE PRUNING WOULD ACTUALLY BUY, measured rather than assumed - and the answer
         // is "almost nothing", which is why no runtime flag was added for it.
         //
-        // Docs/issues/VALIDATION_GENERATOR_PLAN.md called this "the second order-of-magnitude" and
+        // Docs/Plans/VALIDATION_GENERATOR_PLAN.md called this "the second order-of-magnitude" and
         // named transforms and keyframe payloads as rule-free branches to skip. They are not:
         // Keyframe.Frame is [RuleLevelFrame], Keyframe.Ease is [RuleEnumValid], and every value
         // model is range-checked. A least fixed point over the type graph - start from "no type has

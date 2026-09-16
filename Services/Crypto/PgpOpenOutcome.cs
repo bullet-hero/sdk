@@ -39,7 +39,7 @@ namespace BH.SDK.Services.Crypto
         public readonly PgpOpenResult Result;
 
         /// <summary> The file name recorded inside the message - what gpg would restore the file
-        /// as. Empty when the message carries none. This is how a package knows whether it wraps
+        /// as. Empty when the message carries none. This is how an archive knows whether it wraps
         /// a level.json or a level.bson without a header of our own. </summary>
         public readonly string InnerFileName;
 

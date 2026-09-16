@@ -409,13 +409,11 @@ namespace BH.SDK.Rules
         /// <summary> Bounds DefaultModel.Value, LanguageModel.Value, StringLanguage.LanguageCode. </summary>
         public const string LanguageCodePattern = "^[A-Za-z]{2,8}(-[A-Za-z0-9]{1,8})*$";
 
-        // Licence text is the one field in the whole format meant to hold a wall of prose (a full
-        // MIT/CC licence body), so it gets its own generous cap instead of the description one.
+        // CustomLicense.LicenseText has NO bound here on purpose - see the note on the property. A
+        // licence body is prose whose meaning does not survive truncation, so there is nothing to cap
+        // it to; the name beside it is an ordinary label and keeps its own.
 
         /// <summary> Upper bound of CustomLicense.LicenseName. </summary>
         public const int MaxLicenseName = 256;
-
-        /// <summary> Upper bound of CustomLicense.LicenseText. </summary>
-        public const int MaxLicenseText = 65_536;
     }
 }

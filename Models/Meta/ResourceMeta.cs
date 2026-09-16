@@ -95,11 +95,11 @@ namespace BH.SDK.Models.Meta
         [JsonProperty(Names.Authors)]
         public List<Author> ResourceAuthors { get; set; }
 
-        // No age rating or content descriptors here on purpose - those live on LevelMeta alone. A
-        // rating describes what a player is about to experience, which is a property of the finished
-        // level, not of an asset in isolation: the same track is menu music in one level and a jump
-        // scare in another. Per-resource ratings would also have to be guessed by whoever imported
-        // the asset, and a guessed number folded into the level's own would make it meaningless.
+        // No age rating here on purpose - it lives on LevelMeta alone. A rating describes what a
+        // player is about to experience, which is a property of the finished level, not of an asset
+        // in isolation: the same track is menu music in one level and a jump scare in another.
+        // Per-resource ratings would also have to be guessed by whoever imported the asset, and a
+        // guessed number folded into the level's own would make it meaningless.
         
         /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public ResourceMeta()

@@ -57,6 +57,30 @@ namespace BH.SDK.Tests
         // The file that documents the trap is allowed to name it; so is this one.
         private static readonly string[] Exempt = { "AsyncAssert.cs", "AsyncDisciplineTests.cs" };
 
+        // THE ROOTS ABOVE ARE RELATIVE TO THE PROJECT, AND THIS FIXTURE DOES NOT ALWAYS RUN THERE.
+        // Unity's working directory is the project folder, so they resolved; `dotnet test` runs
+        // from Tests/bin~/Debug, where not one of them exists - and a root that does not exist is
+        // SKIPPED, so the whole check passed by examining nothing at all. It reported green over an
+        // Assert.ThrowsAsync that then froze the Editor, which is the exact failure it exists to
+        // prevent and the reason the count is asserted below rather than assumed.
+        private static readonly string Repository = FindRepository();
+
+        private static string FindRepository()
+        {
+            var directory = new DirectoryInfo(Directory.GetCurrentDirectory());
+
+            while (directory != null)
+            {
+                if (Directory.Exists(Path.Combine(directory.FullName, "Assets"))) return directory.FullName;
+                directory = directory.Parent;
+            }
+
+            return null;
+        }
+
+        private static string Resolve(string root) =>
+            Repository == null ? root : Path.Combine(Repository, root);
+
         /// <summary> One forbidden call, and the message printed when a source line matches it. </summary>
         private sealed class Rule
         {
@@ -99,16 +123,19 @@ namespace BH.SDK.Tests
         public void NoTest_BlocksTheMainThreadOnATask()
         {
             var offenders = new List<string>();
+            var scanned = 0;
 
-            foreach (var root in TestRoots)
+            foreach (var name in TestRoots)
             {
+                var root = Resolve(name);
                 if (!Directory.Exists(root)) continue;
 
                 foreach (var file in Directory.GetFiles(root, "*.cs", SearchOption.AllDirectories))
                 {
-                    var name = Path.GetFileName(file);
-                    if (Array.IndexOf(Exempt, name) >= 0) continue;
+                    var fileName = Path.GetFileName(file);
+                    if (Array.IndexOf(Exempt, fileName) >= 0) continue;
 
+                    scanned++;
                     var lines = File.ReadAllLines(file);
                     for (var i = 0; i < lines.Length; i++)
                     {
@@ -136,6 +163,11 @@ namespace BH.SDK.Tests
                 "A test that blocks the main thread waiting on a task DEADLOCKS THE UNITY EDITOR: " +
                 "EditMode tests run on the same thread the continuation needs, so neither side can " +
                 "move and the Editor has to be killed. Await instead - see Tests/AsyncAssert.cs.");
+
+            // A check that examined nothing is not a check that passed.
+            Assert.Greater(scanned, 0,
+                "No test source was read at all, so this proves nothing. The repository root was " +
+                "not found from " + Directory.GetCurrentDirectory() + ".");
         }
 
         // The roots above are a list, so a new test folder that nobody adds to it would be checked
@@ -148,13 +180,17 @@ namespace BH.SDK.Tests
         {
             var missing = new List<string>();
 
-            foreach (var root in new[] { "Assets/Code", "Assets/Plugins/BulletHeroSDK" })
+            var searched = 0;
+
+            foreach (var name in new[] { "Assets/Code", "Assets/Plugins/BulletHeroSDK" })
             {
+                var root = Resolve(name);
                 if (!Directory.Exists(root)) continue;
 
+                searched++;
                 foreach (var folder in Directory.GetDirectories(root, "Tests", SearchOption.AllDirectories))
                 {
-                    var shown = Shown(folder);
+                    var shown = Relative(folder);
 
                     // A vendored package brings its own tests and its own release cycle; this rule
                     // is about the project's own.
@@ -174,8 +210,23 @@ namespace BH.SDK.Tests
             CollectionAssert.IsEmpty(missing,
                 "Test folders not listed in AsyncDisciplineTests.TestRoots, so nothing checks them " +
                 "for main-thread blocking. Add them to that array.");
+
+            Assert.Greater(searched, 0,
+                "Neither source root was found, so this proves nothing. The repository root was " +
+                "not found from " + Directory.GetCurrentDirectory() + ".");
         }
 
         private static string Shown(string path) => path.Replace(Path.DirectorySeparatorChar, '/');
+
+        // Compared against TestRoots, which are written project-relative, so an absolute path found
+        // on disk has to be reduced to the same shape before the comparison means anything.
+        private static string Relative(string path)
+        {
+            var shown = Shown(path);
+            if (Repository == null) return shown;
+
+            var root = Shown(Repository).TrimEnd('/') + "/";
+            return shown.StartsWith(root, StringComparison.Ordinal) ? shown.Substring(root.Length) : shown;
+        }
     }
 }

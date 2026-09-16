@@ -1283,44 +1283,20 @@
         /// <summary> LevelMeta.LevelLogo. </summary>
         public const string Logo = "logo";
 
-        /// <summary> CustomLicense.Aggressive. </summary>
-        public const string Aggressive = "aggressive";
-
         /// <summary> LevelMeta.LevelLicense, ResourceMeta.ResourceLicense. </summary>
         public const string License = "license";
-
-        /// <summary> Word fragment, built into AllowsCommercialUse. </summary>
-        public const string Use = "use";
-
-        /// <summary> Word fragment, built into RequiresSameLicense. </summary>
-        public const string Same = "same";
 
         /// <summary> Word fragment, built into AllowPermissionInstead, AllowUnknownLicense, AllowedLicenses, AllowedUriTypes. </summary>
         public const string Allow = "allow";
 
-        /// <summary> Word fragment, built into AllowsCommercialUse, AllowsDistribution, AllowsModification. </summary>
-        public const string Allows = "allows";
-
         /// <summary> Word fragment, built into RequireAgeRating, RequireAttribution, RequireHashes, RequireHold and 3 more. </summary>
         public const string Require = "require";
 
-        /// <summary> Word fragment, built into RequiresAttribution, RequiresHold, RequiresSameLicense, RequiresSourceDisclosure. </summary>
+        /// <summary> Word fragment, built into RequiresHold. </summary>
         public const string Requires = "requires";
 
-        /// <summary> Word fragment, built into AllowsDistribution. </summary>
-        public const string Distribution = "distribution";
-
-        /// <summary> Word fragment, built into AllowsModification. </summary>
-        public const string Modification = "modification";
-
-        /// <summary> Word fragment, built into AllowsCommercialUse. </summary>
-        public const string Commercial = "commercial";
-
-        /// <summary> Word fragment, built into RequireAttribution, RequiresAttribution. </summary>
+        /// <summary> Word fragment, built into RequireAttribution. </summary>
         public const string Attribution = "attribution";
-
-        /// <summary> Word fragment, built into RequiresSourceDisclosure. </summary>
-        public const string Disclosure = "disclosure";
 
         /// <summary> Word fragment, built into AgeRating, RequireAgeRating. </summary>
         public const string Age = "age";
@@ -1333,9 +1309,6 @@
 
         /// <summary> Word fragment, built into ShowAllFoundContent. </summary>
         public const string Found = "found";
-
-        /// <summary> Word fragment, built into ContentDescriptors. </summary>
-        public const string Descriptors = "descriptors";
 
         /// <summary> ResourceMeta.ResourceHashes. </summary>
         public const string Hashes = "hashes";
@@ -1579,6 +1552,12 @@
 
         /// <summary> Word fragment, built into RenderInframes. </summary>
         public const string Inframes = "inframes";
+
+        /// <summary> Word fragment, built into SyncTimelineExpansion. </summary>
+        public const string Sync = "sync";
+
+        /// <summary> Word fragment, built into SyncTimelineExpansion. </summary>
+        public const string Expansion = "expansion";
 
         /// <summary> GameEditorSettings.Grid. </summary>
         public const string Grid = "grid";
@@ -1976,6 +1955,9 @@
         /// <summary> <c>"auto_open"</c> - EditorInterfaceSettings.SelectionAutoOpenActive. </summary>
         public const string AutoOpen = Auto + _ + Open;
 
+        /// <summary> <c>"sync_timeline_expansion"</c> - EditorInterfaceSettings.SyncTimelineExpansion. </summary>
+        public const string SyncTimelineExpansion = Sync + _ + Timeline + _ + Expansion;
+
         /// <summary> <c>"game_editor"</c> - UserSettings.GameEditor. </summary>
         public const string GameEditor = Game + _ + Editor;
 
@@ -2126,6 +2108,9 @@
 
         /// <summary> <c>"dash_keys"</c> - KeyboardMouseControlsSettings.DashKeys. </summary>
         public const string DashKeys = Dash + _ + Keys;
+
+        /// <summary> <c>"dash_button"</c> - KeyboardMouseControlsSettings.DashButton. </summary>
+        public const string DashButton = Dash + _ + Button;
 
         /// <summary> <c>"cursor_hide_abs"</c> - KeyboardMouseControlsSettings.CursorHideAbsolute. </summary>
         public const string CursorHideAbsolute = Cursor + _ + Hide + _ + Absolute;
@@ -2878,35 +2863,14 @@
         /// <summary> <c>"license_type"</c> - TypicalLicense.Type. </summary>
         public const string LicenseType = License + _ + Type;
 
-        /// <summary> <c>"allows_distribution"</c> - CustomLicense.AllowsDistribution. </summary>
-        public const string AllowsDistribution = Allows + _ + Distribution;
-
-        /// <summary> <c>"allows_modification"</c> - CustomLicense.AllowsModification. </summary>
-        public const string AllowsModification = Allows + _ + Modification;
-
-        /// <summary> <c>"allows_commercial_use"</c> - CustomLicense.AllowsCommercialUse. </summary>
-        public const string AllowsCommercialUse = Allows + _ + Commercial + _ + Use;
-
-        /// <summary> <c>"requires_attribution"</c> - CustomLicense.RequiresAttribution. </summary>
-        public const string RequiresAttribution = Requires + _ + Attribution;
-
-        /// <summary> <c>"requires_src_disclosure"</c> - CustomLicense.RequiresSourceDisclosure. </summary>
-        public const string RequiresSourceDisclosure = Requires + _ + Source + _ + Disclosure;
-
-        /// <summary> <c>"requires_same_license"</c> - CustomLicense.RequiresSameLicense. </summary>
-        public const string RequiresSameLicense = Requires + _ + Same + _ + License;
-
         /// <summary> <c>"age_rating"</c> - LevelMeta.LevelAgeRating. </summary>
         public const string AgeRating = Age + _ + Rating;
-
-        /// <summary> <c>"content_descriptors"</c> - LevelMeta.LevelContentDescriptors. </summary>
-        public const string ContentDescriptors = Content + _ + Descriptors;
 
         // SPELLED OUT RATHER THAN COMPOSED, and the difference matters here more than anywhere else
         // in this file. `Min + _ + Generation` would read `"min_g"`, because Generation is the
         // ENVELOPE's one-character key - a MULTIPLE key, paid for on every envelope in a level. This
-        // one appears once per metadata.json, beside `duration`, `age_rating` and
-        // `content_descriptors`, so the rule asks for full words.
+        // one appears once per metadata.json, beside `duration` and `age_rating`, so the rule asks
+        // for full words.
 
         /// <summary> <c>"min_generation"</c> - LevelMeta.MinGeneration. </summary>
         public const string MinGeneration = "min_generation";

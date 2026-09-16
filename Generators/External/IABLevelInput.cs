@@ -6,7 +6,7 @@
     // and is documented nowhere - so the host is what opens it and hands over what it found.
     //
     // It is NOT that the SDK cannot read a file. It used to be: Services/Content now addresses
-    // directories and archives directly, and the level package pipeline built on it reads and
+    // directories and archives directly, and the level archive pipeline built on it reads and
     // writes both. What has not changed is who decides what an Afterbeat folder CONTAINS.
     //
     // Text rather than paths, deliberately: it keeps this side free of IO, and it lets the same

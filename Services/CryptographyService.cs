@@ -5,7 +5,7 @@ using System.Text;
 
 namespace BH.SDK.Services
 {
-    // NOT WHAT PROTECTS A LEVEL. Level protection - a password-protected package, and a level whose
+    // NOT WHAT PROTECTS A LEVEL. Level protection - a password-protected archive, and a level whose
     // document sits encrypted on disk - is OpenPGP, and it lives in Services/Crypto. The reason is
     // not strength but reach: the artifacts this project writes have to open in tools people already
     // have (gpg, and every archiver that reads what gpg wrote), and an AES blob of our own opens in

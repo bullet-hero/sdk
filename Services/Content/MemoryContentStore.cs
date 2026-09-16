@@ -26,7 +26,7 @@ namespace BH.SDK.Services.Content
         /// a level, far below what an unbounded decompression would take. </summary>
         public const long DefaultMaxTotalBytes = 512L * 1024 * 1024;
 
-        // Ordinal, case included: a package written on Linux can carry "Logo.png" and "logo.png" as
+        // Ordinal, case included: an archive written on Linux can carry "Logo.png" and "logo.png" as
         // two entries, and a store that folded them would silently lose one.
         private readonly Dictionary<string, byte[]> _blobs = new Dictionary<string, byte[]>(StringComparer.Ordinal);
 

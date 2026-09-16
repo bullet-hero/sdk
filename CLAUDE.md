@@ -48,7 +48,7 @@ describes it; each loads only when you touch a file in that folder.
 | `Rules/` | `public const` numeric/enum clamp tables (`FrameRules`, `ValueRules`, `LevelRules`,… | `Rules/CLAUDE.md` |
 | `Validations/` | the rule engine, in two halves. *Declarative*: `RuleAnalyzer`/`RuleFixer`… | `Validations/CLAUDE.md` |
 | `Utils/` | `BHSDKMath` (Unity-independent math, since the core assembly can't reference… | `Utils/CLAUDE.md` |
-| `Services/` | `SerializationService`-adjacent but SDK-root-level. **Four of its subfolders are the… | `Services/CLAUDE.md` |
+| `Services/` | `SerializationService`-adjacent but SDK-root-level. **Four of its subfolders are the level-archive feature** — `Content/`, `Archive/` (tar.gz AND zip), `Crypto/`, `LevelArchive/` — and only… | `Services/CLAUDE.md` |
 | `Publishing/` | **the third validation pass, and the only one that asks a question about the outside… | `Publishing/CLAUDE.md` |
 | `Generators/` | authoring automation: a generator produces level content from a few parameters. Non-generic… | `Generators/CLAUDE.md` |
 | `Roslyn/` | the compile-time half: analyzers and incremental source generators, **running** since… | `Roslyn/CLAUDE.md` |

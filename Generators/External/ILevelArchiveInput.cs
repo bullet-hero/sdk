@@ -9,15 +9,15 @@ namespace BH.SDK.Generators.External
     // that gets settled rather than in a convention nobody reads.
     //
     // Which is also why THE PASSPHRASE IS ABSENT FROM THIS INTERFACE ENTIRELY. The host opens the
-    // package, asks for the passphrase if the package wants one, and hands over plaintext; the
-    // generator never learns that the package was protected at all.
+    // archive, asks for the passphrase if the archive wants one, and hands over plaintext; the
+    // generator never learns that the archive was protected at all.
     //
     // The format travels beside the bytes because nothing inside them says which they are: a level
     // document is Json or Blob according to the NAME it was stored under, exactly as in a level
     // folder on disk.
 
-    /// <summary> A generator that builds a level out of a package the host already opened. </summary>
-    public interface ILevelPackageInput
+    /// <summary> A generator that builds a level out of an archive the host already opened. </summary>
+    public interface ILevelArchiveInput
     {
         /// <summary> The level document, decrypted if it needed to be. Empty means the host found
         /// nothing, and the generator must then produce nothing rather than an empty level. </summary>
@@ -26,16 +26,16 @@ namespace BH.SDK.Generators.External
         /// <summary> Which format <see cref="LevelBytes"/> is in. </summary>
         SerializationType LevelFormat { get; set; }
 
-        /// <summary> The metadata document, or null when the package carried none. </summary>
+        /// <summary> The metadata document, or null when the archive carried none. </summary>
         byte[] MetaBytes { get; set; }
 
         /// <summary> Which format <see cref="MetaBytes"/> is in. </summary>
         SerializationType MetaFormat { get; set; }
 
-        /// <summary> Where the package came from, for the report to name. Never opened by the SDK. </summary>
+        /// <summary> Where the archive came from, for the report to name. Never opened by the SDK. </summary>
         string SourcePath { get; set; }
 
-        /// <summary> What the package carries besides its two documents - the cover, the song, the
+        /// <summary> What the archive carries besides its two documents - the cover, the song, the
         /// textures. Names only: the host is what copies the files. </summary>
         string[] ResourceFileNames { get; set; }
 
@@ -43,7 +43,7 @@ namespace BH.SDK.Generators.External
         // lives with the other parameters and is answered by the form; the host needs it because
         // copying the files is the host's half of the import.
 
-        /// <summary> Whether the host should copy the package's files into the new level's folder. </summary>
+        /// <summary> Whether the host should copy the archive's files into the new level's folder. </summary>
         bool ImportResources { get; }
     }
 }

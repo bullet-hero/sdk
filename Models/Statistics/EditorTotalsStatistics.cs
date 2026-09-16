@@ -16,7 +16,7 @@ namespace BH.SDK.Models.Statistics
     // different questions, and a difference cannot be recovered from a single number afterwards.
     //
     // TotalResources counts resources added to levels - images, audio, fonts. It replaced a
-    // narrower "packages imported and exported" pair, which measured one workflow rather than the
+    // narrower "archives imported and exported" pair, which measured one workflow rather than the
     // work.
 
     /// <summary> What has been authored on this device, summed across every level. </summary>

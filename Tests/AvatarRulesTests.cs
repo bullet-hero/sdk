@@ -3,6 +3,15 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests
 {
+    // THESE NUMBERS MOVED ONCE, DELIBERATELY, AND THE MOVE IS THE POINT OF THE FILE. The balance was
+    // re-read against Just Shapes & Beats' own, measured out of its binary rather than guessed (its
+    // field is 1280x720 units against this game's 10-unit camera height, so its numbers divide by 72
+    // to land here). What that comparison actually changed is smaller than it first looked: the walk,
+    // the dash and the reach stayed where they were, the hitbox came in 0.4 -> 0.3, the shove halved
+    // 50 -> 30, and the dash i-frames went 0.2 -> 0.3 to sit exactly on the cooldown - which is the
+    // one structural change, and it is documented on DashCooldown rather than here. Every value is
+    // restated below, so the NEXT move fails here first.
+    //
     // THIS FILE IS THE "NEVER CHANGE THESE" IN EXECUTABLE FORM, and it is the whole reason the numbers
     // became constants. They were serialized fields with a ScriptableObject overriding them, so the
     // project carried two answers for each and they had silently drifted apart - the asset played
@@ -63,15 +72,15 @@ namespace BH.SDK.Tests
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.VeryEasy)]
-        public void DashInvulnerabilityTime_IsATwoTenths()
-            => Assert.AreEqual(0.2f, AvatarRules.DashInvulnerabilityTime, Tolerance);
+        public void DashInvulnerabilityTime_IsThreeTenths()
+            => Assert.AreEqual(0.3f, AvatarRules.DashInvulnerabilityTime, Tolerance);
 
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.VeryEasy)]
-        public void KnockoutSpeed_IsFifty()
-            => Assert.AreEqual(50f, AvatarRules.KnockoutSpeed, Tolerance);
+        public void KnockoutSpeed_IsThirty()
+            => Assert.AreEqual(30f, AvatarRules.KnockoutSpeed, Tolerance);
 
         [Test]
         [Author(Metadata.Author.Vertoker)]
@@ -116,8 +125,8 @@ namespace BH.SDK.Tests
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.VeryEasy)]
-        public void CollisionScale_IsFourTenths()
-            => Assert.AreEqual(0.4f, AvatarRules.CollisionScale, Tolerance);
+        public void CollisionScale_IsThreeTenths()
+            => Assert.AreEqual(0.3f, AvatarRules.CollisionScale, Tolerance);
 
         [Test]
         [Author(Metadata.Author.Vertoker)]
@@ -173,35 +182,39 @@ namespace BH.SDK.Tests
         public void TheDamageTimeout_OutlastsTheKnockback()
             => Assert.Greater(AvatarRules.DamageTimeout, AvatarRules.DamageTime);
 
-        // THE ONE RELATION THAT IS A GAME RULE RATHER THAN A FEEL DECISION. The dash grants i-frames
-        // and the cooldown outlasts them, so the difference is the only window in which a player who
-        // never stops dashing can be hit at all. Equal numbers would make dash spam literal immunity,
-        // and this is the assertion that says so out loud rather than leaving it to two constants
-        // twenty lines apart.
+        // THE ONE RELATION THAT IS A GAME RULE RATHER THAN A FEEL DECISION, AND IT IS NOW AN
+        // INEQUALITY IN ONE DIRECTION ONLY. The two may be equal - that is the shipped balance, an
+        // unbroken stream of dashes with exactly one touchable frame between them. What may never
+        // happen is i-frames OUTLASTING the cooldown: the next dash would then be available while
+        // the previous one still protects, no frame is ever observed touchable, and dash spam is
+        // literal immunity with nothing left to stop it. This is the assertion that says so out loud
+        // rather than leaving it to two constants twenty lines apart.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.VeryEasy)]
-        public void TheCooldown_OutlastsTheIFrames()
-            => Assert.Greater(AvatarRules.DashCooldown, AvatarRules.DashInvulnerabilityTime);
+        public void TheCooldown_IsNeverShorterThanTheIFrames()
+            => Assert.GreaterOrEqual(AvatarRules.DashCooldown, AvatarRules.DashInvulnerabilityTime);
 
-        // AND BY ENOUGH TO BE SAMPLED. The collision pass is a per-frame point sample, so a window
-        // narrower than a frame can fall between two of them and never happen - which is exactly what
-        // 0.05 s did on a phone. AvatarMovement.ExposedSinceDash is the hard guarantee below this
-        // frame rate; the number here is what keeps that guarantee from ever being what holds the
-        // balance up. A tenth of a second is a frame at 10 fps.
+        // THE WINDOW IS NO LONGER A DURATION, SO THERE IS NO DURATION TO ASSERT. It used to be
+        // DashCooldown - DashInvulnerabilityTime >= 0.1 s, one frame at 10 fps, and a test here
+        // guarded that floor because the collision pass is a per-frame POINT SAMPLE: a window
+        // narrower than a frame falls between two samples and never happens. That is exactly what
+        // 0.05 s did on a phone.
         //
-        // THE WINDOW NOW SITS EXACTLY ON THAT FLOOR (0.30 - 0.20), so the tolerance is load-bearing
-        // rather than tidy: this comparison must be decided by the balance and never by float
-        // subtraction, which lands the difference a rounding step either side of a tenth depending
-        // on which two constants produce it.
+        // With the two equal, the guarantee is structural instead, and it is NOT expressible in this
+        // file - it lives in the order three types run in (BaseAvatarService.DriveAvatar launches
+        // the dash, AvatarController.UpdateAvatar calls AvatarMovement.Observe, GameAvatarService
+        // sizes the collider), which is why this assertion is about the ordering of the constants
+        // and the rest is pinned where the order is. What survives here is the floor the whole
+        // arrangement rests on: i-frames must outlast the dash, or the avatar is touchable while
+        // still travelling at DashSpeed.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.VeryEasy)]
-        public void TheVulnerabilityWindow_IsWiderThanAFrame()
-            => Assert.GreaterOrEqual(
-                AvatarRules.DashCooldown - AvatarRules.DashInvulnerabilityTime, 0.1f - Tolerance);
+        public void TheIFrames_CoverTheWholeDashAndThenSome()
+            => Assert.Greater(AvatarRules.DashInvulnerabilityTime - AvatarRules.DashTime, 0f);
 
         // The hitbox is smaller than what is drawn, deliberately: a bullet that visibly clips the
         // outline and does not kill reads as generous, the reverse reads as broken.

@@ -275,7 +275,7 @@ namespace BH.SDK.Serialization
         }
 
         // THE BYTE-LEVEL COUNTERPARTS OF SerializeData/DeserializeData, and the pair anything that
-        // moves a whole aggregate around needs: a level package writes a document into an archive
+        // moves a whole aggregate around needs: a level archive writes a document into an archive
         // entry, a reader takes one back out, and a server stores one in a column. Every one of
         // them holds BYTES, and none of them can go through the string API without deciding that
         // Bson does not exist.

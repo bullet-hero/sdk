@@ -286,11 +286,11 @@ namespace BH.SDK.Tests.Publishing
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.Easy)]
-        public void TestCustomLicenseWithoutDistributionIsRefused()
+        public void TestCustomLicenseIsRefused()
         {
             var meta = CreateCleanMeta();
             meta.ResourcesMeta[0].ResourceLicense = new CustomLicense("studio terms",
-                "https://example.com", "...", false, false, false, false, false, false, false);
+                "https://example.com", "...");
 
             var report = new PublishReadinessAnalyzer()
                 .Analyze(meta, PublishProfile.CreateStandard(), null, Now);
@@ -302,15 +302,13 @@ namespace BH.SDK.Tests.Publishing
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.Easy)]
-        public void TestCustomLicenseRequiringAttributionNeedsAuthors()
+        public void TestUncreditedResourceIsRefusedWhenTheProfileAsksForAttribution()
         {
             var meta = CreateCleanMeta();
-            meta.ResourcesMeta[0].ResourceLicense = new CustomLicense("studio terms",
-                "https://example.com", "...", false, true, true, true, true, false, false);
             meta.ResourcesMeta[0].ResourceAuthors.Clear();
 
             var report = new PublishReadinessAnalyzer()
-                .Analyze(meta, PublishProfile.CreateStandard(), null, Now);
+                .Analyze(meta, PublishProfile.CreateStrict(), null, Now);
 
             Assert.AreEqual(RuleGroup.Error,
                 Get(report, PublishRule.ResourceAttributionMissing).Group);

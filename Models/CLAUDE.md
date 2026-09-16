@@ -34,8 +34,8 @@ the level format itself (see "Object model" / "Value system" below for the
   `Meta/` (`Author` — name, credit and url, where the credit is a localizable free-text line
   rather than a role enum, since the vocabulary of a credits list is open and an empty one is an
   ordinary record; `ResourceMeta` — consumed by `LevelMeta`, itself NOT in this folder; note
-  `ResourceMeta` carries licensing/attribution only — **age rating and content descriptors live on
-  `LevelMeta` alone**, since a rating describes the finished experience, not an asset in isolation),
+  `ResourceMeta` carries licensing/attribution only — **the age rating lives on `LevelMeta`
+  alone**, since a rating describes the finished experience, not an asset in isolation),
   `Interfaces/`, `Enum/`, `Primitives/` (id structs — **`Assets/Plugins/BulletHeroSDK/Docs/IDENTIFIERS.md` is the criterion that
   decides `Guid` vs `int`, and the answer to "will these ever have to be unified"; read it before
   adding an id**). `Models/Names.cs` is the single source of truth

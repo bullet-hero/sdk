@@ -2,7 +2,7 @@
 - no Android build has been made since BouncyCastle was added; whether the linker keeps it is the one thing the Editor cannot answer, and `Assets/link.xml` is the answer that has not been tested
 - random access to a single entry is gone with ZIP and is not coming back; a listing reads the leading entries instead (documents are packed first)
 - server side: `LevelPackageReader` is meant to be its entry point, so a package can be accepted and stored without a file system anywhere - untested outside `MemoryContentStore`
-- see the consuming project's `docs/issues/PACKAGE_HISTORY.md` for the whole design record, including what ZIP bought and what was rejected
+- see the consuming project's `docs/issues/ARCHIVE_HISTORY.md` for the whole design record, including what ZIP bought and what was rejected
 
 Licensing
 - Add mail for "notice-and-takedown" process, for UGC content and DMCA complience
