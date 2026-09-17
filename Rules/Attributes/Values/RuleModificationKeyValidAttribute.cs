@@ -74,10 +74,13 @@ namespace BH.SDK.Rules.Attributes
         // overridden in any field that copy has. ObjectId.PrefabRoot names the template's own root,
         // which materializes AS the placement rather than beside it - so an override there is
         // writing onto the placement, and it may only touch what the template owns
-        // (ModificationFields.IsPrefabRootField). Span, Active and Layer are the placement's own
-        // authored fields and nothing copies them off the root, so an override on one of them would
-        // be a second way to say the same thing that additionally won, ApplyModifications running
-        // last.
+        // (ModificationFields.IsPrefabRootField). Span, Active, Layer and PlacementOffset are the
+        // placement's own authored fields and nothing copies them off the root, so an override on
+        // one of them would be a second way to say the same thing that additionally won,
+        // ApplyModifications running last. PlacementDuration is the exception that proves it: the
+        // duration IS copied off the root, so the only way a placement keeps a length of its own is
+        // an override, and that is the one field here backed by a derived property rather than a
+        // stored member.
         //
         // The other two reserved ids stay unaddressable: nothing is ever the camera or the avatar,
         // so neither can be a thing a placement carries a copy of.

@@ -53,6 +53,20 @@ namespace BH.SDK.Rules
         /// <summary> Highest frame allowed, read by ABMapTests, ABTimeMap, FrameSpan and 2 more. </summary>
         public const int MaxFrame = MaxFrameDuration;
 
+        // A PLACEMENT'S IN-POINT IS BOUNDED BY ITS OWN START, and this pair is only the outer cap a
+        // hostile file is held to. The real bound is per-placement and cannot be a property rule:
+        // PlacementOffset may not exceed Span.StartFrame - MinFrame, or a materialized copy's span
+        // start falls below the first frame, where FrameSpan's constructor clamps SILENTLY and the
+        // phase is lost. Every gesture that writes the offset clamps against that; a rule here can
+        // only see one number and never the span beside it.
+
+        /// <summary> Lower bound of PrefabObject.PlacementOffset - negative, since content starting
+        /// LATER than its placement is an ordinary empty head. </summary>
+        public const int MinPlacementOffset = -MaxFrameDuration;
+
+        /// <summary> Upper bound of PrefabObject.PlacementOffset. </summary>
+        public const int MaxPlacementOffset = MaxFrameDuration;
+
         /// <summary> Lower bound of LevelSettings.Fps. </summary>
         public const int MinFramerate = 1;
 

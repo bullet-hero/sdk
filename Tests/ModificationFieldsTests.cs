@@ -91,7 +91,7 @@ namespace BH.SDK.Tests
         private static List<(PropertyInfo Property, int Field)> MarkedMembers() =>
             typeof(ModificationFields).Assembly.GetTypes()
                 .SelectMany(type => type.GetProperties(BindingFlags.Public | BindingFlags.Instance
-                                                       | BindingFlags.DeclaredOnly))
+                                                                           | BindingFlags.DeclaredOnly))
                 .Select(property => (Property: property,
                     Attribute: property.GetCustomAttribute<ModificationFieldAttribute>()))
                 .Where(pair => pair.Attribute != null)
@@ -144,21 +144,51 @@ namespace BH.SDK.Tests
             Assert.IsEmpty(collisions, "Two members sharing an id: " + string.Join(" | ", collisions));
         }
 
+        /// <summary> A marked member that stores nothing of its own - a view over a member that
+        /// does, and therefore exempt from carrying a key. </summary>
+        private static bool IsDerived(PropertyInfo property) =>
+            property.GetCustomAttribute<GenerateModelIgnoreAttribute>() != null;
+
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.VeryEasy)]
         // An overridable member that is not serialized cannot be overridden in any sense that
         // survives a save, so the two attributes travel together or neither is true.
+        //
+        // THE ONE EXEMPTION IS A DERIVED MEMBER, and it is not a loophole: [GenerateModelIgnore]
+        // says the property is a VIEW over state that is already serialized under its own key, so
+        // an override written through it survives the save in that other member. PrefabObject
+        // .PlacementDuration is the case - it reads and writes Span.FrameDuration, and giving it a
+        // key of its own would store the placement's length twice and let the two disagree. What
+        // such a member does still owe is a SETTER: ApplyModifications writes through it, and a
+        // getter-only view would make the override addressable and unappliable.
         public void EveryMarkedMember_IsSerialized()
         {
             var unserialized = MarkedMembers()
+                .Where(member => !IsDerived(member.Property))
                 .Where(member => member.Property.GetCustomAttribute<JsonPropertyAttribute>() == null)
                 .Select(member => Describe(member.Property))
                 .ToArray();
 
             Assert.IsEmpty(unserialized, "A marked member carrying no [JsonProperty]: "
                                          + string.Join(", ", unserialized));
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.VeryEasy)]
+        public void EveryDerivedMarkedMember_CanBeWritten()
+        {
+            var readOnly = MarkedMembers()
+                .Where(member => IsDerived(member.Property))
+                .Where(member => member.Property.GetSetMethod() == null)
+                .Select(member => Describe(member.Property))
+                .ToArray();
+
+            Assert.IsEmpty(readOnly, "A derived overridable member with no public setter cannot be "
+                                     + "applied: " + string.Join(", ", readOnly));
         }
     }
 }

@@ -1,7 +1,9 @@
 using System.Collections.Generic;
 using BH.SDK.Models.Interfaces;
+using BH.SDK.Models.Keyframes;
 using BH.SDK.Models.Objects;
 using BH.SDK.Models.Primitives;
+using BH.SDK.Rules;
 
 namespace BH.SDK.Utils
 {
@@ -74,6 +76,17 @@ namespace BH.SDK.Utils
         // layer and all seven keyframe tracks - so the placement keeps its place in the hierarchy and
         // its children keep pointing at it. PrefabId, ObjectIds and Modifications simply have nowhere
         // to go, which is the whole operation.
+        //
+        // PlacementOffset HAS NOWHERE TO GO EITHER AND IS NOT DROPPED: it is the one of the four
+        // that says WHEN, so dropping it would move the picture. A placement reads its tracks from
+        // Span.StartFrame - PlacementOffset (PlacementTrimMath.InstanceSpan) and a plain RectObject
+        // reads its own from Span.StartFrame, so the keys are rebased by that difference here -
+        // baked, exactly as every materialized copy's span already was at materialize time.
+        // Its CHILDREN need nothing: their spans carry the subtraction already.
+        //
+        // A key rebased outside the span is DROPPED, which is the one lossy thing a flatten does to
+        // an offset placement, and it is the same call the cut makes (ObjectSplitMath.MapKeyframe).
+        // A placement with no offset - every placement until one is trimmed or cut - is untouched.
 
         /// <summary> The plain object a flattened placement becomes: same identity, same transform,
         /// no template. </summary>
@@ -83,7 +96,37 @@ namespace BH.SDK.Utils
 
             var flattened = new RectObject();
             flattened.Update(placement);
+
+            if (placement is PrefabObject withOffset && withOffset.PlacementOffset != 0)
+                RebaseTracks(flattened, withOffset.PlacementOffset);
+
             return flattened;
+        }
+
+        private static void RebaseTracks(RectObject obj, int offset)
+        {
+            var lastFrame = FrameRules.LastFrameOf(obj.Span.FrameDuration);
+
+            Rebase(obj.Positions, offset, lastFrame);
+            Rebase(obj.Rotations, offset, lastFrame);
+            Rebase(obj.Scales, offset, lastFrame);
+            Rebase(obj.Sizes, offset, lastFrame);
+            Rebase(obj.AnchorsMin, offset, lastFrame);
+            Rebase(obj.AnchorsMax, offset, lastFrame);
+            Rebase(obj.Pivots, offset, lastFrame);
+        }
+
+        // Downward, because removing an entry shifts every index after it.
+        private static void Rebase<T>(List<T> keys, int offset, int lastFrame) where T : Keyframe
+        {
+            if (keys == null) return;
+
+            for (var i = keys.Count - 1; i >= 0; i--)
+            {
+                var frame = keys[i].Frame - offset;
+                if (frame < FrameRules.MinFrame || frame > lastFrame) keys.RemoveAt(i);
+                else keys[i].Frame = frame;
+            }
         }
 
         /// <summary> Which templates are still referenced by a placement anywhere in the level -

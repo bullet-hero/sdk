@@ -9,7 +9,8 @@ namespace BH.SDK.Utils
 {
     // A placement's materialized copies are REBUILDABLE, and this is the pair of functions that
     // says so: pfid names the template, ids maps every template-inner id to the copy's permanent
-    // outer id, and mod carries the per-instance overrides. Nothing else is needed, so the copies
+    // outer id, mod carries the per-instance overrides, and off is the in-point the copies' spans
+    // are pulled back by (PrefabObject.PlacementOffset). Those four are all it takes, so the copies
     // stop reaching the file and are rebuilt on the way back in - measured at 62-82% of four corpus
     // levels' bytes, 13% of volcano's, and gzip does not absorb it (each copy carries its own id and
     // its own span offset, and deflate's window is 32 KB). Docs/Issues/PREFAB_VIRTUALIZATION_HISTORY.md
@@ -247,7 +248,7 @@ namespace BH.SDK.Utils
 
                 var outerObj = innerObj.Copy();
                 outerObj.ObjectId = outerId;
-                ApplyPlacementFrameOffset(outerObj, placement.Span);
+                ApplyPlacementFrameOffset(outerObj, placement);
                 hostScope.Objects[outerId] = outerObj;
                 written++;
             }
@@ -271,10 +272,12 @@ namespace BH.SDK.Utils
         // stored rather than recomputed. The two halves must agree, and this is the formula they
         // agree on; BH.Core.Services.PrefabMaterializer carries the same note.
 
-        /// <summary> Resolves a copy's template-local span into the host scope's own timeline. </summary>
-        private static void ApplyPlacementFrameOffset(RectObject outerObj, in FrameSpan placementSpan)
+        /// <summary> Resolves a copy's template-local span into the host scope's own timeline,
+        /// pulled back by the placement's own in-point. </summary>
+        private static void ApplyPlacementFrameOffset(RectObject outerObj, PrefabObject placement)
         {
-            outerObj.Span = outerObj.Span.WithStart(placementSpan.ToGlobalFrame(outerObj.Span.StartFrame));
+            outerObj.Span = outerObj.Span.WithStart(
+                placement.Span.ToGlobalFrame(outerObj.Span.StartFrame) - placement.PlacementOffset);
         }
 
         // An inner object whose ParentObjectId is unset (Null) OR explicitly ObjectId.PrefabRoot

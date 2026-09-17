@@ -51,11 +51,22 @@ none, both pinned by `RulePrefabRootFixed` along with the root's identity, `Acti
 (`SetTemplateLength`): the template owns `Name`, the seven positional tracks and the span's
 duration; the placement owns the span's **start**, its `Active` and its `Layer`.
 
-A placement therefore has **no length of its own** — `ApplyRoot` rewrites it from the root on every
-materialize and every load, `ModificationFields.Span` is not in `IsPrefabRootField` so no override
-can hold one, and `OpLevelObjectSpan` refuses that half of the edit outright. Changing a template's
-length moves every placement of it. `Docs/Issues/PREFAB_ROOT_HISTORY.md` is the record, including why
-a placement's own drag has to become a `Modification` now.
+A placement takes its length **from its template by default and keeps one of its own once it
+diverges**: `ApplyRoot` rewrites the duration from the root on every materialize and every load, and
+`ApplyModifications` runs after it, so a root-keyed `ModificationFields.PlacementDuration` override
+is what a trimmed placement holds. `OpLevelObjectSpan` records that override only when the written
+duration actually differs, so an ordinary MOVE records nothing and changing a template's length still
+moves every placement nobody has trimmed. `ModificationFields.Span` stays out of `IsPrefabRootField`:
+a whole-span override would restate the start and beat the next move.
+
+**`PlacementOffset` (`off`) is the fourth thing a placement carries**, and the only one that is a
+plain authored field rather than bookkeeping: how many frames into the template this placement starts
+playing. It moves everything the template contributes - every materialized copy's span (both
+`ApplyPlacementFrameOffset` twins subtract it) and the placement's own instance origin
+(`PlacementTrimMath.InstanceSpan`) - so `Span.StartFrame - PlacementOffset` is the number every frame
+a placement contributes is measured from. That is what lets the timeline's Edges and Scissors tools
+trim and cut a placement with the level playing identically afterwards, and it is bounded by
+`Span.StartFrame - MinFrame`. `Docs/Issues/PREFAB_ROOT_HISTORY.md` is the record for all of it.
 
 **Per-instance overrides (`PrefabObject.Modifications`) are live and load-bearing** — this is how a
 placement diverges from its template without breaking the link. Three pieces:
