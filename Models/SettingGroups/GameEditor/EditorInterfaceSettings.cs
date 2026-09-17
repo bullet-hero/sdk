@@ -1,5 +1,6 @@
 ﻿using System;
 using BH.SDK.Models.Attributes;
+using BH.SDK.Models.Enums;
 using BH.SDK.Models.Enums.Settings;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Rules.Attributes;
@@ -104,6 +105,23 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
         [JsonProperty(Names.LogRules)]
         public bool LogRuleFindings { get; set; }
 
+        // THE MASK IS WHAT "PARTIAL" MEANS, and there is ONE of it rather than four: the fold
+        // button on each surface cycles Expanded -> Partial -> Collapsed, and the middle rung is the
+        // only one an author configures. A bit PRESENT means that kind of object is shown UNFOLDED,
+        // the inverse of a filter mask - ObjectTypeMask's own header says the same thing, because it
+        // is the one fact about this field that gets read backwards.
+        //
+        // Everything-but-prefabs by default, since that is the mode's reason for existing: a
+        // placement's materialized children are the one subtree an author almost never wants listed
+        // row by row. None and All are both legal - the cycle keeps all three steps even when the
+        // middle one lands on the same rows as a neighbour.
+
+        /// <summary> Which object kinds stay unfolded in the frame hierarchy and the object timelines
+        /// while a surface is in its partial expansion mode. </summary>
+        [RuleEnumFlagsValid]
+        [JsonProperty(Names.ExpansionMask)]
+        public ObjectTypeMask ExpansionMask { get; set; }
+
         /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public EditorInterfaceSettings()
         {
@@ -113,7 +131,8 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
         /// <summary> Every member at once, in declaration order. </summary>
         public EditorInterfaceSettings(float dirtyFieldDelay, AngleDisplayUnit rotationDisplayUnit,
             bool logValueClamps, bool renderInframes, bool linkColliderToShape,
-            bool selectionAutoOpenActive, bool syncTimelineExpansion, bool logRuleFindings)
+            bool selectionAutoOpenActive, bool syncTimelineExpansion, bool logRuleFindings,
+            ObjectTypeMask expansionMask)
         {
             DirtyFieldDelay = dirtyFieldDelay;
             RotationDisplayUnit = rotationDisplayUnit;
@@ -123,6 +142,7 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
             SelectionAutoOpenActive = selectionAutoOpenActive;
             SyncTimelineExpansion = syncTimelineExpansion;
             LogRuleFindings = logRuleFindings;
+            ExpansionMask = expansionMask;
         }
 
         private void ResetOwn()
@@ -135,6 +155,7 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
             SelectionAutoOpenActive = false;
             SyncTimelineExpansion = false;
             LogRuleFindings = false;
+            ExpansionMask = ObjectTypeMask.All & ~ObjectTypeMask.PrefabObject;
         }
     }
 }

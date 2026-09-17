@@ -67,9 +67,11 @@ namespace BH.SDK.Tests.Generators
             var track = level.Audio.Tracks.Values.Single();
             Assert.AreEqual(resource.AudioResourceId, track.AudioResourceId);
             Assert.AreEqual(FrameRules.MinFrame, track.Span.StartFrame);
-            Assert.AreEqual(FrameRules.EndBoundaryOf(level.Settings.FrameDuration), track.Span.EndFrame,
-                "the track covers the whole timeline, so its exclusive end is the boundary past the "
-                + "timeline's last frame");
+            Assert.AreEqual(600, track.Span.FrameDuration, "the track is the SONG, 10 seconds at 60 fps");
+            Assert.AreEqual(FrameRules.EndBoundaryOf(600), track.Span.EndFrame,
+                "a span is a count from its start, so an exclusive end is the boundary past its last frame");
+            Assert.Less(track.Span.EndFrame, FrameRules.EndBoundaryOf(level.Settings.FrameDuration),
+                "the tail is silence to author an ending in - the track must not run into it");
 
             Assert.AreEqual("theme song", ((StringValue)meta.LevelName).Value,
                 "an untitled level is named after its song");

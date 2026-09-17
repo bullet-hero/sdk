@@ -80,13 +80,17 @@ namespace BH.SDK.Generators.Audio
                 new(parameters.UriType, parameters.AudioPath ?? string.Empty),
             });
 
-            // The track covers the whole timeline: a span of FrameDuration frames starting on the
-            // level's first frame, so it ends exactly on the level's end boundary and its last
-            // sounding frame is FrameDuration itself. This used to be the easiest off-by-one in the
-            // format to write by accident, back when the end was a separate inclusive field.
+            // THE TRACK IS THE SONG, THE LEVEL IS THE SONG PLUS THE TAIL. Both start on the level's
+            // first frame, and the track stops where the music does, so the tail is what it says it
+            // is - room to author an ending in, with nothing sounding through it. The track used to
+            // take the level's whole FrameDuration, which ran it into that silence.
+            // A span is a COUNT of frames from its start, so a track of SongDuration frames ends on
+            // frame SongDuration and the level's own last frame is FrameDuration - this used to be
+            // the easiest off-by-one in the format to write by accident, back when the end was a
+            // separate inclusive field.
             var audioId = level.Settings.GetNextAudioId();
             level.Audio.Tracks[audioId] = new LevelTrack(audioId, resourceId,
-                new FrameSpan(FrameRules.MinFrame, level.Settings.FrameDuration), parameters.OffsetSeconds,
+                new FrameSpan(FrameRules.MinFrame, SongDuration(parameters, framerate)), parameters.OffsetSeconds,
                 AudioRules.SpeedDefault, AudioRules.VolumeDefault, AudioRules.MinAudioLayer,
                 TrackName(parameters), new LevelTrackEffects());
 
@@ -106,10 +110,24 @@ namespace BH.SDK.Generators.Audio
         /// an ending after the music stops instead of cutting the level off on the last beat. </summary>
         private static int FrameDuration(Parameters parameters, int framerate)
         {
-            var seconds = parameters.DurationSeconds > 0f ? parameters.DurationSeconds : DefaultSeconds;
             var tail = parameters.TailSeconds > 0f ? parameters.TailSeconds : 0f;
-            var frames = (int)Math.Ceiling((seconds + tail) * framerate);
+            return ClampDuration((int)Math.Ceiling((Seconds(parameters) + tail) * framerate));
+        }
 
+        /// <summary> The song alone, in frames - what the TRACK lasts, with no tail on it. </summary>
+        private static int SongDuration(Parameters parameters, int framerate)
+            => ClampDuration((int)Math.Ceiling(Seconds(parameters) * framerate));
+
+        // DurationSeconds is what the HOST measured off the file's own header and zero when it could
+        // not - an .mp3 costs a frame-by-frame walk to measure exactly, so it is deliberately not
+        // read and lands here as zero. The fallback is a length to start authoring in, not a guess
+        // at the song: the author sets the real one in Level Settings, or uses the audio track's own
+        // fit buttons.
+        private static float Seconds(Parameters parameters)
+            => parameters.DurationSeconds > 0f ? parameters.DurationSeconds : DefaultSeconds;
+
+        private static int ClampDuration(int frames)
+        {
             if (frames < FrameRules.MinFrameDuration) frames = FrameRules.MinFrameDuration;
             if (frames > FrameRules.MaxFrameDuration) frames = FrameRules.MaxFrameDuration;
             return frames;

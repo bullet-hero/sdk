@@ -54,6 +54,16 @@ before the field reads back as the field's default, so the default is also what 
 addition needs a migrator. Opacity is the only part of its colour anyone authors; the hue is derived from the
 camera background live, which is why there is no grid colour here.
 
+`GameEditorSettings.Interface.ExpansionMask` is the same shape, one layer up from a bool:
+`ObjectTypeMask`, a bit per `ObjectType`, and a bit PRESENT means that kind of object is shown
+UNFOLDED - the inverse of how a filter mask reads, which is the one thing about it that gets read
+backwards. It is what the MIDDLE rung of the fold button means in the frame hierarchy and the object
+timelines (`Services.GameEditor`'s `ExpansionMode`), one mask for both surfaces and both scopes,
+because the rung is one rung. Which rung a surface is currently ON is view state and stays in the
+session, exactly as the grid's ActiveDefault/current split does. Defaults to everything-but-prefabs,
+since a placement's materialized children are the one subtree an author almost never wants listed
+row by row.
+
 `AvatarGraphicsSettings` is the smallest group here and carries no member of its own: the inherited
 `Render` IS the setting, and what it switches is whether the player avatar's body comes apart cell by
 cell as health falls (the consumer's `ShatterGridMath` - 25 squares for the body and 25 for its
