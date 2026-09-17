@@ -691,7 +691,7 @@
         /// <summary> Word fragment, built into FillDirection. </summary>
         public const string Fill = "fill";
 
-        /// <summary> Word kept in the key vocabulary; nothing is built from it today. </summary>
+        /// <summary> Word fragment, built into ExpansionMask. </summary>
         public const string Mask = "mask";
 
         /// <summary> FillmentKey.Direction. </summary>
@@ -1963,6 +1963,9 @@
 
         /// <summary> <c>"sync_timeline_expansion"</c> - EditorInterfaceSettings.SyncTimelineExpansion. </summary>
         public const string SyncTimelineExpansion = Sync + _ + Timeline + _ + Expansion;
+
+        /// <summary> <c>"expansion_mask"</c> - EditorInterfaceSettings.ExpansionMask. </summary>
+        public const string ExpansionMask = Expansion + _ + Mask;
 
         /// <summary> <c>"game_editor"</c> - UserSettings.GameEditor. </summary>
         public const string GameEditor = Game + _ + Editor;
