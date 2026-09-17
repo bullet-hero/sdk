@@ -33,6 +33,7 @@ namespace BH.SDK.Roslyn.Modification
         internal const string FieldAttribute = "BH.SDK.Models.Attributes.ModificationFieldAttribute";
 
         private const string JsonAttribute = "Newtonsoft.Json.JsonPropertyAttribute";
+        private const string IgnoreAttribute = "BH.SDK.Models.Attributes.GenerateModelIgnoreAttribute";
         private const string ListType = "System.Collections.Generic.List<T>";
 
         // The one type the table applies onto, and it is a design limit of the override system
@@ -104,15 +105,30 @@ namespace BH.SDK.Roslyn.Modification
         // What a member has to have to carry an override, stated as the reason it does not. Note
         // this is NOT a second encodability check: the model generator already refuses a member it
         // cannot encode (BHS1003), and every type carrying these attributes is one it owns.
+        //
+        // A [GenerateModelIgnore] MEMBER IS ADDRESSABLE TOO, and the reason the [JsonProperty] test
+        // alone was never the right question: what an override has to be able to save is the
+        // MODIFICATION, not the member. A derived property - one whose getter and setter are a view
+        // onto a member that IS saved - therefore qualifies, and the ignore attribute is exactly the
+        // marker saying it is derived: it keeps the member out of every generated body, so nothing
+        // stores the value twice and neither JSON writer emits it. PrefabObject.PlacementDuration is
+        // the first of them, a view onto Span's duration half.
+        //
+        // The setter check does NOT relax. A member nothing can write is unaddressable whatever it
+        // is derived from.
         private static string Unaddressable(IPropertySymbol property)
         {
-            var serialized = property.GetAttributes().Any(attribute =>
+            var attributes = property.GetAttributes();
+            var serialized = attributes.Any(attribute =>
                 attribute.AttributeClass?.ToDisplayString() == JsonAttribute);
+            var derived = attributes.Any(attribute =>
+                attribute.AttributeClass?.ToDisplayString() == IgnoreAttribute);
 
-            if (!serialized && property.SetMethod is null)
+            if (!serialized && !derived && property.SetMethod is null)
                 return "declares no [JsonProperty] and has no setter";
-            if (!serialized)
-                return "declares no [JsonProperty], so an override of it could never be saved";
+            if (!serialized && !derived)
+                return "declares neither [JsonProperty] nor [GenerateModelIgnore], so nothing it "
+                       + "writes to could ever be saved";
 
             return property.SetMethod is null ? "has no setter, so nothing could write the override" : null;
         }

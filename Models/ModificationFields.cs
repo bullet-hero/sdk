@@ -16,10 +16,11 @@
     //
     // The bands, written down because a new declaring type must take the next FREE one rather than
     // the one that reads as its neighbour: 0x01 RectObject, 0x02 ShapeObject, 0x03 TextObject,
-    // 0x04 EffectObject, 0x05 PrefabObject. The last of those is reserved and empty - a placement's
-    // own PrefabId, ObjectIds and Modifications are what an override is expressed IN, so none of
-    // them is a thing an override may address. ObjectId is absent from band 0x01 for the same kind
-    // of reason: it is the identity the address is built from.
+    // 0x04 EffectObject, 0x05 PrefabObject. A placement's own PrefabId, ObjectIds and Modifications
+    // are what an override is expressed IN, so none of them is a thing an override may address -
+    // which is why that band held nothing until PlacementOffset, an ordinary authored field, opened
+    // it. ObjectId is absent from band 0x01 for the same kind of reason as the first three: it is
+    // the identity the address is built from.
     //
     // The generator is what makes a hand-written number safe. BHS1201 refuses two members claiming
     // one number, BHS1202 a member it cannot encode or that carries no [JsonProperty], and BHS1203
@@ -85,19 +86,35 @@
 
         public const int EffectId = 0x0401;
 
-        // PrefabObject - band 0x05, reserved and deliberately empty; see the band map above.
+        // PrefabObject - band 0x05. PrefabId, ObjectIds and Modifications are still absent from it
+        // and always will be: they are what an override is expressed IN. PlacementOffset is not -
+        // it is an ordinary authored field that a NESTED placement (one materialized as a child of
+        // an outer placement) has to be able to diverge in, like any other inner object's field.
+
+        public const int PlacementOffset = 0x0501;
+
+        // PlacementDuration is not a stored member and is the only field here that is not: it is a
+        // view onto Span's duration half (PrefabObject.PlacementDuration), which exists BECAUSE the
+        // template owns that number and ApplyRoot rewrites it. Overriding Span whole would restate
+        // the start as well and beat every ordinary move, which is why Span stays excluded below
+        // and this narrower field exists instead.
+        public const int PlacementDuration = 0x0502;
 
         // THE ROOT IS ADDRESSABLE, BUT NOT FOR EVERYTHING, and this is the list. A Modification
         // keyed to ObjectId.PrefabRoot lands on the PLACEMENT itself (PrefabRootUtils), so it may
         // only address what the template owns and the placement therefore has no other say in:
-        // Name and the seven positional tracks.
+        // Name, the seven positional tracks, and the span's DURATION through PlacementDuration.
         //
-        // Span, Active, Layer and ParentObjectId are excluded because they are the PLACEMENT's own
-        // authored fields - nothing copies them off the root, the author edits them directly, and an
+        // Span, Active, Layer, ParentObjectId and PlacementOffset are excluded because they are the
+        // PLACEMENT's own authored fields - nothing copies them off the root, the author edits them directly, and an
         // override on one of them would be a second way to say the same thing that additionally
         // overwrote the first, since ApplyModifications runs after everything else. The remaining
         // bands are excluded by construction: a placement is a PrefabObject and has no shape,
         // text or effect member to override.
+        //
+        // A NESTED placement is the case that makes the exclusions read oddly and is still right: an
+        // outer placement overrides its inner placement's Span or PlacementOffset by that inner
+        // object's OWN id, which is case 1 in ModificationRecorder and never consults this list.
 
         /// <summary> Whether a <see cref="Primitives.ModificationKey"/> addressed at
         /// <see cref="Primitives.ObjectId.PrefabRoot"/> may name this field. </summary>
@@ -111,6 +128,7 @@
             AnchorsMin => true,
             AnchorsMax => true,
             Pivots => true,
+            PlacementDuration => true,
             _ => false,
         };
     }

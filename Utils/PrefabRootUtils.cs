@@ -18,16 +18,20 @@ namespace BH.SDK.Utils
     // resync, so editing the root in Prefab Mode moves and re-lengthens every placement of that
     // template.
     //
-    // THE DURATION IS OWNED WHOLE, WITH NO OVERRIDE, and that is the one entry here that is not
-    // expressible as a Modification: ModificationFields.Span is not in IsPrefabRootField, so no
-    // placement can keep a length of its own, and OpLevelObjectSpan refuses a placement outright
-    // rather than writing one that the next load would silently undo. A template has exactly one
-    // timeline (Prefab.Root.Span) and a placement is that root materialized, length included.
+    // THE DURATION IS THE TEMPLATE'S BY DEFAULT AND OVERRIDABLE ON TOP, which is why ApplyRoot
+    // still writes it unconditionally below: ApplyModifications runs AFTER this in both consumers,
+    // so a placement that has diverged (ModificationFields.PlacementDuration, root-keyed) gets its
+    // own length back a step later, and one that has not follows its template. A template has
+    // exactly one timeline (Prefab.Root.Span) and a placement is that root materialized; what the
+    // author trims is a divergence from it, recorded by OpLevelObjectSpan only when the written
+    // duration actually differs. ModificationFields.Span stays out of IsPrefabRootField - a
+    // whole-span override would restate the start and beat the next ordinary move.
     //
-    // WHAT THE PLACEMENT OWNS: the span's START, its Active and its Layer. Where a placement plays
-    // is the author's answer per placement (and is what ApplyPlacementFrameOffset reads as the
-    // origin for everything inside it), and so are Active and Layer - the template's own are pinned
-    // by RulePrefabRootFixed precisely because nothing copies them.
+    // WHAT THE PLACEMENT OWNS: the span's START, its Active, its Layer and its PlacementOffset -
+    // how far into the template it starts playing. Where a placement plays is the author's answer
+    // per placement (the start and the in-point together are what ApplyPlacementFrameOffset reads
+    // as the origin for everything inside it), and so are Active and Layer - the template's own are
+    // pinned by RulePrefabRootFixed precisely because nothing copies them.
     //
     // Every positional track going to the TEMPLATE is a deliberate departure from Unity, which
     // treats an instance's root transform as per-instance and does not even record it as an

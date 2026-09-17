@@ -453,7 +453,7 @@
         /// <summary> Word kept in the key vocabulary; nothing is built from it today. </summary>
         public const string Gravity = "gravity";
 
-        /// <summary> BeatSegment.Offset, UVKey.Offset. </summary>
+        /// <summary> BeatSegment.Offset, UVKey.Offset, PrefabObject.PlacementOffset. </summary>
         public const string Offset = "off";
 
         /// <summary> LensDistortionKey.Center, VelocityPoint.Center, VignetteKey.Center. </summary>
