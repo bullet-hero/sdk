@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Enums.Settings;
 using BH.SDK.Models.Interfaces;
@@ -89,6 +89,21 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
         [JsonProperty(Names.SyncTimelineExpansion)]
         public bool SyncTimelineExpansion { get; set; }
 
+        // OFF BY DEFAULT, and it is the one reporting switch here whose default is silence. A save
+        // validates what it wrote and the finding count reaches the author as ONE line - and that
+        // line is three things at once: a row in the editor console, a notification over the screen
+        // (NotificationView) and a sound (UiSoundRouter), all of them driven by the same UserLogger
+        // entry. So there is nothing finer to switch off: either the line is written or it is not.
+        //
+        // Silence is the right default because the findings are advisory by design - the Rules tab
+        // reports and never repairs, and a level that will not validate still opens, plays and
+        // ships. A count on every single save, on a level the author already knows about, is the
+        // shape of warning people learn to dismiss without reading.
+
+        /// <summary> Whether an explicit save reports how many level rules the saved level breaks. </summary>
+        [JsonProperty(Names.LogRules)]
+        public bool LogRuleFindings { get; set; }
+
         /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public EditorInterfaceSettings()
         {
@@ -98,7 +113,7 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
         /// <summary> Every member at once, in declaration order. </summary>
         public EditorInterfaceSettings(float dirtyFieldDelay, AngleDisplayUnit rotationDisplayUnit,
             bool logValueClamps, bool renderInframes, bool linkColliderToShape,
-            bool selectionAutoOpenActive, bool syncTimelineExpansion)
+            bool selectionAutoOpenActive, bool syncTimelineExpansion, bool logRuleFindings)
         {
             DirtyFieldDelay = dirtyFieldDelay;
             RotationDisplayUnit = rotationDisplayUnit;
@@ -107,6 +122,7 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
             LinkColliderToShape = linkColliderToShape;
             SelectionAutoOpenActive = selectionAutoOpenActive;
             SyncTimelineExpansion = syncTimelineExpansion;
+            LogRuleFindings = logRuleFindings;
         }
 
         private void ResetOwn()
@@ -118,6 +134,7 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
             LinkColliderToShape = false;
             SelectionAutoOpenActive = false;
             SyncTimelineExpansion = false;
+            LogRuleFindings = false;
         }
     }
 }

@@ -53,6 +53,37 @@ namespace BH.SDK.Rules
         /// <summary> How long a dash lasts, in seconds. </summary>
         public const float DashTime = 0.15f;
 
+        // THE SHORTEST DASH THERE IS, AS A FRACTION OF A FULL ONE - and below it there is no dash at
+        // all rather than a shorter one. A dash aimed at a point nearer than its full reach is the
+        // same dash scaled down (AvatarMovement.DashFraction), which is what lets a cursor stop
+        // exactly where it is pointing; without a floor that scaling runs to zero, and a pointer
+        // resting a hair from the avatar would launch a dash EVERY FRAME - each one a trail, a sound
+        // and a statistic, with i-frames and a cooldown too short for any frame to sample.
+        //
+        // ONE WORLD UNIT, WRITTEN AS THE FRACTION THAT PRODUCES IT - which is what the expression
+        // says: the reach is DashSpeed * DashTime, so its reciprocal is the fraction one unit of it
+        // occupies. Spelling the DISTANCE and deriving the fraction is the right way round, because a
+        // unit is what the author actually chose: two avatar bodies, the smallest gap worth crossing
+        // deliberately rather than by walking.
+        //
+        // IT IS STILL STORED AS A FRACTION because the reach it is measured against is not fixed: the
+        // level's own Player Size and Speed tracks scale every speed the avatar has, so a distance
+        // stated in world units would mean a different share of a dash on every frame of a level that
+        // animates them, while a fraction of the reach means the same thing always. On a level that
+        // halves the player's speed this floor is half a unit, and that is correct - the dash it is
+        // a floor UNDER is half as long too.
+        //
+        // WHAT IT COSTS, STATED BECAUSE IT IS THE ONLY REASON A FLOOR EXISTS AT ALL. The shortest
+        // dash runs 0.02 s and its two windows 0.04 s, so a pointer resting just past the floor can
+        // ask for about 25 dashes a second in the abstract - in practice the frame rate is the real
+        // limiter, since every dash also waits for one observed touchable frame (about 14 a second at
+        // 60 fps). It was 1/3 of the reach first, which held the cooldown at 0.1 s and the rate at
+        // ten; a unit trades that headroom for the ability to dash a gap two bodies wide.
+
+        /// <summary> The shortest dash, as a fraction of a full one - one world unit of reach. A
+        /// target nearer than this is not dashed to at all. </summary>
+        public const float MinDashFraction = 1f / (DashSpeed * DashTime);
+
         // MEASURED FROM THE LAUNCH, NOT FROM THE LANDING, and it is EXACTLY DashInvulnerabilityTime
         // - which is a deliberate change of kind, not a number that happens to match. The
         // vulnerability window used to be a DURATION (0.30 against 0.20, a tenth of a second no
@@ -105,19 +136,19 @@ namespace BH.SDK.Rules
         /// <summary> How long a dash keeps the avatar untouchable, in seconds. 0 means never. </summary>
         public const float DashInvulnerabilityTime = 0.3f;
 
-        // THREE TIMES THE WALKING SPEED, AND IT IS A HALVING OF WHAT IT WAS. At five times the walk
-        // the shove threw the avatar 10 world units off a hit - a full screen height, which on a
-        // dense level landed the player in the next hazard rather than clear of the first. At 30 the
-        // travel is 6 units over DamageTime: still unmistakably something that happened TO the
-        // player (a slow shove reads as the avatar wandering off), while leaving them somewhere they
-        // can recognise. The code default of 2 that this line once carried was never what shipped.
+        // FIVE TIMES THE WALKING SPEED, and the shove is short rather than gentle: a knockback has to
+        // read as something that happened TO the player, and a slow one reads as the avatar wandering
+        // off under its own power. Over DamageTime the travel is 10 world units - a full screen
+        // height, which is the point rather than the cost: a hit RELOCATES the player. It was tried at
+        // 30 (6 units) to see whether landing nearer to where you were hit read better, and it read as
+        // a nudge. The code default of 2 that this line once carried was never what shipped.
         //
         // IT IS NOT THE FEEL OF A HIT ON ITS OWN. DamageTime is what sells the hit - control is gone
         // for that whole window whatever distance the body covers - and DamageTimeout is what keeps
         // the next one off. This number only decides where the avatar lands.
 
         /// <summary> Speed of the shove a hit gives, in world units per second. </summary>
-        public const float KnockoutSpeed = 30f;
+        public const float KnockoutSpeed = 50f;
 
         /// <summary> How long that shove lasts, with the avatar answering no input, in seconds. </summary>
         public const float DamageTime = 0.2f;
