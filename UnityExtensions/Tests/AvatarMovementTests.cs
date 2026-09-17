@@ -36,13 +36,13 @@ namespace BH.SDK.UnityExtensions.Tests
             => AvatarMovement.At(position);
 
         private static AvatarMovement Dashing(float2 dashDirection, float2 position = default)
-            => AvatarMovement.At(position).StartDash(Now, dashDirection);
+            => AvatarMovement.At(position).StartDash(Now, 1f);
 
         private static AvatarMovement Knocked(float2 knockoutDirection, bool inDash = false,
             float2 position = default)
         {
             var movement = AvatarMovement.At(position);
-            if (inDash) movement = movement.StartDash(Now, float2.zero);
+            if (inDash) movement = movement.StartDash(Now, 1f);
             return movement.Damage(Now, knockoutDirection);
         }
 
@@ -51,7 +51,7 @@ namespace BH.SDK.UnityExtensions.Tests
         private static AvatarStepResult Step(AvatarMovement movement, bool hasTarget, float2 target,
             float2 direction, in AvatarStepSpeeds speeds, float deltaTime, float idleAngle = 0f)
         {
-            movement.Step(hasTarget, target, direction, idleAngle, speeds, Now, deltaTime,
+            movement.Step(hasTarget, target, direction, speeds, Now, deltaTime,
                 out var result);
             return result;
         }
@@ -249,20 +249,25 @@ namespace BH.SDK.UnityExtensions.Tests
             Assert.AreEqual(target.y, result.Position.y);
         }
 
-        // NEITHER OF THE TWO UNCONTROLLED BRANCHES MAY BE THROTTLED. Both cover a distance the
-        // balance is built on rather than closing on a point, and clamping either to what is left in
-        // front of it is the bug the dash's own header describes: a dash with the target nearby would
-        // do nothing at all.
+        // THE KNOCKBACK IS THE ONLY UNTHROTTLED BRANCH LEFT. It covers a distance of its own rather
+        // than closing on a point, so what is left in front of it means nothing to it. The dash used
+        // to be the second such branch and is not any more: it is sized to its target before it
+        // starts, so being clamped to the distance left is what it is FOR - see the dash region.
+        //
+        // A TARGET INSIDE THE ARRIVAL RADIUS IS A TARGET THE AVATAR IS STANDING ON, dash or no dash,
+        // and standing on it means no direction and therefore no speed. That is the same answer the
+        // walk gives, which is the point: the dash stopped being a special case.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.Easy)]
-        public void Step_DashTowardsANearTarget_KeepsFullDashSpeed()
+        public void Step_DashingOntoTheTarget_ReportsNoSpeed()
         {
             var result = Step(Dashing(new float2(1f, 0f)), true, new float2(0.01f, 0f),
                 float2.zero, Speeds(), 0.1f);
 
-            Assert.AreEqual(DashSpeed, result.TargetSpeed, Tolerance);
+            Assert.AreEqual(0f, result.TargetSpeed, Tolerance);
+            Assert.IsFalse(result.Moving);
         }
 
         [Test]
@@ -281,53 +286,41 @@ namespace BH.SDK.UnityExtensions.Tests
 
         #region Dash
 
-        // A dash covers dashSpeed * dashTime by design. Clamping it to the distance left would make a
-        // dash with the target nearby do nothing at all, which destroys the fixed dash distance the
-        // whole dashSpeed/dashTime balance is built on.
+        // A DASH STOPS ON ITS TARGET, AND THIS ASSERTION IS THE REVERSE OF THE ONE IT REPLACES. It
+        // used to overshoot on purpose: a dash covered DashSpeed * DashTime whatever was in front of
+        // it, because clamping a FULL dash to a near target would have made it cover nothing. What
+        // changed is that a dash aimed at a near point is no longer a full dash - the caller sizes
+        // the window to the distance first (AvatarMovement.ResolveDashFraction), so the clamp and the
+        // window agree instead of fighting. The clamp is what makes an overshoot impossible even when
+        // they cannot agree, which is a level moving its Speed track mid-dash.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.Normal)]
-        public void Step_DashingPastANearTarget_OvershootsInsteadOfSnapping()
+        public void Step_DashingPastANearTarget_StopsOnItInsteadOfOvershooting()
         {
             var target = new float2(0.25f, 0f);
             var result = Step(Dashing(new float2(1f, 0f)), true, target, float2.zero,
                 Speeds(), 0.1f);
 
-            Assert.AreEqual(DashSpeed * 0.1f, result.Position.x, Tolerance);
-            Assert.Greater(result.Position.x, target.x);
+            Assert.AreEqual(target.x, result.Position.x, Tolerance);
         }
 
-        // A dash keeps the direction it was LAUNCHED with rather than re-aiming at the target every
-        // frame: a re-aimed dash reverses the moment it overshoots and covers nothing.
+        // A DASH FOLLOWS THE TARGET, and this assertion reversed with the one above for the same
+        // reason. The launch direction used to be kept for the length of the dash because a re-aimed
+        // dash oscillated around a point it had overshot - and a dash that cannot overshoot cannot
+        // oscillate. Steering during a dash is what a direction player always had; this is the line
+        // that gives it to a cursor player.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.Normal)]
-        public void Step_DashingAwayFromTheTarget_KeepsTheLaunchDirection()
+        public void Step_DashingAwayFromTheTarget_TurnsTowardsIt()
         {
             var result = Step(Dashing(new float2(-1f, 0f)), true, new float2(10f, 0f),
                 float2.zero, Speeds(), 0.1f);
 
-            Assert.Less(result.Position.x, 0f);
-        }
-
-        // Launched from a standstill there is no direction to keep, so it goes where the avatar faces.
-        [Test]
-        [Author(Metadata.Author.Vertoker)]
-        [Category(Metadata.Category.Self)]
-        [Category(Metadata.Category.Normal)]
-        public void Step_DashingWithNoLaunchDirection_UsesTheIdleAngle()
-        {
-            // A dash launched from a standstill has no direction of its own, so it flies along the
-            // heading the avatar was already facing - that is what idleAngle is.
-            var state = AvatarMovement.At(float2.zero).StartDash(Now, float2.zero);
-
-            var result = Step(state, false, float2.zero, float2.zero, Speeds(), 0.1f,
-                idleAngle: Math2D.HalfPI);
-
-            Assert.AreEqual(0f, result.Position.x, Tolerance);
-            Assert.AreEqual(DashSpeed * 0.1f, result.Position.y, Tolerance);
+            Assert.Greater(result.Position.x, 0f);
         }
 
         #endregion

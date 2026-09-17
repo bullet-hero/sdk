@@ -1622,8 +1622,11 @@
         /// <summary> Word fragment, built into LogClamps. </summary>
         public const string Clamps = "clamps";
 
-        /// <summary> Word fragment, built into LogClamps. </summary>
+        /// <summary> Word fragment, built into LogClamps, LogRules. </summary>
         public const string Log = "log";
+
+        /// <summary> Word fragment, built into LogRules. </summary>
+        public const string Rules = "rules";
 
         /// <summary> Word fragment, built into RotationUnit. </summary>
         public const string Unit = "unit";
@@ -1945,6 +1948,9 @@
 
         /// <summary> <c>"log_value_clamps"</c> - EditorInterfaceSettings.LogValueClamps. </summary>
         public const string LogClamps = Log + _ + ValueWord + _ + Clamps;
+
+        /// <summary> <c>"log_rules"</c> - EditorInterfaceSettings.LogRuleFindings. </summary>
+        public const string LogRules = Log + _ + Rules;
 
         /// <summary> <c>"render_inframes"</c> - EditorInterfaceSettings.RenderInframes. </summary>
         public const string RenderInframes = Render + _ + Inframes;

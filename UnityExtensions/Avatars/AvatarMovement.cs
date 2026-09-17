@@ -35,30 +35,45 @@ namespace BH.SDK.Avatars
         /// <summary> Where the avatar stands. </summary>
         public readonly float2 Position;
 
-        /// <summary> The direction the current dash was launched with; unit, or zero. </summary>
-        public readonly float2 DashDirection;
-
         /// <summary> Which way the last hit shoved the avatar; unit, or zero. </summary>
         public readonly float2 KnockoutDirection;
 
-        /// <summary> Whether that dash was launched with a direction rather than from a standstill. </summary>
-        public readonly bool DashHadMove;
+        // A DASH IS ONE SHAPE SCALED BY ONE NUMBER, AND THAT NUMBER IS THIS. A dash aimed at a point
+        // nearer than its full reach does not overshoot and brake - it is simply a SHORTER DASH, and
+        // shorter in every respect at once: the travel, the i-frames and the cooldown are all the
+        // shipped constant times this fraction. That is what keeps a cursor player and a direction
+        // player on the same terms. Two half-dashes cover the distance of one full dash and cost the
+        // same total time, so neither input is faster down a straight line; what the short dash buys
+        // is the ability to stop exactly on a point, and what it costs is one extra touchable frame
+        // per dash, because every launch has one (see DashCooldown's note in AvatarRules).
+        //
+        // IT IS NEVER BELOW AvatarRules.MinDashFraction AND NEVER ABOVE 1. The floor is one world
+        // unit of reach, and what it stops is a cursor resting a hair from the avatar launching a
+        // dash every single frame: at the floor a dash still runs 0.02 s and its windows 0.04 s, and
+        // it still waits for one observed touchable frame, so the real limiter at the bottom of the
+        // range is the frame rate rather than the clock. The ceiling is the dash itself: a point
+        // beyond the reach gets an ordinary full dash and the avatar stops short of it.
+        //
+        // A DASH THAT WAS NEVER TAKEN LEAVES THIS AT 1, so every window reads exactly the constant it
+        // is named after until the first dash of the run, and the "no dash yet" state needs no case
+        // of its own anywhere.
+
+        /// <summary> How much of a full dash the current one is, in
+        /// [<see cref="AvatarRules.MinDashFraction"/>, 1]. Scales its travel, its i-frames and its
+        /// cooldown together. </summary>
+        public readonly float DashFraction;
 
         // A WINDOW THAT EXISTS IN SECONDS IS WORTH NOTHING IF NO FRAME SAMPLES IT, and this flag is
-        // the whole of the fix. DashCooldown outlasts DashInvulnerabilityTime by 0.15 s precisely so
-        // that a player spending every dash is still exposed between them - but the collision pass is
-        // a per-frame POINT SAMPLE (the consumer zeroes the avatar radius while the i-frames are up,
-        // so an invulnerable frame skips the narrowphase entirely rather than discarding its result).
-        // On a device slow enough that one frame is longer than the gap, every sample lands inside a
-        // dash i-frame window and the exposure never happens at all. At the shipped numbers that was
-        // true below ~7 fps; before the cooldown moved to 0.35 it was true below TWENTY, which is
-        // inside what a phone does under a heavy level, and dash spam there was genuine immunity.
+        // the whole of the fix. The dash's i-frames and its cooldown are now the SAME duration
+        // (AvatarRules.DashInvulnerabilityTime equals DashCooldown, and DashFraction scales both), so
+        // there is no gap in seconds at all - the only window in which a player spending every dash
+        // can be hit is the one frame between a dash's i-frames lapsing and the next dash launching.
         //
-        // So the gap is a COUNTED SAMPLE rather than an elapsed duration: a dash is refused until the
-        // avatar has actually been observed while touchable at least once since the last one. Below
-        // the frame rate where the timed gap fits between two frames the dash simply comes back
-        // slower, which costs the player rather than paying them - the only direction this may fail
-        // in. Above it the flag is already true long before the cooldown expires and nothing changes.
+        // That frame exists because of the ORDER the consumer runs in, not because of the clock: the
+        // dash is launched before the step, Observe is called after it, and the collider is sized
+        // afterwards off the same window at the same instant. So the frame the i-frames lapse is
+        // refused a dash (this flag is still false), counted as exposure here, and sampled REAL by the
+        // narrowphase - and the dash goes on the next frame. It holds at 10 fps and at 300 alike.
         //
         // EVERY CONSUMER MUST CALL Observe ONCE PER SIMULATED FRAME, and the failure mode if one
         // forgets is fail-CLOSED: that avatar dashes once and never again. AvatarController does it
@@ -73,13 +88,12 @@ namespace BH.SDK.Avatars
         private readonly TimePoint _dashStarted;
         private readonly TimePoint _damagedAt;
 
-        private AvatarMovement(float2 position, TimePoint dashStarted, float2 dashDirection,
-            bool dashHadMove, TimePoint damagedAt, float2 knockoutDirection, bool exposedSinceDash)
+        private AvatarMovement(float2 position, TimePoint dashStarted, float dashFraction,
+            TimePoint damagedAt, float2 knockoutDirection, bool exposedSinceDash)
         {
             Position = position;
             _dashStarted = dashStarted;
-            DashDirection = dashDirection;
-            DashHadMove = dashHadMove;
+            DashFraction = dashFraction;
             _damagedAt = damagedAt;
             KnockoutDirection = knockoutDirection;
             ExposedSinceDash = exposedSinceDash;
@@ -90,14 +104,50 @@ namespace BH.SDK.Avatars
 
         /// <summary> An avatar standing at a point, having done nothing yet. </summary>
         public static AvatarMovement At(float2 position)
-            => new(position, TimePoint.Invalid, float2.zero, false, TimePoint.Invalid, float2.zero,
-                true);
+            => new(position, TimePoint.Invalid, 1f, TimePoint.Invalid, float2.zero, true);
+
+        #region The dash a target asks for
+
+        // THE THREE RULES A CURSOR DASH FOLLOWS, AND THEY ARE ONE LINE OF ARITHMETIC. A point further
+        // than the reach is an ordinary dash (the fraction saturates at 1); a point nearer is a dash
+        // that ENDS ON IT, because the travel time is exactly the distance over the dash speed; a
+        // point nearer than the floor is no dash at all. The caller asks this, gets a fraction, and
+        // passes it to StartDash - there is no fourth case and no special branch inside the step.
+        //
+        // IT LIVES HERE RATHER THAN IN THE CONSUMER because the warm bot's route verifier dashes too,
+        // and a verifier answering "how long is this dash" differently from the game is the exact
+        // class of drift this whole type exists to prevent.
+
+        /// <summary> How far a full dash reaches this frame, under the level's own scaling. </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float GetDashReach(float scale)
+            => AvatarRules.DashSpeed * AvatarRules.DashTime * scale;
+
+        /// <summary> What fraction of a full dash a target this far away asks for, or 0 when it is too
+        /// close to be worth a dash at all. </summary>
+        public static float ResolveDashFraction(float distance, float reach)
+        {
+            if (reach <= 0f) return 0f;
+
+            var fraction = distance / reach;
+            return fraction < AvatarRules.MinDashFraction ? 0f : math.min(fraction, 1f);
+        }
+
+        #endregion
 
         #region State
 
+        // EVERY WINDOW IS THE CONSTANT TIMES DashFraction, and they are read through these rather than
+        // computed by callers for one reason: a consumer that sized a collider off the bare constant
+        // while the step ended the dash early would make the avatar untouchable after it had visibly
+        // stopped.
+
+        /// <summary> How long the current dash moves the avatar, in seconds. </summary>
+        public float DashDuration => AvatarRules.DashTime * DashFraction;
+
         /// <summary> Inside the dash's movement window. </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool InDash(float time) => _dashStarted.IsActiveAt(time, AvatarRules.DashTime);
+        public bool InDash(float time) => _dashStarted.IsActiveAt(time, DashDuration);
 
         /// <summary> Inside the knockback: the avatar is flying and answers no input. </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -110,18 +160,20 @@ namespace BH.SDK.Avatars
         /// <summary> Whether a dash asked for now would be taken rather than swallowed. </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool CanDash(float time)
-            => ExposedSinceDash && !_dashStarted.InCooldown(time, AvatarRules.DashCooldown);
+            => ExposedSinceDash
+               && !_dashStarted.InCooldown(time, AvatarRules.DashCooldown * DashFraction);
 
         // The window is a PARAMETER while every other one is read from AvatarRules, and the reason is
         // that 0 is a real value here: it switches i-frames off entirely, which a level authored around
         // solid obstacles needs, and the bake is handed that choice per run. Everywhere else the game's
-        // own constant is the only answer.
+        // own constant is the only answer. DashFraction scales whatever is passed, so a level that
+        // turned i-frames off keeps them off at every dash length.
 
         /// <summary> Untouchable right now. A window of 0 means i-frames are off, so it must not read
         /// as invulnerable on the launch frame. </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool InInvulnerability(float time, float window)
-            => window > 0f && _dashStarted.IsActiveAt(time, window);
+            => window > 0f && _dashStarted.IsActiveAt(time, window * DashFraction);
 
         // The window this asks about is LONGER than InDamage's and means something else: InDamage is
         // how long the avatar is not steering, this is how long it cannot be hit. Confusing the two is
@@ -154,7 +206,7 @@ namespace BH.SDK.Avatars
         /// <summary> The same avatar, moved. </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public AvatarMovement Advance(float2 position)
-            => new(position, _dashStarted, DashDirection, DashHadMove, _damagedAt, KnockoutDirection,
+            => new(position, _dashStarted, DashFraction, _damagedAt, KnockoutDirection,
                 ExposedSinceDash);
 
         // ONE CALL PER SIMULATED FRAME, FROM EVERY CONSUMER - see the ExposedSinceDash note above. It
@@ -177,24 +229,28 @@ namespace BH.SDK.Avatars
         public AvatarMovement Observe(float time, float window)
             => ExposedSinceDash || InInvulnerability(time, window)
                 ? this
-                : new AvatarMovement(Position, _dashStarted, DashDirection, DashHadMove, _damagedAt,
+                : new AvatarMovement(Position, _dashStarted, DashFraction, _damagedAt,
                     KnockoutDirection, true);
 
-        // The direction is captured ONCE here rather than re-aimed per frame, and Step drives the whole
-        // dash along it. See Step's own note: a re-aimed dash towards a target reverses the moment it
-        // overshoots and covers nothing.
+        // A DASH WITH NO DIRECTION IS NOT TAKEN AT ALL, and that is a rule of the game rather than a
+        // guard: the caller establishes a direction and a fraction before it gets here, and both
+        // inputs answer it the same way. A direction player with nothing held is not asking to go
+        // anywhere; a cursor player standing on their own cursor is not either. There used to be a
+        // third answer - the direction was HASHED from the run's seed and the dash's ordinal, so a
+        // standstill dash flew somewhere arbitrary but replayable - and it existed only because the
+        // alternative on offer was a twitch: the avatar thrown out along its idle angle at dash speed
+        // and hauled straight back to the cursor at dash speed, a dash fighting the thing that asked
+        // for it. Refusing the dash costs the player nothing they can see (no cooldown starts, no
+        // window opens, the press is simply not a dash) and removes a random number from a path the
+        // corpus replays.
 
-        /// <summary> The same avatar, having just launched a dash. Callers gate on
-        /// <see cref="CanDash"/> - this does not swallow anything itself. </summary>
-        public AvatarMovement StartDash(float time, float2 direction)
-        {
-            var length = math.length(direction);
-            var hasMove = length > math.EPSILON;
-
-            return new AvatarMovement(Position, new TimePoint(time),
-                hasMove ? direction / length : float2.zero, hasMove, _damagedAt, KnockoutDirection,
+        /// <summary> The same avatar, having just launched a dash of <paramref name="fraction"/> of a
+        /// full one. Callers gate on <see cref="CanDash"/> and resolve the fraction with
+        /// <see cref="ResolveDashFraction"/> - this swallows nothing itself. </summary>
+        public AvatarMovement StartDash(float time, float fraction)
+            => new(Position, new TimePoint(time),
+                math.clamp(fraction, AvatarRules.MinDashFraction, 1f), _damagedAt, KnockoutDirection,
                 false);
-        }
 
         // A HIT IS AN EVENT WITH A DURATION, NOT A FRAME. The direction is captured once, for two
         // reasons: a shove re-aimed at its source every frame becomes a chase, and the source is
@@ -214,9 +270,8 @@ namespace BH.SDK.Avatars
         {
             var length = math.length(direction);
 
-            return new AvatarMovement(Position, _dashStarted, DashDirection, DashHadMove,
-                new TimePoint(time), length > math.EPSILON ? direction / length : float2.zero,
-                ExposedSinceDash);
+            return new AvatarMovement(Position, _dashStarted, DashFraction, new TimePoint(time),
+                length > math.EPSILON ? direction / length : float2.zero, ExposedSinceDash);
         }
 
         #endregion
@@ -237,11 +292,22 @@ namespace BH.SDK.Avatars
         // THE THREE BRANCHES ARE ORDERED, AND THE ORDER IS THE MEANING OF "UNCONTROLLED". A hit takes
         // movement away, so it outranks every other branch, the dash included - a dash that still
         // steered during a knockback would let the player cancel their own knockback with a button.
+        //
+        // A DASH IS THE WALK'S DIRECTION AT THE DASH'S SPEED, and that one line is what makes the two
+        // inputs the same mechanism. A direction player steers their dash frame by frame because the
+        // direction IS this frame's stick; a cursor player steers theirs because the direction is
+        // recomputed towards the cursor every frame by Step. Neither is a special case, and the dash
+        // no longer carries a launch direction to be locked to.
+        //
+        // THE LENGTH IS PART OF THE SPEED, NOT JUST OF THE AIM. An input at half deflection dashes at
+        // half speed, and - the part that is load-bearing rather than cosmetic - an EMPTY input dashes
+        // at zero. That is what stops a dash launched a frame before the pause menu opened from
+        // carrying the avatar across a stopped level: a gated service hands out AvatarInput.None, and
+        // a dash with no direction to serve moves nothing.
 
         /// <summary> Which way the avatar is driven this frame, and how fast, before scaling. </summary>
-        public void GetTargetMove(float time, float2 direction, bool moving, float length,
-            float idleAngle, in AvatarStepSpeeds speeds,
-            out float2 targetDirection, out float targetSpeed)
+        public void GetTargetMove(float time, float2 direction, float length,
+            in AvatarStepSpeeds speeds, out float2 targetDirection, out float targetSpeed)
         {
             if (InDamage(time))
             {
@@ -250,44 +316,31 @@ namespace BH.SDK.Avatars
                 return;
             }
 
-            if (!InDash(time))
-            {
-                targetDirection = direction;
-                targetSpeed = speeds.MoveSpeed;
-                return;
-            }
-
-            if (moving)
-            {
-                targetDirection = direction;
-                targetSpeed = speeds.DashSpeed;
-                return;
-            }
-
-            targetDirection = Math2D.GetVector(idleAngle);
-            targetSpeed = DashHadMove ? speeds.DashSpeed * length : speeds.DashSpeed;
+            targetDirection = direction;
+            targetSpeed = InDash(time) ? speeds.DashSpeed * length : speeds.MoveSpeed;
         }
 
-        // TWO PROPERTIES HERE EACH FIX A REAL BUG AND LOOK LIKE NOTHING:
-        //
-        // A DASH KEEPS THE DIRECTION IT WAS LAUNCHED WITH rather than re-aiming at the target every
-        // frame. A target is a point the avatar is already closing on, so a re-aimed dash reverses the
-        // moment it overshoots and spends the rest of DashTime oscillating around it, covering nothing
-        // - which made a cursor dash useless against the one burst its direction-mode twin gives.
-        //
         // ARRIVING IS A SNAP ONTO THE TARGET, not a step of exactly the remaining distance. The two
         // look identical and are not: `position += dir * dist` where `dir = toTarget / dist` leaves a
         // rounding residue about one float epsilon wide, which is the same order as the "is there any
         // distance left" test - so a held, motionless target alternated between "moving" and "stopped"
         // every frame and the avatar sat there flickering its squish, its eyes and its move trail.
         //
-        // The step clamp is deliberately SKIPPED during a dash: a dash covers DashSpeed * DashTime by
-        // design, and clamping it to the distance left would make a dash with the target nearby do
-        // nothing at all, destroying the fixed dash distance the whole balance is built on.
+        // THE ARRIVAL CLAMP NOW APPLIES DURING A DASH, AND THAT IS THE WHOLE OF RULE 2. It used to be
+        // skipped deliberately, because a dash covers DashSpeed * DashTime by design and clamping it
+        // to the distance left would make a dash with the target nearby do nothing at all. What
+        // changed is that a short dash is no longer a full dash with its travel cut off - the caller
+        // shortened the WINDOW to match the distance before it ever started (ResolveDashFraction), so
+        // the clamp and the window agree and the avatar arrives exactly as the dash ends. The clamp
+        // stays as the guarantee rather than as the mechanism: if the level's own Speed track moves
+        // mid-dash the arithmetic no longer lands exactly, and this is what makes an overshoot
+        // impossible anyway. An avatar that arrives early simply keeps its remaining i-frames while
+        // standing still - and if the player moves the cursor, the dash carries it there, because the
+        // direction is recomputed every frame.
 
         /// <summary> Advances the avatar by one frame against this frame's control, returning both the
         /// moved state and what the consumer's animation half needs. </summary>
-        public AvatarMovement Step(bool hasTarget, float2 target, float2 direction, float idleAngle,
+        public AvatarMovement Step(bool hasTarget, float2 target, float2 direction,
             in AvatarStepSpeeds speeds, float time, float deltaTime, out AvatarStepResult result)
         {
             var inDash = InDash(time);
@@ -297,12 +350,7 @@ namespace BH.SDK.Avatars
             var distanceToTarget = 0f;
             var arrived = false;
 
-            if (hasTarget && inDash && DashHadMove)
-            {
-                direction = DashDirection;
-                length = 1f;
-            }
-            else if (hasTarget)
+            if (hasTarget)
             {
                 var toTarget = target - Position;
                 distanceToTarget = math.length(toTarget);
@@ -320,8 +368,7 @@ namespace BH.SDK.Avatars
 
             var moving = length > 0f;
 
-            GetTargetMove(time, direction, moving, length, idleAngle, speeds,
-                out var targetDirection, out var targetSpeed);
+            GetTargetMove(time, direction, length, speeds, out var targetDirection, out var targetSpeed);
 
             // Both scalings land on targetSpeed rather than on the three settings they come from, so
             // walking, dashing and the knockback a hit gives are scaled by exactly the same number - a
@@ -342,19 +389,20 @@ namespace BH.SDK.Avatars
             // while the avatar barely moved - and they sat on top of it instead of trailing behind
             // it. AvatarController reads this back to decide whether the avatar is TRAVELLING at all.
             //
-            // The knockback and the dash are excluded on purpose: both cover a distance the balance
-            // is built on rather than closing on a point, and throttling either to what is left in
-            // front of it is exactly the bug the dash's own comment above describes.
-            if (hasTarget && !inDash && !inDamage && moving && step > distanceToTarget)
+            // A DASH KEEPS ITS OWN REPORTED SPEED while its travel is still clamped: the trail behind
+            // a dash is the dash's, and throttling it on the frame the avatar lands would put the
+            // last puff of it under the avatar's feet. The knockback is excluded outright - it covers
+            // a distance of its own rather than closing on a point.
+            if (hasTarget && !inDamage && moving && step > distanceToTarget)
             {
-                targetSpeed = deltaTime > 0f ? distanceToTarget / deltaTime : 0f;
+                if (!inDash) targetSpeed = deltaTime > 0f ? distanceToTarget / deltaTime : 0f;
                 step = distanceToTarget;
             }
 
             // An avatar that has already arrived falls through to the ordinary line, where its own
             // direction is zero and the step adds nothing - while a knockback, which sets a direction
             // of its own, still moves. Following the last hundredth of a unit would be chasing noise.
-            var position = hasTarget && !inDash && !arrived && distanceToTarget <= step
+            var position = hasTarget && !inDamage && !arrived && distanceToTarget <= step
                 ? target
                 : Position + targetDirection * step;
 

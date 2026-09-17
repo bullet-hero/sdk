@@ -143,13 +143,13 @@ namespace BH.SDK.UnityExtensions.Tests
         public void Advance_KeepsBothTheDashAndTheDamage()
         {
             var replay = AvatarMovement.At(float2.zero)
-                .StartDash(1f, new float2(1f, 0f))
+                .StartDash(1f, 1f)
                 .Damage(1.05f, new float2(0f, -1f))
                 .Advance(new float2(9f, 9f));
 
             Assert.AreEqual(9f, replay.Position.x, 1e-5f);
             Assert.IsTrue(replay.InDash(1.05f));
-            Assert.IsTrue(replay.DashHadMove);
+            Assert.AreEqual(1f, replay.DashFraction, 1e-5f);
             Assert.IsTrue(replay.InDamage(1.1f));
             Assert.AreEqual(-1f, replay.KnockoutDirection.y, 1e-5f);
         }
@@ -162,7 +162,7 @@ namespace BH.SDK.UnityExtensions.Tests
         {
             var replay = AvatarMovement.At(float2.zero)
                 .Damage(5f, new float2(1f, 0f))
-                .StartDash(5.4f, new float2(0f, 1f));
+                .StartDash(5.4f, 1f);
 
             Assert.IsTrue(replay.DamageBlocked(5.5f));
             Assert.IsTrue(replay.InDash(5.5f));

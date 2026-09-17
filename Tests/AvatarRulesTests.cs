@@ -7,10 +7,15 @@ namespace BH.SDK.Tests
     // re-read against Just Shapes & Beats' own, measured out of its binary rather than guessed (its
     // field is 1280x720 units against this game's 10-unit camera height, so its numbers divide by 72
     // to land here). What that comparison actually changed is smaller than it first looked: the walk,
-    // the dash and the reach stayed where they were, the hitbox came in 0.4 -> 0.3, the shove halved
-    // 50 -> 30, and the dash i-frames went 0.2 -> 0.3 to sit exactly on the cooldown - which is the
-    // one structural change, and it is documented on DashCooldown rather than here. Every value is
-    // restated below, so the NEXT move fails here first.
+    // the dash, the reach and the shove all stayed where they were, and only the hitbox moved,
+    // 0.4 -> 0.3. The dash i-frames went 0.2 -> 0.3 to sit exactly on the cooldown - the one
+    // structural change, documented on DashCooldown rather than here. Every value is restated below,
+    // so the NEXT move fails here first.
+    //
+    // THE PLAYER-FACING STATEMENT OF ALL OF IT IS Docs/PLAYER.md, and it is the SOURCE OF TRUTH
+    // rather than a description of one: the values there are what the game is meant to play like, and
+    // this file plus these tests are how the code is held to them. A number that moves moves THERE
+    // first, and then here.
     //
     // THIS FILE IS THE "NEVER CHANGE THESE" IN EXECUTABLE FORM, and it is the whole reason the numbers
     // became constants. They were serialized fields with a ScriptableObject overriding them, so the
@@ -79,8 +84,8 @@ namespace BH.SDK.Tests
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.VeryEasy)]
-        public void KnockoutSpeed_IsThirty()
-            => Assert.AreEqual(30f, AvatarRules.KnockoutSpeed, Tolerance);
+        public void KnockoutSpeed_IsFifty()
+            => Assert.AreEqual(50f, AvatarRules.KnockoutSpeed, Tolerance);
 
         [Test]
         [Author(Metadata.Author.Vertoker)]
