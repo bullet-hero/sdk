@@ -80,7 +80,7 @@
     public enum ABLayerImport
     {
         /// <summary> Depth alone, packed into consecutive layers inside each band and anchored on
-        /// the player line - the last layer behind the player is -1. The default: it draws the level
+        /// the player line - the last layer behind the player is 0. The default: it draws the level
         /// in the order the source game drew it and costs one layer per depth the level actually
         /// uses, rather than one per depth the format allows. Packed rather than absolute, so an
         /// export returns the ORDER rather than the original depths. </summary>
@@ -221,12 +221,16 @@
     {
         /// <summary> The option value that makes a square a custom polygon. </summary>
         public const int SquareCustom = 3;
+
         /// <summary> The same for a circle. </summary>
         public const int CircleCustom = 9;
+
         /// <summary> The same for a triangle. </summary>
         public const int TriangleCustom = 6;
+
         /// <summary> The same for the misc family. </summary>
         public const int MiscCustom = 2;
+
         /// <summary> The same for a hexagon. </summary>
         public const int HexagonCustom = 6;
 

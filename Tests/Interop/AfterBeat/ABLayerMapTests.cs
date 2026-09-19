@@ -18,10 +18,11 @@ namespace BH.SDK.Tests.Interop.AfterBeat
     //
     // The invariants worth stating once, since almost every test below is one of them:
     //
-    //   THE PLAYER LINE - this format draws its avatar at layer -0.5, and Afterbeat draws its own
+    //   THE PLAYER LINE - this format draws its avatar at layer 0.5, and Afterbeat draws its own
     //   in front of EVERY Default object (they all share sortingOrder 0 over there; the player is
     //   61; depth only separates them by draw distance) and behind every AbovePlayer one. So the
-    //   whole Default band lands at layer <= -1, depth 0 included, and AbovePlayer at layer >= 0.
+    //   whole Default band lands at layer <= ValueRules.LastLayerBehindPlayer, depth 0 included, and
+    //   AbovePlayer at layer >= ValueRules.FirstLayerAbovePlayer.
     //
     //   THE BANDS never interleave: everything AbovePlayer is in front of everything Default, which
     //   is in front of everything Background, whatever depths any of them carry.
@@ -60,16 +61,16 @@ namespace BH.SDK.Tests.Interop.AfterBeat
         #region OnlyDepth
 
         // The whole band layout in one case, because the three bands are only correct relative to
-        // each other: 61 depths each, back to back, Default's frontmost sitting on layer -1 - the
+        // each other: 61 depths each, back to back, Default's frontmost sitting on layer 0 - the
         // last layer behind the player.
-        [TestCase(ABRenderLayer.Default, 0, -1)]
-        [TestCase(ABRenderLayer.Default, 1, -2)]
-        [TestCase(ABRenderLayer.Default, 20, -21)]
-        [TestCase(ABRenderLayer.Default, 60, -61)]
-        [TestCase(ABRenderLayer.AbovePlayer, 0, 60)]
-        [TestCase(ABRenderLayer.AbovePlayer, 60, 0)]
-        [TestCase(ABRenderLayer.Background, 0, -62)]
-        [TestCase(ABRenderLayer.Background, 60, -122)]
+        [TestCase(ABRenderLayer.Default, 0, 0)]
+        [TestCase(ABRenderLayer.Default, 1, -1)]
+        [TestCase(ABRenderLayer.Default, 20, -20)]
+        [TestCase(ABRenderLayer.Default, 60, -60)]
+        [TestCase(ABRenderLayer.AbovePlayer, 0, 61)]
+        [TestCase(ABRenderLayer.AbovePlayer, 60, 1)]
+        [TestCase(ABRenderLayer.Background, 0, -61)]
+        [TestCase(ABRenderLayer.Background, 60, -121)]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.VeryEasy)]
@@ -80,7 +81,7 @@ namespace BH.SDK.Tests.Interop.AfterBeat
         }
 
         // Independent of what the level uses: a depth is an absolute statement under this mode, so a
-        // level whose shallowest object is at depth 10 must not have that object promoted onto -1.
+        // level whose shallowest object is at depth 10 must not have that object promoted onto 0.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
@@ -90,7 +91,7 @@ namespace BH.SDK.Tests.Interop.AfterBeat
             var sources = new[] { Obj(10), Obj(20), Obj(30) };
             var layers = Resolve(sources, ABLayerImport.OnlyDepth);
 
-            CollectionAssert.AreEqual(new[] { -11, -21, -31 }, layers);
+            CollectionAssert.AreEqual(new[] { -10, -20, -30 }, layers);
         }
 
         [Test]
@@ -100,7 +101,7 @@ namespace BH.SDK.Tests.Interop.AfterBeat
         public void OnlyDepth_DepthOutsideTheSourceRange_IsClampedIntoIt()
         {
             var layers = Resolve(new[] { Obj(-5), Obj(999) }, ABLayerImport.OnlyDepth);
-            CollectionAssert.AreEqual(new[] { -1, -61 }, layers);
+            CollectionAssert.AreEqual(new[] { 0, -60 }, layers);
         }
 
         // The export is the inverse of this mode, so the two have to agree about where a band
@@ -150,7 +151,7 @@ namespace BH.SDK.Tests.Interop.AfterBeat
             var layers = Resolve(sources, mode);
 
             for (var depth = 0; depth < layers.Length; depth++)
-                Assert.LessOrEqual(layers[depth], -1,
+                Assert.LessOrEqual(layers[depth], ValueRules.LastLayerBehindPlayer,
                     $"depth {depth} is an ordinary object and draws behind the player");
         }
 
@@ -172,9 +173,12 @@ namespace BH.SDK.Tests.Interop.AfterBeat
 
             var layers = Resolve(sources, mode);
 
-            Assert.GreaterOrEqual(layers[0], 0, "an above-player object draws in front of the player");
-            Assert.GreaterOrEqual(layers[1], 0, "however deep it is inside its own band");
-            Assert.LessOrEqual(layers[2], -1, "and an ordinary one still does not");
+            Assert.GreaterOrEqual(layers[0], ValueRules.FirstLayerAbovePlayer,
+                "an above-player object draws in front of the player");
+            Assert.GreaterOrEqual(layers[1], ValueRules.FirstLayerAbovePlayer,
+                "however deep it is inside its own band");
+            Assert.LessOrEqual(layers[2], ValueRules.LastLayerBehindPlayer,
+                "and an ordinary one still does not");
         }
 
         [TestCase(ABLayerImport.Auto)]
@@ -206,7 +210,8 @@ namespace BH.SDK.Tests.Interop.AfterBeat
             var byBand = sources
                 .Select((source, index) => (Band: ABLayerMap.ToBand(source), Layer: layers[index]))
                 .GroupBy(pair => pair.Band)
-                .ToDictionary(group => group.Key, group => (Low: group.Min(p => p.Layer), High: group.Max(p => p.Layer)));
+                .ToDictionary(group => group.Key,
+                    group => (Low: group.Min(p => p.Layer), High: group.Max(p => p.Layer)));
 
             Assert.Less(byBand[ABRenderLayer.Background].High,
                 byBand[ABRenderLayer.Default].Low, "background is behind all content");
@@ -325,23 +330,23 @@ namespace BH.SDK.Tests.Interop.AfterBeat
             var sources = new[] { Obj(5), Obj(20), Obj(55) };
             var layers = Resolve(sources, ABLayerImport.Auto);
 
-            CollectionAssert.AreEqual(new[] { -1, -2, -3 }, layers);
+            CollectionAssert.AreEqual(new[] { 0, -1, -2 }, layers);
         }
 
-        // What "flattened onto 0" means with the avatar sitting at -0.5: an ordinary level marks
+        // What "flattened onto 0" means with the avatar sitting at 0.5: an ordinary level marks
         // nothing AbovePlayer, so its frontmost content is the last layer behind the player and
         // everything else steps down from there - never 200 layers down.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.Easy)]
-        public void Auto_ALevelWithNothingInFrontOfThePlayer_TopsOutOnMinusOne()
+        public void Auto_ALevelWithNothingInFrontOfThePlayer_TopsOutOnZero()
         {
             var sources = new[] { Obj(0), Obj(20), Obj(60) };
             var result = ABLayerMap.Resolve(sources, Options(ABLayerImport.Auto));
 
-            Assert.AreEqual(-1, result.Highest, "the frontmost content sits just behind the player");
-            Assert.AreEqual(-3, result.Lowest, "three ordering keys, three consecutive layers");
+            Assert.AreEqual(0, result.Highest, "the frontmost content sits just behind the player");
+            Assert.AreEqual(-2, result.Lowest, "three ordering keys, three consecutive layers");
         }
 
         // The gap is the price of the band surviving an export, and it is only ever paid by a level
@@ -362,18 +367,18 @@ namespace BH.SDK.Tests.Interop.AfterBeat
 
             var layers = Resolve(sources, ABLayerImport.Auto);
 
-            Assert.AreEqual(-1, layers[0], "the ordinary band starts at the player line");
-            Assert.AreEqual(-2, layers[1]);
-            Assert.AreEqual(-1 - ABLayerMap.DepthSpan, layers[2],
+            Assert.AreEqual(0, layers[0], "the ordinary band starts at the player line");
+            Assert.AreEqual(-1, layers[1]);
+            Assert.AreEqual(-ABLayerMap.DepthSpan, layers[2],
                 "the background band starts below every layer the ordinary one could reach");
-            Assert.AreEqual(0, layers[3], "and the above-player band starts on the other side of the line");
+            Assert.AreEqual(1, layers[3], "and the above-player band starts on the other side of the line");
         }
 
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.Easy)]
-        public void Auto_TheFirstLayerInFrontOfThePlayerIsZero()
+        public void Auto_TheFirstLayerInFrontOfThePlayerIsOne()
         {
             var sources = new[]
             {
@@ -384,9 +389,9 @@ namespace BH.SDK.Tests.Interop.AfterBeat
 
             var layers = Resolve(sources, ABLayerImport.Auto);
 
-            Assert.AreEqual(-1, layers[0], "the only ordinary object is the last one behind the player");
-            Assert.AreEqual(0, layers[1], "and the backmost above-player one is the first in front");
-            Assert.AreEqual(1, layers[2]);
+            Assert.AreEqual(0, layers[0], "the only ordinary object is the last one behind the player");
+            Assert.AreEqual(1, layers[1], "and the backmost above-player one is the first in front");
+            Assert.AreEqual(2, layers[2]);
         }
 
         // The source editor's grouping is not draw order over there - it never reaches sortingOrder -
@@ -408,8 +413,8 @@ namespace BH.SDK.Tests.Interop.AfterBeat
             var result = ABLayerMap.Resolve(sources, Options(ABLayerImport.Auto));
 
             Assert.AreEqual(1, result.Layers.Distinct().Count(), "one depth is one layer");
-            Assert.AreEqual(-1, result.Lowest);
-            Assert.AreEqual(-1, result.Highest);
+            Assert.AreEqual(0, result.Lowest);
+            Assert.AreEqual(0, result.Highest);
         }
 
         [Test]
@@ -460,8 +465,9 @@ namespace BH.SDK.Tests.Interop.AfterBeat
             var report = new InteropReport();
             var result = ABLayerMap.Resolve(sources, Options(ABLayerImport.Auto), report);
 
-            Assert.AreEqual(-(ABLayerMap.BandCount - 1) * ABLayerMap.DepthSpan, result.Lowest);
-            Assert.AreEqual(ABLayerMap.DepthSpan - 1, result.Highest);
+            Assert.AreEqual(-(ABLayerMap.BandCount - 1) * ABLayerMap.DepthSpan
+                + ValueRules.FirstLayerAbovePlayer, result.Lowest);
+            Assert.AreEqual(ABLayerMap.DepthSpan, result.Highest);
             Assert.Greater(result.Lowest, ValueRules.MinLayer);
             Assert.Less(result.Highest, ValueRules.MaxLayer);
             Assert.IsFalse(report.Issues.Any(issue => issue.Code == "layers_clamped"),
@@ -520,11 +526,11 @@ namespace BH.SDK.Tests.Interop.AfterBeat
 
             Assert.AreEqual(levelLayers.Layers[0], templateLayers.Layers[1],
                 "one depth is one layer, wherever the object lives");
-            Assert.AreEqual(-1, levelLayers.Layers[0], "depth 10 is the frontmost of the three");
-            Assert.AreEqual(-2, templateLayers.Layers[0], "depth 30 sits between them");
-            Assert.AreEqual(-3, levelLayers.Layers[1], "depth 50 is the backmost");
-            Assert.AreEqual(-3, plan.Lowest);
-            Assert.AreEqual(-1, plan.Highest);
+            Assert.AreEqual(0, levelLayers.Layers[0], "depth 10 is the frontmost of the three");
+            Assert.AreEqual(-1, templateLayers.Layers[0], "depth 30 sits between them");
+            Assert.AreEqual(-2, levelLayers.Layers[1], "depth 50 is the backmost");
+            Assert.AreEqual(-2, plan.Lowest);
+            Assert.AreEqual(0, plan.Highest);
         }
 
         // The property that makes a prefab-heavy level survivable: a level built out of a hundred
@@ -542,8 +548,8 @@ namespace BH.SDK.Tests.Interop.AfterBeat
 
             var plan = ABLayerMap.Build(lists, Options(ABLayerImport.Auto));
 
-            Assert.AreEqual(-1, plan.Highest);
-            Assert.AreEqual(-2, plan.Lowest, "two depths, two layers, a hundred lists");
+            Assert.AreEqual(0, plan.Highest);
+            Assert.AreEqual(-1, plan.Lowest, "two depths, two layers, a hundred lists");
         }
 
         [Test]

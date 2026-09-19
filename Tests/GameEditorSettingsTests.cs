@@ -114,6 +114,9 @@ namespace BH.SDK.Tests
             settings.Interface.RenderInframes = true;
             settings.Interface.SelectionAutoOpenActive = true;
             settings.Interface.SyncTimelineExpansion = true;
+            settings.Interface.HierarchyExpansion = ExpansionMode.Expanded;
+            settings.Interface.TimelineExpansion = ExpansionMode.Collapsed;
+            settings.Timeline.ToolResetOnTabChange = false;
             settings.Serialization.LevelMode = SerializationType.Blob;
 
             settings.Reset();
@@ -130,6 +133,9 @@ namespace BH.SDK.Tests
             Assert.IsFalse(settings.Interface.RenderInframes);
             Assert.IsFalse(settings.Interface.SelectionAutoOpenActive);
             Assert.IsFalse(settings.Interface.SyncTimelineExpansion);
+            Assert.AreEqual(ExpansionMode.Collapsed, settings.Interface.HierarchyExpansion);
+            Assert.AreEqual(ExpansionMode.Expanded, settings.Interface.TimelineExpansion);
+            Assert.IsTrue(settings.Timeline.ToolResetOnTabChange);
             Assert.AreEqual(SerializationType.Json, settings.Serialization.LevelMode);
         }
 
@@ -213,6 +219,9 @@ namespace BH.SDK.Tests
             AssertDiffers(a, s => s.Interface.LinkColliderToShape = true);
             AssertDiffers(a, s => s.Interface.SelectionAutoOpenActive = true);
             AssertDiffers(a, s => s.Interface.SyncTimelineExpansion = true);
+            AssertDiffers(a, s => s.Interface.HierarchyExpansion = ExpansionMode.Expanded);
+            AssertDiffers(a, s => s.Interface.TimelineExpansion = ExpansionMode.Collapsed);
+            AssertDiffers(a, s => s.Timeline.ToolResetOnTabChange = false);
             AssertDiffers(a, s => s.Serialization.ResourcesMode = SerializationType.Blob);
         }
 
@@ -377,6 +386,36 @@ namespace BH.SDK.Tests
             Assert.AreEqual(0.25f, settings.Grid.Opacity);
         }
 
+        // THE TWO SURFACES OPEN AT OPPOSITE RUNGS, and the disagreement is the whole reason there
+        // are two settings rather than one. A fold CLOSES a row in the hierarchy - the row stays,
+        // saying what it hides - and REMOVES one from a timeline, where the vertical axis means a
+        // layer. So a tree is cheap to open collapsed and a timeline is not. Both values are what
+        // the surfaces did before they were configurable: this test is what fails if a future
+        // reader "tidies" them into agreement.
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.VeryEasy)]
+        public void ExpansionDefaults_DisagreeBySurface()
+        {
+            var settings = new GameEditorSettings();
+
+            Assert.AreEqual(ExpansionMode.Collapsed, settings.Interface.HierarchyExpansion);
+            Assert.AreEqual(ExpansionMode.Expanded, settings.Interface.TimelineExpansion);
+        }
+
+        // ON, because the tool a tab comes back on is the one a click means everywhere. A blade
+        // left armed on a tab visited ten minutes ago is the one way a tool change costs an edit.
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.VeryEasy)]
+        public void ToolResetOnTabChange_DefaultsToOn()
+        {
+            var settings = new GameEditorSettings();
+            Assert.IsTrue(settings.Timeline.ToolResetOnTabChange);
+        }
+
         // Rotation is stored in RADIANS everywhere; this decides only what a field shows. Degrees is
         // the default because it is the unit an author thinks a rotation in.
         [Test]
@@ -414,6 +453,9 @@ namespace BH.SDK.Tests
             settings.GameEditor.Timeline.LocalLoop = false;
             settings.GameEditor.Interface.DirtyFieldDelay = 0.3f;
             settings.GameEditor.Interface.RotationDisplayUnit = AngleDisplayUnit.Radians;
+            settings.GameEditor.Interface.HierarchyExpansion = ExpansionMode.Partial;
+            settings.GameEditor.Interface.TimelineExpansion = ExpansionMode.Collapsed;
+            settings.GameEditor.Timeline.ToolResetOnTabChange = false;
             settings.GameEditor.Serialization.LevelMode = SerializationType.Blob;
 
             var restored = service.DeserializeData<UserSettings>(service.SerializeData(settings));
@@ -435,6 +477,9 @@ namespace BH.SDK.Tests
             Assert.IsFalse(editor.Timeline.LocalLoop);
             Assert.AreEqual(0.3f, editor.Interface.DirtyFieldDelay);
             Assert.AreEqual(AngleDisplayUnit.Radians, editor.Interface.RotationDisplayUnit);
+            Assert.AreEqual(ExpansionMode.Partial, editor.Interface.HierarchyExpansion);
+            Assert.AreEqual(ExpansionMode.Collapsed, editor.Interface.TimelineExpansion);
+            Assert.IsFalse(editor.Timeline.ToolResetOnTabChange);
             Assert.AreEqual(SerializationType.Blob, editor.Serialization.LevelMode);
         }
 

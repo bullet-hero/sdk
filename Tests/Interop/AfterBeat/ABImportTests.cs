@@ -130,8 +130,8 @@ namespace BH.SDK.Tests.Interop.AfterBeat
             var parent = shapes.Single(o => o.ParentObjectId == ObjectId.Null);
             var child = shapes.Single(o => o.ParentObjectId == parent.ObjectId);
 
-            Assert.AreEqual(-1 - VgdObject.DefaultDepth, parent.Layer,
-                "the whole Default band draws behind the player, so depth 0 is -1 and this is deeper");
+            Assert.AreEqual(ValueRules.LastLayerBehindPlayer - VgdObject.DefaultDepth, parent.Layer,
+                "the whole Default band draws behind the player, so depth 0 is 0 and this is deeper");
             Assert.AreEqual(5, child.Layer);
         }
 
@@ -315,7 +315,7 @@ namespace BH.SDK.Tests.Interop.AfterBeat
 
             Assert.IsTrue(templateObjects.All(o => o.Layer == levelObject.Layer),
                 "one depth is one layer, inside a template as much as outside it");
-            Assert.AreEqual(-1, levelObject.Layer,
+            Assert.AreEqual(ValueRules.LastLayerBehindPlayer, levelObject.Layer,
                 "the level uses one depth, so it costs exactly the one layer behind the player");
         }
 

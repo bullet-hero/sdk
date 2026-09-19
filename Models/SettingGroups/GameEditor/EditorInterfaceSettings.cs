@@ -122,6 +122,25 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
         [JsonProperty(Names.ExpansionMask)]
         public ObjectTypeMask ExpansionMask { get; set; }
 
+        // WHICH RUNG EACH SURFACE OPENS AT, and the two disagree by default for the reason stated
+        // above SyncTimelineExpansion: a fold CLOSES a row in a tree and REMOVES one from a
+        // timeline, so the cheap direction is the opposite one on each. Only the STARTING rung is
+        // stored - which rung a surface is currently on stays the consumer's session state, the
+        // same split EditorGridSettings.ActiveDefault already makes.
+        //
+        // Both default to what the two surfaces opened at before they were configurable, so adding
+        // them changes nothing until an author moves one.
+
+        /// <summary> The rung the frame hierarchy opens at. </summary>
+        [RuleEnumValid]
+        [JsonProperty(Names.HierarchyExpansion)]
+        public ExpansionMode HierarchyExpansion { get; set; }
+
+        /// <summary> The rung the object timelines open at. </summary>
+        [RuleEnumValid]
+        [JsonProperty(Names.TimelineExpansion)]
+        public ExpansionMode TimelineExpansion { get; set; }
+
         /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public EditorInterfaceSettings()
         {
@@ -132,7 +151,8 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
         public EditorInterfaceSettings(float dirtyFieldDelay, AngleDisplayUnit rotationDisplayUnit,
             bool logValueClamps, bool renderInframes, bool linkColliderToShape,
             bool selectionAutoOpenActive, bool syncTimelineExpansion, bool logRuleFindings,
-            ObjectTypeMask expansionMask)
+            ObjectTypeMask expansionMask, ExpansionMode hierarchyExpansion,
+            ExpansionMode timelineExpansion)
         {
             DirtyFieldDelay = dirtyFieldDelay;
             RotationDisplayUnit = rotationDisplayUnit;
@@ -143,6 +163,8 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
             SyncTimelineExpansion = syncTimelineExpansion;
             LogRuleFindings = logRuleFindings;
             ExpansionMask = expansionMask;
+            HierarchyExpansion = hierarchyExpansion;
+            TimelineExpansion = timelineExpansion;
         }
 
         private void ResetOwn()
@@ -156,6 +178,8 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
             SyncTimelineExpansion = false;
             LogRuleFindings = false;
             ExpansionMask = ObjectTypeMask.All & ~ObjectTypeMask.PrefabObject;
+            HierarchyExpansion = ExpansionMode.Collapsed;
+            TimelineExpansion = ExpansionMode.Expanded;
         }
     }
 }

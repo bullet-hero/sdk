@@ -1556,8 +1556,14 @@
         /// <summary> Word fragment, built into SyncTimelineExpansion. </summary>
         public const string Sync = "sync";
 
-        /// <summary> Word fragment, built into SyncTimelineExpansion. </summary>
+        /// <summary> Word fragment, built into ExpansionMask, HierarchyExpansion, SyncTimelineExpansion and 1 more. </summary>
         public const string Expansion = "expansion";
+
+        /// <summary> Word fragment, built into HierarchyExpansion. </summary>
+        public const string Hierarchy = "hierarchy";
+
+        /// <summary> Word fragment, built into ToolReset. </summary>
+        public const string Tool = "tool";
 
         /// <summary> GameEditorSettings.Grid. </summary>
         public const string Grid = "grid";
@@ -1966,6 +1972,18 @@
 
         /// <summary> <c>"expansion_mask"</c> - EditorInterfaceSettings.ExpansionMask. </summary>
         public const string ExpansionMask = Expansion + _ + Mask;
+
+        /// <summary> <c>"hierarchy_expansion"</c> - EditorInterfaceSettings.HierarchyExpansion. </summary>
+        public const string HierarchyExpansion = Hierarchy + _ + Expansion;
+
+        /// <summary> <c>"timeline_expansion"</c> - EditorInterfaceSettings.TimelineExpansion. </summary>
+        public const string TimelineExpansion = Timeline + _ + Expansion;
+
+        /// <summary> <c>"tool_reset"</c> - EditorTimelineSettings.ToolResetOnTabChange. </summary>
+        public const string ToolReset = Tool + _ + Reset;
+
+        /// <summary> <c>"editor_game"</c> - AudioSettings.EditorGame. </summary>
+        public const string EditorGame = Editor + _ + Game;
 
         /// <summary> <c>"game_editor"</c> - UserSettings.GameEditor. </summary>
         public const string GameEditor = Game + _ + Editor;

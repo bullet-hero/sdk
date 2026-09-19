@@ -475,9 +475,9 @@ namespace BH.SDK.Interop.AfterBeat.Export
         // authored here lands where the same layer would have drawn.
         //
         // Which BAND a layer belongs to is decided the same way the import decided it, and the
-        // player line is what splits them: this format's avatar occupies (-1, 0), the source game
+        // player line is what splits them: this format's avatar occupies (0, 1), the source game
         // draws its own in front of every Default object and behind every AbovePlayer one, so layer
-        // 0 and up is AbovePlayer, -1 down to -61 is the Default band with depth 0 at its top, and
+        // 1 and up is AbovePlayer, 0 down to -60 is the Default band with depth 0 at its top, and
         // everything under that is Background. Clamped at both ends, since this format has 2001
         // layers to spend and Afterbeat has 183 - a level using the whole range loses ordering at
         // the extremes rather than everywhere.
@@ -485,16 +485,16 @@ namespace BH.SDK.Interop.AfterBeat.Export
         {
             const int span = ABLayerMap.DepthSpan;
 
-            var band = effectiveLayer >= 0 ? ABRenderLayer.AbovePlayer
-                : effectiveLayer >= -span ? ABRenderLayer.Default
+            var band = effectiveLayer >= ValueRules.FirstLayerAbovePlayer ? ABRenderLayer.AbovePlayer
+                : effectiveLayer >= ValueRules.LastLayerBehindPlayer - span + 1 ? ABRenderLayer.Default
                 : ABRenderLayer.Background;
 
             // The layer depth 0 of this band sits on; every deeper depth steps one further down.
             var frontmost = band switch
             {
-                ABRenderLayer.AbovePlayer => VgdObject.MaxDepth,
-                ABRenderLayer.Default => -1,
-                _ => -1 - span,
+                ABRenderLayer.AbovePlayer => VgdObject.MaxDepth + ValueRules.FirstLayerAbovePlayer,
+                ABRenderLayer.Default => ValueRules.LastLayerBehindPlayer,
+                _ => ValueRules.LastLayerBehindPlayer - span,
             };
 
             target.RenderLayer = (int)band;
@@ -536,6 +536,7 @@ namespace BH.SDK.Interop.AfterBeat.Export
 
         /// <summary> First timeline bin the source editor offers. </summary>
         public const int MinEditorBin = 0;
+
         /// <summary> Last one - a row written past it is not reachable in that editor. </summary>
         public const int MaxEditorBin = 14;
 

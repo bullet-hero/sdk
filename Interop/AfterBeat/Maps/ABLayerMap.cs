@@ -17,9 +17,10 @@ namespace BH.SDK.Interop.AfterBeat
     // branch), the player gets 61 (VGPlayer.Init), an AbovePlayer object gets 62 + (60 - depth),
     // and a Background object is drawn by a different camera entirely. So the whole Default band -
     // depth 0 included - is BEHIND the player, and depth orders it only by z (0.1 * depth, ordinary
-    // draw distance). This format's avatar sits at layer -0.5 (Services.Shared's AvatarInitData
-    // .BaseLayer), so layer >= 0 is in front of it and layer <= -1 behind: Default lands at -1 and
-    // down, AbovePlayer at 0 and up, Background below Default. An earlier reading of the source put
+    // draw distance). This format's avatar sits at layer 0.5 (Services.Shared's AvatarInitData
+    // .BaseLayer), so ValueRules.FirstLayerAbovePlayer and up is in front of it and
+    // ValueRules.LastLayerBehindPlayer and down behind: Default lands at 0 and
+    // down, AbovePlayer at 1 and up, Background below Default. An earlier reading of the source put
     // the player between depth 0 and depth 1, which pulled one object per level in front of it and
     // pushed the whole rest of the level into the negatives to make room.
     //
@@ -96,7 +97,7 @@ namespace BH.SDK.Interop.AfterBeat
         // the depth already reversed so that larger is drawn in front. The range is 3 * 61 = 183
         // values, small enough that the Auto ranking is an array walk rather than a sort, and small
         // enough that Auto CANNOT reach ValueRules.MinLayer no matter what a level contains - the
-        // deepest layer it can produce is -122. That bound is the point of the whole design: the
+        // deepest layer it can produce is -121. That bound is the point of the whole design: the
         // range a converted level occupies is a property of the source FORMAT, not of how large or
         // how finely organised the level happens to be.
 
@@ -117,6 +118,7 @@ namespace BH.SDK.Interop.AfterBeat
 
             /// <summary> Lowest and highest layer anything in the whole level landed on. </summary>
             public int Lowest { get; }
+
             /// <summary> The largest layer the plan will hand out. </summary>
             public int Highest { get; }
 
@@ -139,7 +141,8 @@ namespace BH.SDK.Interop.AfterBeat
 
                 if (_layerByKey != null) return _layerByKey[ToKey(source)];
 
-                var bandBase = (ToBandRank(ToBand(source)) - 2) * _span;
+                var bandBase = (ToBandRank(ToBand(source)) - 2) * _span
+                               + ValueRules.FirstLayerAbovePlayer;
                 return Math.Clamp(bandBase + ToOrder(source, _mode, _stride),
                     ValueRules.MinLayer, ValueRules.MaxLayer);
             }
@@ -175,11 +178,12 @@ namespace BH.SDK.Interop.AfterBeat
         // a time.
         //
         // EACH BAND IS PACKED AGAINST ITS OWN EDGE OF THE PLAYER LINE, and that is what "flattened
-        // onto 0" means here: Default's frontmost key is layer -1 and it grows downwards,
-        // AbovePlayer's backmost is layer 0 and it grows upwards. An ordinary level - one where
+        // onto 0" means here: Default's frontmost key is ValueRules.LastLayerBehindPlayer and it
+        // grows downwards, AbovePlayer's backmost is ValueRules.FirstLayerAbovePlayer and it grows
+        // upwards. An ordinary level - one where
         // nothing is marked AbovePlayer or Background, which is nearly all of them - therefore
-        // reaches exactly -1 and steps down from there, and the object an author sees at the top of
-        // the level is the one the source game drew nearest the camera.
+        // reaches exactly layer 0 and steps down from there, and the object an author sees at the top
+        // of the level is the one the source game drew nearest the camera.
         //
         // PACKING THE THREE BANDS INTO ONE RUN INSTEAD WOULD LOSE THE BAND. Nothing on an object
         // here records which band it came from - a layer is all there is - so the export infers it
@@ -215,7 +219,9 @@ namespace BH.SDK.Interop.AfterBeat
                 // front fills upwards from the player line. Both directions start at the edge the
                 // export measures that band from, so a packed layer never leaves its own stretch.
                 var forward = band == ToBandRank(ABRenderLayer.AbovePlayer);
-                var next = forward ? 0 : band == ToBandRank(ABRenderLayer.Default) ? -1 : -1 - DepthSpan;
+                var next = forward ? ValueRules.FirstLayerAbovePlayer
+                    : band == ToBandRank(ABRenderLayer.Default) ? ValueRules.LastLayerBehindPlayer
+                    : ValueRules.LastLayerBehindPlayer - DepthSpan;
 
                 for (var step = 0; step < DepthSpan; step++)
                 {
@@ -231,8 +237,10 @@ namespace BH.SDK.Interop.AfterBeat
                 }
             }
 
-            // An ordinary level reaches -1 and no further, so seeding the range at zero would report
-            // a band the level does not occupy - and the parallax is placed below whatever this says.
+            // An ordinary level occupies layer 0 and down, and a level with nothing in it occupies
+            // nothing at all - so the range is seeded empty and collapsed here rather than started at
+            // zero, which would report a band the level does not occupy - and the parallax is placed
+            // below whatever this says.
             if (lowest > highest) (lowest, highest) = (0, 0);
 
             return new Plan(ABLayerImport.Auto, 0, 0, layerByKey, lowest, highest);
@@ -243,8 +251,9 @@ namespace BH.SDK.Interop.AfterBeat
         #region Banded
 
         // Each band is one stretch `span` layers wide and the three sit back to back, with Default
-        // ending at -1 so that the band the player is in front of ends where the player is: Default
-        // occupies [-span, -1], AbovePlayer [0, span-1], Background [-2*span, -span-1]. `span` is
+        // ending at ValueRules.LastLayerBehindPlayer so that the band the player is in front of ends
+        // where the player is: Default
+        // occupies [-span+1, 0], AbovePlayer [1, span], Background [-2*span+1, -span]. `span` is
         // the source format's whole depth range for OnlyDepth - fixed, because that mode's promise
         // is that a depth means the same layer in every level - and the widest order the level
         // actually reaches for the two editor-driven modes, whose ordering has no fixed extent to
@@ -284,7 +293,8 @@ namespace BH.SDK.Interop.AfterBeat
                         if (source == null) continue;
 
                         var raw = (ToBandRank(ToBand(source)) - 2) * span
-                                  + ToOrder(source, mode, stride);
+                                  + ToOrder(source, mode, stride)
+                                  + ValueRules.FirstLayerAbovePlayer;
                         var layer = Math.Clamp(raw, ValueRules.MinLayer, ValueRules.MaxLayer);
 
                         if (layer != raw) clamped = true;
@@ -329,6 +339,7 @@ namespace BH.SDK.Interop.AfterBeat
             /// <summary> Lowest and highest layer anything in THIS list landed on; both 0 for an
             /// empty list. The level's whole range is the plan's, not this. </summary>
             public int Lowest { get; }
+
             /// <summary> The largest layer actually assigned. </summary>
             public int Highest { get; }
 

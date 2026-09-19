@@ -170,8 +170,8 @@ namespace BH.SDK.Tests.Interop.AfterBeat
             var parent = objects.Single(o => o.ParentObjectId == ObjectId.Null);
             var child = objects.Single(o => o.ParentObjectId == parent.ObjectId);
 
-            Assert.AreEqual(-1 - VgdObject.DefaultDepth, parent.Layer,
-                "the whole Default band draws behind the player, so depth 0 is -1 and this is deeper");
+            Assert.AreEqual(ValueRules.LastLayerBehindPlayer - VgdObject.DefaultDepth, parent.Layer,
+                "the whole Default band draws behind the player, so depth 0 is 0 and this is deeper");
             Assert.AreEqual(5, child.Layer, "depth 15 under depth 20, expressed relative to the parent");
         }
 

@@ -7,6 +7,7 @@ using BH.SDK.Interop.AfterBeat.Models;
 using BH.SDK.Models.Keyframes;
 using BH.SDK.Models.Objects;
 using BH.SDK.Models.Values;
+using BH.SDK.Rules;
 using NUnit.Framework;
 
 namespace BH.SDK.Tests.Interop.AfterBeat
@@ -260,14 +261,14 @@ namespace BH.SDK.Tests.Interop.AfterBeat
                          ABRenderLayer.Default,
                          ABRenderLayer.AbovePlayer,
                      })
-                foreach (var depth in depths)
-                {
-                    var source = ABMockData.CreateObject($"b{(int)band}-d{depth}");
-                    source.Name = source.Id;
-                    source.Depth = depth;
-                    source.RenderLayer = (int)band;
-                    level.Objects.Add(source);
-                }
+            foreach (var depth in depths)
+            {
+                var source = ABMockData.CreateObject($"b{(int)band}-d{depth}");
+                source.Name = source.Id;
+                source.Depth = depth;
+                source.RenderLayer = (int)band;
+                level.Objects.Add(source);
+            }
 
             return level;
         }
@@ -276,7 +277,7 @@ namespace BH.SDK.Tests.Interop.AfterBeat
         /// the band above the depth, exactly as the source game sorts. </summary>
         private static int SourceOrder(VgdObject source)
             => ABLayerMap.ToBandRank(ABLayerMap.ToBand(source)) * ABLayerMap.DepthSpan
-               + VgdObject.MaxDepth - ABLayerMap.ToDepth(source);
+                + VgdObject.MaxDepth - ABLayerMap.ToDepth(source);
 
         // The bijection, stated across all three bands rather than inside one: the bands are only
         // right relative to each other, and the export decides which band a layer belongs to by the
@@ -345,27 +346,26 @@ namespace BH.SDK.Tests.Interop.AfterBeat
         }
 
         // The consequence of the player line for a level authored HERE rather than imported: this
-        // format's avatar sits at -0.5, so an object on the default layer 0 draws in FRONT of it,
-        // and the only way Afterbeat can express that is the AbovePlayer band. It is deliberate and
-        // it is what makes the export faithful - a level whose content covers the player here must
-        // cover it over there too - but it does mean an ordinary level authored on layer 0 arrives
-        // as an entirely above-player one, so the author's own layers are worth spending.
+        // format's avatar sits at 0.5, so an object on the default layer 0 draws BEHIND it and
+        // exports as an ordinary object, which is what makes a level authored here arrive over
+        // there as an ordinary level rather than an entirely above-player one. Covering the player
+        // is the explicit act on both sides - layer 1 here, the AbovePlayer band there.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.Normal)]
-        public void Export_LayerZero_IsAbovePlayer_AndMinusOneIsTheTopOfTheOrdinaryBand()
+        public void Export_LayerOne_IsAbovePlayer_AndZeroIsTheTopOfTheOrdinaryBand()
         {
             var imported = ABLevelImporter.Import(ABMockData.CreateLevel(), null, new ABOptions(60));
             var only = imported.Level.Game.Objects.Values.Single();
 
-            only.Layer = 0;
+            only.Layer = ValueRules.FirstLayerAbovePlayer;
             var above = ABLevelExporter.Export(imported.Level, null).Level.Objects.Single();
             Assert.AreEqual((int)ABRenderLayer.AbovePlayer, above.RenderLayer,
-                "layer 0 draws in front of this format's avatar, so it is not an ordinary object there");
+                "layer 1 draws in front of this format's avatar, so it is not an ordinary object there");
             Assert.AreEqual(VgdObject.MaxDepth, above.Depth, "and it is the backmost of that band");
 
-            only.Layer = -1;
+            only.Layer = ValueRules.LastLayerBehindPlayer;
             var ordinary = ABLevelExporter.Export(imported.Level, null).Level.Objects.Single();
             Assert.AreEqual((int)ABRenderLayer.Default, ordinary.RenderLayer);
             Assert.AreEqual(VgdObject.MinDepth, ordinary.Depth,
@@ -401,14 +401,13 @@ namespace BH.SDK.Tests.Interop.AfterBeat
             var back = exported.Objects.Single(o => o.Name == "materialized");
 
             Assert.AreEqual((int)ABRenderLayer.Default, back.RenderLayer);
-            Assert.AreEqual(-1 - inner.Layer, back.Depth,
+            Assert.AreEqual(ValueRules.LastLayerBehindPlayer - inner.Layer, back.Depth,
                 "the copy's own depth, not one derived from where the placement sat");
 
             // The placement itself has to be in the document too, or the copy's parent reference
             // names nothing - which the source game reads as a root, dropping the position, scale
             // and rotation the whole subtree was placed at.
-            var node = exported.Objects.Single(
-                o => o.Id == ABExportContext.ToSourceId(placement.ObjectId));
+            var node = exported.Objects.Single(o => o.Id == ABExportContext.ToSourceId(placement.ObjectId));
 
             Assert.AreEqual(node.Id, back.ParentId, "the copy still hangs off its placement");
             Assert.AreEqual((int)ABObjectType.AlphaEmpty, node.ObjectType,
@@ -435,8 +434,7 @@ namespace BH.SDK.Tests.Interop.AfterBeat
             placement.Scales.Add(new ScaKey(new Vector2Value(3f, 4f), 0));
 
             var exported = ABLevelExporter.Export(imported.Level, null).Level;
-            var node = exported.Objects.Single(
-                o => o.Id == ABExportContext.ToSourceId(placement.ObjectId));
+            var node = exported.Objects.Single(o => o.Id == ABExportContext.ToSourceId(placement.ObjectId));
 
             var scaled = node.Scale.Keyframes[0].Values;
             Assert.AreEqual(3f, scaled[0], 1e-4f);
