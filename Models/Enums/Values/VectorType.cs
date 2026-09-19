@@ -22,5 +22,16 @@
         /// Random point in circle, use sqrt method
         /// </summary>
         RandomCircle = 3,
+        
+        /// <summary>
+        /// Random point in rect, ONE roll shared by every axis - the point slides along the rect's
+        /// diagonal instead of landing anywhere inside it
+        /// </summary>
+        RandomRectUniform = 4,
+        
+        /// <summary>
+        /// The same single roll, then each axis quantized to its own grid by Step
+        /// </summary>
+        RandomRectStepUniform = 5,
     }
 }

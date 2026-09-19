@@ -395,7 +395,7 @@ namespace BH.SDK.Roslyn.Model
                 case MemberShape.ModelList:
                     return Utils + ".CopyList(" + access + ")";
                 case MemberShape.ValueList:
-                    return "new " + member.Type + "(" + access + ")";
+                    return Utils + ".CopyValueList(" + access + ")";
                 case MemberShape.ModelArray:
                     return Utils + ".CopyArray(" + access + ")";
                 case MemberShape.UnmanagedArray:

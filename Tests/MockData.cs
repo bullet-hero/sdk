@@ -216,6 +216,20 @@ namespace BH.SDK.Tests
             shapeObject.Pivots.Add(new AlignmentKey());
             shapeObject.Colors.Add(new Color4X4Key());
             shapeObject.UVs.Add(new UVKey());
+
+            // THE UNIFORM VARIANTS RIDE HERE, one per family, because every whole-Level round trip
+            // in the suite goes through this factory and a tag no fixture carries is a tag no codec
+            // is ever checked on. They are structurally identical to their per-component siblings,
+            // which is exactly why only the tag can tell them apart on the wire.
+            shapeObject.Positions.Add(new PosKey(
+                new Vector2RectUniform(-1f, -1f, 1f, 1f), FrameRules.MinFrame + 1));
+            shapeObject.Scales.Add(new ScaKey(
+                new Vector2RectStepUniform(0.5f, 0.5f, 2f, 2f, 0.25f), FrameRules.MinFrame + 1));
+            shapeObject.Colors.Add(new Color4X4Key(
+                new Color4MinMaxUniform(0f, 0f, 0f, 1f, 1f, 1f, 1f, 1f), FrameRules.MinFrame + 1));
+            level.Game.Events.Backgrounds.Add(new Color3Key(
+                new Color3MinMaxUniform(0f, 0f, 0f, 1f, 1f, 1f), FrameRules.MinFrame + 1));
+
             level.Game.Objects.Add(new ObjectId(1), shapeObject);
 
             var textObject = new TextObject()
@@ -574,6 +588,22 @@ namespace BH.SDK.Tests
             return prefab;
         }
 
+        /// <summary> A placement carrying a MULTI-ENTRY id remap table, which is the one member whose
+        /// key a reader cannot recover from the value. More than one entry on purpose: a table that
+        /// collapsed would still read back as one. </summary>
+        public static PrefabObject CreateTestPrefabPlacement()
+        {
+            var placement = new PrefabObject
+            {
+                ObjectId = new ObjectId(7),
+                PrefabId = PrefabId.NewGuid(),
+            };
+            placement.ObjectIds.Add(new ObjectId(1), new ObjectId(261));
+            placement.ObjectIds.Add(new ObjectId(2), new ObjectId(262));
+            placement.ObjectIds.Add(new ObjectId(3), new ObjectId(263));
+            return placement;
+        }
+
         public static ThemeData CreateTestTheme()
         {
             var theme = new ThemeData(ThemeId.NewGuid(), "TestTheme");
@@ -582,6 +612,16 @@ namespace BH.SDK.Tests
             theme.Matrix[1] = Color4Value.red;
             theme.Matrix[2] = Color4Value.green;
             theme.Matrix[3] = Color4Value.blue;
+
+            // Named on purpose: the themes inside CreateValidLevel leave ColorNames null, so between
+            // the two fixtures every sweep covers both states of a member that is legally absent.
+            theme.ColorNames = new List<string>(ValueRules.ThemeCount);
+            for (var i = 0; i < ValueRules.ThemeCount; i++)
+                theme.ColorNames.Add(string.Empty);
+            theme.ColorNames[0] = "fallback";
+            theme.ColorNames[1] = "red";
+            theme.ColorNames[2] = "green";
+            theme.ColorNames[3] = "blue";
             return theme;
         }
 

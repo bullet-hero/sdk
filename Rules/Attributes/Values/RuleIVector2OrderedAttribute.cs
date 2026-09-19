@@ -53,6 +53,16 @@ namespace BH.SDK.Rules.Attributes
                     var rect = (Vector2RectStep)value;
                     return rect.MaxX <= rect.MinY;
                 }
+                case VectorType.RandomRectUniform:
+                {
+                    var rect = (Vector2RectUniform)value;
+                    return rect.MaxX <= rect.MinY;
+                }
+                case VectorType.RandomRectStepUniform:
+                {
+                    var rect = (Vector2RectStepUniform)value;
+                    return rect.MaxX <= rect.MinY;
+                }
                 // A circle rolls X and Y from the same disc, so the only way every sample can be
                 // ordered is for the whole X extent to sit below the whole Y extent.
                 case VectorType.RandomCircle:
@@ -95,6 +105,24 @@ namespace BH.SDK.Rules.Attributes
                 case VectorType.RandomRectStep:
                 {
                     var rect = (Vector2RectStep)value;
+                    if (rect.MaxX <= rect.MinY) return;
+
+                    (rect.MinX, rect.MinY) = (rect.MinY, rect.MinX);
+                    (rect.MaxX, rect.MaxY) = (rect.MaxY, rect.MaxX);
+                    break;
+                }
+                case VectorType.RandomRectUniform:
+                {
+                    var rect = (Vector2RectUniform)value;
+                    if (rect.MaxX <= rect.MinY) return;
+
+                    (rect.MinX, rect.MinY) = (rect.MinY, rect.MinX);
+                    (rect.MaxX, rect.MaxY) = (rect.MaxY, rect.MaxX);
+                    break;
+                }
+                case VectorType.RandomRectStepUniform:
+                {
+                    var rect = (Vector2RectStepUniform)value;
                     if (rect.MaxX <= rect.MinY) return;
 
                     (rect.MinX, rect.MinY) = (rect.MinY, rect.MinX);

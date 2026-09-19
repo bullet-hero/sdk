@@ -513,6 +513,9 @@
         /// <summary> ThemeData.Matrix. </summary>
         public const string Matrix = "mtx";
 
+        /// <summary> ThemeData.ColorNames. </summary>
+        public const string ColorNames = "clrn";
+
         /// <summary> Word kept in the key vocabulary; nothing is built from it today. </summary>
         public const string Theme = "theme";
 

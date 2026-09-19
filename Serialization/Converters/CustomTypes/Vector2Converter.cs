@@ -21,6 +21,8 @@ namespace BH.SDK.Serialization.Converters.CustomTypes
                 VectorType.RandomRect => typeof(Vector2Rect),
                 VectorType.RandomRectStep => typeof(Vector2RectStep),
                 VectorType.RandomCircle => typeof(Vector2Circle),
+                VectorType.RandomRectUniform => typeof(Vector2RectUniform),
+                VectorType.RandomRectStepUniform => typeof(Vector2RectStepUniform),
                 _ => Fallback(customType, typeof(Vector2Value))
             };
         }

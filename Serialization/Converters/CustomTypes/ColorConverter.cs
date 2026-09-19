@@ -19,6 +19,7 @@ namespace BH.SDK.Serialization.Converters.CustomTypes
                 ColorType.Value => typeof(Color4Value),
                 ColorType.ThemeRef => typeof(Color4ThemeRef),
                 ColorType.RandomMinMax => typeof(Color4MinMax),
+                ColorType.RandomMinMaxUniform => typeof(Color4MinMaxUniform),
                 _ => Fallback(customType, typeof(Color4Value))
             };
         }

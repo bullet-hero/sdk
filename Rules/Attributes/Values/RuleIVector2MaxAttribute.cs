@@ -67,6 +67,20 @@ namespace BH.SDK.Rules.Attributes
                     if (randomRectStep.MaxY > MaxY) return false;
                     return true;
                 }
+                case VectorType.RandomRectUniform:
+                {
+                    var randomRectUniform = (Vector2RectUniform)value;
+                    if (randomRectUniform.MaxX > MaxX) return false;
+                    if (randomRectUniform.MaxY > MaxY) return false;
+                    return true;
+                }
+                case VectorType.RandomRectStepUniform:
+                {
+                    var randomRectStepUniform = (Vector2RectStepUniform)value;
+                    if (randomRectStepUniform.MaxX > MaxX) return false;
+                    if (randomRectStepUniform.MaxY > MaxY) return false;
+                    return true;
+                }
                 case VectorType.RandomCircle:
                 {
                     var randomCircle = (Vector2Circle)value;
@@ -105,6 +119,20 @@ namespace BH.SDK.Rules.Attributes
                     var randomRectStep = (Vector2RectStep)value;
                     if (randomRectStep.MaxX > MaxX) randomRectStep.MaxX = MaxX;
                     if (randomRectStep.MaxY > MaxY) randomRectStep.MaxY = MaxY;
+                    break;
+                }
+                case VectorType.RandomRectUniform:
+                {
+                    var randomRectUniform = (Vector2RectUniform)value;
+                    if (randomRectUniform.MaxX > MaxX) randomRectUniform.MaxX = MaxX;
+                    if (randomRectUniform.MaxY > MaxY) randomRectUniform.MaxY = MaxY;
+                    break;
+                }
+                case VectorType.RandomRectStepUniform:
+                {
+                    var randomRectStepUniform = (Vector2RectStepUniform)value;
+                    if (randomRectStepUniform.MaxX > MaxX) randomRectStepUniform.MaxX = MaxX;
+                    if (randomRectStepUniform.MaxY > MaxY) randomRectStepUniform.MaxY = MaxY;
                     break;
                 }
                 case VectorType.RandomCircle:

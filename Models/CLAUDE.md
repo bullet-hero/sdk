@@ -114,7 +114,17 @@ the level format itself (see "Object model" / "Value system" below for the
   are `ClampForever` on purpose — `CurveWrapMode.Default` behaves as `Once`, which answers a sample
   at exactly the last key time by wrapping to the first.
 - **Theme**: `ThemeData` (`Level.Resources.Themes`) holds a fixed `Color4Value[64] Matrix` (an
-  "8×8 grid", index layout documented in-file, mirrors *Project Arrhythmya*'s convention).
+  "8×8 grid", index layout documented in-file, mirrors *Project Arrhythmya*'s convention) and,
+  beside it, a NULLABLE `List<string> ColorNames` (`clrn`) of the same length - the author's own
+  label per slot. **Null is the normal state** and writes as one null; a non-null list is exactly
+  `ValueRules.ThemeCount` long and an empty entry means that one slot is unnamed. It is
+  `[RuleOptional, RuleCollectionCount]`, and it is the first member of the format that is BOTH a
+  collection and legally absent - which is what forced `RuleWalk`'s three `Descend*` to answer null,
+  since the generated walk calls those INSTEAD of `Check` and never reaches `[RuleOptional]`'s own
+  short-circuit. The band comment inside `ThemeData.cs` says what a slot is FOR and is a different
+  question: the shipped `Balanced` preset names its slots by HUE and ignores the bands entirely, so
+  nothing derives a name from a band. The Afterbeat importer seeds no names at all, deliberately -
+  an invented one is data the source did not carry and the export has nowhere to put it back.
   `ThemeKeyframe` (a real animated track, unlike `Marker`/`Checkpoint`) selects which `ThemeId` is
   **active** over time. `ColorType.ThemeRef` (`Color3ThemeRef`/`Color4ThemeRef`) stores only a raw
   `int ThemeColorIndex` (0-63) — **not** a `ThemeId` — indexing into whichever theme is currently

@@ -91,6 +91,12 @@ namespace BH.SDK.Utils
             return copyArray;
         }
 
+        /// <summary> A new list of the same items, or null when there was no list. Null is a legal
+        /// state for a list the format writes as a whole-or-nothing member, and copying one has to
+        /// preserve it rather than throw inside List's own copy constructor. </summary>
+        public static List<T> CopyValueList<T>(this List<T> list) =>
+            list is null ? null : new List<T>(list);
+
         /// <summary> A new list holding copies, not the same instances. </summary>
         public static List<T> CopyList<T>(this List<T> list) where T : ICopyable<T>
         {
@@ -205,6 +211,10 @@ namespace BH.SDK.Utils
         /// <summary> Element-by-element equality, which a list does not have on its own. </summary>
         public static bool ListEquals<T>(this List<T> list, List<T> other)
         {
+            // Two absent lists ARE equal, unlike two absent arrays or dictionaries below - a list is
+            // the only shape the format lets a member be null in, and there "neither was ever set"
+            // has to compare equal or a model can never equal its own round trip.
+            if (list is null && other is null) return true;
             if (list is null || other is null) return false;
             if (ReferenceEquals(list, other)) return true;
             if (list.Count != other.Count) return false;
