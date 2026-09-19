@@ -69,6 +69,58 @@ namespace BH.SDK.Rules
         /// <summary> Upper bound of LayerKey.Layer, RectObject.Layer. </summary>
         public const int MaxLayer = 1000;
 
+        // THE PLAYER LINE. The avatar is not authored content and owns no whole layer: it renders
+        // inside the (0, 1) band, between two authored layers, so the DEFAULT layer an object is
+        // created on draws BEHIND it. That is the point of the band sitting where it does - the one
+        // thing that must stay readable is the avatar, and a level authored without thinking about
+        // draw order must not bury it. Putting something in front of the player is an explicit act:
+        // the author types 1. This also matches Afterbeat, whose whole Default band (depth 0
+        // included) is behind its own player and whose AbovePlayer band is the exception.
+        //
+        // Only the consumer draws inside the band (Services.Shared's AvatarInitData, Services.Root's
+        // InframeCursorService), but the interop crossing has to KNOW the line - ABLayerMap packs
+        // each Afterbeat band against its own edge of it and ABObjectExporter infers a band back
+        // from which side a layer falls on. Both cite these two constants rather than 0 and 1.
+
+        /// <summary> Highest authored layer that draws behind the player. </summary>
+        public const int LastLayerBehindPlayer = 0;
+
+        /// <summary> Lowest authored layer that draws in front of the player. </summary>
+        public const int FirstLayerAbovePlayer = LastLayerBehindPlayer + 1;
+
+        // HOW THE BAND IS SHARED WHEN THERE IS MORE THAN ONE AVATAR. Nothing reads these two yet -
+        // they are the multiplayer reservation, decided now because the band they divide is fixed
+        // and a cap chosen later would be chosen against whatever the first implementation happened
+        // to spend. Every avatar gets ONE SLOT of the band and lays itself out inside it, so no
+        // avatar can ever be sliced through by another's parts.
+        //
+        // THE SLOT WIDTH IS 1 / (how many avatars there are), NOT 1 / MaxAvatars. One avatar keeps
+        // the whole band, which is what the numbers in AvatarInitData are written against; a session
+        // with eight players gives each an eighth. The cap bounds how many may exist, never how
+        // finely the single-player case is sliced. Joining restacks everyone's z, which is draw
+        // order alone and happens on join.
+        //
+        // WHY 128 AND NOT 100. 1/128 is exact in binary floating point, so a slot edge never drifts,
+        // and it leaves 28 over the hundred the design asks for. The ceiling that actually bites is
+        // far higher and is the depth buffer: the game camera is orthographic over near -2000 / far
+        // 2000, i.e. 4000 world units of LINEAR depth, which at 24 bits resolves about 2.4e-4 per
+        // step. At 128 avatars a slot is 0.0078, some 32 depth steps between two of them - reliably
+        // distinct. Around a thousand the slots themselves fall to ~4 steps and avatars begin to
+        // z-fight each other, so the cap keeps an eightfold margin.
+        //
+        // INSIDE a slot the separation is finer than the depth buffer and that is deliberate: the
+        // parts of ONE avatar overlap in a fixed draw order, which is already how the shipping
+        // 0.0001 offsets in AvatarSettings hold their order. Budget about 32 planes per avatar (the
+        // avatar uses ~14 distinct values today); at the cap that is a 1/4096 step, 2.4x coarser
+        // than what ships now. The cursor keeps the bottom tenth of its OWN owner's slot.
+
+        /// <summary> How many avatars may share the player band at once - the multiplayer cap. </summary>
+        public const int MaxAvatars = 128;
+
+        /// <summary> The narrowest slot one avatar is ever given, i.e. the slot width at the cap.
+        /// A live session divides the band by how many avatars it actually has. </summary>
+        public const float MinAvatarSlotWidth = 1f / MaxAvatars;
+
         /// <summary> Lowest layer selection allowed. </summary>
         public const float MinLayerSelection = MaxLayer + MinLayerDelta;
 

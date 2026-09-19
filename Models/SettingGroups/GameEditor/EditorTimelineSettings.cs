@@ -63,6 +63,18 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
         [JsonProperty(Names.TimeFormat)]
         public TimelineTimeFormat TimeFormat { get; set; }
 
+        // THE TOOL IS PER-TAB NOW, and this decides what a tab shows when it comes back up. On, a
+        // tab always returns to Selection, which is the tool a click means everywhere and the only
+        // one that cannot destroy anything by being pressed by accident; off, each tab remembers
+        // what was last chosen on it. The default is ON because a blade left armed on a tab visited
+        // ten minutes ago is the one way a tool change can cost an author an edit they did not ask
+        // for. Snapping is NOT part of this - it is a preference about the grid, not a tool.
+
+        /// <summary> Whether switching timeline tabs puts the tab arrived at back on the Selection
+        /// tool instead of the one it was last left on. </summary>
+        [JsonProperty(Names.ToolReset)]
+        public bool ToolResetOnTabChange { get; set; }
+
         /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public EditorTimelineSettings()
         {
@@ -71,13 +83,14 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
 
         /// <summary> Every member at once, in declaration order. </summary>
         public EditorTimelineSettings(float snapThresholdPx, float edgeHandlePx, bool globalLoop,
-            bool localLoop, TimelineTimeFormat timeFormat)
+            bool localLoop, TimelineTimeFormat timeFormat, bool toolResetOnTabChange)
         {
             SnapThresholdPx = snapThresholdPx;
             EdgeHandlePx = edgeHandlePx;
             GlobalLoop = globalLoop;
             LocalLoop = localLoop;
             TimeFormat = timeFormat;
+            ToolResetOnTabChange = toolResetOnTabChange;
         }
 
         private void ResetOwn()
@@ -87,6 +100,7 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
             GlobalLoop = true;
             LocalLoop = true;
             TimeFormat = TimelineTimeFormat.Frames;
+            ToolResetOnTabChange = true;
         }
     }
 }

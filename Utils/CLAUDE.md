@@ -62,6 +62,17 @@ layer-wide conventions. This file is folder-local.
   winding): every step can reintroduce a problem an earlier one fixed, and this is the order in
   which none does.
 
+  **`ResourceReferenceUtils`** — what still points at one of a level's own resources, as a COUNT
+  per resource family. It is the question the editor asks in front of a delete, and nothing here
+  could answer it before: `LevelGraphAnalyzer.UnresolvedReference` answers the OPPOSITE
+  direction, i.e. the state a delete creates, discovered on the next load. Two things it has to
+  get right and a caller cannot check: EVERY scope is walked, `Prefab.Root` included (a texture
+  used by nothing but a template is still used, and the root is the one object no dictionary
+  holds), and a NULL id counts nothing (null is how an object says it draws no texture, so
+  counting it would report every plain object in the level). A `ThemeRef` colour is deliberately
+  not a theme reference - it stores a slot INDEX into whichever theme is active, so only the
+  level's own theme track names a `ThemeId`.
+
   **`SurrogateUtils`** — where a string may be cut. Every length ceiling in this format counts UTF-16
   CODE UNITS, and an astral character (every emoji) is two of them, so a cut between the halves
   satisfies the bound with something that is not a character; a consumer then renders U+FFFD and

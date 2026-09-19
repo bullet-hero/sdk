@@ -54,6 +54,21 @@ before the field reads back as the field's default, so the default is also what 
 addition needs a migrator. Opacity is the only part of its colour anyone authors; the hue is derived from the
 camera background live, which is why there is no grid colour here.
 
+**Three settings shipped with the editor's Medium fix pass and each is the same additive shape.**
+`GameEditorSettings.Interface.HierarchyExpansion` / `.TimelineExpansion` are the RUNG each
+folding surface opens a level at (`ExpansionMode`, which moved into `Models/Enums/Settings/` from
+the consumer for this - a serialized member may not be typed by a consumer's enum). They default
+to `Collapsed` and `Expanded`, which is what the two surfaces did before they were configurable,
+and they disagree for the reason stated above `SyncTimelineExpansion`: a fold closes a row in a
+tree and REMOVES one from a timeline. Only the STARTING rung is stored - which rung a surface is
+currently on stays the consumer's session state, the same split `EditorGridSettings.ActiveDefault`
+makes. `GameEditorSettings.Timeline.ToolResetOnTabChange` (default **true**) is what let the
+editor's timeline tool become per-tab at all: with it on, the tab arrived at comes back on the
+Selection tool rather than on a blade left armed there. `AudioSettings.EditorGame` (default
+**1**, like `Game`) is the level's own volume while the EDITOR is playing it - the same level
+through the same path, listened to for hours instead of once, and the consumer picks between the
+two faders with a claim taken for the editor scope's lifetime.
+
 `GameEditorSettings.Interface.ExpansionMask` is the same shape, one layer up from a bool:
 `ObjectTypeMask`, a bit per `ObjectType`, and a bit PRESENT means that kind of object is shown
 UNFOLDED - the inverse of how a filter mask reads, which is the one thing about it that gets read
