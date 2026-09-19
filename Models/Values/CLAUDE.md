@@ -12,8 +12,8 @@ each `: IModel<TSelf>` plus a single discriminator method returning a `*Type` en
 | Interface | discriminator enum | concrete variants |
 |---|---|---|
 | `IFloat` / `IInt` | `FloatType`/`IntType` | Value / RandomMinMax / RandomMinMaxStep |
-| `IVector2/3/4` | `VectorType` (shared) | Value / RandomRect / RandomRectStep / RandomCircle |
-| `IColor3` (RGB) / `IColor4` (RGBA) | `ColorType` (shared) | Value / ThemeRef / RandomMinMax |
+| `IVector2/3/4` | `VectorType` (shared) | Value / RandomRect / RandomRectStep / RandomCircle / RandomRect**Uniform** / RandomRectStep**Uniform** |
+| `IColor3` (RGB) / `IColor4` (RGBA) | `ColorType` (shared) | Value / ThemeRef / RandomMinMax / RandomMinMax**Uniform** |
 | `IString` | `StringType` | Value / Localized (`List<StringLanguage>`) |
 | `IScreenLimit` | `ScreenLimitType` | None / Fixed / Bounds |
 | `ILicense` | `LicenseType` | NoSpecified / Typical / Custom |

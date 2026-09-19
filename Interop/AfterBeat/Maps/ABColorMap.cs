@@ -229,6 +229,22 @@ namespace BH.SDK.Interop.AfterBeat
                     return (MatchNearest(mid, palette, referenceTheme, report, path), mid.A);
                 }
 
+                // The uniform form carries the SAME two bounds - it differs only in how it resolves
+                // at playback - so it exports to the same midpoint rather than falling through to
+                // the default arm, which would drop the colour to the palette's first entry.
+                case Color4MinMaxUniform minMaxUniform:
+                {
+                    report?.Approximated("color_random_resolved",
+                        "Afterbeat has no random colour; those colours export as the midpoint of their range.",
+                        path);
+                    var mid = new Color4Value(
+                        (minMaxUniform.MinR + minMaxUniform.MaxR) * 0.5f,
+                        (minMaxUniform.MinG + minMaxUniform.MaxG) * 0.5f,
+                        (minMaxUniform.MinB + minMaxUniform.MaxB) * 0.5f,
+                        (minMaxUniform.MinA + minMaxUniform.MaxA) * 0.5f);
+                    return (MatchNearest(mid, palette, referenceTheme, report, path), mid.A);
+                }
+
                 default:
                     report?.Approximated("color_unknown_variant",
                         $"Colour variant '{color.GetModelType()}' has no Afterbeat equivalent; those colours export as the palette's first entry.",

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using BH.SDK.Models.Attributes;
 using BH.SDK.Models.Interfaces;
 using BH.SDK.Models.Primitives;
@@ -52,6 +53,17 @@ namespace BH.SDK.Models.Data
         // 42-48 - free
         // 49-57 - effects (PA)
         // 58-64 - free
+
+        /// <summary> One author-written label per slot, or null when nothing in this palette was
+        /// ever named. Null is a real state and writes as one null rather than as 64 empty strings
+        /// (a collection is never omitted whole - see Docs/NAMING.md); a non-null list is exactly
+        /// ThemeCount long and an empty or null entry inside it means that one slot is unnamed.
+        /// The band comment above says what a slot is FOR, which is a different question from what
+        /// an author calls it - the shipped Balanced preset names its slots by hue and ignores the
+        /// bands entirely. </summary>
+        [RuleOptional, RuleCollectionCount(ValueRules.ThemeCount)]
+        [JsonProperty(Names.ColorNames)]
+        public List<string> ColorNames { get; set; }
         
         /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public ThemeData()
@@ -60,6 +72,7 @@ namespace BH.SDK.Models.Data
             Name = string.Empty;
             Matrix = new Color4Value[ValueRules.ThemeCount];
             Array.Fill(Matrix, Color4Value.white);
+            ColorNames = null;
         }
         /// <summary> Built from its id and "". </summary>
         public ThemeData(ThemeId themeId, string name = "")
@@ -68,6 +81,7 @@ namespace BH.SDK.Models.Data
             Name = name;
             Matrix = new Color4Value[ValueRules.ThemeCount];
             Array.Fill(Matrix, Color4Value.white);
+            ColorNames = null;
         }
         /// <summary> Built from its id, name and matrix. </summary>
         public ThemeData(ThemeId themeId, string name, Color4Value[] matrix)
@@ -75,6 +89,15 @@ namespace BH.SDK.Models.Data
             ThemeId = themeId;
             Name = name;
             Matrix = matrix;
+            ColorNames = null;
+        }
+        /// <summary> Every member at once, in declaration order. </summary>
+        public ThemeData(ThemeId themeId, string name, Color4Value[] matrix, List<string> colorNames)
+        {
+            ThemeId = themeId;
+            Name = name;
+            Matrix = matrix;
+            ColorNames = colorNames;
         }
     }
 }

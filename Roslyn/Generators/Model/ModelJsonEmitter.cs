@@ -165,14 +165,14 @@ namespace BH.SDK.Roslyn.Model
                     }
                     else
                     {
-                        builder.Append(indent).AppendLine("    // A key nothing can recover from the value: an array of {K,V}.");
+                        builder.Append(indent).AppendLine("    // A key nothing can recover from the value: an array of {k,v}.");
                         builder.Append(indent).AppendLine("    writer.WriteStartArray();");
                         builder.Append(indent).Append("    foreach (var pair in ").Append(member.Name).AppendLine(")");
                         builder.Append(indent).AppendLine("    {");
                         builder.Append(indent).AppendLine("        writer.WriteStartObject();");
-                        builder.Append(indent).AppendLine("        writer.WritePropertyName(\"K\");");
+                        builder.Append(indent).AppendLine("        writer.WritePropertyName(\"k\");");
                         builder.Append(indent).Append("        ").AppendLine(Scalar(member.Key, "pair.Key"));
-                        builder.Append(indent).AppendLine("        writer.WritePropertyName(\"V\");");
+                        builder.Append(indent).AppendLine("        writer.WritePropertyName(\"v\");");
                         builder.Append(indent).Append("        ").AppendLine(Scalar(member.Element, "pair.Value"));
                         builder.Append(indent).AppendLine("        writer.WriteEndObject();");
                         builder.Append(indent).AppendLine("    }");
@@ -376,8 +376,8 @@ namespace BH.SDK.Roslyn.Model
                         builder.Append(indent).AppendLine("        {");
                         builder.Append(indent).AppendLine("            var field = (string)reader.Value;");
                         builder.Append(indent).AppendLine("            reader.Read();");
-                        builder.Append(indent).Append("            if (field == \"K\") pairKey = ").Append(ReadScalar(member.Key)).AppendLine(";");
-                        builder.Append(indent).Append("            else if (field == \"V\") pairValue = ").Append(ReadScalar(member.Element)).AppendLine(";");
+                        builder.Append(indent).Append("            if (global::System.String.Equals(field, \"k\", global::System.StringComparison.OrdinalIgnoreCase)) pairKey = ").Append(ReadScalar(member.Key)).AppendLine(";");
+                        builder.Append(indent).Append("            else if (global::System.String.Equals(field, \"v\", global::System.StringComparison.OrdinalIgnoreCase)) pairValue = ").Append(ReadScalar(member.Element)).AppendLine(";");
                         builder.Append(indent).AppendLine("            else reader.Skip();");
                         builder.Append(indent).AppendLine("        }");
                         builder.Append(indent).AppendLine("        map[pairKey] = pairValue;");

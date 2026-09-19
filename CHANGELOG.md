@@ -4,6 +4,16 @@
 
 ### Added
 
+- `ThemeData.ColorNames` (`clrn`), a nullable list of one label per theme slot, `ValueRules.ThemeCount`
+  long when present. Null is the normal state and is what an unnamed palette writes - the slot layout
+  comment in `ThemeData` says what a slot is FOR, which is a different question from what an author
+  calls it
+- `VectorType.RandomRectUniform` / `RandomRectStepUniform` and `ColorType.RandomMinMaxUniform`, with
+  `Vector2/3/4RectUniform`, `Vector2/3/4RectStepUniform` and `Color3/4MinMaxUniform` behind them - the
+  same bounds as their per-component siblings, resolved from ONE roll shared by every component.
+  `RandomCircle` has no uniform form, since one roll ties its radius to its angle
+- `ModelUtils.CopyValueList`, the null-preserving copy a value list needs now that one may be absent
+
 - `CurveKeyframeValue.BrokenTangents` (`brkt`), false by default - whether the key's two tangents are
   meant to differ. They were always two separate numbers, so a corner was already representable; what
   was missing is whether the author meant one, without which an editor dragging a handle has to guess
@@ -15,6 +25,10 @@
 
 ### Changed
 
+- The generated JSON codec writes an id-remap pair as `{"k":…,"v":…}` and reads either case. It wrote
+  and read `"K"`/`"V"` while `DictionaryAsPairListConverter` used `Names.KeyShort`/`ValueShort`, so
+  the two codecs disagreed about every remap table in the format - invisible while each one only read
+  back what it had written
 - `LevelSettings.ObjectIdCounter` and `Prefab.ObjectIdCounter` are bounded by `MaxObjectIds`
   (`int.MaxValue`), not by `MaxObjects` (262 144). The old bound was an Error whose `Fix` clamped the
   counter back down and re-issued ids that were already live

@@ -237,6 +237,17 @@ namespace BH.SDK.Interop.AfterBeat
                 case Vector2Rect rect:
                     ReportRandom(report, path);
                     return ((rect.MinX + rect.MaxX) * 0.5f, (rect.MinY + rect.MaxY) * 0.5f);
+                // The uniform forms carry the same rect - they differ only in how it resolves at
+                // playback - so they export to the same midpoint rather than falling to the default
+                // arm, which would drop the point to the origin.
+                case Vector2RectStepUniform stepUniform:
+                    ReportRandom(report, path);
+                    return ((stepUniform.MinX + stepUniform.MaxX) * 0.5f,
+                        (stepUniform.MinY + stepUniform.MaxY) * 0.5f);
+                case Vector2RectUniform rectUniform:
+                    ReportRandom(report, path);
+                    return ((rectUniform.MinX + rectUniform.MaxX) * 0.5f,
+                        (rectUniform.MinY + rectUniform.MaxY) * 0.5f);
                 case Vector2Circle circle:
                     ReportRandom(report, path);
                     return (circle.X, circle.Y);

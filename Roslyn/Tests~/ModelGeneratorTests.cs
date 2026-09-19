@@ -90,14 +90,19 @@ namespace Fixture
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.Easy)]
-        public void AValueList_IsCopiedByItsConstructor_NotPerItem()
+        public void AValueList_IsCopiedWholesale_NotPerItem()
         {
             // List<int> has no ICopyable elements, so CopyList would not even compile. Getting this
             // wrong is the commonest way a member-shape classifier fails.
+            //
+            // It goes through CopyValueList rather than through List's own copy constructor for one
+            // reason: a value list is the only shape in the format a member may legally be NULL in,
+            // and `new List<T>(null)` throws where copying an absent list has to keep it absent.
             var source = Run(Leaf).Source("Fixture.Leaf.Model.g.cs");
 
-            Assert.That(source, Does.Contain("new global::System.Collections.Generic.List<int>(src.Values)"));
+            Assert.That(source, Does.Contain("ModelUtils.CopyValueList(src.Values)"));
             Assert.That(source, Does.Not.Contain("CopyList(src.Values)"));
+            Assert.That(source, Does.Not.Contain("new global::System.Collections.Generic.List<int>(src.Values)"));
         }
 
         #endregion

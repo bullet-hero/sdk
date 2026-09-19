@@ -152,6 +152,9 @@ namespace BH.SDK.Utils
             array.CopyTo(copy, 0);
             return copy;
         }
+        public static List<T> CopyValueList<T>(this List<T> list) =>
+            list is null ? null : new List<T>(list);
+
         public static List<T> CopyList<T>(this List<T> list) where T : ICopyable<T>
             => list.Select(i => i.Copy()).ToList();
         public static Dictionary<TKey, TValue> CopyDictionary<TKey, TValue>(this Dictionary<TKey, TValue> d)

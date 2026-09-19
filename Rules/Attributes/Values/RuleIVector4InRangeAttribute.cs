@@ -121,6 +121,24 @@ namespace BH.SDK.Rules.Attributes
                     if (randomRectStep.MinW < MinW || randomRectStep.MaxW > MaxW) return false;
                     return true;
                 }
+                case VectorType.RandomRectUniform:
+                {
+                    var randomRectUniform = (Vector4RectUniform)value;
+                    if (randomRectUniform.MinX < MinX || randomRectUniform.MaxX > MaxX) return false;
+                    if (randomRectUniform.MinY < MinY || randomRectUniform.MaxY > MaxY) return false;
+                    if (randomRectUniform.MinZ < MinZ || randomRectUniform.MaxZ > MaxZ) return false;
+                    if (randomRectUniform.MinW < MinW || randomRectUniform.MaxW > MaxW) return false;
+                    return true;
+                }
+                case VectorType.RandomRectStepUniform:
+                {
+                    var randomRectStepUniform = (Vector4RectStepUniform)value;
+                    if (randomRectStepUniform.MinX < MinX || randomRectStepUniform.MaxX > MaxX) return false;
+                    if (randomRectStepUniform.MinY < MinY || randomRectStepUniform.MaxY > MaxY) return false;
+                    if (randomRectStepUniform.MinZ < MinZ || randomRectStepUniform.MaxZ > MaxZ) return false;
+                    if (randomRectStepUniform.MinW < MinW || randomRectStepUniform.MaxW > MaxW) return false;
+                    return true;
+                }
                 case VectorType.RandomCircle:
                 {
                     var randomCircle = (Vector4Circle)value;
@@ -183,6 +201,32 @@ namespace BH.SDK.Rules.Attributes
                     if (randomRectStep.MaxZ > MaxZ) randomRectStep.MaxZ = MaxZ;
                     if (randomRectStep.MinW < MinW) randomRectStep.MinW = MinW;
                     if (randomRectStep.MaxW > MaxW) randomRectStep.MaxW = MaxW;
+                    break;
+                }
+                case VectorType.RandomRectUniform:
+                {
+                    var randomRectUniform = (Vector4RectUniform)value;
+                    if (randomRectUniform.MinX < MinX) randomRectUniform.MinX = MinX;
+                    if (randomRectUniform.MaxX > MaxX) randomRectUniform.MaxX = MaxX;
+                    if (randomRectUniform.MinY < MinY) randomRectUniform.MinY = MinY;
+                    if (randomRectUniform.MaxY > MaxY) randomRectUniform.MaxY = MaxY;
+                    if (randomRectUniform.MinZ < MinZ) randomRectUniform.MinZ = MinZ;
+                    if (randomRectUniform.MaxZ > MaxZ) randomRectUniform.MaxZ = MaxZ;
+                    if (randomRectUniform.MinW < MinW) randomRectUniform.MinW = MinW;
+                    if (randomRectUniform.MaxW > MaxW) randomRectUniform.MaxW = MaxW;
+                    break;
+                }
+                case VectorType.RandomRectStepUniform:
+                {
+                    var randomRectStepUniform = (Vector4RectStepUniform)value;
+                    if (randomRectStepUniform.MinX < MinX) randomRectStepUniform.MinX = MinX;
+                    if (randomRectStepUniform.MaxX > MaxX) randomRectStepUniform.MaxX = MaxX;
+                    if (randomRectStepUniform.MinY < MinY) randomRectStepUniform.MinY = MinY;
+                    if (randomRectStepUniform.MaxY > MaxY) randomRectStepUniform.MaxY = MaxY;
+                    if (randomRectStepUniform.MinZ < MinZ) randomRectStepUniform.MinZ = MinZ;
+                    if (randomRectStepUniform.MaxZ > MaxZ) randomRectStepUniform.MaxZ = MaxZ;
+                    if (randomRectStepUniform.MinW < MinW) randomRectStepUniform.MinW = MinW;
+                    if (randomRectStepUniform.MaxW > MaxW) randomRectStepUniform.MaxW = MaxW;
                     break;
                 }
                 case VectorType.RandomCircle:

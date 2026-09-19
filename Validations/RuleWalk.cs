@@ -216,9 +216,16 @@ namespace BH.SDK.Validations
             else DescendOne(property, value, context);
         }
 
+        // A NULL COLLECTION IS A LEGAL STATE, so every Descend below starts by answering it. The
+        // generated walk calls these INSTEAD of Check rather than after it, so [RuleOptional]'s own
+        // short-circuit never reaches them - ThemeData.ColorNames is the first member to be both a
+        // collection and legally absent, and it arrived here as a NullReferenceException.
+
         /// <summary> Walks into a list, recording the index in the trace. </summary>
         public void DescendList(PropertyInfo property, IList list, RuleContext context)
         {
+            if (list is null) return;
+
             for (var i = 0; i < list.Count; i++)
             {
                 _trace.Add(new RulePath(property, BoxIndex(i)));
@@ -238,6 +245,8 @@ namespace BH.SDK.Validations
         /// <summary> Walks into a dictionary, recording the key in the trace. </summary>
         public void DescendDictionary(PropertyInfo property, IDictionary dictionary, RuleContext context)
         {
+            if (dictionary is null) return;
+
             foreach (DictionaryEntry entry in dictionary)
             {
                 _trace.Add(new RulePath(property, entry.Key));
@@ -249,6 +258,8 @@ namespace BH.SDK.Validations
         /// <summary> Walks into an array, recording the index in the trace. </summary>
         public void DescendArray(PropertyInfo property, Array array, RuleContext context)
         {
+            if (array is null) return;
+
             for (var i = 0; i < array.Length; i++)
             {
                 _trace.Add(new RulePath(property, BoxIndex(i)));

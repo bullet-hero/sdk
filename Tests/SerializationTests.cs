@@ -216,6 +216,64 @@ namespace BH.SDK.Tests
             Assert.IsTrue(prefab.Equals(prefab2));
         }
 
+        // ColorNames is the first member of the format that is a collection AND legally null, so
+        // both of its states have to survive both codecs. The null case is the one with a byte cost
+        // attached: an unnamed palette must write no key at all, which is what keeps naming free for
+        // every level that never uses it.
+
+        /// <summary> A palette nobody named round-trips as absent, and writes nothing. </summary>
+        [TestCase(SerializationType.Json)]
+        [TestCase(SerializationType.Blob)]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Normal)]
+        public void TestThemeColorNamesNullRoundTrip(SerializationType type)
+        {
+            var serializationService = new SerializationService(new SerializationSettings());
+            var theme = MockData.CreateTestTheme();
+            theme.ColorNames = null;
+
+            var dataSerializer = serializationService.GetDataSerializer(type);
+            var attribute = theme.GetType().GetCustomAttribute<ModelGenerationAttribute>();
+            var bytes = dataSerializer.SerializeEnvelope(attribute.Domain,
+                new EnvelopeData(attribute.Generation, theme));
+            var restored = dataSerializer.DeserializeEnvelope(bytes, typeof(ThemeData))
+                .GetPayload<ThemeData>();
+
+            Assert.IsNull(restored.ColorNames);
+            Assert.IsTrue(theme.Equals(restored));
+
+            // Written as ONE null, not skipped: Docs/NAMING.md keeps an empty collection and a
+            // missing one apart, so only sub-models are omitted whole. What this pins is that an
+            // unnamed palette costs one null instead of 64 empty strings.
+            if (type == SerializationType.Json)
+                Assert.IsTrue(serializationService.SerializeData(theme)
+                        .Contains("\"" + Names.ColorNames + "\":null"),
+                    "an unnamed palette must write one null, not a list of empty names");
+        }
+
+        /// <summary> A named palette round-trips name for name. </summary>
+        [TestCase(SerializationType.Json)]
+        [TestCase(SerializationType.Blob)]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Normal)]
+        public void TestThemeColorNamesRoundTrip(SerializationType type)
+        {
+            var serializationService = new SerializationService(new SerializationSettings());
+            var theme = MockData.CreateTestTheme();
+
+            var dataSerializer = serializationService.GetDataSerializer(type);
+            var attribute = theme.GetType().GetCustomAttribute<ModelGenerationAttribute>();
+            var bytes = dataSerializer.SerializeEnvelope(attribute.Domain,
+                new EnvelopeData(attribute.Generation, theme));
+            var restored = dataSerializer.DeserializeEnvelope(bytes, typeof(ThemeData))
+                .GetPayload<ThemeData>();
+
+            Assert.AreEqual(theme.ColorNames, restored.ColorNames);
+            Assert.IsTrue(theme.Equals(restored));
+        }
+
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]

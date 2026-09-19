@@ -2,11 +2,14 @@
 using System.Linq;
 using System.Reflection;
 using BH.SDK.Models;
+using BH.SDK.Models.Objects;
+using BH.SDK.Models.Primitives;
 using BH.SDK.Serialization;
 using BH.SDK.Serialization.Json;
 using BH.SDK.Versions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using System.Text.RegularExpressions;
 using NUnit.Framework;
 
 namespace BH.SDK.Tests
@@ -95,6 +98,60 @@ namespace BH.SDK.Tests
         #endregion
 
         #region Reading
+
+        // An id remap table is the one member in the format whose key a reader cannot recover from
+        // the value, so it is written as an array of {k,v} pairs. The generated codec and the
+        // reflective DictionaryAsPairListConverter used to disagree about the CASE of those two
+        // letters, which no self-consistent test can see: each path read back exactly what it
+        // wrote. These two are what pin them together.
+
+        // A PrefabObject is not a serialization ROOT (no [ModelGeneration]), so both halves below go
+        // through the level that holds it - which is also the only shape the format ever writes one in.
+
+        /// <summary> The pair table both paths write, compared byte for byte. </summary>
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Normal)]
+        public void APrefabIdRemapTable_IsWrittenByteForByte()
+        {
+            var level = LevelWithPlacement();
+
+            var written = Generated.SerializeData(level);
+            Assert.IsTrue(written.Contains("\"k\":"), "the fixture carries no pair table: " + written);
+            Assert.AreEqual(Reflective.SerializeData(level), written);
+        }
+
+        /// <summary> Every level already on disk spells the pair keys with capitals, and a reader that
+        /// stopped answering them would drop the whole table to one default entry without a word. </summary>
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Normal)]
+        public void APrefabIdRemapTable_StillReadsTheCapitalSpelling()
+        {
+            var lower = Generated.SerializeData(LevelWithPlacement());
+            // Only inside the pair itself: a blanket ,"v": would also rewrite the envelope's own
+            // payload key and every keyframe value in the level, and the document would stop parsing.
+            var upper = Regex.Replace(lower, "\\{\"k\":(-?\\d+),\"v\":(-?\\d+)\\}", "{\"K\":$1,\"V\":$2}");
+            Assert.AreNotEqual(lower, upper, "the fixture carries no pair table, so this proves nothing");
+
+            var fromUpper = Generated.DeserializeData<Level>(upper);
+            var placement = (PrefabObject)fromUpper.Game.Objects[new ObjectId(7)];
+
+            Assert.AreEqual(3, placement.ObjectIds.Count, "a collapsed table reads back as one entry");
+            Assert.AreEqual(new ObjectId(261), placement.ObjectIds[new ObjectId(1)]);
+            Assert.AreEqual(new ObjectId(263), placement.ObjectIds[new ObjectId(3)]);
+        }
+
+        private static Level LevelWithPlacement()
+        {
+            var level = new Level();
+            var placement = MockData.CreateTestPrefabPlacement();
+            level.Game.Objects.Add(placement.ObjectId, placement);
+            return level;
+        }
+
 
         [Test]
         [Author(Metadata.Author.Vertoker)]
