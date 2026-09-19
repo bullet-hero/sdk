@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Changed
+
+- A new `Marker` is red rather than white. It is an editor annotation with no theme behind it, so
+  the default is what most of them stay
+
 ## sv 0.11.2 - 2026-09-18
 
 ### Added

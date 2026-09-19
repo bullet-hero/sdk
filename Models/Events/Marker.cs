@@ -44,7 +44,7 @@ namespace BH.SDK.Models.Events
             Frame = FrameRules.MinFrame;
             Name = string.Empty;
             Description = string.Empty;
-            Color4 = new Color4Value();
+            Color4 = Color4Value.red;
         }
         /// <summary> Built from its name, description, 4 and frame. </summary>
         public Marker(string name, string description, Color4Value color4, int frame)
