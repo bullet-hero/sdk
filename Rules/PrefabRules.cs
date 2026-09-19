@@ -22,8 +22,17 @@ namespace BH.SDK.Rules
         // A template is just another object scope, so it inherits the level's own object budget
         // rather than getting a separate (and inevitably drifting) number.
 
-        /// <summary> Upper bound of Prefab.ObjectIdCounter, Prefab.Objects. </summary>
+        /// <summary> Upper bound of Prefab.Objects. </summary>
         public const int MaxObjects = LevelRules.MaxObjects;
+
+        // And it inherits the id BUDGET the same way, which is a different number for the reason
+        // spelled out over LevelRules.MaxObjectIds: a template's counter measures ids ever minted,
+        // not objects held. A template is the scope a prefab-editing session spends ids in fastest,
+        // since every create/undo/branch inside Prefab Mode consumes from here rather than from the
+        // level's own counter.
+
+        /// <summary> Upper bound of Prefab.ObjectIdCounter. </summary>
+        public const int MaxObjectIds = LevelRules.MaxObjectIds;
 
         // How deep placements may nest before the format calls it absurd. This is a property of the
         // FORMAT, not of one device: a file nesting deeper cannot be materialized correctly by any

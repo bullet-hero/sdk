@@ -64,8 +64,13 @@ namespace BH.SDK.Models.Objects
         [JsonProperty(Names.SpanShort)]
         public FrameSpan Span { get; set; }
 
-        /// <summary> Draw order among siblings - higher draws in front. Static here; LayerKey
-        /// animates it where a track is wired up. </summary>
+        // STATIC, AND DELIBERATELY SO. There is no layer track and there is not going to be one: a
+        // Random* value is addressed by Hash(seed, frame, EFFECTIVE layer, span start, track,
+        // channel), so a layer that moved would silently reroll every random value under this
+        // object on every frame it moved. The LayerKey class that used to imply otherwise is gone.
+        // Docs/Issues/LEVEL_MODEL_ANALYSIS.md section C5 is the record.
+
+        /// <summary> Draw order among siblings - higher draws in front. Not animated. </summary>
         [RuleInRange(ValueRules.MinLayer, ValueRules.MaxLayer)]
         [ModificationField(ModificationFields.Layer)]
         [JsonProperty(Names.LayerShort)]
@@ -135,7 +140,7 @@ namespace BH.SDK.Models.Objects
             Active = true;
             Span = new FrameSpan();
             Layer = ValueRules.DefaultLayer;
-            
+
             Positions = new List<PosKey>();
             Rotations = new List<AngleKey>();
             Scales = new List<ScaKey>();
@@ -144,8 +149,10 @@ namespace BH.SDK.Models.Objects
             AnchorsMax = new List<AlignmentKey>();
             Pivots = new List<AlignmentKey>();
         }
+
         /// <summary> Every member at once, in declaration order. </summary>
-        public RectObject(ObjectId objectId, ObjectId parentObjectId, string name, bool active, FrameSpan span, int layer,
+        public RectObject(ObjectId objectId, ObjectId parentObjectId, string name, bool active, FrameSpan span,
+            int layer,
             List<PosKey> positions, List<AngleKey> rotations, List<ScaKey> scales, List<ScaKey> sizes,
             List<AlignmentKey> anchorsMin, List<AlignmentKey> anchorsMax, List<AlignmentKey> pivots)
         {
@@ -155,7 +162,7 @@ namespace BH.SDK.Models.Objects
             Active = active;
             Span = span;
             Layer = layer;
-            
+
             Positions = positions;
             Rotations = rotations;
             Scales = scales;

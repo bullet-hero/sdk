@@ -6,8 +6,10 @@ using NUnit.Framework;
 namespace BH.SDK.Tests.Rules
 {
     /// <summary>
-    /// RuleIIntInRange over all three IInt variants. Only LayerKey.Layer uses it today, bounding an
-    /// animated draw-order track to the authored layer band.
+    /// RuleIIntInRange over all three IInt variants. NO MODEL CARRIES IT TODAY - its one user was
+    /// LayerKey.Layer, and that class is gone (Docs/Issues/LEVEL_MODEL_ANALYSIS.md, C5). The rule
+    /// stays because IInt is a live value family and the next int-valued member wants it; these
+    /// tests are what keep it working while nothing exercises it from a real model.
     /// </summary>
     public class RuleIIntInRangeTests : BaseRuleTests
     {
@@ -15,16 +17,14 @@ namespace BH.SDK.Tests.Rules
         [RuleContainer]
         private class Model
         {
-            [RuleIIntInRange(-10, 10)]
-            public IInt Value { get; set; } = new IntValue(0);
+            [RuleIIntInRange(-10, 10)] public IInt Value { get; set; } = new IntValue(0);
         }
 
         /// <summary> A property of a type the rule does not apply to, so it must decline rather than refuse. </summary>
         [RuleContainer]
         private class WrongTypeModel
         {
-            [RuleIIntInRange(-10, 10)]
-            public int Value { get; set; }
+            [RuleIIntInRange(-10, 10)] public int Value { get; set; }
         }
 
         [Test]

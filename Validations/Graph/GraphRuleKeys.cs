@@ -32,6 +32,7 @@ namespace BH.SDK.Validations.Graph
                 GraphRule.IdCounterBehind => "graph_id_counter_behind",
                 GraphRule.UnresolvedReference => "graph_unresolved_reference",
                 GraphRule.BeatSegmentsOverlap => "graph_beat_segments_overlap",
+                GraphRule.IdCounterNearExhaustion => "graph_id_counter_near_exhaustion",
                 _ => throw new ArgumentOutOfRangeException(nameof(rule), rule, "Unnamed graph rule"),
             };
         }

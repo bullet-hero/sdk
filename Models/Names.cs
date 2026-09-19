@@ -237,7 +237,7 @@
         /// <summary> Word kept in the key vocabulary; nothing is built from it today. </summary>
         public const string Byte = "byte";
 
-        /// <summary> <c>"v"</c> - IntKey.Value, LayerKey.Layer. </summary>
+        /// <summary> <c>"v"</c> - IntKey.Value. </summary>
         public const string Int = ValueShort;
 
         /// <summary> <c>"v"</c> - AngleKey.Angle, AppearingKey.Value, FillmentKey.Value, FloatKey.Value and 2 more. </summary>
@@ -2631,6 +2631,9 @@
 
         /// <summary> <c>"ow"</c> - CurveKeyframeValue.OutWeight. </summary>
         public const string OutWeight = OutShort + WeightShort;
+
+        /// <summary> <c>"brkt"</c> - CurveKeyframeValue.BrokenTangents. </summary>
+        public const string BrokenTangents = "brkt";
 
         /// <summary> CurveValue.PreWrapMode. </summary>
         public const string PreWrapMode = "prewrap";

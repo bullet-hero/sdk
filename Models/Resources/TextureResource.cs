@@ -25,9 +25,20 @@ namespace BH.SDK.Models.Resources
         [JsonProperty(Names.TextureResourceId)]
         public TextureResourceId TextureResourceId { get; set; }
 
+        // THE PER-RESOURCE DEFAULT MAPPING, and it stacks with the per-object UVs track exactly
+        // like every other empty-track fallback in this format: an object with no UV keyframes
+        // samples THIS, and an object with any key overrides it completely (the runtime's
+        // FrameMath.GetGlobalUV returns its fallback on an empty slice, and the fallback is what
+        // RegistryManager registered from here). So it says "this sprite sheet's cell is the
+        // top-left quarter" once instead of on every object that uses the image.
+        //
+        // Bounded like UVKey's own two halves rather than by Vector4Value's generic +-1e6, which is
+        // what it inherited while nothing could author it: the quantity is the same one, and a
+        // tiling of a million across one object is legal data nobody means.
+
         /// <summary> Region of the source image this resource actually is, as tiling+offset. Applies
         /// to the resource itself, unlike UVKey which animates a single object's mapping. </summary>
-        [RuleNotNull]
+        [RuleNotNull, RuleIVector4InRange(ValueRules.MinUv, ValueRules.MaxUv)]
         [JsonProperty(Names.TextureResourceUV)]
         public Vector4Value TextureResourceUV { get; set; }
 

@@ -43,5 +43,10 @@ namespace BH.SDK.Validations.Graph
         /// <summary> Two beat segments cover the same frame, so what the grid is there has two
         /// answers. </summary>
         BeatSegmentsOverlap = 11,
+
+        /// <summary> An id counter is far enough into the id space that the scope will eventually
+        /// stop being able to create objects. A warning, and the only one here that is about the
+        /// FUTURE rather than about something already wrong. </summary>
+        IdCounterNearExhaustion = 12,
     }
 }
