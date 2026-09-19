@@ -42,6 +42,7 @@ namespace BH.SDK.Utils
                 if (++depth > LevelRules.MaxObjectDepth) return -1;
                 id = obj.ParentObjectId;
             }
+
             return depth;
         }
 
@@ -56,6 +57,7 @@ namespace BH.SDK.Utils
                 var distance = GetDistanceToAncestor(scope, pair.Key, id);
                 if (distance > height) height = distance;
             }
+
             return height;
         }
 
@@ -71,6 +73,7 @@ namespace BH.SDK.Utils
                 id = obj.ParentObjectId;
                 steps++;
             }
+
             return 0;
         }
 
@@ -78,13 +81,25 @@ namespace BH.SDK.Utils
         /// push some chain past the cap. The moved subtree's HEIGHT is what usually breaches it, not
         /// the moved object alone. </summary>
         public static bool WouldExceedDepth(IObjectScope scope, ObjectId movedId, ObjectId newParentId)
+            => WouldExceedDepth(scope, newParentId, GetSubtreeHeight(scope, movedId));
+
+        // THE HEIGHT IS A PARAMETER because measuring it is the expensive half - GetSubtreeHeight
+        // walks every object in the scope, while the parent's own depth is a walk of at most
+        // MaxObjectDepth steps. A caller asking the same question about ONE moved subtree against
+        // MANY candidate parents - a parent picker filtering its rows - measures the height once and
+        // pays only the cheap half per candidate; anything asking about one pair uses the overload
+        // above and never sees this.
+
+        /// <summary> Whether parenting a subtree of this height under this parent would push a chain
+        /// past the cap. `movedSubtreeHeight` is GetSubtreeHeight of the object being moved. </summary>
+        public static bool WouldExceedDepth(IObjectScope scope, ObjectId newParentId, int movedSubtreeHeight)
         {
             var parentDepth = GetDepth(scope, newParentId);
             if (parentDepth < 0) return true; // already broken or cyclic - do not add to it
 
             // parentDepth IS the moved object's new ancestor count, and the deepest thing under it
-            // sits subtreeHeight levels further down.
-            return parentDepth + GetSubtreeHeight(scope, movedId) > LevelRules.MaxObjectDepth;
+            // sits movedSubtreeHeight levels further down.
+            return parentDepth + movedSubtreeHeight > LevelRules.MaxObjectDepth;
         }
 
         // A template's inner objects are copied into the host scope UNDER the placement, so the
@@ -113,8 +128,10 @@ namespace BH.SDK.Utils
                     if (++depth > LevelRules.MaxObjectDepth) return -1;
                     parentId = parent.ParentObjectId;
                 }
+
                 if (depth > deepest) deepest = depth;
             }
+
             return deepest;
         }
 

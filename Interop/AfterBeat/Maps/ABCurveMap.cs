@@ -317,8 +317,13 @@ namespace BH.SDK.Interop.AfterBeat
                 if (i == 0) incoming = outgoing;
                 if (i == unique.Count - 1) outgoing = incoming;
 
+                // Broken exactly when the two sides genuinely differ. These slopes come from the
+                // two NEIGHBOURING segments, so an imported point sitting where the line changes
+                // direction is a corner and must stay one - dragging its handle in the curve editor
+                // would otherwise straighten it on the first touch.
                 keys.Add(new CurveKeyframeValue(unique[i].Time, unique[i].Value,
-                    CurveWeightedMode.None, CurveTangentMode.Free, incoming, outgoing, 0f, 0f));
+                    CurveWeightedMode.None, CurveTangentMode.Free, incoming, outgoing, 0f, 0f,
+                    incoming != outgoing));
             }
 
             return new CurveValue(keys, CurveWrapMode.Default, CurveWrapMode.Default);

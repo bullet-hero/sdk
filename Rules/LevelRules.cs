@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
+using BH.SDK.Models.Primitives;
 
 namespace BH.SDK.Rules
 {
@@ -61,8 +62,68 @@ namespace BH.SDK.Rules
         // unbounded load, not an unbounded frame. 2^18 sits far above any authored level and far
         // below what would exhaust a phone.
 
-        /// <summary> Upper bound of GameLevel.Objects, LevelSettings.ObjectIdCounter. </summary>
+        /// <summary> Upper bound of GameLevel.Objects. </summary>
         public const int MaxObjects = 262_144;
+
+        // NOT MaxObjects, and the difference is the whole point. MaxObjects is how many objects may
+        // EXIST - what a loader pays for. This is how many ids have ever been MINTED, and ids are
+        // never reused (see LevelSettings.ObjectIdCounter) so nothing ever gives one back: a
+        // generator run, a paste, a prefab materialize and an undone creation all consume from here
+        // permanently. The two quantities diverge with editing TIME, not with level size, and
+        // binding the counter to the collection's cap made a long-lived level fail validation while
+        // holding almost nothing - and fail it destructively, since RuleInRange is an Error whose
+        // Fix CLAMPS: the repair wrote the counter back down and the next object created took an id
+        // that was already live.
+        //
+        // An int cannot hold more, so this ceiling is the type's rather than a policy, and reaching
+        // it needs 2.1 billion create gestures. What happens there anyway is the refusal below plus
+        // the compaction generator designed in Docs/Issues/LEVEL_MODEL_ANALYSIS.md section D2 -
+        // never a wrap and never a negative, those being game-space objects and the three reserved
+        // parents.
+
+        /// <summary> Upper bound of LevelSettings.ObjectIdCounter. </summary>
+        public const int MaxObjectIds = int.MaxValue;
+
+        // Three quarters of the range, and the only part of this whole area a player would ever see.
+        // A validation WARNING here is what turns "the editor refused and I do not know why" into
+        // something the author was told about long before the wall - by the time minting actually
+        // refuses there is nothing left to do but run the compaction generator, and being told then
+        // is being told too late.
+
+        /// <summary> Counter value at which validation starts warning that the range is running out. </summary>
+        public const int ObjectIdCounterWarning = MaxObjectIds / 4 * 3;
+
+        // Returns a long on purpose. The obvious int spelling of "how many are left" overflows at
+        // exactly the end of the range it exists to describe (MaxObjectIds - counter + 1 with the
+        // counter at its floor is int.MaxValue, one step from wrapping), and an overflow HERE would
+        // report a exhausted counter as having room, which is the one wrong answer that matters.
+
+        /// <summary> How many more ids a counter sitting at this value may still mint. </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static long RemainingObjectIds(int counter) =>
+            counter < ObjectId.MinLevelValue ? 0L : (long)MaxObjectIds - counter + 1L;
+
+        /// <summary> Can a counter at this value mint <paramref name="count"/> more ids without
+        /// crossing <see cref="MaxObjectIds"/> - the question a BULK create must ask before it
+        /// writes anything, so it cannot commit half a run and then refuse. </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool CanMintObjectIds(int counter, int count) =>
+            count >= 0 && RemainingObjectIds(counter) >= count;
+
+        /// <summary> Is a counter at this value far enough into the range to tell the author. </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsObjectIdCounterNearExhaustion(int counter) => counter >= ObjectIdCounterWarning;
+
+        /// <summary> Refuses a mint that would push the counter past the end of the id space, where
+        /// the next value is not an id at all. The polite refusal belongs at the CALLER, which can
+        /// decline before writing anything; this is the net under it. </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void AssertObjectIdAvailable(int counter)
+        {
+            if (!CanMintObjectIds(counter, 1))
+                throw new Exception($"Object id counter {counter} has no id left to mint - " +
+                                    $"the range ends at {MaxObjectIds} and ids are never reused");
+        }
 
         // Longest parent chain AUTHORED CONTENT may have. Depth is walked per object per frame (a
         // child's transform and layer are the sum up its chain), so the real ceiling is the

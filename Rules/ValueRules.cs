@@ -63,10 +63,10 @@ namespace BH.SDK.Rules
         /// <summary> The layer Z offset count. </summary>
         public const int LayerZOffsetCount = 512;
 
-        /// <summary> Lower bound of LayerKey.Layer, RectObject.Layer. </summary>
+        /// <summary> Lower bound of RectObject.Layer. </summary>
         public const int MinLayer = -1000;
 
-        /// <summary> Upper bound of LayerKey.Layer, RectObject.Layer. </summary>
+        /// <summary> Upper bound of RectObject.Layer. </summary>
         public const int MaxLayer = 1000;
 
         // THE PLAYER LINE. The avatar is not authored content and owns no whole layer: it renders

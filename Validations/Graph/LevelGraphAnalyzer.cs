@@ -159,9 +159,26 @@ namespace BH.SDK.Validations.Graph
 
         // A counter at or below an id already in use hands the next created object a colliding id -
         // the one failure here that is silent at authoring time and corrupt afterwards.
+        //
+        // The second finding is the opposite kind of news: a counter that is FINE but running out.
+        // Ids are never reused, so this number only ever climbs - it measures how long a level has
+        // been edited, not how big it is - and the day it reaches LevelRules.MaxObjectIds the scope
+        // stops being able to create anything at all. Reported well before that (three quarters of
+        // the range) because by the time minting refuses there is nothing left to do but renumber
+        // the whole file, and being told at that point is being told too late. It is checked
+        // WITHOUT the objects-empty early return above, since an emptied-out level whose counter
+        // sits near the ceiling is precisely the case the warning is for.
         private static void AnalyzeIdCounter(Dictionary<ObjectId, RectObject> objects, int counter,
             string scopeName, List<GraphIssue> result)
         {
+            if (LevelRules.IsObjectIdCounterNearExhaustion(counter))
+            {
+                result.Add(new GraphIssue(GraphRule.IdCounterNearExhaustion, RuleGroup.Warning,
+                    $"{scopeName}.ObjectIdCounter",
+                    $"counter {counter} has spent {ObjectIdPercentSpent(counter)}% of the id space - " +
+                    $"{LevelRules.RemainingObjectIds(counter)} ids left, and they are never reused"));
+            }
+
             var maxUsed = int.MinValue;
             foreach (var pair in objects)
             {
@@ -176,6 +193,9 @@ namespace BH.SDK.Validations.Graph
                     $"counter {counter} is not past the highest id in use ({maxUsed})"));
             }
         }
+
+        private static int ObjectIdPercentSpent(int counter) =>
+            (int)(100L - LevelRules.RemainingObjectIds(counter) * 100L / LevelRules.MaxObjectIds);
 
         #endregion
 

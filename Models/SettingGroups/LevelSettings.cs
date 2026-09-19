@@ -33,7 +33,7 @@ namespace BH.SDK.Models.SettingGroups
 
         /// <summary> Next free object id. Only ever grows - ids of deleted objects are never reused,
         /// so a stale reference can't silently point at a different object. </summary>
-        [RuleInRange(ObjectId.MinLevelValue, LevelRules.MaxObjects)]
+        [RuleInRange(ObjectId.MinLevelValue, LevelRules.MaxObjectIds)]
         [JsonProperty(Names.ObjectIdCounter)]
         public int ObjectIdCounter { get; set; }
 
@@ -69,7 +69,18 @@ namespace BH.SDK.Models.SettingGroups
         public LevelOrientation Orientation { get; set; }
 
         /// <summary> The next unused id in this scope, consuming it. </summary>
-        public ObjectId GetNextObjectId() => new(ObjectIdCounter++);
+        public ObjectId GetNextObjectId()
+        {
+            LevelRules.AssertObjectIdAvailable(ObjectIdCounter);
+            return new ObjectId(ObjectIdCounter++);
+        }
+
+        /// <summary> How many more ids this level can mint. </summary>
+        public long GetRemainingObjectIds() => LevelRules.RemainingObjectIds(ObjectIdCounter);
+
+        /// <summary> Whether a bulk create of this size can be committed whole. </summary>
+        public bool CanMintObjectIds(int count) => LevelRules.CanMintObjectIds(ObjectIdCounter, count);
+
         /// <summary> The next unused id in this scope, consuming it. </summary>
         public AudioId GetNextAudioId() => new(AudioIdCounter++);
 

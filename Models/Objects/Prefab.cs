@@ -52,12 +52,22 @@ namespace BH.SDK.Models.Objects
         // prefab is itself materialized as a nested placement inside another prefab's template.
 
         /// <summary> Next free id in this template's own namespace. </summary>
-        [RuleInRange(ObjectId.MinLevelValue, PrefabRules.MaxObjects)]
+        [RuleInRange(ObjectId.MinLevelValue, PrefabRules.MaxObjectIds)]
         [JsonProperty(Names.ObjectIdCounter)]
         public int ObjectIdCounter { get; set; }
 
         /// <summary> The next unused id in this scope, consuming it. </summary>
-        public ObjectId GetNextObjectId() => new(ObjectIdCounter++);
+        public ObjectId GetNextObjectId()
+        {
+            LevelRules.AssertObjectIdAvailable(ObjectIdCounter);
+            return new ObjectId(ObjectIdCounter++);
+        }
+
+        /// <summary> How many more ids this template can mint. </summary>
+        public long GetRemainingObjectIds() => LevelRules.RemainingObjectIds(ObjectIdCounter);
+
+        /// <summary> Whether a bulk create of this size can be committed whole. </summary>
+        public bool CanMintObjectIds(int count) => LevelRules.CanMintObjectIds(ObjectIdCounter, count);
 
         /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public Prefab()
