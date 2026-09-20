@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## sv 0.13.0 - 2026-09-20
+
+### Added
+
+- `ResourceMeta.ResourceFeatured` (`featured`), false by default - whether this resource is worth
+  naming on the level's card and not only inside the full credits. Which track is "the music" is a
+  fact of `level.json`, and a level's presentation may never open that file, so the record says it
+  about itself. Generic rather than audio-only: cover art and a display font are the same question
+  asked of another family. Declared last, so the blob's member order stays append-only
+
 ## sv 0.12.0 - 2026-09-20
 
 ### Added
