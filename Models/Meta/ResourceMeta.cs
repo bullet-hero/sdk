@@ -95,12 +95,26 @@ namespace BH.SDK.Models.Meta
         [JsonProperty(Names.Authors)]
         public List<Author> ResourceAuthors { get; set; }
 
+        // WHICH RECORD A CARD NAMES, decided by the author rather than guessed by the client. Which
+        // track is "the music" is a fact of level.json, and a level's presentation may never open
+        // that file - so the record says it about itself. Generic rather than an audio-only field:
+        // cover art and a display font are the same question asked of another family, and a flag
+        // costs one key per record either way.
+        //
+        // Declared LAST because the blob writes members in declaration order and that order is
+        // append-only (.claude/rules/sdk-format.md). Anything new goes here, under this comment.
+
+        /// <summary> Whether this resource is worth naming on the level's card, not only inside the
+        /// full credits. False is ordinary - most records are paperwork, not a headline. </summary>
+        [JsonProperty(Names.Featured)]
+        public bool ResourceFeatured { get; set; }
+
         // No age rating here on purpose - it lives on LevelMeta alone. A rating describes what a
         // player is about to experience, which is a property of the finished level, not of an asset
         // in isolation: the same track is menu music in one level and a jump scare in another.
         // Per-resource ratings would also have to be guessed by whoever imported the asset, and a
         // guessed number folded into the level's own would make it meaningless.
-        
+
         /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public ResourceMeta()
         {
@@ -114,12 +128,15 @@ namespace BH.SDK.Models.Meta
             ResourceAuthors = new List<Author>();
             ResourcePermissions = new List<PermissionGrant>();
             ResourceHashes = new List<string>();
+            ResourceFeatured = false;
         }
+
         /// <summary> Every member at once, in declaration order. </summary>
         public ResourceMeta(ResourceType resourceType, TypedResourceId resourceId, IString resourceTitle,
             IString resourceDescription, string resourceUrl, ILicense resourceLicense,
             List<IString> resourceSources, List<Author> resourceAuthors,
-            List<PermissionGrant> resourcePermissions = null, List<string> resourceHashes = null)
+            List<PermissionGrant> resourcePermissions = null, List<string> resourceHashes = null,
+            bool resourceFeatured = false)
         {
             ResourceType = resourceType;
             ResourceId = resourceId;
@@ -131,6 +148,7 @@ namespace BH.SDK.Models.Meta
             ResourceAuthors = resourceAuthors;
             ResourcePermissions = resourcePermissions ?? new List<PermissionGrant>();
             ResourceHashes = resourceHashes ?? new List<string>();
+            ResourceFeatured = resourceFeatured;
         }
 
         /// <summary> A permission that still stands at the given UTC time, if this record holds one.
@@ -143,6 +161,7 @@ namespace BH.SDK.Models.Meta
                 grant = permission;
                 return true;
             }
+
             grant = null;
             return false;
         }

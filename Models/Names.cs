@@ -817,6 +817,9 @@
         /// <summary> Author.Credit. </summary>
         public const string Credit = "credit";
 
+        /// <summary> ResourceMeta.ResourceFeatured. </summary>
+        public const string Featured = "featured";
+
         // ONE SPELLING FOR A SOURCE. Resource.Sources wrote src while ResourceMeta and
         // PublishProfile wrote sources, for the same concept.
 
