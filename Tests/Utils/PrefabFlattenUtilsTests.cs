@@ -200,5 +200,80 @@ namespace BH.SDK.Tests.Utils
 
             CollectionAssert.AreEquivalent(new[] { used }, referenced);
         }
+
+        // ==================== Top-only: the nested copy is KEPT, rebased ====================
+
+        // A top-only flatten leaves a nested copy standing as a real placement, which is only legal
+        // once its table has been moved into the host's ids. These are the two halves of that.
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Easy)]
+        public void CollectDirectNested_FindsOnlyThePlacementsOneLevelDown()
+        {
+            var level = CreateLevel();
+            var outer = AddPlacement(level, "outer");
+            var nested = AddPlacement(level, "nested");
+            var deeper = AddPlacement(level, "deeper");
+            var plain = AddShape(level);
+
+            Own(outer, nested, 1);
+            Own(outer, plain, 2);
+            Own(nested, deeper, 1); // one level further down - the outer flatten never sees it
+
+            var found = new List<PrefabObject>();
+            PrefabFlattenUtils.CollectDirectNested(level.Game, outer, found);
+
+            CollectionAssert.AreEquivalent(new[] { nested }, found);
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Normal)]
+        public void TryRebaseNested_MovesTheTableIntoTheHostsIds()
+        {
+            var level = CreateLevel();
+            var outer = AddPlacement(level, "outer");
+            var nested = AddPlacement(level, "nested");
+            var child = AddShape(level);
+
+            // The nested copy names ids in the OUTER TEMPLATE's scope (7 here), and the outer
+            // placement is the only thing that can say which host object each of those became.
+            var outerTemplateId = new ObjectId(7);
+            outer.ObjectIds[outerTemplateId] = child.ObjectId;
+            Own(outer, nested, 1);
+            nested.ObjectIds[new ObjectId(3)] = outerTemplateId;
+
+            Assert.IsTrue(PrefabFlattenUtils.TryRebaseNested(nested, outer));
+            Assert.AreEqual(child.ObjectId, nested.ObjectIds[new ObjectId(3)],
+                "the value is now a host id, so the copy is a genuine placement of its own template");
+            Assert.AreEqual(1, nested.ObjectIds.Count, "the keys are the inner template's and do not move");
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Normal)]
+        public void TryRebaseNested_AnUnnameableEntryChangesNothing()
+        {
+            var level = CreateLevel();
+            var outer = AddPlacement(level, "outer");
+            var nested = AddPlacement(level, "nested");
+            var child = AddShape(level);
+
+            var known = new ObjectId(7);
+            var unknown = new ObjectId(8); // the outer table never names this one
+            outer.ObjectIds[known] = child.ObjectId;
+            Own(outer, nested, 1);
+            nested.ObjectIds[new ObjectId(3)] = known;
+            nested.ObjectIds[new ObjectId(4)] = unknown;
+
+            Assert.IsFalse(PrefabFlattenUtils.TryRebaseNested(nested, outer));
+            Assert.AreEqual(known, nested.ObjectIds[new ObjectId(3)],
+                "all or nothing - half a table in each scope is the one state nothing can recover from");
+            Assert.AreEqual(unknown, nested.ObjectIds[new ObjectId(4)]);
+        }
     }
 }

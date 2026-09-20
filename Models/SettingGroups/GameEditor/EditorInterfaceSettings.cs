@@ -80,10 +80,11 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
         // Off by default, and the default is the whole of what this field decides - the two
         // surfaces fold by the same rule either way, they simply keep separate answers. Folding is
         // cheap and reversible in a TREE, where a closed row still occupies its slot and says what
-        // it hides; in a TIMELINE it removes rows outright, so the two surfaces want opposite
-        // starting states (the hierarchy opens collapsed, the timeline opens expanded) and tying
-        // them together means picking one. An author who navigates in both at once wants them tied;
-        // one who uses the tree to find things and the timeline to see everything does not.
+        // it hides; in a TIMELINE it removes rows outright, so the two keep separate answers even
+        // though BOTH now open on Partial - the middle rung shows authored content and folds what
+        // the mask calls structure, which is the state an author opens a level to look at on either
+        // surface. An author who navigates in both at once wants them tied; one who uses the tree to
+        // find things and the timeline to see everything does not.
 
         /// <summary> Whether folding a row in the frame hierarchy also folds that object's subtree
         /// out of the object timelines, and the other way round. </summary>
@@ -178,8 +179,8 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
             SyncTimelineExpansion = false;
             LogRuleFindings = false;
             ExpansionMask = ObjectTypeMask.All & ~ObjectTypeMask.PrefabObject;
-            HierarchyExpansion = ExpansionMode.Collapsed;
-            TimelineExpansion = ExpansionMode.Expanded;
+            HierarchyExpansion = ExpansionMode.Partial;
+            TimelineExpansion = ExpansionMode.Partial;
         }
     }
 }

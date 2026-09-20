@@ -133,8 +133,8 @@ namespace BH.SDK.Tests
             Assert.IsFalse(settings.Interface.RenderInframes);
             Assert.IsFalse(settings.Interface.SelectionAutoOpenActive);
             Assert.IsFalse(settings.Interface.SyncTimelineExpansion);
-            Assert.AreEqual(ExpansionMode.Collapsed, settings.Interface.HierarchyExpansion);
-            Assert.AreEqual(ExpansionMode.Expanded, settings.Interface.TimelineExpansion);
+            Assert.AreEqual(ExpansionMode.Partial, settings.Interface.HierarchyExpansion);
+            Assert.AreEqual(ExpansionMode.Partial, settings.Interface.TimelineExpansion);
             Assert.IsTrue(settings.Timeline.ToolResetOnTabChange);
             Assert.AreEqual(SerializationType.Json, settings.Serialization.LevelMode);
         }
@@ -386,22 +386,23 @@ namespace BH.SDK.Tests
             Assert.AreEqual(0.25f, settings.Grid.Opacity);
         }
 
-        // THE TWO SURFACES OPEN AT OPPOSITE RUNGS, and the disagreement is the whole reason there
-        // are two settings rather than one. A fold CLOSES a row in the hierarchy - the row stays,
-        // saying what it hides - and REMOVES one from a timeline, where the vertical axis means a
-        // layer. So a tree is cheap to open collapsed and a timeline is not. Both values are what
-        // the surfaces did before they were configurable: this test is what fails if a future
-        // reader "tidies" them into agreement.
+        // BOTH SURFACES OPEN ON THE MIDDLE RUNG, and they still hold two settings rather than one
+        // because they are two answers, not one shared one - an author folds a tree and a timeline
+        // for different reasons, and SyncTimelineExpansion exists precisely for the case where they
+        // want them tied. They used to open at OPPOSITE rungs (collapsed / expanded), which is what
+        // each surface did before either was configurable; Partial is the rung that shows authored
+        // content and folds what the mask calls structure, which is what a level is opened to look
+        // at on either surface.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.VeryEasy)]
-        public void ExpansionDefaults_DisagreeBySurface()
+        public void ExpansionDefaults_OpenOnPartial()
         {
             var settings = new GameEditorSettings();
 
-            Assert.AreEqual(ExpansionMode.Collapsed, settings.Interface.HierarchyExpansion);
-            Assert.AreEqual(ExpansionMode.Expanded, settings.Interface.TimelineExpansion);
+            Assert.AreEqual(ExpansionMode.Partial, settings.Interface.HierarchyExpansion);
+            Assert.AreEqual(ExpansionMode.Partial, settings.Interface.TimelineExpansion);
         }
 
         // ON, because the tool a tab comes back on is the one a click means everywhere. A blade
