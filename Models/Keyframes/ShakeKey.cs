@@ -36,26 +36,40 @@ namespace BH.SDK.Models.Keyframes
         [JsonProperty(Names.CoordY)]
         public float IntensityY { get; set; }
 
+        // A FRESH SHAKE DOES NOTHING AND SNAPS, which is the opposite of every other key's default
+        // and is what a shake IS. Intensity is zero because a key created on an empty track lands
+        // wherever the playhead was and its whole payload is a camera the author did not ask to
+        // move - a shake is authored by raising it from nothing, never by damping a shake that
+        // started itself. And the ease is Constant because the value being blended into is a
+        // procedural offset: interpolating towards a shake ramps the screen for the whole segment
+        // before it, so a key meant to hit ON a beat starts drifting seconds earlier.
+
+        /// <summary> How a shake is blended into when nothing says otherwise - see the note above. </summary>
+        public const EaseType DefaultShakeEase = EaseType.Constant;
+
         /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public ShakeKey()
         {
-            Intensity = 1f;
+            Intensity = 0f;
             Speed = 1f;
             IntensityX = 1f;
             IntensityY = 1f;
+            Ease = DefaultShakeEase;
         }
+
         /// <summary> Every member at once, in declaration order. </summary>
         public ShakeKey(float intensity, float speed,
-            int frame, EaseType ease = DefaultEase) : base(frame, ease)
+            int frame, EaseType ease = DefaultShakeEase) : base(frame, ease)
         {
             Intensity = intensity;
             Speed = speed;
             IntensityX = 1f;
             IntensityY = 1f;
         }
+
         /// <summary> Every member at once, in declaration order. </summary>
         public ShakeKey(float intensity, float speed, float intensityX, float intensityY,
-            int frame, EaseType ease = DefaultEase) : base(frame, ease)
+            int frame, EaseType ease = DefaultShakeEase) : base(frame, ease)
         {
             Intensity = intensity;
             Speed = speed;
