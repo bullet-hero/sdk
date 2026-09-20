@@ -27,11 +27,11 @@
         /// Random point in rect, ONE roll shared by every axis - the point slides along the rect's
         /// diagonal instead of landing anywhere inside it
         /// </summary>
-        RandomRectUniform = 4,
+        RandomLerp = 4,
         
         /// <summary>
         /// The same single roll, then each axis quantized to its own grid by Step
         /// </summary>
-        RandomRectStepUniform = 5,
+        RandomLerpStep = 5,
     }
 }

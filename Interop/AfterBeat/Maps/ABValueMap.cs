@@ -240,14 +240,14 @@ namespace BH.SDK.Interop.AfterBeat
                 // The uniform forms carry the same rect - they differ only in how it resolves at
                 // playback - so they export to the same midpoint rather than falling to the default
                 // arm, which would drop the point to the origin.
-                case Vector2RectStepUniform stepUniform:
+                case Vector2LerpStep stepUniform:
                     ReportRandom(report, path);
-                    return ((stepUniform.MinX + stepUniform.MaxX) * 0.5f,
-                        (stepUniform.MinY + stepUniform.MaxY) * 0.5f);
-                case Vector2RectUniform rectUniform:
+                    return ((stepUniform.FromX + stepUniform.ToX) * 0.5f,
+                        (stepUniform.FromY + stepUniform.ToY) * 0.5f);
+                case Vector2Lerp rectUniform:
                     ReportRandom(report, path);
-                    return ((rectUniform.MinX + rectUniform.MaxX) * 0.5f,
-                        (rectUniform.MinY + rectUniform.MaxY) * 0.5f);
+                    return ((rectUniform.FromX + rectUniform.ToX) * 0.5f,
+                        (rectUniform.FromY + rectUniform.ToY) * 0.5f);
                 case Vector2Circle circle:
                     ReportRandom(report, path);
                     return (circle.X, circle.Y);

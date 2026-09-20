@@ -86,18 +86,18 @@ namespace BH.SDK.Rules.Attributes
                     if (randomRectStep.MinY < MinY || randomRectStep.MaxY > MaxY) return false;
                     return true;
                 }
-                case VectorType.RandomRectUniform:
+                case VectorType.RandomLerp:
                 {
-                    var randomRectUniform = (Vector2RectUniform)value;
-                    if (randomRectUniform.MinX < MinX || randomRectUniform.MaxX > MaxX) return false;
-                    if (randomRectUniform.MinY < MinY || randomRectUniform.MaxY > MaxY) return false;
+                    var randomRectUniform = (Vector2Lerp)value;
+                    if (randomRectUniform.FromX < MinX || randomRectUniform.ToX > MaxX) return false;
+                    if (randomRectUniform.FromY < MinY || randomRectUniform.ToY > MaxY) return false;
                     return true;
                 }
-                case VectorType.RandomRectStepUniform:
+                case VectorType.RandomLerpStep:
                 {
-                    var randomRectStepUniform = (Vector2RectStepUniform)value;
-                    if (randomRectStepUniform.MinX < MinX || randomRectStepUniform.MaxX > MaxX) return false;
-                    if (randomRectStepUniform.MinY < MinY || randomRectStepUniform.MaxY > MaxY) return false;
+                    var randomRectStepUniform = (Vector2LerpStep)value;
+                    if (randomRectStepUniform.FromX < MinX || randomRectStepUniform.ToX > MaxX) return false;
+                    if (randomRectStepUniform.FromY < MinY || randomRectStepUniform.ToY > MaxY) return false;
                     return true;
                 }
                 case VectorType.RandomCircle:
@@ -148,22 +148,22 @@ namespace BH.SDK.Rules.Attributes
                     if (randomRectStep.MaxY > MaxY) randomRectStep.MaxY = MaxY;
                     break;
                 }
-                case VectorType.RandomRectUniform:
+                case VectorType.RandomLerp:
                 {
-                    var randomRectUniform = (Vector2RectUniform)value;
-                    if (randomRectUniform.MinX < MinX) randomRectUniform.MinX = MinX;
-                    if (randomRectUniform.MaxX > MaxX) randomRectUniform.MaxX = MaxX;
-                    if (randomRectUniform.MinY < MinY) randomRectUniform.MinY = MinY;
-                    if (randomRectUniform.MaxY > MaxY) randomRectUniform.MaxY = MaxY;
+                    var randomRectUniform = (Vector2Lerp)value;
+                    if (randomRectUniform.FromX < MinX) randomRectUniform.FromX = MinX;
+                    if (randomRectUniform.ToX > MaxX) randomRectUniform.ToX = MaxX;
+                    if (randomRectUniform.FromY < MinY) randomRectUniform.FromY = MinY;
+                    if (randomRectUniform.ToY > MaxY) randomRectUniform.ToY = MaxY;
                     break;
                 }
-                case VectorType.RandomRectStepUniform:
+                case VectorType.RandomLerpStep:
                 {
-                    var randomRectStepUniform = (Vector2RectStepUniform)value;
-                    if (randomRectStepUniform.MinX < MinX) randomRectStepUniform.MinX = MinX;
-                    if (randomRectStepUniform.MaxX > MaxX) randomRectStepUniform.MaxX = MaxX;
-                    if (randomRectStepUniform.MinY < MinY) randomRectStepUniform.MinY = MinY;
-                    if (randomRectStepUniform.MaxY > MaxY) randomRectStepUniform.MaxY = MaxY;
+                    var randomRectStepUniform = (Vector2LerpStep)value;
+                    if (randomRectStepUniform.FromX < MinX) randomRectStepUniform.FromX = MinX;
+                    if (randomRectStepUniform.ToX > MaxX) randomRectStepUniform.ToX = MaxX;
+                    if (randomRectStepUniform.FromY < MinY) randomRectStepUniform.FromY = MinY;
+                    if (randomRectStepUniform.ToY > MaxY) randomRectStepUniform.ToY = MaxY;
                     break;
                 }
                 case VectorType.RandomCircle:
