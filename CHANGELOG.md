@@ -2,16 +2,21 @@
 
 ## [Unreleased]
 
+## sv 0.12.0 - 2026-09-20
+
 ### Added
 
 - `ThemeData.ColorNames` (`clrn`), a nullable list of one label per theme slot, `ValueRules.ThemeCount`
   long when present. Null is the normal state and is what an unnamed palette writes - the slot layout
   comment in `ThemeData` says what a slot is FOR, which is a different question from what an author
   calls it
-- `VectorType.RandomRectUniform` / `RandomRectStepUniform` and `ColorType.RandomMinMaxUniform`, with
-  `Vector2/3/4RectUniform`, `Vector2/3/4RectStepUniform` and `Color3/4MinMaxUniform` behind them - the
-  same bounds as their per-component siblings, resolved from ONE roll shared by every component.
-  `RandomCircle` has no uniform form, since one roll ties its radius to its angle
+- `VectorType.RandomLerp` / `RandomLerpStep` and `ColorType.RandomLerp`, with `Vector2/3/4Lerp`,
+  `Vector2/3/4LerpStep` and `Color3/4Lerp` behind them - two points, `From` and `To`, and ONE roll
+  every component is read at, so the value travels the segment between them instead of filling the
+  box its `Rect`/`MinMax` sibling rolls. They carry NO property-order rule: a segment has no smaller
+  end, and ordering the pair would make a line that falls as it advances unrepresentable. Pinning one
+  axis is the same number in both ends. `RandomCircle` has no segment form, since one roll ties its
+  radius to its angle
 - `ModelUtils.CopyValueList`, the null-preserving copy a value list needs now that one may be absent
 
 - `CurveKeyframeValue.BrokenTangents` (`brkt`), false by default - whether the key's two tangents are

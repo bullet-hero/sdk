@@ -20,8 +20,8 @@ namespace BH.SDK.Serialization.Converters.CustomTypes
                 VectorType.RandomRect => typeof(Vector3Rect),
                 VectorType.RandomRectStep => typeof(Vector3RectStep),
                 VectorType.RandomCircle => typeof(Vector3Circle),
-                VectorType.RandomRectUniform => typeof(Vector3RectUniform),
-                VectorType.RandomRectStepUniform => typeof(Vector3RectStepUniform),
+                VectorType.RandomLerp => typeof(Vector3Lerp),
+                VectorType.RandomLerpStep => typeof(Vector3LerpStep),
                 _ => Fallback(customType, typeof(Vector3Value))
             };
         }

@@ -53,15 +53,20 @@ namespace BH.SDK.Rules.Attributes
                     var rect = (Vector2RectStep)value;
                     return rect.MaxX <= rect.MinY;
                 }
-                case VectorType.RandomRectUniform:
+                // A segment is EXACTLY checkable where a rect is not: both components are linear
+                // in the one shared roll, so x - y is linear too and its largest value sits at an
+                // end. Checking the two ends is therefore the whole condition, not an approximation
+                // of it, and a segment that stays ordered all the way across passes even when the
+                // two axis spans overlap - which the rect arms above have to refuse.
+                case VectorType.RandomLerp:
                 {
-                    var rect = (Vector2RectUniform)value;
-                    return rect.MaxX <= rect.MinY;
+                    var lerp = (Vector2Lerp)value;
+                    return lerp.FromX <= lerp.FromY && lerp.ToX <= lerp.ToY;
                 }
-                case VectorType.RandomRectStepUniform:
+                case VectorType.RandomLerpStep:
                 {
-                    var rect = (Vector2RectStepUniform)value;
-                    return rect.MaxX <= rect.MinY;
+                    var lerp = (Vector2LerpStep)value;
+                    return lerp.FromX <= lerp.FromY && lerp.ToX <= lerp.ToY;
                 }
                 // A circle rolls X and Y from the same disc, so the only way every sample can be
                 // ordered is for the whole X extent to sit below the whole Y extent.
@@ -111,22 +116,24 @@ namespace BH.SDK.Rules.Attributes
                     (rect.MaxX, rect.MaxY) = (rect.MaxY, rect.MaxX);
                     break;
                 }
-                case VectorType.RandomRectUniform:
+                // Swapped PER END, not per bound: a segment's ends are two points, and swapping
+                // X with Y inside each of them keeps the line's direction while ordering it.
+                case VectorType.RandomLerp:
                 {
-                    var rect = (Vector2RectUniform)value;
-                    if (rect.MaxX <= rect.MinY) return;
+                    var lerp = (Vector2Lerp)value;
+                    if (lerp.FromX <= lerp.FromY && lerp.ToX <= lerp.ToY) return;
 
-                    (rect.MinX, rect.MinY) = (rect.MinY, rect.MinX);
-                    (rect.MaxX, rect.MaxY) = (rect.MaxY, rect.MaxX);
+                    if (lerp.FromX > lerp.FromY) (lerp.FromX, lerp.FromY) = (lerp.FromY, lerp.FromX);
+                    if (lerp.ToX > lerp.ToY) (lerp.ToX, lerp.ToY) = (lerp.ToY, lerp.ToX);
                     break;
                 }
-                case VectorType.RandomRectStepUniform:
+                case VectorType.RandomLerpStep:
                 {
-                    var rect = (Vector2RectStepUniform)value;
-                    if (rect.MaxX <= rect.MinY) return;
+                    var lerp = (Vector2LerpStep)value;
+                    if (lerp.FromX <= lerp.FromY && lerp.ToX <= lerp.ToY) return;
 
-                    (rect.MinX, rect.MinY) = (rect.MinY, rect.MinX);
-                    (rect.MaxX, rect.MaxY) = (rect.MaxY, rect.MaxX);
+                    if (lerp.FromX > lerp.FromY) (lerp.FromX, lerp.FromY) = (lerp.FromY, lerp.FromX);
+                    if (lerp.ToX > lerp.ToY) (lerp.ToX, lerp.ToY) = (lerp.ToY, lerp.ToX);
                     break;
                 }
                 // Swapping the centre does not help a circle: both components are drawn from one

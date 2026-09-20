@@ -222,13 +222,13 @@ namespace BH.SDK.Tests
             // is ever checked on. They are structurally identical to their per-component siblings,
             // which is exactly why only the tag can tell them apart on the wire.
             shapeObject.Positions.Add(new PosKey(
-                new Vector2RectUniform(-1f, -1f, 1f, 1f), FrameRules.MinFrame + 1));
+                new Vector2Lerp(-1f, -1f, 1f, 1f), FrameRules.MinFrame + 1));
             shapeObject.Scales.Add(new ScaKey(
-                new Vector2RectStepUniform(0.5f, 0.5f, 2f, 2f, 0.25f), FrameRules.MinFrame + 1));
+                new Vector2LerpStep(0.5f, 0.5f, 2f, 2f, 0.25f), FrameRules.MinFrame + 1));
             shapeObject.Colors.Add(new Color4X4Key(
-                new Color4MinMaxUniform(0f, 0f, 0f, 1f, 1f, 1f, 1f, 1f), FrameRules.MinFrame + 1));
+                new Color4Lerp(0f, 0f, 0f, 1f, 1f, 1f, 1f, 1f), FrameRules.MinFrame + 1));
             level.Game.Events.Backgrounds.Add(new Color3Key(
-                new Color3MinMaxUniform(0f, 0f, 0f, 1f, 1f, 1f), FrameRules.MinFrame + 1));
+                new Color3Lerp(0f, 0f, 0f, 1f, 1f, 1f), FrameRules.MinFrame + 1));
 
             level.Game.Objects.Add(new ObjectId(1), shapeObject);
 

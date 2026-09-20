@@ -15,6 +15,6 @@
 
         /// <summary> Drawn between two colours with ONE roll shared by every channel, so the result is
         /// always a colour on the line between them rather than a mix of four unrelated draws. </summary>
-        RandomMinMaxUniform = 3,
+        RandomLerp = 3,
     }
 }

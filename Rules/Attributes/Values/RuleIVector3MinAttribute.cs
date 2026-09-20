@@ -75,20 +75,20 @@ namespace BH.SDK.Rules.Attributes
                     if (randomRectStep.MinZ < MinZ) return false;
                     return true;
                 }
-                case VectorType.RandomRectUniform:
+                case VectorType.RandomLerp:
                 {
-                    var randomRectUniform = (Vector3RectUniform)value;
-                    if (randomRectUniform.MinX < MinX) return false;
-                    if (randomRectUniform.MinY < MinY) return false;
-                    if (randomRectUniform.MinZ < MinZ) return false;
+                    var randomRectUniform = (Vector3Lerp)value;
+                    if (randomRectUniform.FromX < MinX) return false;
+                    if (randomRectUniform.FromY < MinY) return false;
+                    if (randomRectUniform.FromZ < MinZ) return false;
                     return true;
                 }
-                case VectorType.RandomRectStepUniform:
+                case VectorType.RandomLerpStep:
                 {
-                    var randomRectStepUniform = (Vector3RectStepUniform)value;
-                    if (randomRectStepUniform.MinX < MinX) return false;
-                    if (randomRectStepUniform.MinY < MinY) return false;
-                    if (randomRectStepUniform.MinZ < MinZ) return false;
+                    var randomRectStepUniform = (Vector3LerpStep)value;
+                    if (randomRectStepUniform.FromX < MinX) return false;
+                    if (randomRectStepUniform.FromY < MinY) return false;
+                    if (randomRectStepUniform.FromZ < MinZ) return false;
                     return true;
                 }
                 case VectorType.RandomCircle:
@@ -135,20 +135,20 @@ namespace BH.SDK.Rules.Attributes
                     if (randomRectStep.MinZ < MinZ) randomRectStep.MinZ = MinZ;
                     break;
                 }
-                case VectorType.RandomRectUniform:
+                case VectorType.RandomLerp:
                 {
-                    var randomRectUniform = (Vector3RectUniform)value;
-                    if (randomRectUniform.MinX < MinX) randomRectUniform.MinX = MinX;
-                    if (randomRectUniform.MinY < MinY) randomRectUniform.MinY = MinY;
-                    if (randomRectUniform.MinZ < MinZ) randomRectUniform.MinZ = MinZ;
+                    var randomRectUniform = (Vector3Lerp)value;
+                    if (randomRectUniform.FromX < MinX) randomRectUniform.FromX = MinX;
+                    if (randomRectUniform.FromY < MinY) randomRectUniform.FromY = MinY;
+                    if (randomRectUniform.FromZ < MinZ) randomRectUniform.FromZ = MinZ;
                     break;
                 }
-                case VectorType.RandomRectStepUniform:
+                case VectorType.RandomLerpStep:
                 {
-                    var randomRectStepUniform = (Vector3RectStepUniform)value;
-                    if (randomRectStepUniform.MinX < MinX) randomRectStepUniform.MinX = MinX;
-                    if (randomRectStepUniform.MinY < MinY) randomRectStepUniform.MinY = MinY;
-                    if (randomRectStepUniform.MinZ < MinZ) randomRectStepUniform.MinZ = MinZ;
+                    var randomRectStepUniform = (Vector3LerpStep)value;
+                    if (randomRectStepUniform.FromX < MinX) randomRectStepUniform.FromX = MinX;
+                    if (randomRectStepUniform.FromY < MinY) randomRectStepUniform.FromY = MinY;
+                    if (randomRectStepUniform.FromZ < MinZ) randomRectStepUniform.FromZ = MinZ;
                     break;
                 }
                 case VectorType.RandomCircle:
