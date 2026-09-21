@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## sv 0.13.1 - 2026-09-21
+
+### Fixed
+
+- `LevelGraphAnalyzer` reads a remap table only off a genuine placement. A materialized copy is
+  `PrefabObject`-typed too and its `ids` names ids in the INNER template's scope, so every remap of
+  every copy was reported as broken - 38736 findings on a 700-object level, none of them true
+- An override addressed at `ObjectId.PrefabRoot` is no longer reported as dangling. The root is a
+  FIELD of the template and never an entry in its objects, so the probe could not find it - 19993
+  findings on that same level. What is reported instead is a root override naming a field the root
+  does not own, which `ApplyModifications` drops without a word
+
 ## sv 0.13.0 - 2026-09-20
 
 ### Added

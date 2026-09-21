@@ -184,6 +184,7 @@ namespace BH.SDK.Validations.Graph
             {
                 if (pair.Key.value > maxUsed) maxUsed = pair.Key.value;
             }
+
             if (maxUsed == int.MinValue) return;
 
             if (counter <= maxUsed)
@@ -201,12 +202,40 @@ namespace BH.SDK.Validations.Graph
 
         #region Placements: remaps and overrides
 
+        // OTHER placements' copies, which is one case narrower than PrefabVirtualizationUtils
+        // .CollectMaterializedChildIds and deliberately so: a placement whose own ObjectIds names
+        // ITSELF is broken data, and hiding it here would silence the very rule below that reports
+        // it. Everywhere else that set is used to decide what to write, where self-reference is a
+        // reason to leave the entry alone rather than to talk about it.
+        private static void CollectCopiesOfOtherPlacements(Dictionary<ObjectId, RectObject> objects,
+            HashSet<ObjectId> into)
+        {
+            foreach (var obj in objects.Values)
+            {
+                if (obj is not PrefabObject placement || placement.ObjectIds == null) continue;
+                foreach (var outerId in placement.ObjectIds.Values)
+                    if (outerId != placement.ObjectId)
+                        into.Add(outerId);
+            }
+        }
+
+        // ONLY A GENUINE PLACEMENT IS ASKED THESE QUESTIONS, for the reason PrefabMaterializer
+        // .FindPlacements states at length: a scope also holds PrefabObject entries that are
+        // themselves materialized COPIES of some other placement here, and their ObjectIds name ids
+        // in the INNER template's scope rather than in this one. Reading them as independent
+        // placements reported every remap of every copy as a broken one - 38736 findings on the
+        // level that prompted this, none of them true, and the real findings were unreachable
+        // behind them.
         private static void AnalyzePlacements(Level level, IObjectScope scope,
             string scopeName, List<GraphIssue> result)
         {
+            var materializedChildIds = new HashSet<ObjectId>();
+            CollectCopiesOfOtherPlacements(scope.Objects, materializedChildIds);
+
             foreach (var pair in scope.Objects)
             {
                 if (pair.Value is not PrefabObject placement) continue;
+                if (materializedChildIds.Contains(pair.Key)) continue;
 
                 var path = $"{scopeName}.Objects[{pair.Key}]";
 
@@ -228,6 +257,7 @@ namespace BH.SDK.Validations.Graph
                         result.Add(new GraphIssue(GraphRule.PrefabRemapBroken, RuleGroup.Warning, path,
                             $"remap source {remap.Key} is not an object of the template"));
                     }
+
                     if (!scope.Objects.ContainsKey(remap.Value))
                     {
                         result.Add(new GraphIssue(GraphRule.PrefabRemapBroken, RuleGroup.Warning, path,
@@ -238,6 +268,23 @@ namespace BH.SDK.Validations.Graph
                 foreach (var modification in placement.Modifications)
                 {
                     if (template.Objects.ContainsKey(modification.Key.ObjectId)) continue;
+
+                    // THE ROOT IS NOT IN Objects AND NEVER WAS - it is a FIELD of the template
+                    // (Prefab.Root), which is the whole reason ObjectId.PrefabRoot exists as an
+                    // address at all. A dictionary probe therefore reads every root-addressed
+                    // override as dangling, which is what reported 19993 findings over a level whose
+                    // placements were all in order. What IS worth reporting here is a root override
+                    // naming a field the root does not own, since ApplyModifications would silently
+                    // drop it (PrefabRootUtils.TryGetModificationTarget).
+                    if (modification.Key.ObjectId == ObjectId.PrefabRoot)
+                    {
+                        if (ModificationFields.IsPrefabRootField(modification.Key.Field)) continue;
+
+                        result.Add(new GraphIssue(GraphRule.ModificationTargetMissing, RuleGroup.Warning, path,
+                            $"override targets the template root with field {modification.Key.Field}, " +
+                            "which the root does not own"));
+                        continue;
+                    }
 
                     result.Add(new GraphIssue(GraphRule.ModificationTargetMissing, RuleGroup.Warning, path,
                         $"override targets {modification.Key.ObjectId}, which the template no longer has"));

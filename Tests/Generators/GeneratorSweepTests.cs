@@ -5,6 +5,7 @@ using BH.SDK.Generators.External;
 using BH.SDK.Generators.Modifiers;
 using BH.SDK.Models;
 using BH.SDK.Models.Enums.Resources;
+using BH.SDK.Models.Enums.Settings;
 using BH.SDK.Models.Keyframes;
 using BH.SDK.Models.Objects;
 using BH.SDK.Models.Primitives;
@@ -362,6 +363,36 @@ namespace BH.SDK.Tests.Generators
                 var report = facade.Validate(level);
                 Assert.IsFalse(report.HasErrors, $"{generator.NameKey}: {report}");
             }
+        }
+
+        // EVERY NEW LEVEL IS COMPOSED FOR A HORIZONTAL FRAME, and the sweep is over the LEVEL
+        // generators rather than the scope ones because this is the only place the answer is
+        // decided: LevelSettings' constructors set Horizontal, and a generator that builds its
+        // settings any other way (an object initializer, a foreign file's numbers, a copied
+        // struct) silently opts the level into a portrait screen its content was never composed
+        // for. LevelSettingsTests proves the constructors; this proves nobody went around them.
+        //
+        // The two IMPORTERS are out: they read a level somebody else authored, so their
+        // orientation is that file's answer rather than a default, and they need a real file on
+        // disk to produce anything at all.
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Easy)]
+        public void CreatedLevel_IsComposedForAHorizontalFrame()
+        {
+            var swept = 0;
+            foreach (var generator in GeneratorRegistry.All.OfType<ILevelGenerator>())
+            {
+                var parameters = generator.CreateDefaultParameters();
+                if (parameters is IABLevelInput or ILevelArchiveInput) continue;
+
+                var (level, _) = generator.Create(parameters);
+                Assert.AreEqual(LevelOrientation.Horizontal, level.Settings.Orientation, generator.NameKey);
+                swept++;
+            }
+
+            Assert.Greater(swept, 0, "no level generator was swept - the filter above is wrong");
         }
 
         private static void AssertUnique(string nameKey, string objectName, string track, IEnumerable<int> frames)
