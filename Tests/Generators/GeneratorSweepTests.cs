@@ -188,8 +188,9 @@ namespace BH.SDK.Tests.Generators
         // The window bounds what a run may CREATE, not what it may touch. A Modifier shifting an
         // object that already lived outside the window must not drag it inside - the author scoped
         // where new content goes, not which existing objects are allowed to exist where. Existing
-        // objects are still bounded, by the level's own timeline, which GeneratedLevel_PassesValidation
-        // checks through RuleLevelFrame.
+        // objects are still bounded, by the level's own timeline - on the left by RuleLevelFrame,
+        // which GeneratedLevel_PassesValidation checks, and on the right by nothing, since a level's
+        // end is a number the author drags.
         public void EveryCreatedObject_StaysInsideTheContextWindow()
         {
             foreach (var generator in ScopeGenerators)

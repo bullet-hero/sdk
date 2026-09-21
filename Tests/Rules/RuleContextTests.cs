@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using BH.SDK.Models;
 using BH.SDK.Models.Keyframes;
 using BH.SDK.Models.Objects;
@@ -115,13 +115,15 @@ namespace BH.SDK.Tests.Rules
             Assert.AreSame(level.Game, outer.Objects);
         }
 
-        // Proof the analyzer actually rebases as it walks: the same object is legal at level scope
-        // and illegal one level down, purely because of where it lives.
+        // The analyzer still rebases as it walks - WithScope swaps the timeline, as the case above
+        // asserts - but no rule measures a frame against it any more, so the same key is legal at
+        // level scope and legal one level down. Kept as the end-to-end proof of exactly that: a
+        // template shorter than the key inside it is not a finding.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.Normal)]
-        public void TestAnalyzerRebasesInsideTemplate()
+        public void TestAnalyzerDoesNotBoundAFrameByItsTemplate()
         {
             var atLevel = new Level();
             atLevel.Settings.FrameDuration = 100;
@@ -143,7 +145,7 @@ namespace BH.SDK.Tests.Rules
             prefab.Objects.Add(innerObject.ObjectId, innerObject);
             withTemplate.Resources.Prefabs.Add(prefab.PrefabId, prefab);
 
-            AssertHasIssue<RuleLevelFrameAttribute>(withTemplate);
+            AssertValid(withTemplate);
         }
     }
 }

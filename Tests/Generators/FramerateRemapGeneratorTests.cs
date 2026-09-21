@@ -230,8 +230,9 @@ namespace BH.SDK.Tests.Generators
             CollectionAssert.AreEqual(new[] { 0, 20, 100 }, Frames(untouched.Positions));
         }
 
-        /// <summary> Nothing may end up past the timeline it was just resampled into - the format
-        /// rejects a frame outside [0, FrameDuration) ([RuleLevelFrame]). </summary>
+        /// <summary> Nothing may end up past the timeline it was just resampled into. Validation
+        /// will not say so - [RuleLevelFrame] bounds a frame on the left only - which is exactly why
+        /// this is asserted here. </summary>
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
