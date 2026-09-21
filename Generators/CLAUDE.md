@@ -69,6 +69,8 @@ authoring automation: a generator produces level content from a few parameters.
   `BaseSpawnGenerator.CanAnimate`, and note that `Estimate` has to apply the same clamp. A third,
   format-wide: **`FrameDuration` is a count** and the timeline counts frames from
   `FrameRules.MinFrame`, so the last legal frame IS `FrameDuration` — spell it
-  `FrameRules.LastFrameOf`, never by hand (`RuleLevelFrame`'s bounds are inclusive at both ends).
+  `FrameRules.LastFrameOf`, never by hand. Validation will not catch a generator that misses it:
+  `RuleLevelFrame` bounds a frame on the left only, so content written past the end is legal data
+  the author simply never sees.
   Has its own `README.md`, and that README is now the design record: the spec it was written
   from is no longer present in the consuming project.

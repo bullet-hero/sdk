@@ -63,10 +63,13 @@ whose `Fix` masks the unknown bits off instead of falling back to a default. Don
 only — never fields), all `: BaseRuleAttribute` (`IsValidType`/`IsValid`/`Fix`). `[RuleContainer]`
 (a bare class-level marker) opts a type into the reflective walk — applied broadly across `Models/`
 (156+ files), not just a handful of aggregate roots. `Rules/Attributes/Contextual/` need the root
-`Level` as context (`RuleLevelFrameAttribute` checks against `Level.Settings.FrameDuration`,
-`RuleObjectIdValidAttribute`/`RuleParentObjectIdValidAttribute` check `ObjectId` validity/parent
-rules) — both still carry a `// TODO add complex check for parenting and ids uniqueness`, because a
-property attribute only ever sees one property at a time. **Cross-object invariants are implemented,
+`Level` as context (`RuleObjectIdValidAttribute`/`RuleParentObjectIdValidAttribute` check `ObjectId`
+validity/parent rules) — both still carry a `// TODO add complex check for parenting and ids
+uniqueness`, because a property attribute only ever sees one property at a time. **`RuleLevelFrame`
+used to live there and does not any more**: it bounds a frame on the LEFT only
+(`FrameRules.MinFrame`), because a level's end is a number the author drags, so a key parked past it
+is content waiting for the level to grow — the old right-hand bound reported it and its `Fix`
+clamped it away. **Cross-object invariants are implemented,
 just not here** — `Validations/LevelGraphAnalyzer` owns them (duplicate `ObjectId`s, missing or
 cyclic parents, dangling/self-referencing prefab placements, stale id counters, broken remap tables),
 and `ValidationFacade` is what runs the two passes together. Don't write a graph check as a
