@@ -277,6 +277,88 @@ namespace BH.SDK.Tests.Rules
             AssertReports(level, GraphRule.ModificationTargetMissing);
         }
 
+        // THE ROOT IS A FIELD, NOT AN ENTRY, so a dictionary probe can never find it - which is why
+        // asking Objects about ObjectId.PrefabRoot reported every root-addressed override in the
+        // level as dangling. 19993 of them on the level that found this, with nothing wrong.
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Normal)]
+        public void TestOverrideTargetingTheTemplateRootIsNotDangling()
+        {
+            var template = new Prefab { PrefabId = PrefabId.NewGuid() };
+            var inner = Obj(1);
+            template.Objects.Add(inner.ObjectId, inner);
+            template.ObjectIdCounter = 2;
+
+            var placement = new PrefabObject { ObjectId = new ObjectId(1), PrefabId = template.PrefabId };
+            var key = new ModificationKey(ObjectId.PrefabRoot, ModificationFields.Positions);
+            placement.Modifications.Add(key, new Modification(key, 1L));
+
+            var level = LevelWith(placement);
+            level.Resources.Prefabs.Add(template.PrefabId, template);
+
+            AssertClean(level);
+        }
+
+        // What IS worth saying about a root override: the root owns Name, the seven tracks and its
+        // duration, and nothing else (ModificationFields.IsPrefabRootField). ApplyModifications drops
+        // anything outside that list without a word.
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Normal)]
+        public void TestOverrideTargetingTheRootWithAFieldItDoesNotOwn()
+        {
+            var template = new Prefab { PrefabId = PrefabId.NewGuid() };
+            var inner = Obj(1);
+            template.Objects.Add(inner.ObjectId, inner);
+            template.ObjectIdCounter = 2;
+
+            var placement = new PrefabObject { ObjectId = new ObjectId(1), PrefabId = template.PrefabId };
+            var key = new ModificationKey(ObjectId.PrefabRoot, ModificationFields.Layer);
+            placement.Modifications.Add(key, new Modification(key, 1L));
+
+            var level = LevelWith(placement);
+            level.Resources.Prefabs.Add(template.PrefabId, template);
+
+            AssertReports(level, GraphRule.ModificationTargetMissing);
+        }
+
+        // A MATERIALIZED COPY IS NOT A PLACEMENT, even when it is PrefabObject-typed: its own
+        // ObjectIds names ids in the INNER template's scope (see PrefabMaterializer.FindPlacements),
+        // so reading it as one reported every remap it carries as broken - 38736 findings on the
+        // level that found this, none of them true.
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Normal)]
+        public void TestACopyOfAPlacementIsNotReadAsAPlacement()
+        {
+            var inner = new Prefab { PrefabId = PrefabId.NewGuid(), ObjectIdCounter = 1 };
+
+            // OUTER places INNER, so a placement of OUTER materializes that nested placement into
+            // the level as an ordinary entry that is still PrefabObject-typed.
+            var outer = new Prefab { PrefabId = PrefabId.NewGuid() };
+            var nested = new PrefabObject { ObjectId = new ObjectId(1), PrefabId = inner.PrefabId };
+            outer.Objects.Add(nested.ObjectId, nested);
+            outer.ObjectIdCounter = 2;
+
+            // The copy, with a remap table naming ids in the INNER template's scope rather than in
+            // this one - which is what every such copy carries.
+            var copy = new PrefabObject { ObjectId = new ObjectId(2), PrefabId = inner.PrefabId };
+            copy.ObjectIds.Add(new ObjectId(1), new ObjectId(77));
+
+            var placement = new PrefabObject { ObjectId = new ObjectId(1), PrefabId = outer.PrefabId };
+            placement.ObjectIds.Add(nested.ObjectId, copy.ObjectId);
+
+            var level = LevelWith(placement, copy);
+            level.Resources.Prefabs.Add(inner.PrefabId, inner);
+            level.Resources.Prefabs.Add(outer.PrefabId, outer);
+
+            AssertClean(level);
+        }
+
         // The failure that makes materialization non-terminating rather than merely wrong.
         [Test]
         [Author(Metadata.Author.Vertoker)]
