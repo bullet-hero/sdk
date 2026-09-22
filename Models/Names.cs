@@ -1862,6 +1862,9 @@
         /// <summary> <c>"history_length"</c> - EditorSavingsSettings.HistoryLength. </summary>
         public const string HistoryLength = History + _ + Length;
 
+        /// <summary> <c>"history_objects"</c> - EditorSavingsSettings.HistoryObjects. </summary>
+        public const string HistoryObjects = History + _ + ObjectsFull;
+
         /// <summary> <c>"min_sz"</c> - EditorCameraSettings.MinSize. </summary>
         public const string MinSize = Min + _ + Size;
 
