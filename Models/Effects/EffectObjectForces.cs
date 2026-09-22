@@ -73,8 +73,8 @@ namespace BH.SDK.Models.Effects
         [JsonProperty(Names.VelocitySpeed)]
         public IFloat VelocitySpeed { get; set; }
 
-        /// <summary> Constant acceleration (force, not velocity), so its effect compounds over the
-        /// particle's life instead of staying flat. </summary>
+        /// <summary> Constant acceleration (force, not velocity) in units per second squared, so its
+        /// effect compounds over the particle's life instead of staying flat. </summary>
         [RuleOptional]
         [JsonProperty(Names.LinearForce)]
         public IVector2 LinearForce { get; set; }
