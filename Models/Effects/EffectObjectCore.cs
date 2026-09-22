@@ -21,6 +21,14 @@ namespace BH.SDK.Models.Effects
     // free: a world-space effect cannot be replayed correctly by anything that writes one transform
     // per frame and then simulates a window of history under it, which is exactly what a scrub, an
     // edit and a jump all do. Keeping that out of the format keeps it out of levels.
+    //
+    // WHAT THE FORMAT CANNOT GUARANTEE ON ITS OWN is that the HOST's graph honours the local
+    // promise, and on 2026-09-22 it did not: the game's local graph carried two World-marked input
+    // slots, which VFX Graph converts against the component's live transform, so an authored effect
+    // emitted a world-fixed jet and replayed differently from how it played. Nothing in this library
+    // can express or detect that - the host pins it instead (the client's EffectGraphSpaceTests),
+    // and the measurement is in its Docs/Issues/EFFECTS_HISTORY.md. Stated here because the promise
+    // above is what the absence of a world/local field is SPENDING.
 
     /// <summary>
     /// The "how many, how long, what do they look like" half of an EffectData - everything that
