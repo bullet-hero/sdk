@@ -37,13 +37,19 @@
         /// <summary> What a backup's file name starts with; the rest is its timestamp. </summary>
         public const string BackupLevelFilePrefix = "backup_level_";
 
+        // TWO NAMES, AND NOTHING EVER PROBES FOR EITHER - unlike the level and metadata documents
+        // above, whose extension is resolved by what is on disk. A cover is reached through
+        // LevelMeta.LevelLogo, an ordinary resource uri, so the name a writer chooses is the name it
+        // has to record in the metadata in the same step. Which of the two it chooses is decided by
+        // the file's own bytes (the game's LevelLogoFile), never by what the source was called.
+
         /// <summary> The cover image, without its extension. </summary>
         public const string LogoName = "logo";
 
         /// <summary> The cover as a PNG. </summary>
         public const string LogoFileNamePng = "logo.png";
 
-        /// <summary> The cover as a JPEG - the two are tried in order. </summary>
+        /// <summary> The cover as a JPEG. </summary>
         public const string LogoFileNameJpg = "logo.jpg";
 
         // Device-wide (not per-level) shared library of reusable Themes/Effects/Shapes/Prefabs -
