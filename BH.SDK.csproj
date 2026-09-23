@@ -18,11 +18,12 @@
     UnityEngine, Unity.Mathematics and Unity.Collections unconditionally. See UnityIntegration's own
     README.md.
 
-    THREE FOLDERS ARE EXCLUDED, each for its own reason:
+    FOUR FOLDERS ARE EXCLUDED, each for its own reason:
       Roslyn/          - analyzers/generators; its own project, and it targets netstandard2.0
                          against the compiler's Roslyn rather than this library's dependencies.
       UnityExtensions/ - genuinely engine-bound, see above.
       Tests/           - its own project, so `dotnet build` here builds no test framework in.
+      Samples~/        - consumers of the BUILT DLL (ConsoleSmoke), each its own project.
 
     BHSDK_UNITY is deliberately NOT defined: it is what Player Settings define for the Unity build,
     and the whole point of this project is to compile the branch Unity never takes.
@@ -37,7 +38,7 @@
   -->
 
   <PropertyGroup>
-    <Version>0.15.0</Version>
+    <Version>0.16.0</Version>
     <TargetFramework>netstandard2.1</TargetFramework>
     <LangVersion>9.0</LangVersion>
     <Nullable>disable</Nullable>
@@ -45,7 +46,10 @@
     <AssemblyName>BH.SDK</AssemblyName>
     <RootNamespace>BH.SDK</RootNamespace>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- CS1591 (a public member with no XML doc) is ~2300 lines on its own, most of them generated
+         model members; it would bury every warning that matters. The doc file still ships. -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 
@@ -60,6 +64,27 @@
   </PropertyGroup>
 
   <!--
+    THE PACKAGE. `dotnet pack -c Release` produces a .nupkg of the same DLL `dotnet build` does, with
+    its XML docs beside it. Nothing here publishes: pushing to nuget.org is the author's. The id was
+    free on nuget.org on 2026-09-23. <Version> above stays the one version, shared with the DLL.
+  -->
+  <PropertyGroup>
+    <PackageId>BulletHero.SDK</PackageId>
+    <Authors>vertoker</Authors>
+    <Description>The open level and save data model of the game Bullet Hero: models, JSON and binary serialization with versioned envelopes and migrations, validation rules and level generators. Engine-free - usable from a server, a tool or a mod.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/vertoker/bullet-hero-sdk</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageProjectUrl>https://github.com/vertoker/bullet-hero-sdk</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>bullet-hero;rhythm-game;bullet-hell;level-format;serialization;modding</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <!--
     The model generator, running on THIS build as well as on Unity's. Without it `dotnet build` here
     compiles 203 models whose IModel bodies do not exist, so the engine-free build stops being the
     check it is meant to be. ReferenceOutputAssembly=false: the components are a compiler plugin,
@@ -72,7 +97,7 @@
 
   <ItemGroup>
     <Compile Include="**\*.cs"
-             Exclude="Roslyn\**\*.cs;UnityExtensions\**\*.cs;Tests\**\*.cs;bin~\**\*.cs;obj~\**\*.cs" />
+             Exclude="Roslyn\**\*.cs;UnityExtensions\**\*.cs;Tests\**\*.cs;Samples~\**\*.cs;bin~\**\*.cs;obj~\**\*.cs" />
     <!--
       The one file of UnityIntegration/ that does NOT come along. Two assemblies in Unity means two
       AssemblyInfo.cs, and merging them into one here would declare InternalsVisibleTo twice for the

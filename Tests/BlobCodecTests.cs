@@ -233,63 +233,19 @@ namespace BH.SDK.Tests
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.Normal)]
-        public void ARootFromTheFuture_IsSkippedAndItsSiblingsSurvive()
+        public void ARootFromTheFuture_RefusesTheWholeFile()
         {
-            var level = MockData.CreateTestLevel();
-            var payload = Payload(Write(level));
+            // A NEWER ROOT IS NO LONGER SKIPPED. Every model change since 1.0.0 is a bump, so a root
+            // from the future carries a shape this build has never seen, and opening the level around
+            // it would hand the next save a level silently missing that root.
+            var payload = Payload(Write(MockData.CreateTestLevel()));
             PatchInt(payload, GenerationOffset(payload, ModelDomains.GameLevel), MockData.FabricatedGeneration);
 
-            var report = new SerializationReport();
-            Level read;
-            using (SerializationReport.Begin(report)) read = Read(Rehash(payload));
+            var refused = Assert.Throws<NewerGenerationException>(() => Read(Rehash(payload)));
 
-            Assert.AreEqual(0, read.Game.Objects.Count, "the unreadable root should be at its defaults");
-            Assert.AreEqual(level.Settings.Fps, read.Settings.Fps, "a sibling root must survive it");
-            Assert.IsTrue(level.Audio.Equals(read.Audio), "a sibling root must survive it");
-            Assert.That(report.Entries,
-                Has.Some.Matches<SerializationSubstitution>(e =>
-                    e.Kind == SubstitutionKind.UnknownGeneration && e.Domain == ModelDomains.GameLevel));
-        }
-
-        [Test]
-        [Author(Metadata.Author.Vertoker)]
-        [Category(Metadata.Category.Self)]
-        [Category(Metadata.Category.Normal)]
-        public void AFutureBuildAppendedMembers_AreSkippedToTheDeclaredEnd()
-        {
-            const int appended = 7;
-
-            var level = MockData.CreateTestLevel();
-            var payload = Payload(Write(level));
-
-            var generation = GenerationOffset(payload, ModelDomains.LevelSettings);
-            var lengthOffset = generation + sizeof(int);
-            var length = BitConverter.ToInt32(payload, lengthOffset);
-
-            // Members this build does not read, written where a future build would put them: LAST,
-            // inside the root that declared them. That is rule one of the two the format took on.
-            var spliced = new byte[payload.Length + appended];
-            var contentEnd = lengthOffset + sizeof(int) + length;
-            Buffer.BlockCopy(payload, 0, spliced, 0, contentEnd);
-            Buffer.BlockCopy(payload, contentEnd, spliced, contentEnd + appended,
-                payload.Length - contentEnd);
-            PatchInt(spliced, lengthOffset, length + appended);
-
-            // EVERY ENCLOSING ROOT'S LENGTH MOVES WITH IT, because a length counts the bytes of a
-            // whole subtree. A fixture that patched only the inner one would be testing a file no
-            // build could write - and would fail at the OUTER root rather than at the inner one.
-            var outer = GenerationOffset(spliced, ModelDomains.Level) + sizeof(int);
-            PatchInt(spliced, outer, BitConverter.ToInt32(spliced, outer) + appended);
-
-            var report = new SerializationReport();
-            Level read;
-            using (SerializationReport.Begin(report)) read = Read(Rehash(spliced));
-
-            Assert.AreEqual(level.Settings.Fps, read.Settings.Fps, "everything this build knows still landed");
-            Assert.IsTrue(level.Game.Equals(read.Game), "the root after it must still be found");
-            Assert.That(report.Entries,
-                Has.Some.Matches<SerializationSubstitution>(e =>
-                    e.Kind == SubstitutionKind.ShortContent && e.Domain == ModelDomains.LevelSettings));
+            Assert.AreEqual(ModelDomains.GameLevel, refused.Domain);
+            Assert.AreEqual(MockData.FabricatedGeneration, refused.FileGeneration);
+            Assert.AreEqual(ModelGenerations.Current, refused.BuildGeneration);
         }
 
         [Test]
@@ -393,6 +349,47 @@ namespace BH.SDK.Tests
             Assert.That(report.Entries,
                 Has.Some.Matches<SerializationSubstitution>(e =>
                     e.Kind == SubstitutionKind.MigratedGeneration && e.Domain == ModelDomains.Level));
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Hard)]
+        public void AV0NestedDomainInsideATodaysLevel_MigratesThroughTheBlob()
+        {
+            // The NESTED half, which LevelV0 cannot reach: it types its nested domains as today's
+            // classes, so a V0 level still writes its settings at today's generation. Here a level of
+            // today carries a settings envelope written from the real LevelSettingsV0 type, spliced in
+            // where its own settings envelope was.
+            var payload = Payload(Write(MockData.CreateTestLevel()));
+
+            var name = System.Text.Encoding.UTF8.GetBytes(ModelDomains.LevelSettings);
+            var generation = GenerationOffset(payload, ModelDomains.LevelSettings);
+            var start = generation - sizeof(int) - name.Length;
+            var end = generation + 2 * sizeof(int) + BitConverter.ToInt32(payload, generation + sizeof(int));
+
+            var writer = new BlobWriter(64);
+            new Versions.V0.LevelSettingsV0 { Framerate = 47 }.Write(ref writer);
+            var old = writer.ToArray();
+
+            var spliced = new byte[payload.Length - (end - start) + old.Length];
+            Buffer.BlockCopy(payload, 0, spliced, 0, start);
+            Buffer.BlockCopy(old, 0, spliced, start, old.Length);
+            Buffer.BlockCopy(payload, end, spliced, start + old.Length, payload.Length - end);
+
+            // The enclosing root's length counts the whole subtree, so it moves with the splice.
+            var outer = GenerationOffset(spliced, ModelDomains.Level) + sizeof(int);
+            PatchInt(spliced, outer, BitConverter.ToInt32(spliced, outer) + old.Length - (end - start));
+
+            var report = new SerializationReport();
+            Level read;
+            using (SerializationReport.Begin(report)) read = Read(Rehash(spliced));
+
+            Assert.AreEqual(47, read.Settings.Fps,
+                "the value the spliced V0 envelope carries, walked up by LevelSettingsV0ToV1 - the test level itself says 61");
+            Assert.That(report.Entries,
+                Has.Some.Matches<SerializationSubstitution>(e =>
+                    e.Kind == SubstitutionKind.MigratedGeneration && e.Domain == ModelDomains.LevelSettings));
         }
 
         #endregion

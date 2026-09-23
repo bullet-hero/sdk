@@ -106,32 +106,28 @@ namespace BH.SDK.Tests
 
             // Generation 0 resolves to LevelSettingsV0, whose migrator carries the framerate up.
             Assert.AreEqual(61, level.Settings.Fps);
-            Assert.That(report.Entries, Has.Some.Matches<SerializationSubstitution>(
-                e => e.Kind == SubstitutionKind.MigratedGeneration
-                     && e.Domain == ModelDomains.LevelSettings));
+            Assert.That(report.Entries, Has.Some.Matches<SerializationSubstitution>(e =>
+                e.Kind == SubstitutionKind.MigratedGeneration
+                && e.Domain == ModelDomains.LevelSettings));
         }
 
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.Normal)]
-        public void ANestedDomainAtAnUnknownGeneration_DegradesAndIsReported()
+        public void ANestedDomainAtANewerGeneration_RefusesTheWholeFile()
         {
             var service = new SerializationService();
             var json = WithNestedSettingsGeneration(service, MockData.FabricatedGeneration, "\"fps\":61");
 
-            var report = new SerializationReport();
-            Level level;
-            using (SerializationReport.Begin(report)) level = service.DeserializeData<Level>(json);
+            // Nothing can migrate a shape no build has ever seen, and reading it by property name
+            // would open a level silently missing whatever moved - so the nested envelope refuses
+            // the level around it rather than degrading alone.
+            var refused = Assert.Throws<NewerGenerationException>(() => service.DeserializeData<Level>(json));
 
-            // Nothing can migrate a shape no build has ever seen, so the payload lands by property
-            // name: `fps` is today's key, and it is the one thing that survives.
-            Assert.IsNotNull(level.Settings);
-            Assert.AreEqual(61, level.Settings.Fps);
-            Assert.That(report.Entries, Has.Some.Matches<SerializationSubstitution>(
-                e => e.Kind == SubstitutionKind.UnknownGeneration
-                     && e.Domain == ModelDomains.LevelSettings
-                     && e.Generation == MockData.FabricatedGeneration));
+            Assert.AreEqual(ModelDomains.LevelSettings, refused.Domain);
+            Assert.AreEqual(MockData.FabricatedGeneration, refused.FileGeneration);
+            Assert.AreEqual(ModelGenerations.Current, refused.BuildGeneration);
         }
 
         [Test]
@@ -153,9 +149,9 @@ namespace BH.SDK.Tests
             using (SerializationReport.Begin(report)) level = service.DeserializeData<Level>(json);
 
             Assert.AreEqual(61, level.Settings.Fps);
-            Assert.That(report.Entries, Has.Some.Matches<SerializationSubstitution>(
-                e => e.Kind == SubstitutionKind.AbsentGeneration
-                     && e.Domain == ModelDomains.LevelSettings));
+            Assert.That(report.Entries, Has.Some.Matches<SerializationSubstitution>(e =>
+                e.Kind == SubstitutionKind.AbsentGeneration
+                && e.Domain == ModelDomains.LevelSettings));
         }
 
         /// <summary> The document a level is, with its nested settings envelope rewritten to claim
@@ -168,7 +164,8 @@ namespace BH.SDK.Tests
             var open = json.IndexOf('{', start + 11);
             var end = MatchingBrace(json, open);
 
-            var replacement = "{\"" + Names.Generation + "\":" + generation + ",\"" + Names.Value + "\":{" + payload + "}}";
+            var replacement = "{\"" + Names.Generation + "\":" + generation + ",\"" + Names.Value + "\":{" + payload +
+                              "}}";
             return json.Substring(0, open) + replacement + json.Substring(end + 1);
         }
 

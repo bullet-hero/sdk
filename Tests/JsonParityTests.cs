@@ -208,21 +208,21 @@ namespace BH.SDK.Tests
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.Normal)]
-        public void AnUnknownGeneration_DegradesTheSameWayThroughBothStacks()
+        public void ANewerGeneration_IsRefusedTheSameWayByBothStacks()
         {
+            // A newer generation is no longer a degraded read but a refusal, and the two stacks must
+            // agree on WHAT they refused - the domain and the generation - not merely that they threw.
             var text = Generated.SerializeData(MockData.CreateTestLevel())
                 .Replace("{\"g\":1,\"v\":{\"fps\"", "{\"g\":" + MockData.FabricatedGeneration + ",\"v\":{\"fps\"");
 
-            var reflective = new SerializationReport();
-            var generated = new SerializationReport();
+            var fromReflective = Assert.Throws<NewerGenerationException>(() => Reflective.DeserializeData<Level>(text));
+            var fromGenerated = Assert.Throws<NewerGenerationException>(() => Generated.DeserializeData<Level>(text));
 
-            Level fromReflective, fromGenerated;
-            using (SerializationReport.Begin(reflective)) fromReflective = Reflective.DeserializeData<Level>(text);
-            using (SerializationReport.Begin(generated)) fromGenerated = Generated.DeserializeData<Level>(text);
-
-            Assert.IsTrue(fromReflective.Equals(fromGenerated), "the two stacks degraded to different levels");
-            CollectionAssert.AreEquivalent(Described(reflective), Described(generated),
-                "the two stacks reported different substitutions");
+            Assert.AreEqual(ModelDomains.LevelSettings, fromReflective.Domain);
+            Assert.AreEqual(fromReflective.Domain, fromGenerated.Domain);
+            Assert.AreEqual(MockData.FabricatedGeneration, fromReflective.FileGeneration);
+            Assert.AreEqual(fromReflective.FileGeneration, fromGenerated.FileGeneration);
+            Assert.AreEqual(fromReflective.BuildGeneration, fromGenerated.BuildGeneration);
         }
 
         [Test]

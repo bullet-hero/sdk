@@ -124,6 +124,7 @@ namespace BH.SDK.Serialization.Json
                 if (name == Names.Generation)
                 {
                     hasGeneration = TryReadGeneration(reader, domain, typeof(T), out generation);
+                    if (hasGeneration) VersionedTypeRegistry.ThrowIfNewer(domain, generation);
                 }
                 else if (name == Names.Value)
                 {

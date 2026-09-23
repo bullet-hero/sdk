@@ -45,27 +45,62 @@ namespace BH.SDK.Tests
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.Normal)]
-        public void Resolve_FallsBackToTodaysShapeAndSaysSo()
+        public void Resolve_FallsBackToTodaysShapeForAnOlderGapAndSaysSo()
         {
             // THIS TEST'S RATIONALE INVERTED, and that is worth writing down rather than deleting.
             // It used to argue that both mistakes must be refusals "rather than a fallback to the
             // current shape: reading a payload as a type it was not written in is silent corruption"
             // - which was correct, and the word carrying it was SILENT. The fallback is back because
             // a file has to open; the silence is not, and the report below is the difference.
+            //
+            // The fallback now answers an OLDER gap only - a newer generation never reaches it, the
+            // read sites refuse it first (ThrowIfNewer). LevelMeta has no V0 snapshot, so its
+            // generation 0 is exactly such a gap.
             var report = new SerializationReport();
 
             using (SerializationReport.Begin(report))
-                Assert.AreEqual(typeof(Level),
-                    VersionedTypeRegistry.Resolve(ModelDomains.Level, MockData.FabricatedGeneration));
+                Assert.AreEqual(typeof(LevelMeta),
+                    VersionedTypeRegistry.Resolve(ModelDomains.LevelMeta, ModelGenerations.Test));
 
             Assert.That(report.Entries, Has.Some.Matches<SerializationSubstitution>(e =>
-                e.Kind == SubstitutionKind.UnknownGeneration && e.Domain == ModelDomains.Level));
+                e.Kind == SubstitutionKind.UnknownGeneration && e.Domain == ModelDomains.LevelMeta));
 
             // An unknown DOMAIN keeps the refusal, and the asymmetry is not an oversight: an unknown
             // generation of a known domain has a current shape to fall back to, and a domain nothing
             // has ever heard of has nothing at all.
             Assert.Throws<NotSupportedException>(() =>
                 VersionedTypeRegistry.Resolve("not_a_domain", ModelGenerations.Release));
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Easy)]
+        public void ThrowIfNewer_RefusesOnlyAGenerationAboveTheLatest()
+        {
+            Assert.DoesNotThrow(() => VersionedTypeRegistry.ThrowIfNewer(ModelDomains.Level, ModelGenerations.Current));
+            Assert.DoesNotThrow(() => VersionedTypeRegistry.ThrowIfNewer(ModelDomains.Level, ModelGenerations.Test));
+            Assert.DoesNotThrow(() => VersionedTypeRegistry.ThrowIfNewer(ModelDomains.Level, ModelGenerations.Invalid));
+
+            var refused = Assert.Throws<NewerGenerationException>(() =>
+                VersionedTypeRegistry.ThrowIfNewer(ModelDomains.Level, ModelGenerations.Current + 1));
+
+            Assert.AreEqual(ModelDomains.Level, refused.Domain);
+            Assert.AreEqual(ModelGenerations.Current + 1, refused.FileGeneration);
+            Assert.AreEqual(ModelGenerations.Current, refused.BuildGeneration);
+            StringAssert.Contains(ModelDomains.Level, refused.Message);
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Easy)]
+        public void ThrowIfNewer_RefusesAnUnknownDomain()
+        {
+            // An unknown domain has no latest to compare against, and that is a caller bug rather than
+            // a newer file - it keeps GetLatestAttribute's own refusal.
+            Assert.Throws<NotSupportedException>(() =>
+                VersionedTypeRegistry.ThrowIfNewer("not_a_domain", ModelGenerations.Current));
         }
 
         [Test]

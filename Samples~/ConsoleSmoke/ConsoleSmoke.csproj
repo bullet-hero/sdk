@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    A smoke test of the BUILT artifact, not of the sources: it references bin~/Release/BH.SDK.dll
+    by path, exactly as a consumer outside this repository would reference the DLL. Build the SDK
+    first (`dotnet build -c Release ../../BH.SDK.csproj`). The three packages below are the SDK's
+    own dependencies - the same ones BulletHero.SDK.nupkg declares - which a HintPath reference does
+    not bring along by itself.
+
+    In a tilde folder, so Unity never imports it.
+  -->
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="BH.SDK">
+      <HintPath>..\..\bin~\Release\BH.SDK.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="BouncyCastle.Cryptography" Version="2.7.0" />
+    <PackageReference Include="SharpZipLib" Version="1.4.2" />
+  </ItemGroup>
+
+</Project>

@@ -86,6 +86,6 @@ suite merely TOUCHES once the snapshots gained codecs — it is now what the sui
 with, in three ways it could not before: a `.blob` half, a nested half, and a cross-path identity
 (the same V0 bytes through JSON and through `.blob` must arrive at the same instance). It is kept
 because it is the **only** thing that still proves `VersionedTypeRegistry` and `IMigration` work at all — the two real
-snapshots this repo once had were deleted along with the bumps that needed them (pre-release, nothing
-on anyone's disk is worth migrating; the main project's `CLAUDE.md` Rule 11 says when that stops being
-true). `VersionedTypeRegistryTests` and `SerializationTests.TestLevelV0Migration` are what exercise it.
+snapshots this repo once had were deleted along with the bumps that needed them (before 1.0.0, when
+nothing on anyone's disk was worth migrating; since the release every change is a bump with a real
+snapshot here - the main project's `CLAUDE.md` Rule 11). `VersionedTypeRegistryTests` and `SerializationTests.TestLevelV0Migration` are what exercise it.

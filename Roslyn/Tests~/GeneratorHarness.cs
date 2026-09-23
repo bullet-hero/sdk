@@ -217,8 +217,7 @@ namespace BH.SDK.Serialization
         IncompleteChain = 2,
         AbsentGeneration = 3,
         UnknownTag = 4,
-        UnreadableContent = 5,
-        ShortContent = 6
+        UnreadableContent = 5
     }
 
     public static class SerializationReport

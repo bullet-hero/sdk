@@ -7,9 +7,9 @@ namespace BH.SDK.UnityExtensions.Tests
 {
     // THE FOUR RULES A DASH AIMED AT A POINT FOLLOWS, AND THE ONE NUMBER THEY ALL COME OUT OF. A dash
     // is one shape scaled by DashFraction: a point beyond the reach gets a full dash, a point inside
-    // it gets a proportionally shorter one that ENDS on it, a point nearer than MinDashFraction of the
-    // reach gets no dash at all, and the travel is steered towards the point every frame rather than
-    // locked to where it was launched.
+    // it gets a proportionally shorter one that ENDS on it however near it is, a point the avatar
+    // already stands on (AvatarRules.ArrivedDistance) gets no dash at all, and the travel is steered
+    // towards the point every frame rather than locked to where it was launched.
     //
     // WHY THIS FIXTURE EXISTS SEPARATELY FROM THE GATE AND THE STEP: those two pin what a dash DOES
     // once it has started, and this pins what a dash IS - the arithmetic that decides, before it
@@ -68,31 +68,30 @@ namespace BH.SDK.UnityExtensions.Tests
             => Assert.AreEqual(0.5f, AvatarMovement.ResolveDashFraction(FullReach * 0.5f, FullReach),
                 Tolerance);
 
-        // RULE 1, AND IT IS A REFUSAL RATHER THAN A TINY DASH. Zero is the answer the caller turns
-        // into "the press was not a dash": no window opens, no cooldown starts.
+        // RULE 1, AND IT IS A REFUSAL RATHER THAN A TINY DASH - but only for a point the avatar is
+        // already standing on, which Step would move it nowhere towards. Zero is the answer the caller
+        // turns into "the press was not a dash": no window opens, no cooldown starts.
         [TestCase(0f)]
-        [TestCase(0.01f)]
+        [TestCase(AvatarRules.ArrivedDistance * 0.5f)]
+        [TestCase(AvatarRules.ArrivedDistance)]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.VeryEasy)]
+        public void APointAlreadyArrivedAt_AsksForNoDashAtAll(float distance)
+            => Assert.AreEqual(0f, AvatarMovement.ResolveDashFraction(distance, FullReach), Tolerance);
+
+        // THERE IS NO FLOOR ABOVE ARRIVAL. A point a hair past it gets a dash a hair long, with every
+        // consequence a dash has; a floor of one world unit stood here once and read as a dropped
+        // press.
+        [TestCase(0.02f)]
         [TestCase(0.1f)]
+        [TestCase(0.5f)]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.VeryEasy)]
-        public void APointTooClose_AsksForNoDashAtAll(float ofTheReach)
-            => Assert.AreEqual(0f, AvatarMovement.ResolveDashFraction(FullReach * ofTheReach, FullReach),
-                Tolerance);
-
-        [Test]
-        [Author(Metadata.Author.Vertoker)]
-        [Category(Metadata.Category.Self)]
-        [Category(Metadata.Category.VeryEasy)]
-        public void TheFloor_IsTheShortestDashThereIs()
-        {
-            var atTheFloor = AvatarRules.MinDashFraction * FullReach;
-
-            Assert.AreEqual(AvatarRules.MinDashFraction,
-                AvatarMovement.ResolveDashFraction(atTheFloor, FullReach), Tolerance);
-            Assert.AreEqual(0f,
-                AvatarMovement.ResolveDashFraction(atTheFloor * 0.99f, FullReach), Tolerance);
-        }
+        public void APointJustPastArrival_AsksForItsOwnFraction(float distance)
+            => Assert.AreEqual(distance / FullReach,
+                AvatarMovement.ResolveDashFraction(distance, FullReach), Tolerance);
 
         // A level may zero every speed the avatar has; asking for a fraction of a reach of nothing has
         // no answer, and a division would hand back an infinity the clamp would happily accept.
@@ -161,24 +160,43 @@ namespace BH.SDK.UnityExtensions.Tests
         [Category(Metadata.Category.Easy)]
         public void AWindowOfZero_StaysOffHoweverShortTheDash()
         {
-            var movement = AvatarMovement.At(float2.zero).StartDash(0f, AvatarRules.MinDashFraction);
+            var movement = AvatarMovement.At(float2.zero).StartDash(0f, 0.01f);
 
             Assert.IsFalse(movement.InInvulnerability(0f, 0f));
             Assert.IsFalse(movement.InInvulnerability(0.001f, 0f));
         }
 
-        // A DASH IS NEVER SHORTER THAN THE FLOOR EVEN IF A CALLER ASKS, so the cooldown it starts is
-        // never shorter than MinDashFraction of the constant - the guarantee that a dash cannot become
-        // a per-frame effect emitter lives in the value, not in the caller's discipline.
+        // A FRACTION OF NOTHING OPENS NO WINDOW. Callers never pass one (ResolveDashFraction answers
+        // 0 and the caller refuses the press), and a negative one is clamped rather than let run the
+        // windows backwards.
         [TestCase(0f)]
         [TestCase(-3f)]
-        [TestCase(0.05f)]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.Easy)]
-        public void AFractionBelowTheFloor_IsClampedUpToIt(float asked)
-            => Assert.AreEqual(AvatarRules.MinDashFraction,
-                AvatarMovement.At(float2.zero).StartDash(0f, asked).DashFraction, Tolerance);
+        public void AFractionOfZeroOrLess_IsClampedToZero(float asked)
+            => Assert.AreEqual(0f, AvatarMovement.At(float2.zero).StartDash(0f, asked).DashFraction,
+                Tolerance);
+
+        // What the dash-spam guarantee rests on now that the value has no floor: a sliver of a dash
+        // still waits for one observed touchable frame, so it can come back every other frame at most.
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Easy)]
+        public void ASliverOfADash_StillWaitsForAnObservedFrame()
+        {
+            const float frame = 1f / 60f;
+            var window = AvatarRules.DashInvulnerabilityTime;
+            var movement = AvatarMovement.At(float2.zero).StartDash(0f, 0.001f);
+
+            // The launch frame is observed while still inside its own i-frames.
+            movement = movement.Observe(0f, window);
+            Assert.IsFalse(movement.CanDash(frame), "the next frame is refused however short the dash");
+
+            movement = movement.Observe(frame, window);
+            Assert.IsTrue(movement.CanDash(frame * 2f), "one touchable frame later it is back");
+        }
 
         [Test]
         [Author(Metadata.Author.Vertoker)]
