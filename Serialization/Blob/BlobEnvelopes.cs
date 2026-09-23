@@ -5,8 +5,12 @@ namespace BH.SDK.Serialization.Blob
 {
     // DEGRADING AT DOMAIN GRANULARITY IS FREE, AND THAT IS WHY IT IS WHERE THE LINE IS DRAWN. A root
     // already writes `domain + generation + length + content`, so the framing that makes a skip safe
-    // is paid for at all twenty roots whether or not anything skips. A level from the future opens
-    // with, say, GameLevel empty but LevelSettings, AudioLevel and LevelResources intact.
+    // is paid for at all twenty roots whether or not anything skips. A root this build cannot parse
+    // is stepped over whole, leaving its siblings intact.
+    //
+    // A ROOT FROM THE FUTURE IS NOT SKIPPED - IT IS REFUSED. Since 1.0.0 every model change is a
+    // generation bump, so a generation above this build's latest throws NewerGenerationException
+    // before a byte of its content is read, and the whole file with it.
     //
     // ANYTHING THAT THROWS INSIDE A ROOT'S CONTENT IS A VERSION PROBLEM, NOT DAMAGE, and that is what
     // lets one catch site stand in for a per-value fallback the binary format cannot have. Damage is
@@ -16,28 +20,24 @@ namespace BH.SDK.Serialization.Blob
     // build does not know - an unknown polymorphic tag, an enum member added later - and the honest
     // answer to it is the same skip an unknown generation gets.
     //
-    // The one case that stays a refusal is content read LONGER than declared. A reader that ran past
-    // the end it was handed did not meet a newer format; it lost its place, and every byte after it
-    // means something else.
+    // CONTENT THAT DOES NOT END EXACTLY AT ITS DECLARED LENGTH IS DAMAGE, in either direction. Short
+    // content used to be a future build's appended members and was skipped; a newer build now bumps
+    // the generation for an appended member too, so no build this one can read ever writes it. A
+    // reader that ran past the end it was handed, or stopped short of it, lost its place.
 
     /// <summary> The runtime half of a generated root's envelope read: settle the declared length,
     /// skip what this build cannot read, and migrate what it can. </summary>
     public static class BlobEnvelopes
     {
-        /// <summary> Settles an ordinary content read against its declared length. Short content is a future
-        /// build's appended members and is skipped; long content is damage and is refused. </summary>
+        /// <summary> Settles an ordinary content read against its declared length. Anything but an exact match
+        /// is damage and is refused. </summary>
         public static void Finish(ref BlobReader reader, string domain, int contentStart, int length)
         {
             var read = reader.Position - contentStart;
             if (read == length) return;
 
-            if (read > length)
-                throw new BlobFormatException(
-                    $"{domain} read {read} bytes of the {length} it declared - the payload is damaged, not newer");
-
-            reader.Skip(length - read);
-            SerializationReport.Report(domain, domain, $"{length - read} trailing bytes this build does not read",
-                ModelGenerations.Invalid, SubstitutionKind.ShortContent);
+            throw new BlobFormatException(
+                $"{domain} read {read} bytes of the {length} it declared - the payload is damaged");
         }
 
         /// <summary> Answers a content read that threw: steps over whatever the root declared and leaves the
@@ -63,11 +63,12 @@ namespace BH.SDK.Serialization.Blob
         // A ref struct may be passed BY REF to an interface method; what it may not do is be captured
         // or boxed, and nothing here does either.
 
-        /// <summary> Reads a root written at another generation: migrates it when the chain reaches today's
-        /// shape, and otherwise skips the root whole. Null means the caller resets itself. </summary>
+        /// <summary> Reads a root written at another generation: refuses a newer one, migrates an older one when
+        /// the chain reaches today's shape, and otherwise skips the root whole. Null means the caller resets itself. </summary>
         public static T OtherGeneration<T>(ref BlobReader reader, string domain, int generation,
             int contentStart, int length) where T : class
         {
+            VersionedTypeRegistry.ThrowIfNewer(domain, generation);
             var type = VersionedTypeRegistry.TryResolve(domain, generation);
 
             if (type == null || !typeof(IBinaryEnvelope).IsAssignableFrom(type))

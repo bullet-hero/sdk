@@ -2,9 +2,11 @@
 {
     // THE GENERATIONS THEMSELVES, NAMED. A generation is a plain int, so without this every
     // [ModelGeneration] would carry a bare digit and the day a domain moves nobody could tell which
-    // digits mean the same thing. A generation is assigned FORWARD and never reused: a domain takes
-    // the next free number, so the twenty domains are free to diverge and only the one that changed
-    // needs a snapshot and a migrator.
+    // digits mean the same thing. A generation is assigned FORWARD, never reused, and taken from ONE
+    // global counter: a domain that changes takes Current + 1, never "the next free number for that
+    // domain". The twenty domains still diverge - only the one that changed moves, and only it needs
+    // a snapshot and a migrator - but one number means one thing across all of them, which is what
+    // keeps LevelMeta.MinGeneration against LevelGenerations.Required() an exact test.
     //
     // MIRRORED IN BH.SDK.Roslyn's ModelGenerationValues, which cannot reference this assembly at
     // all - the generator only sees the user's source through symbols. Invalid must agree there.

@@ -122,11 +122,12 @@ namespace BH.SDK.Models
         [JsonProperty(Names.Duration)]
         public float LevelDuration { get; set; }
 
-        // THE WARNING THAT COSTS NO READ, and the reason it lives HERE rather than in level.json:
+        // THE GATE THAT COSTS NO READ, and the reason it lives HERE rather than in level.json:
         // metadata.json is its own file and its own aggregate, and the browser already reads it per
-        // level without touching the level itself. Without this key the sequence is - the player
-        // presses Play, the game reads thirteen megabytes, and only then finds out it cannot read
-        // them; with it the card says so before anything is opened.
+        // level without touching the level itself. A level claiming more than this build has is
+        // REFUSED - not opened with a warning: every model change since 1.0.0 is a bump, so a newer
+        // level.json would throw NewerGenerationException anyway. This key is what lets the card say
+        // so, and Play and the editor refuse it, before thirteen megabytes are read to find out.
         //
         // IT HAS TO SHIP IN THE FIRST RELEASED CLIENT. The key is additive and can be added at any
         // time; what cannot be added later is a shipped client that knows to look at it.

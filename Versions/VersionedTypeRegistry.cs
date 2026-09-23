@@ -79,6 +79,14 @@ namespace BH.SDK.Versions
             throw new NotSupportedException($"Unknown data domain: '{domain}'");
         }
 
+        /// <summary> Refuses a generation newer than this build's latest for <paramref name="domain"/>. Every read
+        /// site that sees a generation calls it BEFORE any fallback, so a newer file never degrades. </summary>
+        public static void ThrowIfNewer(string domain, int generation)
+        {
+            var latest = GetLatestAttribute(domain).Generation;
+            if (generation > latest) throw new NewerGenerationException(domain, generation, latest);
+        }
+
         /// <summary> The snapshot class one generation names, or null when nothing does - for the callers that
         /// must BRANCH on the answer rather than be handed a substitute they would then read a file into. </summary>
         public static Type TryResolve(string domain, int generation)

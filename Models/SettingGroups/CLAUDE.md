@@ -37,8 +37,8 @@ the settings screen offers the nine presets, a hand-edited value between them is
 The three block switches are all **false** by default, which here is the zero value — and for the
 first two it is also the behaviour they shipped with. `StatsMemory` is the exception and the only
 one of the group that TOOK something away: that block used to be drawn whatever the file said, so a
-`settings.json` written before the key reads back without it. Rule 11 is what makes that a one-line
-change rather than a migrator. The level switch gates a WALK rather than a label: the consumer's
+`settings.json` written before the key reads back without it. It landed before 1.0.0, when Rule 11
+still made that a one-line change rather than a migrator. The level switch gates a WALK rather than a label: the consumer's
 overlay collects `LevelStatsUtils` once a second, which is O(objects) over a level the editor may be
 holding tens of thousands of, so off it collects nothing at all.
 `GameEditorSettings.Grid` (`ActiveDefault`/`Size`/`Opacity` — the editor's viewport grid: on at

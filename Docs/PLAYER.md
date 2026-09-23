@@ -28,7 +28,7 @@ you move or how far you dash.
 | **Dash reach** | **7.5** u | Speed × duration — three quarters of the screen's height |
 | Dash cooldown | **0.3** s | Measured from the moment the dash **starts** |
 | Dash invulnerability | **0.3** s | Also from the start, so it outlasts the travel by 0.15 s |
-| Shortest dash | **1 u** of reach | Below that the dash is refused — see [Aiming a dash](#aiming-a-dash) |
+| Shortest dash | **none** | Any cursor further than the arrival distance gets a dash — see [Aiming a dash](#aiming-a-dash) |
 | Knockback speed | **50** u/s | Five times the walk |
 | Knockback duration | **0.2** s | No steering during it; the avatar travels 10 u |
 | Damage timeout | **1.0** s | Every further hit inside it is ignored |
@@ -37,16 +37,16 @@ you move or how far you dash.
 | Spawn / despawn | **0.3** s | Growing in and compressing to a point |
 | Player size affects speed | **fully** (1.0) | A bigger **avatar** moves proportionally faster. This is the level's Player Size track — **the camera's zoom has nothing to do with it** |
 | Heading turn rate | **30** /s | Cosmetic: which way the body faces |
-| Arrival distance | **0.01** u | Nearer than this to your cursor counts as standing on it |
+| Arrival distance | **0.01** u | Nearer than this to your cursor counts as standing on it — and is the only distance a dash is refused at |
 
 Derived, because these are the numbers that actually decide a dodge:
 
 | | |
 |---|---|
-| Shortest dash: distance | **1** u |
-| Shortest dash: duration | **0.02** s |
-| Shortest dash: cooldown and i-frames | **0.04** s each |
-| Fastest possible dashing | **25** per second in theory, about **14** at 60 fps |
+| Shortest dash: distance | anything over **0.01** u |
+| A 1 u dash: duration | **0.02** s |
+| A 1 u dash: cooldown and i-frames | **0.04** s each |
+| Fastest possible dashing | **every other frame** — 30 per second at 60 fps |
 | Knockback distance | **10** u |
 
 ---
@@ -84,13 +84,17 @@ decides how long the dash is:
 | Where your cursor is | What happens |
 |---|---|
 | Further than 7.5 u | An ordinary full dash towards it — you stop short of the cursor |
-| Between 1 and 7.5 u | A **shorter dash that ends exactly on the cursor** |
-| Nearer than 1 u | **No dash at all** — the press does nothing |
+| Nearer than 7.5 u | A **shorter dash that ends exactly on the cursor**, however near it is |
+| On the avatar (0.01 u or less) | **No dash at all** — the press does nothing |
 
 A shorter dash is the same dash scaled down: the travel, the invulnerability and the cooldown all
 shrink by the same amount. A half-length dash is invulnerable for half as long and comes back in half
 the time. **It is never a cheaper dash** — two half dashes cost exactly the time one full dash costs
 and cover exactly the same ground.
+
+A cursor a hair away from the avatar gets a dash a hair long, with everything a dash brings — the
+trail, the sound, the count in your statistics, and its own tiny window of invulnerability. Holding
+the dash button with the cursor resting just off the avatar therefore dashes every other frame.
 
 A refused dash costs nothing: no cooldown starts, no window opens, nothing is spent. And because the
 dash needs somewhere to go, a direction player holding nothing gets the same answer — no dash.
@@ -169,8 +173,8 @@ scales with them together:
   entirely and changes no speed, no distance and no window — zooming out shows more of the level, it
   does not make you slower. The avatar always covers 10 units a second whatever the camera does.
 - The dash aiming rules use the **current** reach, not the printed 7.5 — on a level that halved your
-  speed, a cursor 2 u away asks for a full-length dash rather than a refused one, and the 1 u floor
-  is half a unit there, because the dash it is a floor under is half as long too.
+  speed, a cursor 3.75 u away already asks for a full-length dash. The arrival distance does not
+  scale: it is where the avatar stands, not how far it can go.
 - The hitbox is a fraction of the drawn body, so it shrinks and grows with the avatar too.
 
 Windows measured in **seconds** — the cooldown, the invulnerability, the damage timeout, the spawn —

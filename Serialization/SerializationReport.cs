@@ -7,7 +7,8 @@ namespace BH.SDK.Serialization
     /// <summary> What one degradation substituted. </summary>
     public enum SubstitutionKind : byte
     {
-        /// <summary> A generation no snapshot is registered for - a file from the future, or a gap in the ladder. </summary>
+        /// <summary> An OLDER generation no snapshot is registered for - a gap in the ladder. A newer one is
+        /// never reported: it is refused with <see cref="BH.SDK.Versions.NewerGenerationException"/>. </summary>
         UnknownGeneration = 0,
 
         /// <summary> An older generation that resolved and migrated. Reported because it is a change, not a loss. </summary>
@@ -23,10 +24,7 @@ namespace BH.SDK.Serialization
         UnknownTag = 4,
 
         /// <summary> A root whose content this build could not parse; it was skipped by its declared length. </summary>
-        UnreadableContent = 5,
-
-        /// <summary> A root whose content ended before its declared length - a future build appended members. </summary>
-        ShortContent = 6
+        UnreadableContent = 5
     }
 
     /// <summary> One substitution a degraded read made. </summary>

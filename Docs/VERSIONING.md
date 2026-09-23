@@ -50,6 +50,11 @@ read a file: the site, the server, external tools, modders.
 - minor — an addition nothing has to react to
 - patch — a fix that moves no signature
 
+**1.0.0 does NOT promise API stability yet.** `sv` goes to 1.0.0 together with `gv`, because the SDK
+moves with the game - a major here still says nothing about compatibility for a consumer compiling
+against the DLL. The semver meaning above takes effect once the author says so, and from then on a
+major means a breaking change.
+
 **Three copies, and a test keeps them honest.** `SdkVersion.cs` is what a consumer reads at runtime,
 `package.json` is what a package manager reads, and `<Version>` in `BH.SDK.csproj` is what a
 NuGet-style build stamps on the assembly. None of the three can see the others, so
@@ -84,11 +89,15 @@ does not; there is no intermediate grade a second component could express. What 
 instead was invite a bump nobody migrated — two domains had moved to `(2, 0)` and `(1, 1)` and both
 were put back. Every domain now reads generation 1.
 
-**A generation is assigned FORWARD and never reused.** A domain that changes shape takes the next
-free number **for itself alone**; the twenty domains are free to diverge (`Level` at 3 while
-`ThemeData` is still at 1), and only the one that moved needs a snapshot and a migrator.
-`ModelGenerations.Current` is the maximum across the live domains, and `ModelGenerationsTests` is
-what fails when it stops being.
+**A generation is assigned FORWARD, never reused, and taken from ONE global counter.** A domain that
+changes shape takes `ModelGenerations.Current + 1` - never "the next free number for that domain" -
+and only the one that moved needs a snapshot and a migrator; the others stay where they are, so the
+twenty domains still diverge (`Level` at 3 while `ThemeData` is still at 1). The single counter is
+what keeps the one `mg` in the Settings version line meaningful, and what makes `LevelMeta.MinGeneration`
+against `LevelGenerations.Required()` an exact test: with per-domain numbering, a file whose domain B
+moved to 2 would pass that check against a build whose domain A is already at 2, and fail only on
+read. `ModelGenerations.Current` is the maximum across the live domains, and `ModelGenerationsTests`
+is what fails when it stops being.
 
 The named constants are in `Versions/ModelGenerations.cs`:
 
@@ -117,23 +126,44 @@ two different things — and a mechanical rewrite of that file would silently de
 number. See "The other three axes" below.
 
 The binary format writes the same two things: the domain as text, then the generation as one `int`,
-then a length. That length is what lets a reader step over a root it cannot read, which is how the
-binary format degrades at domain granularity - see `BlobEnvelopes`.
+then a length. That length is what lets a reader step over a root whose content it cannot parse -
+see `BlobEnvelopes`. It is never used to step over a NEWER root: that one is refused, below.
 
-### A known generation migrates, an unknown one degrades
+### An older generation migrates, a newer one is refused
 
-One sentence, and it holds in both formats and at both levels. "Known" means
-`VersionedTypeRegistry` resolves the generation to a snapshot type **and** the migration chain from
-it is complete; that is the whole of the backward direction and it is exact. Everything else is the
-forward direction and is lossy by design.
+One sentence, and it holds in both formats and at both levels. **Since 1.0.0 every model change is a
+generation bump** - a shape change, an added member (at the end or not) and a new enum variant
+(`ObjectType`, `FloatType`, `VectorType`, a licence form) alike; no case is free. So a generation
+HIGHER than this build's latest for its domain is a shape this build has provably never seen, and the
+file is **not read**: no degrading, no skipped root, no defaults. `NewerGenerationException` (domain,
+the file's generation, the build's) is thrown before anything is read on the payload's behalf, and
+the host tells the player to update.
+
+An OLDER generation migrates: `VersionedTypeRegistry` resolves it to a snapshot type and the chain
+walks it up to today's. A gap in the ladder - older, with no snapshot - keeps the lossy read and its
+report; it cannot arise under the rule above and is left alone.
+
+Every read site that sees a generation calls `VersionedTypeRegistry.ThrowIfNewer` BEFORE any fallback:
 
 | Site | What it does |
 |---|---|
-| `VersionedTypeRegistry.Resolve` | resolves, or falls back to the domain's CURRENT type and reports. An unknown DOMAIN still throws — it has nothing to fall back to |
+| `BaseNewtonsoftDataSerializer.ReadGeneration` | the top-level envelope of a JSON/BSON document |
+| `VersionedEnvelopeConverter.ReadPayload` (both overloads) | every envelope the reflective stack reads, root or nested |
+| `JsonModels.ReadEnveloped` (nested) | right after the generation is read, whichever order `g` and `v` arrive in |
+| `BlobEnvelopes.OtherGeneration` | every `.blob` envelope whose generation is not the build's own |
+
+`BlobDataSerializer.DeserializeEnvelope` returns the BUILD's generation, not the file's; the root read
+inside it throws first, so nothing may rely on its return value for this.
+
+What stays tolerant is everything that is not a newer generation:
+
+| Site | What it does |
+|---|---|
+| `VersionedTypeRegistry.Resolve` | resolves, or - for an unknown OLDER generation - falls back to the domain's CURRENT type and reports. An unknown DOMAIN still throws |
 | `VersionedTypeRegistry.TryResolve` | the same lookup answering `null`, for the read paths that must branch rather than be handed a substitute |
 | `VersionedTypeRegistry.TryUpgradeToLatest` | walks what it can, says whether it arrived, and reports when it did not |
 | `JsonModels.ReadEnveloped` (nested) | migrates through the snapshot's own generated codec when the generation resolves; otherwise reads the payload into today's class by property name and reports |
-| the generated `.blob` root | migrates, or skips the whole root by its declared length and leaves the model at constructor defaults |
+| the generated `.blob` root | migrates; a root whose CONTENT will not parse is skipped by its declared length and left at constructor defaults |
 
 **A snapshot carries `[GenerateModel]` now, which is what made the nested half possible.** It reads
 itself with its own generated codec, so `ReadEnveloped` still holds a bare `JsonReader` and no
@@ -151,26 +181,33 @@ token tree, and `VersionedEnvelopeConverter` is that rule's single documented ex
 object came back as **constructor defaults** with nothing thrown and nothing logged. Measured: a
 nested `LevelSettings` written at generation 0 read back `fps=60` through the generated codec and
 `fps=61` through the reflective one — the same file, two answers, and the quiet one was the default
-path. The tolerant read is back; the silence is not. Every substitution goes to
-`SerializationReport`, and **both codec stacks must degrade to the same value and report the same
-substitutions**, or `useGeneratedCodecs` stops being a switch that changes nothing.
+path. Every substitution goes to `SerializationReport`, and **both codec stacks must degrade to the
+same value and report the same substitutions** - and refuse a newer file with the same domain and
+generation - or `useGeneratedCodecs` stops being a switch that changes nothing.
 
 **An absent tag degrades too**: it is reported, and the payload is read as-is.
 
-`EnvelopeShapeTests`, `SerializationReportTests`, `BlobCodecTests` and `JsonParityTests` pin all of
-it. `Docs/Issues/FORWARD_COMPATIBILITY_HISTORY.md` in the consuming project is the design record.
+**In `.blob`, content that does not end exactly at its declared length is damage**, in either
+direction. Short content used to be a future build's appended members and was skipped; since an
+appended member is a bump now, no build this one can read ever writes it. Declaring a new member LAST
+stays as hygiene only - it keeps a snapshot a prefix of the live class, which makes the snapshot
+easier to write - not as a compatibility promise.
+
+`EnvelopeShapeTests`, `SerializationReportTests`, `BlobCodecTests`, `JsonParityTests` and
+`VersionedTypeRegistryTests` pin all of it. `Docs/Issues/FORWARD_COMPATIBILITY_HISTORY.md` in the
+consuming project is the design record, including why the degrade-on-newer path it describes was
+replaced.
 
 ### Changing a domain's shape
 
-**Before release** — which is now — the format changes **in place**: change the model, change the key,
-done. No snapshot, no migrator, no generation bump. The main project's `CLAUDE.md` Rule 11 is the
-record, and the cost is stated there: a file written earlier reads back with defaults where the change
-landed, silently, so whatever local content matters is re-saved.
+**Until 1.0.0** the format changed **in place** - no snapshot, no migrator, no generation bump - and
+every domain stayed at 1. **Since the release** that is inverted, and the main project's `CLAUDE.md`
+Rule 11 is the record. A domain that changes shape now:
 
-**After release** that inverts. A domain that changes shape then:
-
-1. takes the next free generation for itself,
-2. gets a frozen snapshot class under `Versions/V<n>/` carrying `[ModelGeneration(domain, <n-1>)]`,
+1. takes `ModelGenerations.Current + 1` - the global counter, not the next free number for that
+   domain - and so does every other change, variants and appended members included,
+2. gets a frozen snapshot class under `Versions/V<old>/` carrying `[ModelGeneration(domain, <old>)]` -
+   its own previous number, which under the global counter is not necessarily one less,
 3. gets an `ModelMigration<From, To>` under that folder's `Migrations/`,
 4. and leaves every other domain alone.
 
@@ -179,21 +216,7 @@ stay typed as the CURRENT class, a snapshot is a `[GenerateModel] sealed partial
 members constructed, and a domain that was not yet an envelope at some generation gets a snapshot
 with no `[ModelGeneration]` at all. Read it before writing one.
 
-### Two rules `.blob` takes on, both free now and frozen at release
-
-They are the price of degrading a binary format at domain granularity, and both are cheap only while
-nothing is on anyone's disk.
-
-1. **Member order in the blob is append-only.** A new member is written LAST. The generator writes
-   members in declaration order, so inserting one in the middle makes every trailing byte mean
-   something else and a short payload stops being recoverable. `Docs/NAMING.md` carries the
-   neighbouring half — never reorder a member while renaming it.
-2. **A domain's generation rises for a new polymorphic VARIANT too**, not only for a shape change — a
-   new `ObjectType`, a new `FloatType`, a new licence form. In JSON an unknown tag is survivable
-   because the payload is skippable; in the blob it is not, because a positional format has no length
-   to skip by. What the reader does instead is skip the whole ROOT that carried the tag, and this
-   rule is what makes that sufficient: such a tag only ever arrives inside a root whose generation
-   already moved.
+### What cannot be migrated at all
 
 **The limit, named rather than papered over:** `BlobFormat.Generation` is the byte codec's own
 version. If it moves again there is nothing to degrade toward and the file is unreadable whole. No

@@ -149,8 +149,8 @@ could not describe is ordinary: a strip that tiles along X and is clamped on Y.
 Every one is additive with a zero default except the wrap pair, which REPLACED a single `Wrap` under
 new keys (`wrap_u`/`wrap_v`) - so a level written before them reads back as
 `Auto`/`Auto`/`Auto`/`Auto`/`Clamp`/`Clamp`, one that had authored a repeat needs a re-save (the
-consumer's Rule 11: the format breaks in place before release), and `LevelResources` stays at
-generation 1 either way.
+consumer's Rule 11: the format still broke in place before 1.0.0, when this landed), and
+`LevelResources` stayed at generation 1 either way.
 
 **`FontCharacters` used to live here and no longer does** — it was never a resource, only a fact
 *about* the resources, so it moved to `Level.Hints` with the rest of the advisory data. Don't look

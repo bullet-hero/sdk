@@ -6,6 +6,7 @@ using BH.SDK.Models.Primitives;
 using BH.SDK.Serialization;
 using BH.SDK.Serialization.Serializers;
 using BH.SDK.Utils;
+using BH.SDK.Versions;
 
 namespace BH.SDK.Generators.Import
 {
@@ -97,10 +98,12 @@ namespace BH.SDK.Generators.Import
             {
                 level = Serialization.DeserializeEnvelope<Level>(parameters.LevelBytes, parameters.LevelFormat);
             }
-            catch (Exception exception)
+            catch (Exception exception) when (exception is not NewerGenerationException)
             {
                 // An archive that opened and then would not deserialize is a real answer the author
                 // needs: the archive was fine, the document inside it was not.
+                // A NEWER document is not that answer - it is refused, unwrapped, so the host can tell
+                // the player to update instead of reporting a broken archive.
                 report.Failed(CodeUnreadable,
                     $"The level document could not be read: {exception.Message}", parameters.SourcePath);
                 return Empty();
@@ -163,7 +166,7 @@ namespace BH.SDK.Generators.Import
                 return Serialization.DeserializeEnvelope<LevelMeta>(parameters.MetaBytes, parameters.MetaFormat)
                        ?? new LevelMeta();
             }
-            catch (Exception exception)
+            catch (Exception exception) when (exception is not NewerGenerationException)
             {
                 // The metadata failing is not the level failing: a name and a cover can be retyped,
                 // and refusing the whole import over them would throw away the part that matters.
@@ -189,6 +192,8 @@ namespace BH.SDK.Generators.Import
             }
             catch (Exception)
             {
+                // A newer document included: the run itself refuses it, and an estimate that threw
+                // would take the form down with it.
                 // An estimate is a readout, not a check - the run itself reports what went wrong.
                 return GeneratorCost.Zero;
             }

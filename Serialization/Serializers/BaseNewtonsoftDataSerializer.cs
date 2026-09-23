@@ -103,7 +103,9 @@ namespace BH.SDK.Serialization.Serializers
                     reader.Skip();
                     continue;
                 }
-                return _serializer.Deserialize<int>(reader);
+                var generation = _serializer.Deserialize<int>(reader);
+                VersionedTypeRegistry.ThrowIfNewer(VersionedTypeRegistry.GetDomain(payloadType), generation);
+                return generation;
             }
 
             throw new JsonSerializationException($"Missing '{Names.Generation}' property for type '{payloadType}'");

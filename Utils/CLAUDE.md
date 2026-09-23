@@ -22,7 +22,7 @@ layer-wide conventions. This file is folder-local.
   are load-bearing rather than incidental: **it never mints an outer id** (ids are born at edit time,
   in the consumer's `PrefabMaterializer`, and a missing one is reported), and **`Expand` writes by
   INDEXER**, which is what lets a level saved before virtualization — copies AND table both present —
-  open without doubling them, per Rule 11's no-migration stance.
+  open without doubling them - it landed before 1.0.0, when Rule 11 still meant no migrations.
   **`ObjectDepthUtils`** — parent-chain depth math over an `IObjectScope`, bounded by
   `LevelRules.MaxObjectDepth`. It lives here rather than beside the edit-time materializer because
   the expander above has to refuse the same chains and cannot reach `BH.Core`; the consumer's

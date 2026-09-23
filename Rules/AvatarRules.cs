@@ -53,37 +53,6 @@ namespace BH.SDK.Rules
         /// <summary> How long a dash lasts, in seconds. </summary>
         public const float DashTime = 0.15f;
 
-        // THE SHORTEST DASH THERE IS, AS A FRACTION OF A FULL ONE - and below it there is no dash at
-        // all rather than a shorter one. A dash aimed at a point nearer than its full reach is the
-        // same dash scaled down (AvatarMovement.DashFraction), which is what lets a cursor stop
-        // exactly where it is pointing; without a floor that scaling runs to zero, and a pointer
-        // resting a hair from the avatar would launch a dash EVERY FRAME - each one a trail, a sound
-        // and a statistic, with i-frames and a cooldown too short for any frame to sample.
-        //
-        // ONE WORLD UNIT, WRITTEN AS THE FRACTION THAT PRODUCES IT - which is what the expression
-        // says: the reach is DashSpeed * DashTime, so its reciprocal is the fraction one unit of it
-        // occupies. Spelling the DISTANCE and deriving the fraction is the right way round, because a
-        // unit is what the author actually chose: two avatar bodies, the smallest gap worth crossing
-        // deliberately rather than by walking.
-        //
-        // IT IS STILL STORED AS A FRACTION because the reach it is measured against is not fixed: the
-        // level's own Player Size and Speed tracks scale every speed the avatar has, so a distance
-        // stated in world units would mean a different share of a dash on every frame of a level that
-        // animates them, while a fraction of the reach means the same thing always. On a level that
-        // halves the player's speed this floor is half a unit, and that is correct - the dash it is
-        // a floor UNDER is half as long too.
-        //
-        // WHAT IT COSTS, STATED BECAUSE IT IS THE ONLY REASON A FLOOR EXISTS AT ALL. The shortest
-        // dash runs 0.02 s and its two windows 0.04 s, so a pointer resting just past the floor can
-        // ask for about 25 dashes a second in the abstract - in practice the frame rate is the real
-        // limiter, since every dash also waits for one observed touchable frame (about 14 a second at
-        // 60 fps). It was 1/3 of the reach first, which held the cooldown at 0.1 s and the rate at
-        // ten; a unit trades that headroom for the ability to dash a gap two bodies wide.
-
-        /// <summary> The shortest dash, as a fraction of a full one - one world unit of reach. A
-        /// target nearer than this is not dashed to at all. </summary>
-        public const float MinDashFraction = 1f / (DashSpeed * DashTime);
-
         // MEASURED FROM THE LAUNCH, NOT FROM THE LANDING, and it is EXACTLY DashInvulnerabilityTime
         // - which is a deliberate change of kind, not a number that happens to match. The
         // vulnerability window used to be a DURATION (0.30 against 0.20, a tenth of a second no
@@ -217,6 +186,10 @@ namespace BH.SDK.Rules
 
         // WELL UNDER WHAT A PLAYER CAN SEE and well over the noise a resting stick, a moving camera or
         // a pointer between two pixels produces. The avatar is about 0.5 across.
+        //
+        // IT IS ALSO THE ONLY FLOOR A CURSOR DASH HAS (AvatarMovement.ResolveDashFraction): a target
+        // further than this is dashed to however near it is, and one inside it is not, because the
+        // avatar is already standing on it and Step would move it nowhere.
 
         /// <summary> How close to a target counts as standing on it, in world units. </summary>
         public const float ArrivedDistance = 0.01f;

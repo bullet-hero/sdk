@@ -190,8 +190,9 @@ domain's *current* type" rule). Read those first; this section only adds what th
   intermediate grade a minor could express; what it did instead was invite a bump nobody migrated.
   **20 types carry the attribute and every one of them is at generation 1
   (`ModelGenerations.Release`).** Two had bumped and both were put back when their snapshots were
-  deleted - the game is pre-release, so the format changes in place and nothing migrates; root
-  `CLAUDE.md` Rule 11 is the record. The twenty: `Level`, `LevelMeta`,
+  deleted - before 1.0.0 the format changed in place and nothing migrated. Since the release every
+  change is a bump from `ModelGenerations.Current + 1` with a migrator; root `CLAUDE.md` Rule 11 is
+  the record. The twenty: `Level`, `LevelMeta`,
   `UserSettings`, `Prefab`, `EffectData`, `ThemeData`, `CompositeShape`, `ClipboardData` (SDK-repo
   "core" tier); `PublishProfile` (`Publishing/`); `GameStatistics`, `LevelStatistics`
   (`Models/Statistics/`, two roots rather than one — see that section); `LevelSettings`, `GameLevel`,

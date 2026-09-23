@@ -181,6 +181,7 @@ namespace BH.SDK.Serialization.Converters
         {
             if (reader.TokenType == JsonToken.Null) return null;
 
+            VersionedTypeRegistry.ThrowIfNewer(domain, generation);
             var concreteType = VersionedTypeRegistry.Resolve(domain, generation);
 
             _activeDomains.Add(domain);
@@ -198,6 +199,7 @@ namespace BH.SDK.Serialization.Converters
         {
             if (token == null || token.Type == JTokenType.Null) return null;
 
+            VersionedTypeRegistry.ThrowIfNewer(domain, generation);
             var concreteType = VersionedTypeRegistry.Resolve(domain, generation);
 
             _activeDomains.Add(domain);
