@@ -31,14 +31,10 @@ namespace BH.SDK.Models.Audio
         [JsonProperty(Names.StereoPan)]
         public List<FloatKey> StereoPans { get; set; }
 
-        // TODO add Inverse, play track in reverse
-
         /// <summary> Master switch for this whole DSP chain, off by default - the opposite default
         /// from PostProcessingEvents.Active, and the only explicit on/off flag here. </summary>
         [JsonProperty(Names.ActiveShort)]
         public bool Active { get; set; }
-
-        // TODO replace float to IFloat
 
         /// <summary> Cuts highs above a cutoff - the muffling half of the filter pair. </summary>
         [RuleOptional]
@@ -91,7 +87,7 @@ namespace BH.SDK.Models.Audio
         [RuleOptional]
         [JsonProperty(Names.Normalize)]
         public AudioNormalize Normalize { get; set; }
-        
+
         /// <summary> Single-band parametric EQ - boosts or cuts around one frequency, where
         /// Low/Highpass can only cut past one. </summary>
         [RuleOptional]
@@ -104,7 +100,7 @@ namespace BH.SDK.Models.Audio
             Volumes = new List<FloatKey>();
             StereoPans = new List<FloatKey>();
             Active = AudioRules.ActiveDefault;
-            
+
             // THE ELEVEN SLOTS ARE BORN EMPTY, and null is what "this effect is not in the
             // chain" means. It used to be an always-present object at the disabled floor, which
             // wrote 1.1 KB of pure defaults into every track of every level - eleven effects with
@@ -116,16 +112,17 @@ namespace BH.SDK.Models.Audio
             // question - an effect an author dialled in and then switched off keeps its object and
             // its settings.
         }
+
         /// <summary> Every member at once, in declaration order. </summary>
-        public LevelTrackEffects(List<FloatKey> volumes, List<FloatKey> stereoPans, bool active, 
-            AudioLowpass lowpass, AudioHighpass highpass, AudioEcho echo, AudioReverb reverb, 
-            AudioChorus chorus, AudioPitchShifter pitchShifter, AudioDistortion distortion, 
+        public LevelTrackEffects(List<FloatKey> volumes, List<FloatKey> stereoPans, bool active,
+            AudioLowpass lowpass, AudioHighpass highpass, AudioEcho echo, AudioReverb reverb,
+            AudioChorus chorus, AudioPitchShifter pitchShifter, AudioDistortion distortion,
             AudioFlange flange, AudioCompressor compressor, AudioNormalize normalize, AudioParamEQ paramEQ)
         {
             Volumes = volumes;
             StereoPans = stereoPans;
             Active = active;
-            
+
             Lowpass = lowpass;
             Highpass = highpass;
             Echo = echo;
