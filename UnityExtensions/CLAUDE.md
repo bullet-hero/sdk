@@ -10,7 +10,9 @@ everything that genuinely needs Unity, in four groups. Own asmdef,
   unconditionally requires `UnityEngine` (unlike the core SDK), plus `Unity.Mathematics` and
   `Unity.Collections`, which is what the last three of these brought in:
   - *Conversion glue* — `Pixel`↔`Color32`, `PixelTexture`↔`Texture2D` (`ResourceExtensions`),
-    `IFrameable` framerate resolution reading `Screen.currentResolution` (`ModelExtensions`).
+    `IFrameable` framerate resolution reading `Screen.currentResolution` (`ModelExtensions`) - on a
+    mobile platform the fastest of `Screen.resolutions` instead, since Android sets the current mode
+    FROM `targetFrameRate` and reading it back pinned a 120 Hz phone at 60.
   - **`Avatars/`** — `AvatarMovement`, the avatar's whole movement mechanism as one `readonly
     struct`, plus `TimePoint`, `AvatarStepSpeeds` and `AvatarStepResult`. **It touches no Unity
     RUNTIME** — no `Time`, `Transform`, `Camera`, `Screen` or `UnityEngine.Random`; the clock arrives
