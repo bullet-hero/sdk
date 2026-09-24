@@ -156,7 +156,10 @@ namespace BH.SDK.Interop.AfterBeat
         {
             options ??= new ABOptions();
 
-            return options.LayerImport == ABLayerImport.Auto
+            // Packed reads this plan too: the packer decides the rows, but the depth ranking is
+            // still what orders two overlapping objects, and a bare template imported outside any
+            // level is laid out by the plan alone.
+            return options.LayerImport is ABLayerImport.Auto or ABLayerImport.Packed
                 ? BuildAuto(lists)
                 : BuildBanded(lists, options, report, path);
         }

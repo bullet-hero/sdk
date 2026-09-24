@@ -315,7 +315,7 @@ namespace BH.SDK.Tests.Interop.AfterBeat
         public void Conversion_UnderAuto_PacksTheDepthsButKeepsTheirOrder()
         {
             var source = DrawOrderLevel(0, 7, 20, 45, 60);
-            var imported = ABLevelImporter.Import(source, null, new ABOptions(60));
+            var imported = ABLevelImporter.Import(source, null, new ABOptions(60) { LayerImport = ABLayerImport.Auto });
 
             var exported = ABLevelExporter.Export(imported.Level, null);
             var returned = exported.Level.Objects.ToDictionary(o => o.Name);
@@ -382,7 +382,7 @@ namespace BH.SDK.Tests.Interop.AfterBeat
         public void Export_AMaterializedPlacementsCopies_CarryTheirOwnDepth()
         {
             var imported = ABLevelImporter.Import(ABMockData.CreateFullLevel(), null,
-                new ABOptions(60));
+                new ABOptions(60) { LayerImport = ABLayerImport.Auto });
 
             var placement = imported.Level.Game.Objects.Values.OfType<PrefabObject>().Single();
             Assert.AreEqual(0, placement.Layer, "a placement is not a render band");
@@ -432,6 +432,10 @@ namespace BH.SDK.Tests.Interop.AfterBeat
             var placement = imported.Level.Game.Objects.Values.OfType<PrefabObject>().Single();
             placement.Scales.Clear();
             placement.Scales.Add(new ScaKey(new Vector2Value(3f, 4f), 0));
+
+            // Moving, so it takes the flatten path this test is about - a static placement crosses
+            // as a prefab_objects entry instead (ABPlacementExportTests).
+            placement.Positions.Add(new PosKey(new Vector2Value(5f, 5f), 30));
 
             var exported = ABLevelExporter.Export(imported.Level, null).Level;
             var node = exported.Objects.Single(o => o.Id == ABExportContext.ToSourceId(placement.ObjectId));

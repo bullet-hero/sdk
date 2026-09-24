@@ -48,7 +48,10 @@ namespace BH.SDK.Interop.AfterBeat.Import
 
             var layers = ABLayerMap.Resolve(sources, context.Options, context.Report, pathPrefix,
                 context.LayerPlan);
-            context.RegisterContentLayers(layers.Lowest, layers.Highest);
+
+            // A packed scope registered its own range when it was packed; the depth plan's range
+            // would only widen it with rows nothing occupies.
+            if (context.PackedLayers == null) context.RegisterContentLayers(layers.Lowest, layers.Highest);
 
             for (var i = 0; i < sources.Count; i++)
             {
@@ -1257,6 +1260,12 @@ namespace BH.SDK.Interop.AfterBeat.Import
         private static void ApplyLayer(VgdObject source, RectObject target,
             ABImportContext context, int effectiveLayer)
         {
+            if (context.TryGetPackedLayer(source.Id, out var packed))
+            {
+                target.Layer = Math.Clamp(packed, ValueRules.MinLayer, ValueRules.MaxLayer);
+                return;
+            }
+
             var parentEffective = context.GetParentEffectiveLayer(source.ParentId);
             var relative = effectiveLayer - parentEffective;
 

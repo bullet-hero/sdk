@@ -301,7 +301,7 @@ namespace BH.SDK.Tests.Interop.AfterBeat
                 source.PrefabPlacements.Add(new VgdPrefabPlacement { Id = $"pl{i}", PrefabId = $"p{i}" });
             }
 
-            var result = ABLevelImporter.Import(source, null, Options());
+            var result = ABLevelImporter.Import(source, null, Options(ABLayerImport.Auto));
 
             var placements = result.Level.Game.Objects.Values.OfType<PrefabObject>().ToArray();
             Assert.AreEqual(count, placements.Length);

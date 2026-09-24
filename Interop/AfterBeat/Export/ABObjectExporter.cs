@@ -40,10 +40,12 @@ namespace BH.SDK.Interop.AfterBeat.Export
             var exported = new List<VgdObject>();
             if (context?.Scope?.Objects == null) return exported;
 
+            context.DrawOrder ??= ABDrawOrderMap.Build(CollectLayers(context));
+
             foreach (var pair in context.Scope.Objects)
             {
                 var source = pair.Value;
-                if (source == null) continue;
+                if (source == null || context.Skipped.Contains(pair.Key)) continue;
 
                 var path = $"{pathPrefix}[{pair.Key.value}]";
                 var target = Export(source, context, path);
@@ -51,6 +53,23 @@ namespace BH.SDK.Interop.AfterBeat.Export
             }
 
             return exported;
+        }
+
+        /// <summary> The effective layer of every object of a scope that will be written. </summary>
+        public static List<int> CollectLayers(ABExportContext context)
+        {
+            var layers = new List<int>();
+            if (context?.Scope?.Objects == null) return layers;
+
+            foreach (var pair in context.Scope.Objects)
+            {
+                var source = pair.Value;
+                if (source == null || !source.Active || context.Skipped.Contains(pair.Key)) continue;
+                if (source.ObjectId == context.CameraScaleRootId) continue;
+                layers.Add(context.GetEffectiveLayer(source));
+            }
+
+            return layers;
         }
 
         /// <summary> One object, or null when it has no Afterbeat equivalent at all. </summary>
@@ -87,7 +106,7 @@ namespace BH.SDK.Interop.AfterBeat.Export
                 ParentType = FullParentType,
             };
 
-            ApplyDrawOrder(context.GetEffectiveLayer(source), target);
+            ApplyDrawOrder(context.GetEffectiveLayer(source), target, context.DrawOrder);
 
             ABTimeMap.ExportSpan(source.Span, framerate, target);
             ApplyShape(source, target, context, path);
@@ -470,38 +489,18 @@ namespace BH.SDK.Interop.AfterBeat.Export
         /// <summary> Position, scale and rotation all inherited - what a parent means here. </summary>
         public const string FullParentType = "111";
 
-        // The inverse of the importer's OnlyDepth mapping - the one of the four layer modes that is
-        // a bijection - so a level that came from Afterbeat under it goes back unchanged, and one
-        // authored here lands where the same layer would have drawn.
-        //
-        // Which BAND a layer belongs to is decided the same way the import decided it, and the
-        // player line is what splits them: this format's avatar occupies (0, 1), the source game
-        // draws its own in front of every Default object and behind every AbovePlayer one, so layer
-        // 1 and up is AbovePlayer, 0 down to -60 is the Default band with depth 0 at its top, and
-        // everything under that is Background. Clamped at both ends, since this format has 2001
-        // layers to spend and Afterbeat has 183 - a level using the whole range loses ordering at
-        // the extremes rather than everywhere.
-        private static void ApplyDrawOrder(int effectiveLayer, VgdObject target)
+        // Band, depth and editor row all come from the scope's ABDrawOrderMap, which reads every
+        // layer at once - see its header for when the fixed linear mapping is kept (the inverse of
+        // the OnlyDepth import) and when the layers are ranked instead. A caller exporting one
+        // object on its own gets the linear mapping, which is what it always was.
+        private static void ApplyDrawOrder(int effectiveLayer, VgdObject target, ABDrawOrderMap map)
         {
-            const int span = ABLayerMap.DepthSpan;
-
-            var band = effectiveLayer >= ValueRules.FirstLayerAbovePlayer ? ABRenderLayer.AbovePlayer
-                : effectiveLayer >= ValueRules.LastLayerBehindPlayer - span + 1 ? ABRenderLayer.Default
-                : ABRenderLayer.Background;
-
-            // The layer depth 0 of this band sits on; every deeper depth steps one further down.
-            var frontmost = band switch
-            {
-                ABRenderLayer.AbovePlayer => VgdObject.MaxDepth + ValueRules.FirstLayerAbovePlayer,
-                ABRenderLayer.Default => ValueRules.LastLayerBehindPlayer,
-                _ => ValueRules.LastLayerBehindPlayer - span,
-            };
+            var (band, depth) = map?.Map(effectiveLayer) ?? ABDrawOrderMap.MapLinear(effectiveLayer);
 
             target.RenderLayer = (int)band;
-            target.Depth = Math.Clamp(frontmost - effectiveLayer,
-                VgdObject.MinDepth, VgdObject.MaxDepth);
+            target.Depth = depth;
 
-            ApplyEditorRow(target);
+            ApplyEditorRow(target.Editor, map?.RowOf(effectiveLayer) ?? depth);
         }
 
         // Afterbeat's editor layer and bin are the ROW an object gets on its timeline, and an
@@ -511,23 +510,22 @@ namespace BH.SDK.Interop.AfterBeat.Export
         // opposite of bookkeeping in the sense that they decide whether the file can be edited at
         // all once it is over there.
         //
-        // The row is derived from DEPTH rather than from anything of our own, for two reasons: it
-        // is the number that survived the conversion (this format's Layer did not - it was just
-        // spent on the depth), and it makes the import's OnlyEditor mode the inverse of this
-        // export, exactly as OnlyDepth already is. Depth runs 0-60 and the source editor allows six
-        // layers of fifteen bins, which is 90 rows for 61 depths - so every depth gets a row of its
-        // own with room to spare, rather than several sharing one.
+        // The row is the RANK of the object's layer counted from the top (ABDrawOrderMap.RowOf), so
+        // the source editor shows the layout this one did. On a level using consecutive layers from
+        // 0 down - everything the OnlyDepth import produces - that rank IS the depth, which keeps
+        // the import's OnlyEditor mode the inverse of this export.
         // COUNTED FROM LAYER 1, NOT FROM 0, and that is what makes the inverse exact rather than
         // nearly exact. ABLayerMap.ToEditorIndex reads an editor layer of 0 as 1 - an object nobody
         // sorted belongs with the ones nobody sorted - so rows written on layer 0 and on layer 1
         // decode to the same index, and the first thirty depths came back in fifteen rows.
-        private static void ApplyEditorRow(VgdObject target)
-        {
-            var row = Math.Clamp(target.Depth, VgdObject.MinDepth, VgdObject.MaxDepth);
 
-            target.Editor.Layer = Math.Clamp(row / EditorBinsPerLayer + FirstEditorLayer,
+        /// <summary> Files a row onto the source editor's layers and bins. </summary>
+        public static void ApplyEditorRow(VgdObjectEditor editor, int row)
+        {
+            row = Math.Max(0, row);
+            editor.Layer = Math.Clamp(row / EditorBinsPerLayer + FirstEditorLayer,
                 FirstEditorLayer, MaxEditorLayer);
-            target.Editor.Bin = Math.Clamp(row % EditorBinsPerLayer, MinEditorBin, MaxEditorBin);
+            editor.Bin = Math.Clamp(row % EditorBinsPerLayer, MinEditorBin, MaxEditorBin);
         }
 
         /// <summary> Rows the source editor shows per layer - its own BeatmapObject.EditorData.Bin
@@ -630,10 +628,10 @@ namespace BH.SDK.Interop.AfterBeat.Export
                     // AlphaEmpty (6) rather than Empty (3): both mean "no geometry" over there, and
                     // 6 is the one real levels are written with - 3 appears in no file measured.
                     //
-                    // A PREFAB PLACEMENT LANDS HERE TOO, and as an empty rather than as nothing at
-                    // all. Its content is exported as the objects it materialized into (see the
-                    // level exporter's ExportPlacements - writing prefab_objects as well would hand
-                    // Afterbeat a second copy to expand), but those copies hang OFF the placement
+                    // A FLATTENED PREFAB PLACEMENT LANDS HERE TOO - one Afterbeat cannot express as
+                    // a prefab_objects entry (ABPlacementExporter) - and as an empty rather than as
+                    // nothing at all. Its content is exported as the objects it materialized into,
+                    // and those copies hang OFF the placement
                     // and it carries the position, scale and rotation the whole subtree sits at.
                     // Dropping the object while its children still name it as their parent left
                     // that reference dangling, which the source game reads as a root - so every

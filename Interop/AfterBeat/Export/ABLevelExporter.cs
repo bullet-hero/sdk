@@ -90,9 +90,20 @@ namespace BH.SDK.Interop.AfterBeat.Export
             };
 
             ExportThemes(level, target, context);
+
+            // Which placements cross as placements is decided before any object is written: their
+            // copies must stay out of objects[], and their layers belong in the draw-order map.
+            var placements = ABPlacementExporter.Decide(level, context);
+            foreach (var skipped in placements.Skipped) context.Skipped.Add(skipped);
+
+            var layers = ABObjectExporter.CollectLayers(context);
+            foreach (var placement in placements.Expressed) layers.Add(context.GetEffectiveLayer(placement));
+            context.DrawOrder = ABDrawOrderMap.Build(layers);
+            ReportDrawOrder(context.DrawOrder, layers, context.Report);
+
             target.Objects = ABObjectExporter.ExportAll(context, "objects");
-            ExportPrefabs(level, target, context);
-            ExportPlacements(level, target, context);
+            ExportPrefabs(level, target, context, placements);
+            ExportPlacements(target, context, placements);
             ExportEvents(level, target, context);
             ExportBpm(level, target, context);
             ReportUnsupported(level, report);
@@ -120,8 +131,23 @@ namespace BH.SDK.Interop.AfterBeat.Export
         // referencing it need.
         private static string ToThemeSourceId(ThemeId id) => id.value.ToString("N");
 
-        private static void ExportPrefabs(Level level, VgdLevel target, ABExportContext context)
+        // A TEMPLATE'S ROOT IS WRITTEN ONLY WHEN IT CARRIES SOMETHING. Prefab.Root is this format's
+        // own object - Afterbeat has no such thing, a template there is a flat list - and everything
+        // in a template hangs off it whether it says so or not. An identity root adds nothing, so
+        // its children become the template's roots, which is exactly what an imported template
+        // started as; a root that moves, scales, rotates or sizes is written as an empty the rest
+        // hangs off, since that is the only way its transform can reach them over there. Either way
+        // nothing is left parented to an id Afterbeat cannot name.
+        //
+        // A nested placement inside a template is written as what it materialized into - the
+        // format being written to is the one this converter's own import never nests, so the export
+        // keeps to the same rule.
+        private static void ExportPrefabs(Level level, VgdLevel target, ABExportContext context,
+            ABPlacementExporter.Plan placements)
         {
+            var bands = CollectTemplateBands(level, context, placements);
+            var nested = 0;
+
             foreach (var pair in level.Resources.Prefabs)
             {
                 var prefab = pair.Value;
@@ -133,53 +159,153 @@ namespace BH.SDK.Interop.AfterBeat.Export
                     Effects = context.Effects,
                 };
 
+                foreach (var obj in prefab.Objects.Values)
+                    if (obj is PrefabObject) nested++;
+
+                var objects = new List<VgdObject>();
+                var root = prefab.Root;
+                if (root != null && !IsIdentityRoot(root))
+                {
+                    prefabContext.PrefabRootSourceId = ABExportContext.ToSourceId(ObjectId.PrefabRoot);
+                    var node = root.Copy();
+                    node.Active = true;
+                    node.ParentObjectId = ObjectId.Null;
+                    node.Layer = 0;
+
+                    var holder = ABObjectExporter.Export(node, prefabContext, "prefab.root");
+                    if (holder != null)
+                    {
+                        holder.ParentId = string.Empty;
+                        objects.Add(holder);
+                    }
+                }
+
+                var layers = ABObjectExporter.CollectLayers(prefabContext);
+                bands.TryGetValue(pair.Key, out var band);
+                prefabContext.DrawOrder = ABDrawOrderMap.Build(layers, IsPackedTemplate(layers) ? band : null);
+
+                objects.AddRange(ABObjectExporter.ExportAll(prefabContext, "prefab.objs"));
+
                 target.Prefabs.Add(new VgpPrefab
                 {
-                    Id = pair.Key.value.ToString("N"),
-                    Name = prefab.Root?.Name ?? string.Empty,
+                    Id = ABPlacementExporter.ToPrefabSourceId(pair.Key),
+                    Name = root?.Name ?? string.Empty,
                     Type = (int)ABPrefabType.Misc1,
-                    Objects = ABObjectExporter.ExportAll(prefabContext, "prefab.objs"),
+                    Objects = objects,
                 });
+            }
+
+            if (nested > 0)
+                context.Report.Approximated("nested_prefab_flattened",
+                    $"{nested} prefab placements inside prefab templates were written as the objects they materialize into; this converter does not write nested prefabs.",
+                    "prefabs");
+        }
+
+        /// <summary> Whether a template's root carries nothing its children would inherit. </summary>
+        private static bool IsIdentityRoot(RectObject root)
+        {
+            foreach (var key in root.Positions)
+                if (key.Pos is not Vector2Value { X: 0f, Y: 0f }) return false;
+            foreach (var key in root.Scales)
+                if (key.Scale is not Vector2Value { X: 1f, Y: 1f }) return false;
+            foreach (var key in root.Rotations)
+                if (key.Angle is not FloatValue { Value: 0f }) return false;
+
+            return root.Sizes.Count == 0 && root.AnchorsMin.Count == 0 && root.AnchorsMax.Count == 0
+                   && root.Pivots.Count == 0;
+        }
+
+        // A PACKED template's layers are relative to its placement - rows 1 and up above
+        // Prefab.Root - so what band they draw in is the placement's, not theirs. A template whose
+        // content reaches 0 or below was laid out in the level's own layer space (every legacy
+        // import mode does that, with the placement on 0) and maps like the level does.
+        private static bool IsPackedTemplate(List<int> layers)
+        {
+            if (layers.Count == 0) return false;
+            foreach (var layer in layers)
+                if (layer < ValueRules.FirstLayerAbovePlayer)
+                    return false;
+            return true;
+        }
+
+        /// <summary> The band each template's placements sit in - the first expressed placement's,
+        /// then any placement's; AbovePlayer when its block starts above the player line. </summary>
+        private static Dictionary<PrefabId, ABRenderLayer> CollectTemplateBands(Level level,
+            ABExportContext context, ABPlacementExporter.Plan placements)
+        {
+            var bands = new Dictionary<PrefabId, ABRenderLayer>();
+
+            foreach (var placement in placements.Expressed) Add(placement);
+            foreach (var pair in level.Game.Objects)
+                if (pair.Value is PrefabObject placement && !bands.ContainsKey(placement.PrefabId))
+                    Add(placement);
+
+            return bands;
+
+            void Add(PrefabObject placement)
+            {
+                if (bands.ContainsKey(placement.PrefabId)) return;
+                bands[placement.PrefabId] = context.GetEffectiveLayer(placement) >= ValueRules.FirstLayerAbovePlayer
+                    ? ABRenderLayer.AbovePlayer
+                    : ABRenderLayer.Default;
             }
         }
 
-        // Placements are NOT written as prefab_objects, and that is the one structural decision this
-        // exporter makes rather than transcribes.
-        //
-        // A placement draws nothing here by itself: PrefabMaterializer writes real, permanently
-        // id'd copies of the template into the level, and those copies are what the objects loop
-        // above already exported. Writing the placement as well would hand Afterbeat a second copy
-        // of the same content to expand on load, so every prefab in the level would draw twice.
-        //
-        // Exporting the copies rather than the placements is also the more faithful half: an
-        // override (PrefabObject.Modifications) is already baked into the copy it belongs to, while
-        // an Afterbeat placement has no way to express one at all.
-        //
-        // The placement OBJECT is still written, as an empty - it is the transform its copies hang
-        // off, and dropping it left their parent reference naming nothing. See ABObjectExporter's
-        // ApplyShape. So this step reports rather than writes.
-        private static void ExportPlacements(Level level, VgdLevel target, ABExportContext context)
+        // A PLACEMENT CROSSES AS A PLACEMENT where Afterbeat can say the same thing and as its copies
+        // where it cannot - ABPlacementExporter decides which, before any object is written, and a
+        // flattened one keeps the old shape: its copies as objects, and the placement itself as the
+        // empty they hang off (ABObjectExporter's ApplyShape), because it carries the position,
+        // scale and rotation the whole subtree sits at.
+        private static void ExportPlacements(VgdLevel target, ABExportContext context,
+            ABPlacementExporter.Plan placements)
         {
-            var placements = 0;
-            var unmaterialized = 0;
-
-            foreach (var pair in level.Game.Objects)
+            var map = context.DrawOrder;
+            for (var i = 0; i < placements.Expressed.Count; i++)
             {
-                if (pair.Value is not PrefabObject placement) continue;
-
-                placements++;
-                if (placement.ObjectIds is not { Count: > 0 }) unmaterialized++;
+                var placement = placements.Expressed[i];
+                var exported = ABPlacementExporter.Export(placement, context, $"prefab_objects[{i}]");
+                var layer = context.GetEffectiveLayer(placement);
+                ABObjectExporter.ApplyEditorRow(exported.Editor,
+                    map?.RowOf(layer) ?? ABDrawOrderMap.MapLinear(layer).Depth);
+                target.PrefabPlacements.Add(exported);
             }
 
-            if (placements > 0)
+            if (placements.Expressed.Count > 0)
+                context.Report.Info("placements_exported",
+                    $"{placements.Expressed.Count} prefab placements were written as Afterbeat placements of their prefab.",
+                    "prefab_objects");
+
+            var unmaterialized = 0;
+            foreach (var pair in context.Scope.Objects)
+                if (pair.Value is PrefabObject placement && !context.Skipped.Contains(pair.Key)
+                                                         && placement.ObjectIds is not { Count: > 0 })
+                    unmaterialized++;
+
+            foreach (var pair in placements.Flattened)
+                context.Report.Info(ABPlacementExporter.ToCode(pair.Key),
+                    ABPlacementExporter.ToMessage(pair.Key, pair.Value), "prefab_objects");
+
+            if (placements.Flattened.Count > 0)
                 context.Report.Info("prefabs_flattened",
-                    "Prefab placements were exported as the objects they materialize into rather than as placements, so Afterbeat does not draw their content a second time.",
+                    "Some prefab placements were exported as the objects they materialize into rather than as placements, so Afterbeat does not draw their content a second time.",
                     "prefab_objects");
 
             if (unmaterialized > 0)
                 context.Report.Dropped("placement_not_materialized",
                     "Some prefab placements have never been materialized, so they own no objects to export and their content is missing from the exported level.",
                     "prefab_objects");
+        }
+
+        private static void ReportDrawOrder(ABDrawOrderMap map, List<int> layers, InteropReport report)
+        {
+            if (!map.IsLinear)
+                report.Info("draw_order_ranked",
+                    "This level uses more layers than Afterbeat has depths, so its draw order was written by rank: the order survives, the exact depths do not, and every layer from 0 down is exported as ordinary content rather than background.",
+                    "objects");
+            else if (map.ReadsBackground(layers))
+                report.Info("background_band_inferred",
+                    "Layers below -60 are read as Afterbeat's background band - that is where they came from if this level was imported with the OnlyDepth or Auto layer mode. A level packed on import that reaches that far is ordinary content drawn with the background there.",
+                    "objects");
         }
 
         #endregion

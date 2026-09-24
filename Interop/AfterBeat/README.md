@@ -215,7 +215,8 @@ author picks:
 
 | Mode | What decides draw order |
 |---|---|
-| `Auto` (default) | Depth alone, packed into consecutive layers inside each band. Costs one layer per depth the level uses; a real 423-object level lands on 36 layers, -36 to -1. |
+| `Packed` (default) | Depth orders anything alive at the same time, strictly; TIME decides the row - `ABLayoutPacker` packs intervals, so objects that never share the screen share a row. Children take own layers 1..N, a placement is one row whose template draws above it. Measured: weathergirl's worst row went from 128 simultaneous clips to 2. `CollidersAbovePlayer` (off) moves everything that can hurt the player to 1 and up - this project's convention rather than Afterbeat's. |
+| `Auto` | Depth alone, packed into consecutive layers inside each band. Costs one layer per depth the level uses; every object sharing a depth shares a row. |
 | `OnlyDepth` | Depth alone, one layer per depth the *format* has. The exact inverse of the export, so a level converted under it round-trips unchanged. |
 | `OnlyEditor` | The source editor's own layers and bins alone (bin 0 of layer 1 furthest back); what the level *drew* in front is discarded. |
 | `DepthAndEditor` | Both, each editor group given a fixed `EditorGroupStride`-wide band. Nothing is packed, so a finely organised level runs out of layers and is clamped. |
@@ -239,17 +240,19 @@ uses the `Background` band at all.
 
 **One plan orders the whole level.** The level's own objects and every prefab template's are ranked
 against a single table of depths, because that is what the source game does with them: a template's
-objects are copied into the level and sorted against its own by depth alone. A placement therefore
-takes no layer of its own (`PlacementLayerOffset` defaults to 0), and the range a converted level
+objects are copied into the level and sorted against its own by depth alone. Under the legacy modes a
+placement takes no layer of its own (`PlacementLayerOffset` defaults to 0), and the range a converted level
 occupies is bounded by the source *format* — three bands of 61 depths — rather than by how large or
 how finely organised the level is. Resolving each list separately and stacking the results with
 offsets is what this replaced, and it spread one real level over 894 layers reaching -520.
 
-**Going back out.** A prefab placement is written as an EMPTY object rather than as a
-`prefab_objects` entry: its content is exported as the objects it materialized into (writing the
-placement as well would make Afterbeat expand the same content a second time), but those copies hang
-off it and it carries the transform the whole subtree sits at.
-`ABObjectExporter.ApplyDrawOrder` is the inverse of those boundaries, so a level
+**Going back out.** A placement Afterbeat can express - static, untrimmed, no overrides - is written
+as a `prefab_objects` entry and its copies are NOT written (`ABPlacementExporter`); any other is
+written as an EMPTY object with the copies it materialized into hanging off it, and the reason is
+reported as `placement_flattened:<reason>`. Draw order and editor rows come from `ABDrawOrderMap`: a
+level whose layers fit `[-121, 61]` keeps the fixed boundaries below, anything wider is mapped by rank
+(band by sign, Background not inferred), and the editor row is the layer's rank from the top.
+Under the fixed boundaries a level
 imported under `OnlyDepth` returns with every depth and band unchanged, and one imported under `Auto`
 returns with its depths *packed* — the order the source game drew them in survives, the exact numbers
 do not. For a level authored **here** the same boundaries have a consequence worth knowing: layer 0
@@ -257,6 +260,21 @@ is the default for a new object and draws in front of this format's avatar, and 
 Afterbeat can express that is the `AbovePlayer` band — so a level built entirely on layer 0 arrives
 over there entirely above the player. That is faithful (content that covers the player here covers it
 there), but it means an author who wants ordinary content should spend the layers below -1.
+
+### Prefab structure
+
+Decided on the parsed `.vgd` before anything is minted (`Import/ABPrefabExtractor`), because the
+layout above needs the final set of entries:
+
+| Option | Default | What it does |
+|---|---|---|
+| `FlattenNestedPrefabs` | on | a template's own placements (`pobjs`) are inlined under an empty carrying their transform - nothing this converter produces nests |
+| `RestoreExpandedInstances` | on | objects Afterbeat's editor expanded out of a placement (`pre_iid`) become a placement again - of their template when untouched, of a new `<name> (edited)` one otherwise; a group tied to a live object outside itself stays expanded |
+| `ExtractRepeatedSubtrees` | off | identical root subtrees become one template and a placement each |
+| `MergeDuplicateTemplates` | off | templates with identical contents merge |
+
+Created templates compete for `LevelRules.MaxPrefabs`. The facts behind the matching (what the
+source's expand bakes and what it does not) are `Docs/Issues/AFTERBEAT_ISSUE.md` section 10.12.1.
 
 **Not imported:** triggers, the screen-gradient event track, depth of field, per-axis parent
 inheritance and parent time offsets, and prefab preview images and lead times.

@@ -75,14 +75,46 @@ namespace BH.SDK.Interop.AfterBeat
         // stacked into a handful of timeline rows. Spending draw order on the source EDITOR's own
         // grouping is what this fixed once and paid for with the range (a real level over 900
         // layers, reaching -520); the row count is the editor's problem to solve by grouping, not
-        // draw order's. Auto is depth alone, packed - see ABLayerMap. The other three modes are
-        // there for an author who wants the source editor's organisation expressed as layers
-        // anyway, and they are the ones that can run out of range.
+        // draw order's. Auto is depth alone, packed - see ABLayerMap. Packed, the default, keeps
+        // depth as the ORDER and spends the rows on time instead: objects that never overlap share
+        // a row, the way a level authored here is laid out - see ABLayoutPacker. The other three
+        // modes are there for an author who wants the source editor's organisation expressed as
+        // layers anyway, and they are the ones that can run out of range.
 
         /// <summary> What the converted level's draw order is derived from. See
         /// <see cref="ABLayerImport"/> - this changes what draws in front of what, so it is
         /// the one import choice worth showing an author first. </summary>
-        public ABLayerImport LayerImport = ABLayerImport.Auto;
+        public ABLayerImport LayerImport = ABLayerImport.Packed;
+
+        // The four switches below reshape the level's STRUCTURE before anything is layered: they
+        // decide which objects end up behind a prefab placement, and the packer needs the final set
+        // of entries to lay out. The default on each is the one that recovers what the source author
+        // actually built - an expanded instance was a placement once, and a nested placement is
+        // content the source game draws - while the two that INVENT structure (finding repeats,
+        // merging look-alikes) stay opt-in. See Import/ABPrefabExtractor.
+
+        /// <summary> Turn objects Afterbeat's editor expanded out of a placement (pre_iid) back
+        /// into a placement of their template, or of a forked copy of it when they were edited
+        /// after expanding. </summary>
+        public bool RestoreExpandedInstances = true;
+
+        /// <summary> Find root subtrees that repeat identically apart from when and where they
+        /// start, and turn each group into a template plus placements. </summary>
+        public bool ExtractRepeatedSubtrees;
+
+        /// <summary> Merge templates whose contents are identical, repointing every placement of
+        /// the duplicates at the survivor. </summary>
+        public bool MergeDuplicateTemplates;
+
+        /// <summary> Inline a template's own placements into it instead of dropping them. This
+        /// converter never produces a nested prefab, so off means the nested content is lost. </summary>
+        public bool FlattenNestedPrefabs = true;
+
+        /// <summary> Under <see cref="ABLayerImport.Packed"/>: put everything that can hurt the
+        /// player at layer 1 and up and everything that cannot at 0 and down - this project's own
+        /// convention. Off, the default, keeps Afterbeat's bands, where every ordinary object draws
+        /// behind the player whether it hits or not. </summary>
+        public bool CollidersAbovePlayer;
 
         /// <summary> How many layers one source editor group is given, under
         /// <see cref="ABLayerImport.DepthAndEditor"/> alone. The source format's whole depth
@@ -101,7 +133,9 @@ namespace BH.SDK.Interop.AfterBeat
         /// it. Zero, the default, gives a placement no draw order of its own, which is what the
         /// source game does with one - see ABPrefabImporter's ResolveLayer. Raising it pulls every
         /// placement in front of the level and spreads them over a layer each, which is a timeline
-        /// row per placement and a level drawn in an order Afterbeat never drew it in. </summary>
+        /// row per placement and a level drawn in an order Afterbeat never drew it in. Read by the
+        /// legacy layer modes only - under <see cref="ABLayerImport.Packed"/> a placement is packed
+        /// into a row like any other unit. </summary>
         public int PlacementLayerOffset;
 
         // THE SONG IS THE LEVEL over there. Afterbeat stores no length of its own: its timeline is

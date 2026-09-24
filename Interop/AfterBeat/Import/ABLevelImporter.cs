@@ -90,6 +90,10 @@ namespace BH.SDK.Interop.AfterBeat.Import
                 return new Result(null, null, report);
             }
 
+            // Structure first: which objects end up behind a placement decides what the layout
+            // below has to lay out. A copy when anything changes - the caller's document is theirs.
+            source = ABPrefabExtractor.Apply(source, options, report);
+
             var level = new Level();
             level.Settings.Fps = options.Framerate;
 
@@ -140,6 +144,13 @@ namespace BH.SDK.Interop.AfterBeat.Import
                         lists.Add(prefab.Objects);
 
             context.LayerPlan = ABLayerMap.Build(lists, options, context.Report, "objects");
+
+            if (options.LayerImport == ABLayerImport.Packed)
+            {
+                PackLayers(source, options, context);
+                return;
+            }
+
             context.RegisterContentLayers(context.LayerPlan.Lowest, context.LayerPlan.Highest);
         }
 
@@ -344,7 +355,8 @@ namespace BH.SDK.Interop.AfterBeat.Import
 
                 var prefab = ABPrefabImporter.ImportTemplate(sourcePrefab, context.Options,
                     context.Report, level.Resources.CompositeShapes, context.ReferenceTheme,
-                    $"prefabs[{i}]", level.Resources.Effects, context.LayerPlan, placements);
+                    $"prefabs[{i}]", level.Resources.Effects, context.LayerPlan, placements,
+                    context.PackedTemplateLayers?.GetValueOrDefault(sourcePrefab));
                 if (prefab == null) continue;
 
                 level.Resources.Prefabs[prefab.PrefabId] = prefab;
@@ -417,6 +429,201 @@ namespace BH.SDK.Interop.AfterBeat.Import
                     "Prefab placements were imported as placements rather than as copies of their templates, with the id table that makes their content rebuildable.",
                     "prefab_objects");
         }
+
+        #endregion
+
+        #region Packed layout
+
+        // The packer works on the SOURCE document, not on the models being built, because it has to
+        // run before any of them exist: an object's own layer is written as it is imported, and the
+        // row it gets depends on every other object alive at the same time. So the lifetimes are
+        // resolved here the way the importer will resolve them - the same ABTimeMap call, the same
+        // parent the object will end up with - and clipped to that parent's, which is what a child
+        // actually plays as (a child outside its parent is not drawn).
+        //
+        // Templates are packed first and each on its own - a template's rows start at 1, above its
+        // Root - because a placement's block in the level is as tall as its template drew.
+        private static void PackLayers(VgdLevel source, ABOptions options, ABImportContext context)
+        {
+            var framerate = options.Framerate;
+            var templates = new Dictionary<string, (ABLayoutPacker.Result Result, int Length, float Lead)>();
+
+            if (options.ImportPrefabs && source.Prefabs != null)
+            {
+                context.PackedTemplateLayers = new Dictionary<VgpPrefab, Dictionary<string, int>>();
+                var windows = ABPrefabImporter.MeasurePlacements(source.PrefabPlacements);
+
+                for (var i = 0; i < source.Prefabs.Count; i++)
+                {
+                    var prefab = source.Prefabs[i];
+                    if (prefab?.Objects == null) continue;
+
+                    var absoluteBase = 0f;
+                    if (windows != null && !string.IsNullOrEmpty(prefab.Id)
+                                        && windows.TryGetValue(prefab.Id, out var window))
+                        absoluteBase = window.Earliest - prefab.Offset;
+
+                    var entries = BuildEntries(prefab.Objects, framerate, absoluteBase, out var end);
+                    var result = ABLayoutPacker.Pack(entries, ABLayoutPacker.Scope.Template,
+                        context.Report, $"prefabs[{i}]");
+
+                    context.PackedTemplateLayers[prefab] = Unprefix(result.OwnLayers, ObjectPrefix);
+                    if (!string.IsNullOrEmpty(prefab.Id))
+                        templates[prefab.Id] = (result,
+                            Math.Max(FrameRules.MinFrameDuration, end - FrameRules.MinFrame), prefab.Offset);
+                }
+            }
+
+            var levelEntries = BuildEntries(source.Objects, framerate, 0f, out _);
+
+            if (options.ImportPrefabs && source.PrefabPlacements != null)
+                foreach (var placement in source.PrefabPlacements)
+                {
+                    if (placement == null || string.IsNullOrEmpty(placement.Id)) continue;
+                    if (placement.PrefabId == null || !templates.TryGetValue(placement.PrefabId, out var template))
+                        continue;
+
+                    var start = Math.Max(FrameRules.MinFrame,
+                        ABTimeMap.ToFrame(placement.StartTime - template.Lead, framerate));
+                    levelEntries.Add(new ABLayoutPacker.Entry
+                    {
+                        Id = PlacementPrefix + placement.Id,
+                        ParentId = string.IsNullOrEmpty(placement.ParentId)
+                                   || placement.ParentId == VgdObject.CameraParentId
+                            ? null
+                            : ObjectPrefix + placement.ParentId,
+                        IsPlacement = true,
+                        Start = start,
+                        End = start + template.Length,
+                        Band = template.Result.MajorityBand,
+                        Depth = template.Result.NearestDepth,
+                        FarDepth = template.Result.FarthestDepth,
+                        RenderHeight = template.Result.Highest,
+                        Collides = template.Result.AnyCollides,
+                        Order = levelEntries.Count,
+                    });
+                }
+
+            var packed = ABLayoutPacker.Pack(levelEntries, ABLayoutPacker.Scope.Level, context.Report, "objects",
+                options.CollidersAbovePlayer);
+
+            context.PackedLayers = Unprefix(packed.OwnLayers, ObjectPrefix);
+            context.PackedPlacementLayers = Unprefix(packed.OwnLayers, PlacementPrefix);
+            context.RegisterContentLayers(packed.Lowest, packed.Highest);
+        }
+
+        // The source keeps objects and placements in two id spaces, and the packer sees one.
+        private const string ObjectPrefix = "o:";
+        private const string PlacementPrefix = "p:";
+
+        private static Dictionary<string, int> Unprefix(Dictionary<string, int> layers, string prefix)
+        {
+            var result = new Dictionary<string, int>();
+            foreach (var pair in layers)
+                if (pair.Key.StartsWith(prefix, StringComparison.Ordinal))
+                    result[pair.Key.Substring(prefix.Length)] = pair.Value;
+            return result;
+        }
+
+        /// <summary> One scope's objects as packer entries, parented the way the importer will
+        /// parent them and spanned the way they will play. <paramref name="end"/> is the latest end
+        /// boundary any of them reaches. </summary>
+        private static List<ABLayoutPacker.Entry> BuildEntries(IReadOnlyList<VgdObject> sources,
+            int framerate, float absoluteBase, out int end)
+        {
+            var reach = FrameRules.MinFrame;
+            var entries = new List<ABLayoutPacker.Entry>();
+            if (sources == null)
+            {
+                end = reach;
+                return entries;
+            }
+
+            var byId = new Dictionary<string, VgdObject>();
+            foreach (var obj in sources)
+                if (obj != null && !string.IsNullOrEmpty(obj.Id))
+                    byId[obj.Id] = obj;
+
+            var spans = new Dictionary<VgdObject, (int Start, int End)>();
+
+            for (var i = 0; i < sources.Count; i++)
+            {
+                var obj = sources[i];
+                if (obj == null || string.IsNullOrEmpty(obj.Id)) continue;
+
+                var parent = ResolvePackParent(obj, byId);
+                var (start, stop) = Resolve(obj, new HashSet<VgdObject>());
+
+                // What a template is as long as counts keyframes past an object's own end, exactly
+                // as ABPrefabImporter.MeasureDuration does, and the AUTHORED span rather than the
+                // clipped one, which is what that measures - a placement packed shorter than it
+                // plays would share a row with whatever it actually overlaps.
+                var authored = ABTimeMap.ResolveSpan(obj, framerate, null, null, absoluteBase);
+                reach = Math.Max(reach, Math.Max(stop, authored.StartFrame + authored.FrameDuration));
+                if (obj.Tracks != null)
+                    foreach (var track in obj.Tracks)
+                        if (track?.Keyframes != null)
+                            foreach (var key in track.Keyframes)
+                                if (key != null)
+                                    reach = Math.Max(reach,
+                                        ABTimeMap.ToFrame(obj.StartTime + key.Time, framerate) + 1);
+
+                entries.Add(new ABLayoutPacker.Entry
+                {
+                    Id = ObjectPrefix + obj.Id,
+                    ParentId = parent == null ? null : ObjectPrefix + parent.Id,
+                    Start = start,
+                    End = stop,
+                    Band = ToPackBand(ABLayerMap.ToBand(obj)),
+                    Depth = ABLayerMap.ToDepth(obj),
+                    Rendered = obj.ObjectType is not ((int)ABObjectType.Empty or (int)ABObjectType.AlphaEmpty),
+                    Collides = obj.ObjectType is (int)ABObjectType.Normal or (int)ABObjectType.Hit
+                               && obj.Shape != (int)ABShape.Text,
+                    Order = i,
+                });
+            }
+
+            end = reach;
+            return entries;
+
+            (int Start, int End) Resolve(VgdObject obj, HashSet<VgdObject> seen)
+            {
+                if (spans.TryGetValue(obj, out var cached)) return cached;
+
+                var span = ABTimeMap.ResolveSpan(obj, framerate, null, null, absoluteBase);
+                var start = span.StartFrame;
+                var stop = span.StartFrame + span.FrameDuration;
+
+                var parent = ResolvePackParent(obj, byId);
+                if (parent != null && seen.Add(obj))
+                {
+                    var (parentStart, parentEnd) = Resolve(parent, seen);
+                    start = Math.Max(start, parentStart);
+                    stop = Math.Min(stop, parentEnd);
+                    if (stop <= start) stop = start + 1;
+                }
+
+                spans[obj] = (start, stop);
+                return (start, stop);
+            }
+        }
+
+        // The parent the importer will actually give the object: none for an object inheriting
+        // nothing (it is imported as a root), none for the camera (the camera-scale node sits on
+        // layer 0, and a template has no camera at all), none for a missing id.
+        private static VgdObject ResolvePackParent(VgdObject obj, Dictionary<string, VgdObject> byId)
+        {
+            if (string.IsNullOrEmpty(obj.ParentId) || obj.IsParentedToCamera) return null;
+            if (ABObjectImporter.InheritsNothing(obj)) return null;
+            return byId.TryGetValue(obj.ParentId, out var parent) && parent != obj ? parent : null;
+        }
+
+        private static ABLayoutPacker.Band ToPackBand(ABRenderLayer band) => band switch
+        {
+            ABRenderLayer.AbovePlayer => ABLayoutPacker.Band.AbovePlayer,
+            ABRenderLayer.Background => ABLayoutPacker.Band.Background,
+            _ => ABLayoutPacker.Band.Default,
+        };
 
         #endregion
 

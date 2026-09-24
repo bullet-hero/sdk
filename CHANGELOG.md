@@ -2,6 +2,25 @@
 
 ## [Unreleased]
 
+### Added
+
+- `ABLayerImport.Packed`, the new default: depth still orders what draws in front, but time decides
+  the row, children take own layers 1..N and a placement is one row. weathergirl's busiest row went
+  from 128 simultaneous clips to 2, and its 687 negative child layers to 0
+- `ABPrefabExtractor` recovers prefab structure on import: expanded instances (`pre_iid`) become
+  placements again, nested `pobjs` are inlined; repeated subtrees and duplicate templates are opt-in
+  (`ExtractRepeatedSubtrees`, `MergeDuplicateTemplates`)
+- `ABOptions.CollidersAbovePlayer`, off - puts everything that can hurt the player at layer 1 and up
+  instead of Afterbeat's own bands
+
+### Changed
+
+- The Afterbeat export writes a static, untrimmed, unmodified placement as a real `prefab_objects`
+  entry and leaves its copies out; any other placement is flattened as before and reported as
+  `placement_flattened:<reason>`
+- Exported `d` and `ed.l`/`ed.b` come from one map per scope: a level wider than `[-121, 61]` is
+  ranked into depths 0..60, and the editor row is the layer's rank from the top
+
 ## sv 0.13.1 - 2026-09-21
 
 ### Fixed

@@ -80,10 +80,11 @@
     public enum ABLayerImport
     {
         /// <summary> Depth alone, packed into consecutive layers inside each band and anchored on
-        /// the player line - the last layer behind the player is 0. The default: it draws the level
+        /// the player line - the last layer behind the player is 0. It draws the level
         /// in the order the source game drew it and costs one layer per depth the level actually
         /// uses, rather than one per depth the format allows. Packed rather than absolute, so an
-        /// export returns the ORDER rather than the original depths. </summary>
+        /// export returns the ORDER rather than the original depths. Every object sharing a depth
+        /// shares a row, which on a real level is hundreds of clips on one line. </summary>
         Auto = 0,
 
         /// <summary> Render depth alone - .vgd objects[].d - exactly as the source level draws it.
@@ -100,6 +101,13 @@
         /// group using three depths still costs a whole band - and a level with many groups runs
         /// out of draw order and is clamped. </summary>
         DepthAndEditor = 3,
+
+        /// <summary> The default: depth still decides what draws in front, but time decides which
+        /// row an object lands on - objects that never share the screen share a layer, children and
+        /// template contents take their own layers 1..N inside their parent, and a prefab placement
+        /// is packed as one block. What a converted level looks like on the timeline is the point;
+        /// see <see cref="ABLayoutPacker"/>. </summary>
+        Packed = 4,
     }
 
     // Not the two checkboxes the source editor shows ("above player", "in background") - one enum

@@ -63,6 +63,11 @@ namespace BH.SDK.Generators.Interop
                 nameof(Parameters.OpacityHitThreshold),
                 nameof(Parameters.ParallaxActive), nameof(Parameters.ParallaxLayerOffset),
                 nameof(Parameters.MaxParallaxLoopKeys),
+                nameof(Parameters.RestoreExpandedInstances),
+                nameof(Parameters.FlattenNestedPrefabs),
+                nameof(Parameters.ExtractRepeatedSubtrees),
+                nameof(Parameters.MergeDuplicateTemplates),
+                nameof(Parameters.CollidersAbovePlayer),
                 nameof(Parameters.PlacementLayerOffset),
                 nameof(Parameters.EditorGroupStride),
                 nameof(Parameters.LevelJson), nameof(Parameters.MetaJson),
@@ -92,7 +97,19 @@ namespace BH.SDK.Generators.Interop
             // The one band width nothing derives - every other mode packs or spans on its own.
             .VisibleWhen(nameof(Parameters.EditorGroupStride),
                 p => ((Parameters)p).LayerImport == ABLayerImport.DepthAndEditor)
+            // A packed level gives every placement a row of its own already; the offset is how the
+            // legacy modes lift placements above the level, and nothing under Packed reads it.
             .VisibleWhen(nameof(Parameters.PlacementLayerOffset),
+                p => ((Parameters)p).ImportPrefabs && ((Parameters)p).LayerImport != ABLayerImport.Packed)
+            .VisibleWhen(nameof(Parameters.CollidersAbovePlayer),
+                p => ((Parameters)p).LayerImport == ABLayerImport.Packed)
+            .VisibleWhen(nameof(Parameters.RestoreExpandedInstances),
+                p => ((Parameters)p).ImportPrefabs)
+            .VisibleWhen(nameof(Parameters.FlattenNestedPrefabs),
+                p => ((Parameters)p).ImportPrefabs)
+            .VisibleWhen(nameof(Parameters.ExtractRepeatedSubtrees),
+                p => ((Parameters)p).ImportPrefabs)
+            .VisibleWhen(nameof(Parameters.MergeDuplicateTemplates),
                 p => ((Parameters)p).ImportPrefabs)
             .VisibleWhen(nameof(Parameters.ParallaxLayerOffset),
                 p => ((Parameters)p).ImportParallax)
@@ -216,6 +233,11 @@ namespace BH.SDK.Generators.Interop
             LayerImport = parameters.LayerImport,
             EditorGroupStride = parameters.EditorGroupStride,
             PlacementLayerOffset = parameters.PlacementLayerOffset,
+            RestoreExpandedInstances = parameters.RestoreExpandedInstances,
+            ExtractRepeatedSubtrees = parameters.ExtractRepeatedSubtrees,
+            MergeDuplicateTemplates = parameters.MergeDuplicateTemplates,
+            FlattenNestedPrefabs = parameters.FlattenNestedPrefabs,
+            CollidersAbovePlayer = parameters.CollidersAbovePlayer,
             AudioLengthSeconds = parameters.AudioLengthSeconds,
             OpacityHitThreshold = parameters.OpacityHitThreshold,
         };
@@ -248,13 +270,35 @@ namespace BH.SDK.Generators.Interop
             /// layers this format has no field for, so what a converted level draws in front - and
             /// how many timeline rows it arrives on - is a choice. See
             /// <see cref="ABLayerImport"/>. </summary>
-            public ABLayerImport LayerImport = ABLayerImport.Auto;
+            public ABLayerImport LayerImport = ABLayerImport.Packed;
 
             /// <summary> How far apart the imported editor groups are placed in layer space. </summary>
             public int EditorGroupStride = ABLayerMap.DepthSpan;
 
-            /// <summary> How far prefab placements are lifted above the rest. </summary>
+            /// <summary> How far prefab placements are lifted above the rest, under the legacy
+            /// layer modes. </summary>
             public int PlacementLayerOffset;
+
+            /// <summary> Objects Afterbeat's editor expanded out of a placement become a placement
+            /// again. See <see cref="ABOptions.RestoreExpandedInstances"/>. </summary>
+            public bool RestoreExpandedInstances = true;
+
+            /// <summary> Prefabs placed inside other prefabs are inlined into them rather than
+            /// dropped. See <see cref="ABOptions.FlattenNestedPrefabs"/>. </summary>
+            public bool FlattenNestedPrefabs = true;
+
+            /// <summary> Identical repeated groups of objects become a prefab and its placements.
+            /// See <see cref="ABOptions.ExtractRepeatedSubtrees"/>. </summary>
+            public bool ExtractRepeatedSubtrees;
+
+            /// <summary> Prefabs with identical contents are merged into one. See
+            /// <see cref="ABOptions.MergeDuplicateTemplates"/>. </summary>
+            public bool MergeDuplicateTemplates;
+
+            /// <summary> Everything that can hurt the player goes above it, everything else behind -
+            /// this project's convention rather than Afterbeat's. See
+            /// <see cref="ABOptions.CollidersAbovePlayer"/>. </summary>
+            public bool CollidersAbovePlayer;
 
             /// <summary> Whether the imported background arrives switched on. Off - the default -
             /// keeps every background object and its baked loop while leaving the level looking

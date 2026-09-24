@@ -28,6 +28,7 @@ namespace BH.SDK.Interop.AfterBeat.Import
     {
         /// <summary> What the caller asked for. </summary>
         public ABOptions Options { get; }
+
         /// <summary> Where every finding of this import goes. </summary>
         public InteropReport Report { get; }
 
@@ -59,6 +60,31 @@ namespace BH.SDK.Interop.AfterBeat.Import
 
         /// <summary> The whole level's resolved draw order, shared by every list in it. </summary>
         public ABLayerMap.Plan LayerPlan { get; set; }
+
+        // Under ABLayerImport.Packed the OWN layer of every object is decided for the whole scope at
+        // once by ABLayoutPacker - rows depend on what else is alive at the same time - so it is
+        // computed before anything is imported and only looked up here. Null under every other
+        // mode, which is what keeps them exactly as they were.
+
+        /// <summary> Afterbeat's own object id to the own (parent-relative) layer the packer gave
+        /// it, or null when this scope is not packed. </summary>
+        public Dictionary<string, int> PackedLayers { get; set; }
+
+        /// <summary> The same for this scope's prefab placements, keyed by the placement's own id -
+        /// a separate table because the source format keeps the two id spaces apart. </summary>
+        public Dictionary<string, int> PackedPlacementLayers { get; set; }
+
+        /// <summary> Each template's packed table, keyed by the source template, for the templates
+        /// this level imports. Read when the template's own context is built. </summary>
+        public Dictionary<VgpPrefab, Dictionary<string, int>> PackedTemplateLayers { get; set; }
+
+        /// <summary> The packed own layer of one source object, when this scope is packed and knows it. </summary>
+        public bool TryGetPackedLayer(string sourceId, out int layer)
+        {
+            layer = 0;
+            return PackedLayers != null && !string.IsNullOrEmpty(sourceId)
+                                        && PackedLayers.TryGetValue(sourceId, out layer);
+        }
 
         /// <summary> Afterbeat's own object id to the one minted for it here. </summary>
         public Dictionary<string, ObjectId> ObjectIds { get; } = new();
@@ -155,6 +181,7 @@ namespace BH.SDK.Interop.AfterBeat.Import
         /// background is placed below and the prefab placements above. Both stay 0 until something
         /// is resolved, so a scope holding no objects puts its background on layer -1. </summary>
         public int LowestContentLayer { get; private set; }
+
         /// <summary> The largest layer the import has assigned so far, so what comes after it can stay above. </summary>
         public int HighestContentLayer { get; private set; }
 

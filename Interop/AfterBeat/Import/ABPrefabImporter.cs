@@ -44,7 +44,8 @@ namespace BH.SDK.Interop.AfterBeat.Import
             ThemeData referenceTheme, string path,
             IDictionary<EffectId, EffectData> effects = null,
             ABLayerMap.Plan layerPlan = null,
-            IReadOnlyDictionary<string, PlacementWindow> placements = null)
+            IReadOnlyDictionary<string, PlacementWindow> placements = null,
+            Dictionary<string, int> packedLayers = null)
         {
             if (source == null) return null;
 
@@ -60,6 +61,7 @@ namespace BH.SDK.Interop.AfterBeat.Import
             {
                 ReferenceTheme = referenceTheme,
                 LayerPlan = layerPlan,
+                PackedLayers = packedLayers,
                 AbsoluteTimeBase = ResolveAbsoluteBase(source, placements, report, path),
             };
 
@@ -214,7 +216,7 @@ namespace BH.SDK.Interop.AfterBeat.Import
                 Name = ResolveName(source, context, prefabId, templates),
                 Active = true,
                 Span = ResolveSpan(source, context, prefabId, levelFrameDuration, templates),
-                Layer = ResolveLayer(context, placementIndex, path),
+                Layer = ResolveLayer(context, source, placementIndex, path),
                 ParentObjectId = context.ResolveParent(source.ParentId, path),
             };
 
@@ -343,8 +345,17 @@ namespace BH.SDK.Interop.AfterBeat.Import
         // The offset therefore now defaults to 0 and the old stacking is what an author opts INTO
         // by raising it, in which case a level with more placements than there is room above the
         // base wraps rather than piling the remainder on the last one.
-        private static int ResolveLayer(ABImportContext context, int placementIndex, string path)
+        //
+        // Under ABLayerImport.Packed none of that applies: the placement is a unit of the layout
+        // like any object, and its row was decided with the rest of the level before import.
+        private static int ResolveLayer(ABImportContext context, VgdPrefabPlacement source,
+            int placementIndex, string path)
         {
+            if (context.PackedPlacementLayers != null && !string.IsNullOrEmpty(source.Id)
+                                                      && context.PackedPlacementLayers.TryGetValue(source.Id,
+                                                          out var packed))
+                return Math.Clamp(packed, ValueRules.MinLayer, ValueRules.MaxLayer);
+
             var offset = context.Options.PlacementLayerOffset;
             if (offset <= 0) return ValueRules.DefaultLayer;
 

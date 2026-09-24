@@ -23,10 +23,13 @@ namespace BH.SDK.Interop.AfterBeat.Export
     {
         /// <summary> What the caller asked for. </summary>
         public ABOptions Options { get; }
+
         /// <summary> Where every finding of this export goes. </summary>
         public InteropReport Report { get; }
+
         /// <summary> Which scope is being exported - a level's own objects, or a prefab template's. </summary>
         public IObjectScope Scope { get; }
+
         /// <summary> The theme colours are resolved against, since the source references a palette by index. </summary>
         public ThemeData ReferenceTheme { get; set; }
 
@@ -34,6 +37,18 @@ namespace BH.SDK.Interop.AfterBeat.Export
         /// emitter it describes. Null when a scope is exported on its own, in which case an effect
         /// has nothing to resolve against and is reported rather than written. </summary>
         public IReadOnlyDictionary<EffectId, EffectData> Effects { get; set; }
+
+        /// <summary> Objects of this scope that are not written as objects - an expressed
+        /// placement and every copy it owns, which Afterbeat rebuilds from the placement itself. </summary>
+        public HashSet<ObjectId> Skipped { get; } = new();
+
+        /// <summary> Template scope only: the source id <c>Prefab.Root</c> is written under, or null
+        /// when the root is not written and its children are the template's roots. </summary>
+        public string PrefabRootSourceId { get; set; }
+
+        /// <summary> Draw order and editor rows for this scope, resolved from every object in it at
+        /// once. Null means each object maps its own layer on its own - see ABObjectExporter. </summary>
+        public ABDrawOrderMap DrawOrder { get; set; }
 
         private readonly Dictionary<ObjectId, int> _effectiveLayers = new();
 
@@ -54,6 +69,13 @@ namespace BH.SDK.Interop.AfterBeat.Export
         {
             if (parentId == ObjectId.Camera || parentId == CameraScaleRootId)
                 return Models.VgdObject.CameraParentId;
+
+            // Inside a template everything hangs off Prefab.Root whether it says so or leaves the
+            // reference unset. The root is written as an object only when it carries something;
+            // otherwise its children ARE the template's roots, which is all it meant.
+            if (parentId == ObjectId.PrefabRoot || (parentId == ObjectId.Null && PrefabRootSourceId != null))
+                return PrefabRootSourceId ?? string.Empty;
+
             if (parentId == ObjectId.Null) return string.Empty;
             if (Scope?.Objects != null && Scope.Objects.ContainsKey(parentId)) return ToSourceId(parentId);
 
