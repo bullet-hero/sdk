@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## sv 0.16.2 - 2026-09-24
+
 ### Added
 
 - `ABLayerImport.Packed`, the new default: depth still orders what draws in front, but time decides

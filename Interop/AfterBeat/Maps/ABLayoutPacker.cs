@@ -131,8 +131,12 @@ namespace BH.SDK.Interop.AfterBeat
             /// <summary> Entries whose layer had to be clamped into the format's range. </summary>
             public int Clamped { get; internal set; }
 
-            /// <summary> Pairs of overlapping entries drawn in an order their depths contradict. </summary>
+            /// <summary> Units placed where depth order with something alive at the same time could
+            /// not be kept. </summary>
             public int Approximated { get; internal set; }
+
+            /// <summary> Units that found no free row anywhere in their band and share one. </summary>
+            public int Shared { get; internal set; }
 
             /// <summary> Template scope: the band most of its drawn entries asked for. </summary>
             public Band MajorityBand { get; internal set; }
@@ -158,7 +162,11 @@ namespace BH.SDK.Interop.AfterBeat
         private sealed class Unit
         {
             public Entry Root;
-            public readonly List<Entry> Members = new();
+
+            /// <summary> Every entry of the unit with its row offset above the root, parents
+            /// before their children. </summary>
+            public List<(Entry Entry, int Offset)> Members;
+
             public int Start;
             public int End;
             public int Key;
@@ -192,12 +200,6 @@ namespace BH.SDK.Interop.AfterBeat
                 list.Add(entry);
             }
 
-            foreach (var list in children.Values) list.Sort(CompareSiblings);
-
-            // Offsets are relative to the parent; height(n) is the rows its subtree spans above it,
-            // which for this stacking is simply how many descendants it has.
-            var offsets = new Dictionary<Entry, int>();
-            var heights = new Dictionary<Entry, int>();
             var units = new List<Unit>();
 
             foreach (var entry in byId.Values)
@@ -205,42 +207,50 @@ namespace BH.SDK.Interop.AfterBeat
                 var isRoot = entry.IsPlacement || entry.ParentId == null || !byId.ContainsKey(entry.ParentId);
                 if (!isRoot) continue;
 
-                var unit = new Unit { Root = entry };
-                Layout(entry, children, offsets, heights, unit.Members, new HashSet<Entry>());
-                Describe(unit, heights, collidersAbovePlayer);
+                var block = BuildBlock(entry, children, new HashSet<Entry>(), result);
+                var unit = new Unit { Root = entry, Members = block.Members };
+                Describe(unit, block, collidersAbovePlayer);
                 units.Add(unit);
-                foreach (var member in unit.Members)
-                    if (member.Collides) result.AnyCollides = true;
+                foreach (var (member, _) in unit.Members)
+                    if (member.Collides)
+                        result.AnyCollides = true;
             }
 
             if (scope == Scope.Template)
             {
                 SummarizeBands(units, result);
-                PackUp(units, ValueRules.FirstLayerAbovePlayer, result);
+                Place(units, true, ValueRules.FirstLayerAbovePlayer, result);
             }
             else
             {
                 var above = units.FindAll(u => u.Band == Band.AbovePlayer);
-                PackUp(above, ValueRules.FirstLayerAbovePlayer, result);
+                Place(above, true, ValueRules.FirstLayerAbovePlayer, result);
 
                 var top = ValueRules.LastLayerBehindPlayer;
                 foreach (var band in new[] { Band.Default, Band.Background, Band.Parallax })
                 {
                     var group = units.FindAll(u => u.Band == band);
                     if (group.Count == 0) continue;
-                    top = PackDown(group, top, result) - 1;
+                    Place(group, false, top, result);
+                    var lowest = top;
+                    foreach (var unit in group) lowest = Math.Min(lowest, unit.Layer);
+                    top = lowest - 1;
                 }
             }
 
-            Resolve(units, offsets, byId, result);
+            Resolve(units, byId, result);
 
             if (result.Clamped > 0)
                 report?.Approximated("layers_clamped",
                     $"{result.Clamped} objects would have landed outside this format's layer range and were clamped onto its edge; they share a layer with their neighbours.",
                     path);
+            if (result.Shared > 0)
+                report?.Approximated("rows_shared",
+                    $"{result.Shared} groups of objects found no free row anywhere in their band - more is alive at once than there are layers - so each shares the rows where the fewest of its objects overlap someone else.",
+                    path);
             if (result.Approximated > 0)
                 report?.Approximated("draw_order_approximated",
-                    $"{result.Approximated} times a group of objects that has to stay together spans depths on both sides of something it overlaps (or a child is farther than its parent), so its draw order there follows the group rather than the depths.",
+                    $"{result.Approximated} groups of objects could not keep depth order with everything alive at the same time (a group that has to stay together spans depths on both sides of something it overlaps), so they draw behind what they must not cover.",
                     path);
             if (result.MixedBands)
                 report?.Approximated("band_mixed",
@@ -252,79 +262,146 @@ namespace BH.SDK.Interop.AfterBeat
 
         #region Units
 
-        // Farther first, so a subtree reads bottom-up the way it draws; then time, then file order.
-        private static int CompareSiblings(Entry left, Entry right)
+        // A SUBTREE IS PACKED THE WAY THE LEVEL IS, one level of the tree at a time: siblings are
+        // laid out farthest-first, each at the LOWEST offset above its parent that is free for every
+        // one of its own members' lifetimes and above every farther sibling it overlaps. Stacking
+        // every descendant on a row of its own is what this replaced, and it cost a real level its
+        // whole range: a root emitting hundreds of four-second bursts over three minutes reserved a
+        // row per burst for all three minutes, where a few dozen are ever alive at once. A child is
+        // still never at 0 or below its parent, and siblings alive together still stack in depth
+        // order.
+
+        private sealed class Block
         {
-            var byDepth = right.Depth.CompareTo(left.Depth);
-            if (byDepth != 0) return byDepth;
-            var byStart = left.Start.CompareTo(right.Start);
-            return byStart != 0 ? byStart : left.Order.CompareTo(right.Order);
+            public Entry Root;
+            public readonly List<(Entry Entry, int Offset)> Members = new();
+            public int Height;
+            public int Start;
+            public int End;
+            public int Key = int.MaxValue;
+            public int Far = int.MinValue;
+            public Entry Nearest;
         }
 
-        private static int Layout(Entry entry, Dictionary<Entry, List<Entry>> children,
-            Dictionary<Entry, int> offsets, Dictionary<Entry, int> heights, List<Entry> members,
-            HashSet<Entry> seen)
+        private static Block BuildBlock(Entry entry, Dictionary<Entry, List<Entry>> children,
+            HashSet<Entry> seen, Result result)
         {
-            if (!seen.Add(entry)) return 0;
-            members.Add(entry);
+            var block = new Block { Root = entry, Start = entry.Start, End = entry.End };
+            block.Members.Add((entry, 0));
+            Note(block, entry);
+            if (!seen.Add(entry) || !children.TryGetValue(entry, out var list)) return Finish(block);
 
-            var height = 0;
-            if (children.TryGetValue(entry, out var list))
-                foreach (var child in list)
+            var subs = new List<Block>(list.Count);
+            foreach (var child in list)
+                if (!seen.Contains(child))
+                    subs.Add(BuildBlock(child, children, seen, result));
+
+            subs.Sort((a, b) =>
+            {
+                var byKey = b.Key.CompareTo(a.Key);
+                if (byKey != 0) return byKey;
+                var byStart = a.Start.CompareTo(b.Start);
+                return byStart != 0 ? byStart : a.Root.Order.CompareTo(b.Root.Order);
+            });
+
+            // Depth order between siblings is kept object against object, exactly as between units
+            // (see Place) - judging a whole subtree by its whole lifetime is what let one rig of a
+            // real level grow taller than the band it has to fit in.
+            var rows = new Rows();
+            var drawn = new DrawIndex();
+            // AN EMPTY WITH ONE CHILD SHARES ITS ROW WITH IT. It draws nothing, so no depth order
+            // is at stake between the two - only the timeline's one-clip-per-row, which is worth
+            // less than the range: a real level whose every burst hangs off a pivot empty needed
+            // two rows per burst and ran the band out, where one each leaves it near 0. The child
+            // then carries own layer 0, the one place in a packed import a child does.
+            var floor = !entry.Rendered && subs.Count == 1 ? 0 : 1;
+
+            foreach (var sub in subs)
+            {
+                var (lower, upper) = Bounds(sub.Members, drawn);
+                var from = Math.Max(floor, lower);
+
+                int? found = null;
+                for (var at = from; at <= upper; at++)
+                    if (rows.IsFree(sub.Members, at))
+                    {
+                        found = at;
+                        break;
+                    }
+
+                if (found == null)
                 {
-                    offsets[child] = height + 1;
-                    height += Layout(child, children, offsets, heights, members, seen) + 1;
+                    result.Approximated++;
+                    var at = from;
+                    while (!rows.IsFree(sub.Members, at)) at++;
+                    found = at;
                 }
 
-            heights[entry] = height;
-            return height;
+                rows.Take(sub.Members, found.Value);
+                drawn.Add(sub.Members, found.Value);
+                var placedAt = found.Value;
+
+                foreach (var (member, offset) in sub.Members) block.Members.Add((member, offset + placedAt));
+                block.Height = Math.Max(block.Height, placedAt + sub.Height);
+                block.Start = Math.Min(block.Start, sub.Start);
+                block.End = Math.Max(block.End, sub.End);
+                if (sub.Nearest == null) continue;
+
+                if (sub.Key < block.Key)
+                {
+                    block.Key = sub.Key;
+                    block.Nearest = sub.Nearest;
+                }
+
+                block.Far = Math.Max(block.Far, sub.Far);
+            }
+
+            return Finish(block);
+        }
+
+        private static void Note(Block block, Entry entry)
+        {
+            if (!entry.Rendered) return;
+
+            var near = Math.Clamp(entry.Depth, 0, MaxDepth);
+            var far = Math.Clamp(entry.IsPlacement ? Math.Max(entry.Depth, entry.FarDepth) : entry.Depth, 0, MaxDepth);
+            if (near < block.Key)
+            {
+                block.Key = near;
+                block.Nearest = entry;
+            }
+
+            block.Far = Math.Max(block.Far, far);
+        }
+
+        // A subtree that draws nothing is ordered by its root's own depth.
+        private static Block Finish(Block block)
+        {
+            if (block.Nearest == null) block.Key = block.Far = Math.Clamp(block.Root.Depth, 0, MaxDepth);
+            if (block.End <= block.Start) block.End = block.Start + 1;
+            return block;
         }
 
         // THE PROJECT'S OWN CONVENTION, opt-in: what can hurt the player sits at 1 and up, what
         // cannot at 0 and down. Afterbeat draws every Default object behind its player, hitting or
         // not, so this is a departure from the source and stays off unless asked for. A unit is
         // lifted whole when any member collides - it is one block of rows either way.
-        private static void Describe(Unit unit, Dictionary<Entry, int> heights, bool collidersAbovePlayer)
+        private static void Describe(Unit unit, Block block, bool collidersAbovePlayer)
         {
-            unit.Start = int.MaxValue;
-            unit.End = int.MinValue;
-            unit.Key = int.MaxValue;
-            unit.Far = int.MinValue;
-            Entry nearest = null;
-
-            foreach (var member in unit.Members)
-            {
-                unit.Start = Math.Min(unit.Start, member.Start);
-                unit.End = Math.Max(unit.End, member.End);
-                if (!member.Rendered) continue;
-
-                var near = Math.Clamp(member.Depth, 0, MaxDepth);
-                var far = Math.Clamp(member.IsPlacement ? Math.Max(member.Depth, member.FarDepth) : member.Depth, 0, MaxDepth);
-                if (near < unit.Key)
-                {
-                    unit.Key = near;
-                    nearest = member;
-                }
-
-                unit.Far = Math.Max(unit.Far, far);
-            }
-
-            if (nearest == null)
-            {
-                nearest = unit.Root;
-                unit.Key = unit.Far = Math.Clamp(unit.Root.Depth, 0, MaxDepth);
-            }
-
-            if (unit.End <= unit.Start) unit.End = unit.Start + 1;
-            unit.Band = nearest.Band;
+            unit.Start = block.Start;
+            unit.End = block.End;
+            unit.Key = block.Key;
+            unit.Far = block.Far;
+            unit.Band = (block.Nearest ?? unit.Root).Band;
             if (collidersAbovePlayer && unit.Band == Band.Default)
-                foreach (var member in unit.Members)
+                foreach (var (member, _) in unit.Members)
                     if (member.Collides)
                     {
                         unit.Band = Band.AbovePlayer;
                         break;
                     }
-            unit.RowHeight = heights[unit.Root];
+
+            unit.RowHeight = block.Height;
             unit.RenderTop = unit.Root.IsPlacement
                 ? Math.Max(unit.RowHeight, Math.Max(0, unit.Root.RenderHeight))
                 : unit.RowHeight;
@@ -334,13 +411,13 @@ namespace BH.SDK.Interop.AfterBeat
         {
             var counts = new int[4];
             foreach (var unit in units)
-                foreach (var member in unit.Members)
-                    if (member.Rendered)
-                    {
-                        counts[(int)member.Band]++;
-                        result.NearestDepth = Math.Min(result.NearestDepth, Math.Clamp(member.Depth, 0, MaxDepth));
-                        result.FarthestDepth = Math.Max(result.FarthestDepth, Math.Clamp(member.Depth, 0, MaxDepth));
-                    }
+            foreach (var (member, _) in unit.Members)
+                if (member.Rendered)
+                {
+                    counts[(int)member.Band]++;
+                    result.NearestDepth = Math.Min(result.NearestDepth, Math.Clamp(member.Depth, 0, MaxDepth));
+                    result.FarthestDepth = Math.Max(result.FarthestDepth, Math.Clamp(member.Depth, 0, MaxDepth));
+                }
 
             var best = 0;
             var used = 0;
@@ -358,109 +435,267 @@ namespace BH.SDK.Interop.AfterBeat
 
         #region Packing
 
-        private static bool Overlaps(Unit a, Unit b) => a.Start < b.End && b.Start < a.End;
+        // STRICT ORDER IS A RULE BETWEEN OBJECTS THAT ARE ON SCREEN TOGETHER, and it is checked at
+        // exactly that grain: a member of the unit being placed has to sit below every placed
+        // object it overlaps in time that is strictly nearer, and above every one that is strictly
+        // farther. Checking it unit against unit - the whole block below any nearer unit alive at
+        // any point of the block's life - was the first version, and a root that lives for three
+        // minutes and emits four-second bursts then pushed everything it ever overlapped under its
+        // whole height: one real level needed 3400 rows where 1170 objects are ever alive at once.
+        //
+        // WHERE THE RULES CANNOT ALL HOLD, the layout stays near 0 rather than running off the
+        // range. A unit whose nearer and farther neighbours leave it no window is placed as if only
+        // the nearer ones counted (it draws behind what it must not cover), and is reported; a unit
+        // with no free row left in the whole band takes the row where the fewest of its members
+        // share time with someone else, which is two clips on a row instead of hundreds piled on
+        // the band's floor.
 
-        // Farthest first, each unit at the LOWEST row that is free for its lifetime and above the
-        // render range of every farther unit it overlaps.
-        private static void PackUp(List<Unit> units, int floor, Result result)
+        private static void Place(List<Unit> units, bool upwards, int edge, Result result)
         {
             units.Sort((a, b) =>
             {
-                var byKey = b.Key.CompareTo(a.Key);
+                var byKey = upwards ? b.Key.CompareTo(a.Key) : a.Key.CompareTo(b.Key);
                 if (byKey != 0) return byKey;
+                var byLength = (b.End - b.Start).CompareTo(a.End - a.Start);
+                if (byLength != 0) return byLength;
                 var byStart = a.Start.CompareTo(b.Start);
                 return byStart != 0 ? byStart : a.Root.Order.CompareTo(b.Root.Order);
             });
 
             var rows = new Rows();
-            var placed = new List<Unit>();
+            var drawn = new DrawIndex();
 
             foreach (var unit in units)
             {
-                var lower = floor;
-                foreach (var other in placed)
+                var (lower, upper) = Bounds(unit.Members, drawn);
+
+                int first, last;
+                if (upwards)
                 {
-                    if (other.Key <= unit.Key || !Overlaps(unit, other)) continue;
-                    lower = Math.Max(lower, other.Layer + other.RenderTop + 1);
-                    if (unit.Far > other.Key) result.Approximated++;
+                    first = edge;
+                    last = ValueRules.MaxLayer - unit.RenderTop;
+                }
+                else
+                {
+                    first = ValueRules.MinLayer;
+                    last = edge - unit.RenderTop;
                 }
 
-                var layer = lower;
-                while (!rows.IsFree(layer, layer + unit.RowHeight, unit.Start, unit.End)) layer++;
+                var from = Math.Max(first, lower);
+                var to = Math.Min(last, upper);
+                var layer = Search(rows, unit, from, to, upwards);
 
-                unit.Layer = layer;
-                rows.Take(layer, layer + unit.RowHeight, unit.Start, unit.End);
-                placed.Add(unit);
+                if (layer == null)
+                {
+                    result.Approximated++;
+
+                    // Keep the side that matters for what the unit covers: filling downwards, stay
+                    // under the nearer ones; filling upwards, stay over the farther ones.
+                    layer = upwards
+                        ? Search(rows, unit, Math.Max(first, lower), last, true)
+                        : Search(rows, unit, first, Math.Min(last, upper), false);
+                    layer ??= Search(rows, unit, first, last, upwards);
+                    layer ??= LeastShared(rows, unit, first, last, upwards);
+                }
+
+                unit.Layer = layer.Value;
+                if (!rows.IsFree(unit.Members, unit.Layer)) result.Shared++;
+                rows.Take(unit.Members, unit.Layer);
+                drawn.Add(unit.Members, unit.Layer);
             }
         }
 
-        // Nearest first, each unit at the HIGHEST row that is free for its lifetime, whose render
-        // range stays at or under the band's top and wholly under every nearer unit it overlaps.
-        // Returns the lowest row the band used, which is where the next band starts under.
-        private static int PackDown(List<Unit> units, int top, Result result)
+        /// <summary> The window the unit's base row may take so that every one of its drawn members
+        /// keeps depth order with every placed object it shares time with. </summary>
+        private static (int Lower, int Upper) Bounds(List<(Entry Entry, int Offset)> members, DrawIndex drawn)
         {
-            units.Sort((a, b) =>
-            {
-                var byKey = a.Key.CompareTo(b.Key);
-                if (byKey != 0) return byKey;
-                var byStart = a.Start.CompareTo(b.Start);
-                return byStart != 0 ? byStart : a.Root.Order.CompareTo(b.Root.Order);
-            });
+            var lower = int.MinValue;
+            var upper = int.MaxValue;
 
-            var rows = new Rows();
-            var placed = new List<Unit>();
-            var lowest = top + 1;
-
-            foreach (var unit in units)
+            foreach (var (member, offset) in members)
             {
-                var upper = top - unit.RenderTop;
-                foreach (var other in placed)
+                if (!member.Rendered) continue;
+
+                var near = Math.Clamp(member.Depth, 0, MaxDepth);
+                var far = member.IsPlacement ? Math.Clamp(Math.Max(member.Depth, member.FarDepth), 0, MaxDepth) : near;
+                var top = offset + (member.IsPlacement ? Math.Max(0, member.RenderHeight) : 0);
+
+                foreach (var other in drawn.Overlapping(member.Start, Math.Max(member.End, member.Start + 1)))
                 {
-                    if (other.Key >= unit.Key || !Overlaps(unit, other)) continue;
-                    upper = Math.Min(upper, other.Layer - 1 - unit.RenderTop);
-                    if (unit.Key < other.Far) result.Approximated++;
+                    if (near > other.Far) upper = Math.Min(upper, other.Bottom - top - 1);
+                    else if (far < other.Near) lower = Math.Max(lower, other.Top - offset + 1);
                 }
-
-                var layer = upper;
-                while (!rows.IsFree(layer, layer + unit.RowHeight, unit.Start, unit.End)) layer--;
-
-                unit.Layer = layer;
-                rows.Take(layer, layer + unit.RowHeight, unit.Start, unit.End);
-                placed.Add(unit);
-                lowest = Math.Min(lowest, layer);
             }
 
-            return lowest;
+            return (lower, upper);
+        }
+
+        /// <summary> The first base row in <c>[from, to]</c>, walking from the end nearest the
+        /// band's edge, where every member's row is free for that member's lifetime. </summary>
+        private static int? Search(Rows rows, Unit unit, int from, int to, bool upwards)
+        {
+            if (from > to) return null;
+
+            if (upwards)
+            {
+                for (var layer = from; layer <= to; layer++)
+                    if (rows.IsFree(unit.Members, layer))
+                        return layer;
+            }
+            else
+            {
+                for (var layer = to; layer >= from; layer--)
+                    if (rows.IsFree(unit.Members, layer))
+                        return layer;
+            }
+
+            return null;
+        }
+
+        private static int LeastShared(Rows rows, Unit unit, int first, int last, bool upwards)
+        {
+            if (first > last) return upwards ? first : last;
+
+            var best = upwards ? first : last;
+            var bestCount = int.MaxValue;
+            for (var i = 0; i <= last - first; i++)
+            {
+                var layer = upwards ? first + i : last - i;
+                var count = rows.CountTaken(unit.Members, layer);
+                if (count >= bestCount) continue;
+
+                best = layer;
+                bestCount = count;
+                if (count == 0) break;
+            }
+
+            return best;
+        }
+
+        /// <summary> Every drawn object placed so far, findable by time. Rows and depths are
+        /// stored as ranges because a placement draws its whole template over several rows. </summary>
+        private sealed class DrawIndex
+        {
+            private const int BucketFrames = 64;
+
+            public sealed class Drawn
+            {
+                public int Start;
+                public int End;
+                public int Near;
+                public int Far;
+                public int Bottom;
+                public int Top;
+            }
+
+            private readonly Dictionary<int, List<Drawn>> _buckets = new();
+            private readonly HashSet<Drawn> _seen = new();
+
+            public void Add(List<(Entry Entry, int Offset)> members, int baseRow)
+            {
+                foreach (var (member, offset) in members)
+                {
+                    if (!member.Rendered) continue;
+
+                    var near = Math.Clamp(member.Depth, 0, MaxDepth);
+                    var drawn = new Drawn
+                    {
+                        Start = member.Start,
+                        End = Math.Max(member.End, member.Start + 1),
+                        Near = near,
+                        Far = member.IsPlacement
+                            ? Math.Clamp(Math.Max(member.Depth, member.FarDepth), 0, MaxDepth)
+                            : near,
+                        Bottom = baseRow + offset,
+                        Top = baseRow + offset + (member.IsPlacement ? Math.Max(0, member.RenderHeight) : 0),
+                    };
+
+                    for (var bucket = Bucket(drawn.Start); bucket <= Bucket(drawn.End - 1); bucket++)
+                    {
+                        if (!_buckets.TryGetValue(bucket, out var list)) _buckets[bucket] = list = new List<Drawn>();
+                        list.Add(drawn);
+                    }
+                }
+            }
+
+            public IEnumerable<Drawn> Overlapping(int start, int end)
+            {
+                _seen.Clear();
+                for (var bucket = Bucket(start); bucket <= Bucket(end - 1); bucket++)
+                {
+                    if (!_buckets.TryGetValue(bucket, out var list)) continue;
+                    foreach (var drawn in list)
+                        if (drawn.Start < end && start < drawn.End && _seen.Add(drawn))
+                            yield return drawn;
+                }
+            }
+
+            private static int Bucket(int frame) =>
+                frame >= 0 ? frame / BucketFrames : (frame - BucketFrames + 1) / BucketFrames;
         }
 
         /// <summary> Which frames each row is taken for: per row, disjoint half-open intervals
         /// sorted by start. </summary>
+        // Per row, the half-open intervals it is taken for, sorted by start. Disjoint until a unit
+        // is forced to share (see Place); a shared row is then searched linearly, since a binary
+        // search over overlapping intervals can miss an early long one.
         private sealed class Rows
         {
             private readonly Dictionary<int, List<(int Start, int End)>> _byRow = new();
+            private readonly HashSet<int> _shared = new();
 
-            public bool IsFree(int from, int to, int start, int end)
+            public bool IsFree(List<(Entry Entry, int Offset)> members, int baseRow)
             {
-                for (var row = from; row <= to; row++)
-                    if (_byRow.TryGetValue(row, out var list) && Intersects(list, start, end))
+                foreach (var (member, offset) in members)
+                    if (CountAt(baseRow + offset, member.Start, Math.Max(member.End, member.Start + 1), true) > 0)
                         return false;
                 return true;
             }
 
-            public void Take(int from, int to, int start, int end)
+            public void Take(List<(Entry Entry, int Offset)> members, int baseRow)
             {
-                for (var row = from; row <= to; row++)
+                foreach (var (member, offset) in members)
                 {
+                    var row = baseRow + offset;
+                    var start = member.Start;
+                    var end = Math.Max(member.End, start + 1);
+                    if (CountAt(row, start, end, true) > 0) _shared.Add(row);
                     if (!_byRow.TryGetValue(row, out var list)) _byRow[row] = list = new List<(int, int)>();
                     list.Insert(LowerBound(list, start), (start, end));
                 }
             }
 
-            private static bool Intersects(List<(int Start, int End)> list, int start, int end)
+            /// <summary> How many taken intervals the members would land on - the cost of sharing. </summary>
+            public int CountTaken(List<(Entry Entry, int Offset)> members, int baseRow)
             {
-                var index = LowerBound(list, start);
-                if (index < list.Count && list[index].Start < end) return true;
-                return index > 0 && list[index - 1].End > start;
+                var count = 0;
+                foreach (var (member, offset) in members)
+                    count += CountAt(baseRow + offset, member.Start, Math.Max(member.End, member.Start + 1), false);
+                return count;
+            }
+
+            private int CountAt(int row, int start, int end, bool any)
+            {
+                if (!_byRow.TryGetValue(row, out var list)) return 0;
+
+                if (!_shared.Contains(row))
+                {
+                    var index = LowerBound(list, start);
+                    var hit = (index < list.Count && list[index].Start < end) ||
+                              (index > 0 && list[index - 1].End > start);
+                    if (any || !hit) return hit ? 1 : 0;
+                }
+
+                var count = 0;
+                foreach (var (taken, until) in list)
+                {
+                    if (taken >= end) break;
+                    if (until <= start) continue;
+                    count++;
+                    if (any) break;
+                }
+
+                return count;
             }
 
             private static int LowerBound(List<(int Start, int End)> list, int start)
@@ -481,21 +716,16 @@ namespace BH.SDK.Interop.AfterBeat
 
         #region Output
 
-        private static void Resolve(List<Unit> units, Dictionary<Entry, int> offsets,
-            Dictionary<string, Entry> byId, Result result)
+        private static void Resolve(List<Unit> units, Dictionary<string, Entry> byId, Result result)
         {
             var lowest = int.MaxValue;
             var highest = int.MinValue;
 
             foreach (var unit in units)
             {
-                foreach (var member in unit.Members)
+                foreach (var (member, offset) in unit.Members)
                 {
-                    // Members are in layout order, so a parent is always resolved before its children.
-                    var effective = member == unit.Root
-                        ? unit.Layer
-                        : result.EffectiveLayers[member.ParentId] + offsets[member];
-
+                    var effective = unit.Layer + offset;
                     var clamped = Math.Clamp(effective, ValueRules.MinLayer, ValueRules.MaxLayer);
                     if (clamped != effective) result.Clamped++;
 

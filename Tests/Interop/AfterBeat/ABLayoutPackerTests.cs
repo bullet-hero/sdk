@@ -158,6 +158,23 @@ namespace BH.SDK.Tests.Interop.AfterBeat
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.VeryEasy)]
+        public void Pack_EmptyWithOneChild_SharesItsRow()
+        {
+            var pivot = Entry("pivot", 1, 50);
+            pivot.Rendered = false;
+            var result = Pack(pivot, Entry("shape", 1, 50, parent: "pivot", order: 1));
+
+            Assert.AreEqual(0, result.OwnLayers["shape"],
+                "an empty draws nothing, so its only child may share its row");
+
+            var drawnParent = Pack(Entry("parent", 1, 50), Entry("shape", 1, 50, parent: "parent", order: 1));
+            Assert.AreEqual(1, drawnParent.OwnLayers["shape"], "a parent that draws keeps its child above it");
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.VeryEasy)]
         public void Pack_CollidersAbovePlayer_LiftsOnlyWhatCanHurt()
         {
             var hit = Entry("hit", 1, 50);
@@ -178,7 +195,7 @@ namespace BH.SDK.Tests.Interop.AfterBeat
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.Easy)]
-        public void Pack_Overflow_ClampsAndReports()
+        public void Pack_Overflow_SharesRowsInsteadOfPilingOnTheFloor()
         {
             var entries = new List<ABLayoutPacker.Entry>();
             for (var i = 0; i < 1100; i++) entries.Add(Entry($"e{i}", 1, 10, order: i));
@@ -186,9 +203,12 @@ namespace BH.SDK.Tests.Interop.AfterBeat
 
             var result = ABLayoutPacker.Pack(entries, ABLayoutPacker.Scope.Level, report, "objects");
 
-            Assert.Greater(result.Clamped, 0);
-            Assert.That(result.EffectiveLayers.Values, Is.All.InRange(ValueRules.MinLayer, ValueRules.MaxLayer));
-            Assert.IsTrue(report.Issues.Any(i => i.Code == "layers_clamped"));
+            Assert.AreEqual(0, result.Clamped, "nothing is pushed past the range");
+            Assert.That(result.EffectiveLayers.Values,
+                Is.All.InRange(ValueRules.MinLayer, ValueRules.LastLayerBehindPlayer));
+            var perRow = result.EffectiveLayers.Values.GroupBy(l => l).Max(g => g.Count());
+            Assert.LessOrEqual(perRow, 2, "1100 objects over 1001 rows share at most two to a row");
+            Assert.IsTrue(report.Issues.Any(i => i.Code == "rows_shared"));
         }
 
         [Test]
