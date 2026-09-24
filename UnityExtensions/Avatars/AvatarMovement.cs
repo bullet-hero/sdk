@@ -47,22 +47,20 @@ namespace BH.SDK.Avatars
         // is the ability to stop exactly on a point, and what it costs is one extra touchable frame
         // per dash, because every launch has one (see DashCooldown's note in AvatarRules).
         //
-        // IT HAS NO FLOOR ABOVE ZERO, AND NEVER GOES ABOVE 1. A target a hair past
-        // AvatarRules.ArrivedDistance gets a dash a hair long, with every consequence a dash has - a
-        // trail, a sound, a statistic, i-frames and a cooldown too short for any frame to sample. What
-        // keeps a cursor resting there from dashing EVERY frame is ExposedSinceDash rather than the
-        // clock: every dash still waits for one observed touchable frame, so the rate bottoms out at
-        // every other frame (30 a second at 60 fps). There used to be a floor of one world unit of
-        // reach (MinDashFraction), and it was removed on purpose - every press with somewhere to go is
-        // a dash now (MOVEMENT_HISTORY 19). The ceiling is the dash itself: a point beyond the reach
-        // gets an ordinary full dash and the avatar stops short of it.
+        // IT IS NEVER BELOW AvatarRules.MinDashFraction AND NEVER ABOVE 1. The floor is one avatar
+        // body of reach, and what it stops is a cursor resting a hair from the avatar launching a dash
+        // every other frame for a move nobody can see: at the floor a dash still runs 0.01 s and its
+        // windows 0.02 s, and it still waits for one observed touchable frame, so the real limiter at
+        // the bottom of the range is the frame rate rather than the clock. The ceiling is the dash
+        // itself: a point beyond the reach gets an ordinary full dash and the avatar stops short of it.
         //
         // A DASH THAT WAS NEVER TAKEN LEAVES THIS AT 1, so every window reads exactly the constant it
         // is named after until the first dash of the run, and the "no dash yet" state needs no case
         // of its own anywhere.
 
-        /// <summary> How much of a full dash the current one is, in (0, 1]. Scales its travel, its
-        /// i-frames and its cooldown together. </summary>
+        /// <summary> How much of a full dash the current one is, in
+        /// [<see cref="AvatarRules.MinDashFraction"/>, 1]. Scales its travel, its i-frames and its
+        /// cooldown together. </summary>
         public readonly float DashFraction;
 
         // A WINDOW THAT EXISTS IN SECONDS IS WORTH NOTHING IF NO FRAME SAMPLES IT, and this flag is
@@ -113,8 +111,8 @@ namespace BH.SDK.Avatars
         // THE THREE RULES A CURSOR DASH FOLLOWS, AND THEY ARE ONE LINE OF ARITHMETIC. A point further
         // than the reach is an ordinary dash (the fraction saturates at 1); a point nearer is a dash
         // that ENDS ON IT, because the travel time is exactly the distance over the dash speed; a
-        // point the avatar is already standing on (AvatarRules.ArrivedDistance, the same radius Step
-        // calls arrival) is no dash at all. The caller asks this, gets a fraction, and
+        // point nearer than the floor (AvatarRules.MinDashFraction, one avatar body) is no dash at
+        // all. The caller asks this, gets a fraction, and
         // passes it to StartDash - there is no fourth case and no special branch inside the step.
         //
         // IT LIVES HERE RATHER THAN IN THE CONSUMER because the warm bot's route verifier dashes too,
@@ -126,13 +124,14 @@ namespace BH.SDK.Avatars
         public static float GetDashReach(float scale)
             => AvatarRules.DashSpeed * AvatarRules.DashTime * scale;
 
-        /// <summary> What fraction of a full dash a target this far away asks for, or 0 when the avatar
-        /// is already standing on it. </summary>
+        /// <summary> What fraction of a full dash a target this far away asks for, or 0 when it is too
+        /// close to be worth a dash at all. </summary>
         public static float ResolveDashFraction(float distance, float reach)
         {
-            if (reach <= 0f || distance <= AvatarRules.ArrivedDistance) return 0f;
+            if (reach <= 0f) return 0f;
 
-            return math.min(distance / reach, 1f);
+            var fraction = distance / reach;
+            return fraction < AvatarRules.MinDashFraction ? 0f : math.min(fraction, 1f);
         }
 
         #endregion
@@ -248,11 +247,11 @@ namespace BH.SDK.Avatars
 
         /// <summary> The same avatar, having just launched a dash of <paramref name="fraction"/> of a
         /// full one. Callers gate on <see cref="CanDash"/> and resolve the fraction with
-        /// <see cref="ResolveDashFraction"/> - this swallows nothing itself, and a fraction of 0 or
-        /// less is a caller's bug: it opens no window at all. </summary>
+        /// <see cref="ResolveDashFraction"/> - this swallows nothing itself. </summary>
         public AvatarMovement StartDash(float time, float fraction)
-            => new(Position, new TimePoint(time), math.saturate(fraction), _damagedAt,
-                KnockoutDirection, false);
+            => new(Position, new TimePoint(time),
+                math.clamp(fraction, AvatarRules.MinDashFraction, 1f), _damagedAt, KnockoutDirection,
+                false);
 
         // A HIT IS AN EVENT WITH A DURATION, NOT A FRAME. The direction is captured once, for two
         // reasons: a shove re-aimed at its source every frame becomes a chase, and the source is

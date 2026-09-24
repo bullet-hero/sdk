@@ -44,7 +44,7 @@ namespace BH.SDK.Tests
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.VeryEasy)]
-        public void MoveSpeed_IsTen() => Assert.AreEqual(10f, AvatarRules.MoveSpeed, Tolerance);
+        public void MoveSpeed_IsFifteen() => Assert.AreEqual(15f, AvatarRules.MoveSpeed, Tolerance);
 
         [Test]
         [Author(Metadata.Author.Vertoker)]
