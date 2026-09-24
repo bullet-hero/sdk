@@ -27,13 +27,14 @@ namespace BH.SDK.Rules
     /// </summary>
     public static class AvatarRules
     {
-        // EXACTLY THE DEFAULT CAMERA HEIGHT PER SECOND (ValueRules.DefaultZoom is 10, and that zoom
-        // is the full height rather than the half-extent), so the avatar crosses the screen top to
-        // bottom in one second - about the time a bar of music lasts. It is the number the rest of
-        // the balance is read against: the dash is five times it, the knockback three.
+        // ONE AND A HALF DEFAULT CAMERA HEIGHTS PER SECOND (ValueRules.DefaultZoom is 10, and that
+        // zoom is the full height rather than the half-extent), so the avatar crosses the screen top to
+        // bottom in two thirds of a second. It was exactly one screen a second (10) first, and a cursor
+        // chasing at that speed felt sluggish in precise sections. The dash and the knockback are each
+        // 3.3 times it (50 against 15), so both still read as bursts rather than as walking.
 
         /// <summary> Ordinary walking speed, in world units per second. </summary>
-        public const float MoveSpeed = 10f;
+        public const float MoveSpeed = 15f;
 
         // A bigger avatar covers more of the screen per step, so leaving its speed alone makes it feel
         // slower the larger it gets: the dodge it has to make grows while the distance it can travel
@@ -52,6 +53,26 @@ namespace BH.SDK.Rules
 
         /// <summary> How long a dash lasts, in seconds. </summary>
         public const float DashTime = 0.15f;
+
+        // THE SHORTEST DASH THERE IS, AS A FRACTION OF A FULL ONE - below it there is no dash at all
+        // rather than a shorter one. A dash aimed at a point nearer than its reach is the same dash
+        // scaled down (AvatarMovement.DashFraction); without a floor that scaling runs to zero, and a
+        // cursor resting a hair from the avatar dashes every other frame, each one a trail, a sound
+        // and a statistic for a move nobody can see.
+        //
+        // ONE AVATAR BODY (AvatarScale, 0.5 u) OF REACH, and that is the smallest floor with a
+        // meaning: a dash shorter than the body it moves does not carry the avatar off its own
+        // footprint. It was one world unit before (MOVEMENT_HISTORY 18-19). Stored as a fraction
+        // because the reach it is measured against is scaled by the level's Player Size and Speed
+        // tracks, so a fraction means the same thing always.
+        //
+        // WHAT IT COSTS: the shortest dash runs 0.01 s and its two windows 0.02 s, so the real rate
+        // limiter at the bottom is the one observed touchable frame every dash waits for - every third
+        // frame at 60 fps.
+
+        /// <summary> The shortest dash, as a fraction of a full one - one avatar body of reach. A
+        /// target nearer than this is not dashed to at all. </summary>
+        public const float MinDashFraction = AvatarScale / (DashSpeed * DashTime);
 
         // MEASURED FROM THE LAUNCH, NOT FROM THE LANDING, and it is EXACTLY DashInvulnerabilityTime
         // - which is a deliberate change of kind, not a number that happens to match. The
@@ -105,7 +126,7 @@ namespace BH.SDK.Rules
         /// <summary> How long a dash keeps the avatar untouchable, in seconds. 0 means never. </summary>
         public const float DashInvulnerabilityTime = 0.3f;
 
-        // FIVE TIMES THE WALKING SPEED, and the shove is short rather than gentle: a knockback has to
+        // THE DASH'S OWN SPEED, 3.3 TIMES THE WALK, and the shove is short rather than gentle: a knockback has to
         // read as something that happened TO the player, and a slow one reads as the avatar wandering
         // off under its own power. Over DamageTime the travel is 10 world units - a full screen
         // height, which is the point rather than the cost: a hit RELOCATES the player. It was tried at
@@ -186,10 +207,6 @@ namespace BH.SDK.Rules
 
         // WELL UNDER WHAT A PLAYER CAN SEE and well over the noise a resting stick, a moving camera or
         // a pointer between two pixels produces. The avatar is about 0.5 across.
-        //
-        // IT IS ALSO THE ONLY FLOOR A CURSOR DASH HAS (AvatarMovement.ResolveDashFraction): a target
-        // further than this is dashed to however near it is, and one inside it is not, because the
-        // avatar is already standing on it and Step would move it nowhere.
 
         /// <summary> How close to a target counts as standing on it, in world units. </summary>
         public const float ArrivedDistance = 0.01f;
