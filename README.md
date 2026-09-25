@@ -59,7 +59,7 @@ exit 4
 How to install
 ```csharp
 git submodule init
-git submodule add -f https://github.com/vertoker/bullet-hero-sdk.git Assets/Plugins/BulletHeroSDK
+git submodule add -f https://github.com/bullet-hero/sdk.git Assets/Plugins/BulletHeroSDK
 ```
 
 How to delete

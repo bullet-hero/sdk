@@ -73,9 +73,9 @@
     <Authors>vertoker</Authors>
     <Description>The open level and save data model of the game Bullet Hero: models, JSON and binary serialization with versioned envelopes and migrations, validation rules and level generators. Engine-free - usable from a server, a tool or a mod.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <RepositoryUrl>https://github.com/vertoker/bullet-hero-sdk</RepositoryUrl>
+    <RepositoryUrl>https://github.com/bullet-hero/sdk</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageProjectUrl>https://github.com/vertoker/bullet-hero-sdk</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/bullet-hero/sdk</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>bullet-hero;rhythm-game;bullet-hell;level-format;serialization;modding</PackageTags>
   </PropertyGroup>
