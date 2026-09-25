@@ -207,11 +207,11 @@ namespace BH.SDK.Publishing
         // the VLC case - so allowing it here would build a catalogue that cannot be served to iOS
         // later. MIT/Apache cover the same ground (a text, a data file) with no such collision.
         //
-        // CC BY-SA and CC BY-ND are absent for the reason UGC-LICENSING-POLICY.md gives: ShareAlike
+        // CC BY-SA and CC BY-ND are absent for the reason the public UGC licensing policy gives: ShareAlike
         // would force the level's own license to change, NoDerivatives would forbid the editing the
         // game is built around.
 
-        /// <summary> What UGC-LICENSING-POLICY.md describes: a level publishable as CC BY-NC because
+        /// <summary> What the public UGC licensing policy (https://bullethero.space/en/notes/ugc-licensing-policy) describes: a level publishable as CC BY-NC because
         /// every resource in it already permits that. The baseline for a public server. </summary>
         public static PublishProfile CreateStandard() => new()
         {

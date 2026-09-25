@@ -1,4 +1,6 @@
-﻿A level model addresses things four different ways — a `Guid`, an `int`, a frame number, and a
+﻿**What an SDK user reads about ids in the file is public: https://bullethero.space/en/docs/sdk/level-format.** This file keeps the criterion and its costs, for a contributor adding an id.
+
+A level model addresses things four different ways — a `Guid`, an `int`, a frame number, and a
 string field path — and a reader who meets them in that order concludes the format is inconsistent.
 It is not: each answers a different question, and which one a new member takes is decided by **one
 criterion**, stated below. This file is that criterion, the two id spaces it produces, **what
