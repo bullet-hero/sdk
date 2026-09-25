@@ -2,7 +2,7 @@
 
 This is `bullet-hero-sdk` (root namespace `BH.SDK`), a standalone C# library defining the level/save
 file format for the game Bullet Hero. It's vendored into the main Unity project as a git submodule at
-`Assets/Plugins/BulletHeroSDK` (own repo: `vertoker/bullet-hero-sdk`, MIT license) — see the main
+`Assets/Plugins/BulletHeroSDK` (own repo: `bullet-hero/sdk`, MIT license) — see the main
 project's root `CLAUDE.md` (Rule 4, "Open SDK") for *why* it's split out this way (player-data
 longevity, external interop with other rhythm games, third-party modding tools). **This file is
 scoped to the SDK repo itself.** Prefer editing here directly over patching a vendored copy; the
