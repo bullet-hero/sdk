@@ -20,7 +20,7 @@ layer-wide conventions. This file is folder-local.
     years while the code does not. Adding a service means writing a file; adding a store means
     shipping a stricter one. **Which typical licenses are acceptable lives here and only here** —
     it reads like a property of the license and is a property of the receiving service.
-  - `TrustedSourceCatalog`/`TrustedSource`/`SourceTrust` are the site list `UGC-LICENSING-POLICY.md`
+  - `TrustedSourceCatalog`/`TrustedSource`/`SourceTrust` are the site list the public UGC licensing policy (https://bullethero.space/en/notes/ugc-licensing-policy)
     writes out in prose, as data — the document stays the human-readable version and this is what
     code grades against, **so the two are edited together**. A starting roster, not a fixed one:
     every operator is expected to override it, and nothing downstream may assume an entry is

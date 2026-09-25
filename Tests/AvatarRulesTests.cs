@@ -12,7 +12,7 @@ namespace BH.SDK.Tests
     // structural change, documented on DashCooldown rather than here. Every value is restated below,
     // so the NEXT move fails here first.
     //
-    // THE PLAYER-FACING STATEMENT OF ALL OF IT IS Docs/PLAYER.md, and it is the SOURCE OF TRUTH
+    // THE PLAYER-FACING STATEMENT OF ALL OF IT IS https://bullethero.space/en/docs/game/avatar, and it is the SOURCE OF TRUTH
     // rather than a description of one: the values there are what the game is meant to play like, and
     // this file plus these tests are how the code is held to them. A number that moves moves THERE
     // first, and then here.

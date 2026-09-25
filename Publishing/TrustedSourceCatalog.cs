@@ -3,7 +3,7 @@ using BH.SDK.Models.Enums.Meta;
 
 namespace BH.SDK.Publishing
 {
-    // The site list UGC-LICENSING-POLICY.md writes out in prose, as data. Same entries, same
+    // The site list the public UGC licensing policy (https://bullethero.space/en/notes/ugc-licensing-policy) writes out in prose, as data. Same entries, same
     // reasoning - the document stays the human-readable version and this is what code grades against,
     // so the two must be edited together.
     //

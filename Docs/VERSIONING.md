@@ -1,4 +1,6 @@
-﻿Bullet Hero carries **six** different numbers that a reader could reasonably call "the version", and
+﻿**What a player or an SDK user reads about versions is public: https://bullethero.space/en/docs/sdk/versioning.** This file keeps what a contributor needs to change the machinery.
+
+Bullet Hero carries **six** different numbers that a reader could reasonably call "the version", and
 they belong to six different things. This file names all six, says where each is written, and says
 who moves it. Three of them are the ones anyone normally means — the client, the SDK and the model
 format — and those three are what the game shows the player on one line.

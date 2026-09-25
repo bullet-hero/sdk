@@ -6,7 +6,7 @@
 Licensing
 - Add mail for "notice-and-takedown" process, for UGC content and DMCA complience
 - Add checkbox like "_I confirm that I have rights to all external resources at this level_"
-- Add more formal document for Tos/EULA where I write all content from UGC-LICENSING-POLICY.md
+- Add more formal document for Tos/EULA where I write all content from the UGC licensing policy (https://bullethero.space/en/notes/ugc-licensing-policy)
 - (maybe) Disable on IOS NOWS, because they can shutdown game
 
 Features after alpha release

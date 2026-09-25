@@ -1,4 +1,6 @@
-﻿Bullet Hero (`BH`) can't have _All in One_ build, each _platform_ and _distribution channel_ in combination
+﻿**What a player reads about platforms and stores is public: https://bullethero.space/en/download.** This file keeps the build-side codes, symbols and variants.
+
+Bullet Hero (`BH`) can't have _All in One_ build, each _platform_ and _distribution channel_ in combination
 requires build with right configuration of packages, plugins, resources, code and everything related
 
 Originally it's internal Bullet Hero client file, but this information must be public.
