@@ -237,8 +237,10 @@ rewrite `"vrs"` mechanically**: in `metadata.json` the same key used to appear a
 envelope's, and telling them apart needs the surrounding shape.
 
 **`BlobFormat.Generation`** — the binary CODEC's generation: which byte layout a `.blob` is written
-in. It moved 1 → 2 when the envelope stopped carrying two `ushort`s and started carrying one `int`.
-It also seeds the payload hash, so a file from the other codec is refused by the header rather than
+in. It stands at 1: it moved 1 → 2 once before release (the envelope stopped carrying two `ushort`s
+and started carrying one `int`) and was reset to 1 together with the magic's move from `BHBL` to
+`BHBO`, so no file of either earlier layout opens. It cannot be folded into a model generation, since
+that lives inside an envelope and only a reader that knows the layout can find one. It also seeds the payload hash, so a file from the other codec is refused by the header rather than
 misread deeper in. A domain moving does not move this; this moving invalidates every `.blob` whatever
 its domains say.
 

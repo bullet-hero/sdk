@@ -15,8 +15,8 @@ namespace BH.SDK.Serialization.Blob
     /// <summary> The .blob file header. </summary>
     public static class BlobFormat
     {
-        /// <summary> 'B','H','B','L'. </summary>
-        public const uint Magic = 0x4C42_4842;
+        /// <summary> 'B','H','B','O'. </summary>
+        public const uint Magic = 0x4F42_4842;
 
         // TWO DIFFERENT THINGS ARE CALLED A GENERATION IN THIS SUBSYSTEM, and only one of them is
         // here. THIS one belongs to the ENCODING: which byte layout a .blob is written in. The other
@@ -24,13 +24,15 @@ namespace BH.SDK.Serialization.Blob
         // was when the file was written - and travels inside each envelope. A domain moving does not
         // move this; this moving invalidates every .blob whatever its domains say.
         //
-        // It went 1 -> 2 when a domain envelope stopped carrying two ushorts (major, minor) and
-        // started carrying one int. Since it also seeds the hash below, an older file is refused by
-        // the header rather than misread deeper in.
+        // It cannot be folded into the model generation: that one lives INSIDE an envelope, and an
+        // envelope can only be found by a reader that already knows the byte layout. Since it also
+        // seeds the hash below, a file from another codec is refused by the header rather than
+        // misread deeper in. It was reset to 1 together with the magic's move to BHBO; the
+        // pre-release 1 -> 2 step it carried before is not readable by anything any more.
 
         /// <summary> The CODEC's generation, not any domain's. It moves when the encoding itself
         /// changes shape - which per-domain envelopes are designed to make unnecessary. </summary>
-        public const ushort Generation = 2;
+        public const ushort Generation = 1;
 
         /// <summary> Bit 0: the payload hash is present. Every other bit is reserved and must be
         /// zero, so a future flag makes an old reader refuse rather than misread. </summary>
