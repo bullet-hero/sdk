@@ -15,7 +15,7 @@ namespace BH.SDK.Models.SettingGroups
     //
     // Moving keys is the one change an additive default cannot cover, so it shipped with a snapshot
     // and a migrator. Both are deleted and the domain is back at (1,0) - root CLAUDE.md Rule 11, the
-    // game is pre-release. The shape it moved to is GraphicsSettings' own - a root holding nothing but
+    // game was pre-release then. The shape it moved to is GraphicsSettings' own - a root holding nothing but
     // sub-groups - except that this one keeps no loose properties at all: every field belongs to
     // exactly one of the groups below.
 

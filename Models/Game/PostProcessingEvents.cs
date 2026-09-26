@@ -14,7 +14,7 @@ namespace BH.SDK.Models.Game
     // ColorCurves' two scalars became URP's eight curves - see ColorCurvesKey's own header for why
     // they could not simply be joined by six more. That took the domain to 1.1 and shipped with a
     // snapshot and a migrator; both are gone and the domain is back at 1.0, per root CLAUDE.md
-    // Rule 11 - the game is pre-release, so the format changes in place and nothing migrates.
+    // Rule 11 - that was before 1.0.0, when the format still changed in place and nothing migrated.
 
     /// <summary>
     /// The level's screen-effect stack: one independent keyframe track per URP effect. Two levels of

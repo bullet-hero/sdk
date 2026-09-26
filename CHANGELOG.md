@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## sv 1.0.0 - 2026-09-27
+
+### Changed
+
+- Released together with the game. Files from this version open in every later one; a file from a
+  newer version throws `NewerGenerationException` instead of reading as defaults. 1.0.0 does not yet
+  promise API stability - the SDK still moves with the game
+
 ## sv 0.16.2 - 2026-09-24
 
 ### Added

@@ -18,7 +18,7 @@ namespace BH.SDK.Models
     // Every other change to this file was additive and rode on Newtonsoft leaving a constructor's
     // default in place for an absent key; moving keys is the one thing that cannot, so that change
     // took the domain to (2,0) and shipped a snapshot and a migrator. Both are gone and the domain is
-    // back at (1,0), per root CLAUDE.md Rule 11: pre-release, the format changes in place. A
+    // back at (1,0), per root CLAUDE.md Rule 11: pre-release then, the format changed in place. A
     // settings.json older than that restructure now reads its editor group back as defaults.
 
     /// <summary>
