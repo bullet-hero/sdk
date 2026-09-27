@@ -81,6 +81,21 @@
     <PackageTags>bullet-hero;rhythm-game;bullet-hell;level-format;serialization;modding</PackageTags>
   </PropertyGroup>
 
+  <!--
+    PACKAGE HEALTH - what NuGet Package Explorer and nuget.org check. The PDB is EMBEDDED in the DLL
+    rather than shipped as a .snupkg: one file, nothing for a consumer to fetch, and Source Link
+    (built into the .NET 8 SDK) and the compiler flags both live inside it. ContinuousIntegrationBuild
+    rewrites local paths to /_/, which is what makes the build reproducible; it is Release-only because
+    a Debug build is for stepping through on this machine, where real paths are wanted. The generated
+    model/validation sources are embedded by the compiler itself, since no repository holds them.
+  -->
+  <PropertyGroup>
+    <DebugType>embedded</DebugType>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <ContinuousIntegrationBuild Condition="'$(Configuration)' == 'Release'">true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+
   <ItemGroup>
     <None Include="README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
