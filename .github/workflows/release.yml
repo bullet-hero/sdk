@@ -1,0 +1,70 @@
+# Publishes BulletHero.SDK to nuget.org when an sv<X.Y.Z> tag is pushed.
+#
+# No API key is stored anywhere: nuget.org's Trusted Publishing trades this job's GitHub OIDC token
+# for a one-hour key (NuGet/login). The policy on nuget.org names this repository, this file
+# (release.yml) and the `release` environment - rename any of them and publishing stops.
+#
+# The version is not an input. The tag, <Version> in BH.SDK.csproj, SdkVersion.cs and package.json
+# must all say the same thing, or the job fails before anything is built.
+
+name: release
+
+on:
+  push:
+    tags: [ 'sv*' ]
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: read
+      id-token: write # the OIDC token Trusted Publishing exchanges
+
+    # AsyncDisciplineTests resolves its roots against the Unity project (the nearest folder holding
+    # Assets/), so the SDK is checked out where the game keeps it. Without that it finds no root and
+    # fails on purpose - a check that read nothing is not a pass.
+    defaults:
+      run:
+        working-directory: Assets/Plugins/BH.SDK
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: Assets/Plugins/BH.SDK
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Tag agrees with every copy of the version
+        run: |
+          tag="${GITHUB_REF_NAME#sv}"
+          csproj=$(grep -oP '^\s*<Version>\K[^<]+(?=</Version>)' BH.SDK.csproj)
+          code=$(grep -oP 'Value = "\K[^"]+' SdkVersion.cs)
+          json=$(grep -oP '"version":\s*"\K[^"]+' package.json)
+          echo "tag=$tag csproj=$csproj SdkVersion.cs=$code package.json=$json"
+          [ "$tag" = "$csproj" ] && [ "$tag" = "$code" ] && [ "$tag" = "$json" ] \
+            || { echo "::error::Version mismatch - raise sv with the version-bump procedure first"; exit 1; }
+          echo "VERSION=$tag" >> "$GITHUB_ENV"
+
+      - name: Test
+        run: dotnet test Tests/BH.SDK.Tests.csproj -c Release --filter "TestCategory!=5_extreme"
+
+      - name: Pack
+        run: dotnet pack BH.SDK.csproj -c Release -o "$RUNNER_TEMP/nupkg"
+
+      - name: NuGet login (OIDC -> temporary API key)
+        uses: NuGet/login@v1
+        id: login
+        with:
+          user: ${{ secrets.NUGET_USER }}
+
+      - name: Push
+        run: >
+          dotnet nuget push "$RUNNER_TEMP/nupkg/BulletHero.SDK.${VERSION}.nupkg"
+          --api-key "${{ steps.login.outputs.NUGET_API_KEY }}"
+          --source https://api.nuget.org/v3/index.json
