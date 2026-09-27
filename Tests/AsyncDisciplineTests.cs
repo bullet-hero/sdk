@@ -24,7 +24,7 @@ namespace BH.SDK.Tests
     // says so. Two different failures, two different mechanisms.
     //
     // So the check is static, and it is deliberately a TEST rather than a Roslyn analyzer: an
-    // analyzer would have to ship in the `BulletHeroSDK.Roslyn` assembly, which is `#if
+    // analyzer would have to ship in the `BH.SDK.Roslyn` assembly, which is `#if
     // BHSDK_ROSLYN`-gated and compiles to nothing inside this project - i.e. exactly here, it would
     // never run. A test runs in every suite, including the one a person runs before committing.
     //
@@ -50,8 +50,8 @@ namespace BH.SDK.Tests
             "Assets/Code/Services/Game/Tests",
             "Assets/Code/Services/Root/Tests",
             "Assets/Code/Specifics/Shared/Tests",
-            "Assets/Plugins/BulletHeroSDK/Tests",
-            "Assets/Plugins/BulletHeroSDK/UnityExtensions/Tests",
+            "Assets/Plugins/BH.SDK/Tests",
+            "Assets/Plugins/BH.SDK/UnityExtensions/Tests",
         };
 
         // The file that documents the trap is allowed to name it; so is this one.
@@ -182,7 +182,7 @@ namespace BH.SDK.Tests
 
             var searched = 0;
 
-            foreach (var name in new[] { "Assets/Code", "Assets/Plugins/BulletHeroSDK" })
+            foreach (var name in new[] { "Assets/Code", "Assets/Plugins/BH.SDK" })
             {
                 var root = Resolve(name);
                 if (!Directory.Exists(root)) continue;

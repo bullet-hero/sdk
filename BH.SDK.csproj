@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <!--
-    The SDK compiled WITHOUT Unity - the same sources Unity builds from BulletHeroSDK.asmdef, as a
+    The SDK compiled WITHOUT Unity - the same sources Unity builds from BH.SDK.asmdef, as a
     plain library a server or a tool can reference. That is not a side project: the SDK is
     deliberately engine-free (`noEngineReferences: true`, and every mention of UnityEngine in the
     core is a comment), and this file is what keeps that claim honest instead of merely stated.

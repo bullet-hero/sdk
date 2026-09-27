@@ -1,6 +1,6 @@
-# CLAUDE.md — Assets/Plugins/BulletHeroSDK/Serialization
+# CLAUDE.md — Assets/Plugins/BH.SDK/Serialization
 
-Read `Assets/Plugins/BulletHeroSDK/CLAUDE.md` first — it carries the mental model, the folder index and the
+Read `Assets/Plugins/BH.SDK/CLAUDE.md` first — it carries the mental model, the folder index and the
 layer-wide conventions. This file is folder-local.
 
 
@@ -35,7 +35,7 @@ the per-node path rather than from generating anything.
 **The Roslyn half is compiled separately and must be rebuilt by hand.** Unity loads the analyzers and
 generators only as the built `.dll` in the SDK root; editing a source under `Roslyn/` and refreshing
 changes nothing. `Tools/BH.SDK.Roslyn/Build Analyzer` does.
-`Assets/Plugins/BulletHeroSDK/Roslyn/README.md` is the record.
+`Assets/Plugins/BH.SDK/Roslyn/README.md` is the record.
 
 `SerializationService.SerializeData<T>`/`DeserializeData<T>` are the plain string-JSON entry points —
 both throw `ArgumentException` if `T` has no `[ModelGeneration]` (only aggregate roots may go through
@@ -180,7 +180,7 @@ default nowhere.
 
 ## Model versioning (`Versions/`)
 
-**`Assets/Plugins/BulletHeroSDK/Docs/VERSIONING.md` is the design record and `Versions/README.md` the folder convention**
+**`Assets/Plugins/BH.SDK/Docs/VERSIONING.md` is the design record and `Versions/README.md` the folder convention**
 (generation-first, e.g. `V0/` + `V0/Migrations/`, plus the "nested envelope always resolves to the
 domain's *current* type" rule). Read those first; this section only adds what they don't cover.
 
@@ -239,7 +239,7 @@ domain's *current* type" rule). Read those first; this section only adds what th
   `LevelSettings` at generation 0 come back `fps=60` through the generated codec and `fps=61` through
   the reflective one. `JsonParityTests` now compares the two stacks' REPORTS as well as their models,
   because two readers can reach identical defaults for opposite reasons.
-  `Assets/Plugins/BulletHeroSDK/Docs/VERSIONING.md` is the record.
+  `Assets/Plugins/BH.SDK/Docs/VERSIONING.md` is the record.
 - Replaces an older `CompatibilityService`/`SaveData<T>`/`JsonConverterData<T>` design — those names
   are fully gone from the codebase (only survive in a comment explaining what replaced them); don't
   reintroduce or reference them as if live.

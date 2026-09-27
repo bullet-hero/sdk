@@ -49,7 +49,7 @@ assembly in scope - that is the point, not overhead.
 Without an Editor - a build server, the standalone SDK repo:
 
 ```
-# from Assets/Plugins/BulletHeroSDK/Roslyn
+# from Assets/Plugins/BH.SDK/Roslyn
 dotnet build BH.SDK.Roslyn.csproj -c Release
 cp bin~/Release/BH.SDK.Roslyn.dll ../BH.SDK.Roslyn.dll
 ```
@@ -111,7 +111,7 @@ question from `../Tests/`, which tests what the generated code DOES once emitted
 emit something that behaves correctly on every fixture and still re-run on every keystroke.
 
 ```
-# from Assets/Plugins/BulletHeroSDK/Roslyn/Tests~
+# from Assets/Plugins/BH.SDK/Roslyn/Tests~
 dotnet test BH.SDK.Roslyn.Tests.csproj -c Release
 ```
 

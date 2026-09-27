@@ -1,6 +1,6 @@
-# CLAUDE.md — Assets/Plugins/BulletHeroSDK/Models/Game
+# CLAUDE.md — Assets/Plugins/BH.SDK/Models/Game
 
-Read `Assets/Plugins/BulletHeroSDK/Models/CLAUDE.md` first — it carries the folder index,
+Read `Assets/Plugins/BH.SDK/Models/CLAUDE.md` first — it carries the folder index,
 the `IModel<T>` contract and the cross-folder effect/audio/theme model.
 
 

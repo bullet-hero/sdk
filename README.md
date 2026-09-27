@@ -12,7 +12,7 @@ format, archives, versioning, validation, publishing profiles, writing generator
 As a git submodule of a Unity project:
 
 ```bash
-git submodule add -f https://github.com/bullet-hero/sdk.git Assets/Plugins/BulletHeroSDK
+git submodule add -f https://github.com/bullet-hero/sdk.git Assets/Plugins/BH.SDK
 ```
 
 Without Unity:

@@ -1,6 +1,6 @@
-# CLAUDE.md — Assets/Plugins/BulletHeroSDK/Utils
+# CLAUDE.md — Assets/Plugins/BH.SDK/Utils
 
-Read `Assets/Plugins/BulletHeroSDK/CLAUDE.md` first — it carries the mental model, the folder index and the
+Read `Assets/Plugins/BH.SDK/CLAUDE.md` first — it carries the mental model, the folder index and the
 layer-wide conventions. This file is folder-local.
 
 

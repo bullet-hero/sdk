@@ -1,6 +1,6 @@
-# CLAUDE.md — Assets/Plugins/BulletHeroSDK/Models
+# CLAUDE.md — Assets/Plugins/BH.SDK/Models
 
-Read `Assets/Plugins/BulletHeroSDK/CLAUDE.md` first — it carries the mental model, the folder index and the
+Read `Assets/Plugins/BH.SDK/CLAUDE.md` first — it carries the mental model, the folder index and the
 layer-wide conventions. This file is folder-local.
 
 **Documentation for this layer is per-subfolder.** Each file below loads only when you touch
@@ -36,7 +36,7 @@ the level format itself (see "Object model" / "Value system" below for the
   ordinary record; `ResourceMeta` — consumed by `LevelMeta`, itself NOT in this folder; note
   `ResourceMeta` carries licensing/attribution only — **the age rating lives on `LevelMeta`
   alone**, since a rating describes the finished experience, not an asset in isolation),
-  `Interfaces/`, `Enum/`, `Primitives/` (id structs — **`Assets/Plugins/BulletHeroSDK/Docs/IDENTIFIERS.md` is the criterion that
+  `Interfaces/`, `Enum/`, `Primitives/` (id structs — **`Assets/Plugins/BH.SDK/Docs/IDENTIFIERS.md` is the criterion that
   decides `Guid` vs `int`, and the answer to "will these ever have to be unified"; read it before
   adding an id**). `Models/Names.cs` is the single source of truth
   for every `[JsonProperty]` name (short/abbreviated on purpose — see Serialization).
