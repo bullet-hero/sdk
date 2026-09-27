@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Serialization;
 using BH.SDK.Rules.Attributes;
 using NUnit.Framework;
 
@@ -158,7 +157,7 @@ namespace BH.SDK.Tests.Rules
         // constructor. That is safe here precisely because RuleNameKey is a literal on every rule -
         // it reads no field, so an uninitialized instance answers exactly what a real one would.
         private static string NameKeyOf(Type type)
-            => ((BaseRuleAttribute)FormatterServices.GetUninitializedObject(type)).RuleNameKey ?? string.Empty;
+            => ((BaseRuleAttribute)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(type)).RuleNameKey ?? string.Empty;
 
         /// <summary> The key a rule of this type is expected to declare: "rule_" plus the type name
         /// without its Rule prefix and Attribute suffix, in snake_case, with a leading interface "I"

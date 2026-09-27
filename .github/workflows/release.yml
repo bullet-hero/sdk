@@ -14,6 +14,11 @@
 # pipeline - checks, tests, pack, the OIDC exchange - is exercised without releasing anything, so
 # pushing a version nuget.org already has is the expected outcome and --skip-duplicate makes it a
 # no-op.
+#
+# A TAG RUN IS THE WHOLE RELEASE: after NuGet it creates the GitHub Release for the tag, carrying
+# BH.SDK.dll out of the package just pushed and the tag's own `## sv X.Y.Z` section of CHANGELOG.md
+# as its body. That section is read BEFORE anything is built, so a tag on a commit without one fails
+# with nothing published. A manual run creates no release.
 
 name: release
 
@@ -30,7 +35,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: release
     permissions:
-      contents: read
+      contents: write # the GitHub Release a tag run creates
       id-token: write # the OIDC token Trusted Publishing exchanges
 
     # AsyncDisciplineTests resolves its roots against the Unity project (the nearest folder holding
@@ -62,6 +67,18 @@ jobs:
           fi
           echo "VERSION=$csproj" >> "$GITHUB_ENV"
 
+      - name: Release notes from CHANGELOG.md
+        if: github.ref_type == 'tag'
+        run: |
+          heading="## sv $VERSION"
+          awk -v h="$heading" '
+            index($0, h) == 1 && (length($0) == length(h) || substr($0, length(h) + 1, 1) == " ") { f = 1; next }
+            f && /^## / { exit }
+            f
+          ' CHANGELOG.md > "$RUNNER_TEMP/notes.md"
+          grep -q '[^[:space:]]' "$RUNNER_TEMP/notes.md" \
+            || { echo "::error::CHANGELOG.md has no '$heading' section - write it before tagging"; exit 1; }
+
       - name: Test
         run: dotnet test Tests/BH.SDK.Tests.csproj -c Release --filter "TestCategory!=5_extreme"
 
@@ -82,3 +99,16 @@ jobs:
           --api-key "${{ steps.login.outputs.NUGET_API_KEY }}"
           --source https://api.nuget.org/v3/index.json
           $SKIP_DUPLICATE
+
+      # Skipped when the release already exists, so a re-run after a failure further down is safe.
+      - name: GitHub Release
+        if: github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "$GITHUB_REF_NAME" > /dev/null 2>&1; then
+            echo "Release $GITHUB_REF_NAME already exists"; exit 0
+          fi
+          unzip -j -o "$RUNNER_TEMP/nupkg/BulletHero.SDK.${VERSION}.nupkg" 'lib/*/BH.SDK.dll' -d "$RUNNER_TEMP/dll"
+          gh release create "$GITHUB_REF_NAME" "$RUNNER_TEMP/dll/BH.SDK.dll" \
+            --title "sv $VERSION" --notes-file "$RUNNER_TEMP/notes.md" --verify-tag

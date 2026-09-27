@@ -154,7 +154,7 @@ namespace BH.SDK.Tests.Rules
         /// <summary> Read off an uninitialized instance, which is safe only because every Group in
         /// this project is a literal - the same thing RuleCoverageTests relies on for RuleNameKey. </summary>
         private static RuleGroup Severity(Type rule)
-            => ((BaseRuleAttribute)System.Runtime.Serialization.FormatterServices
+            => ((BaseRuleAttribute)System.Runtime.CompilerServices.RuntimeHelpers
                 .GetUninitializedObject(rule)).Group;
     }
 }
