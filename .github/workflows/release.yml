@@ -1,17 +1,26 @@
-# Publishes BulletHero.SDK to nuget.org when an sv<X.Y.Z> tag is pushed.
+# Publishes BulletHero.SDK to nuget.org when an sv<X.Y.Z> tag is pushed, or by hand from the
+# Actions tab (workflow_dispatch).
 #
 # No API key is stored anywhere: nuget.org's Trusted Publishing trades this job's GitHub OIDC token
 # for a one-hour key (NuGet/login). The policy on nuget.org names this repository, this file
 # (release.yml) and the `release` environment - rename any of them and publishing stops.
 #
-# The version is not an input. The tag, <Version> in BH.SDK.csproj, SdkVersion.cs and package.json
-# must all say the same thing, or the job fails before anything is built.
+# The version is not an input. <Version> in BH.SDK.csproj, SdkVersion.cs and package.json must all
+# say the same thing - and so must the tag, when a tag started the run - or the job fails before
+# anything is built.
+#
+# A TAG RUN FAILS ON A VERSION ALREADY PUBLISHED; A MANUAL RUN SKIPS IT. A tag means "release this
+# version", so a duplicate there is a forgotten bump and must be loud. A manual run is how the whole
+# pipeline - checks, tests, pack, the OIDC exchange - is exercised without releasing anything, so
+# pushing a version nuget.org already has is the expected outcome and --skip-duplicate makes it a
+# no-op.
 
 name: release
 
 on:
   push:
     tags: [ 'sv*' ]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -40,16 +49,18 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      - name: Tag agrees with every copy of the version
+      - name: Every copy of the version agrees
         run: |
-          tag="${GITHUB_REF_NAME#sv}"
           csproj=$(grep -oP '^\s*<Version>\K[^<]+(?=</Version>)' BH.SDK.csproj)
           code=$(grep -oP 'Value = "\K[^"]+' SdkVersion.cs)
           json=$(grep -oP '"version":\s*"\K[^"]+' package.json)
-          echo "tag=$tag csproj=$csproj SdkVersion.cs=$code package.json=$json"
-          [ "$tag" = "$csproj" ] && [ "$tag" = "$code" ] && [ "$tag" = "$json" ] \
-            || { echo "::error::Version mismatch - raise sv with the version-bump procedure first"; exit 1; }
-          echo "VERSION=$tag" >> "$GITHUB_ENV"
+          echo "csproj=$csproj SdkVersion.cs=$code package.json=$json ref=$GITHUB_REF_TYPE/$GITHUB_REF_NAME"
+          [ -n "$csproj" ] && [ "$csproj" = "$code" ] && [ "$csproj" = "$json" ] \
+            || { echo "::error::The three copies of the version disagree - raise sv with the version-bump procedure"; exit 1; }
+          if [ "$GITHUB_REF_TYPE" = "tag" ] && [ "${GITHUB_REF_NAME#sv}" != "$csproj" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match version $csproj"; exit 1
+          fi
+          echo "VERSION=$csproj" >> "$GITHUB_ENV"
 
       - name: Test
         run: dotnet test Tests/BH.SDK.Tests.csproj -c Release --filter "TestCategory!=5_extreme"
@@ -64,7 +75,10 @@ jobs:
           user: ${{ secrets.NUGET_USER }}
 
       - name: Push
+        env:
+          SKIP_DUPLICATE: ${{ github.event_name == 'workflow_dispatch' && '--skip-duplicate' || '' }}
         run: >
           dotnet nuget push "$RUNNER_TEMP/nupkg/BulletHero.SDK.${VERSION}.nupkg"
           --api-key "${{ steps.login.outputs.NUGET_API_KEY }}"
           --source https://api.nuget.org/v3/index.json
+          $SKIP_DUPLICATE
