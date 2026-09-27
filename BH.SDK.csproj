@@ -65,11 +65,12 @@
 
   <!--
     THE PACKAGE. `dotnet pack -c Release` produces a .nupkg of the same DLL `dotnet build` does, with
-    its XML docs beside it. Nothing here publishes: pushing to nuget.org is the author's. The id was
-    free on nuget.org on 2026-09-23. <Version> above stays the one version, shared with the DLL.
+    its XML docs beside it. Nothing here publishes: pushing to nuget.org is the author's. The id matches
+    the assembly name and was free on nuget.org on 2026-09-27. <Version> above stays the one version,
+    shared with the DLL.
   -->
   <PropertyGroup>
-    <PackageId>BulletHero.SDK</PackageId>
+    <PackageId>BH.SDK</PackageId>
     <Authors>vertoker</Authors>
     <Description>The open level and save data model of the game Bullet Hero: models, JSON and binary serialization with versioned envelopes and migrations, validation rules and level generators. Engine-free - usable from a server, a tool or a mod.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
