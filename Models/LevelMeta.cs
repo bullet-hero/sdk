@@ -23,7 +23,7 @@ namespace BH.SDK.Models
     /// hundreds of levels without deserializing a single one of them.
     /// </summary>
     [RuleContainer]
-    [ModelGeneration(ModelDomains.LevelMeta, ModelGenerations.Release)]
+    [ModelGeneration(ModelDomains.LevelMeta, ModelGenerations.V1_AlphaRelease)]
     [GenerateModel]
     public sealed partial class LevelMeta : IModel<LevelMeta>
     {

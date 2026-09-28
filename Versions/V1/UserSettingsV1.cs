@@ -15,7 +15,7 @@ namespace BH.SDK.Versions.V1
 
     /// <summary> Generation 1 (Release) of the user-settings domain - the shape 1.0.0 shipped, before
     /// the tutorial flag and with the cursor-return switch. A frozen snapshot - never edit it to match today's shape. </summary>
-    [ModelGeneration(ModelDomains.UserSettings, ModelGenerations.Release)]
+    [ModelGeneration(ModelDomains.UserSettings, ModelGenerations.V1_AlphaRelease)]
     [GenerateModel]
     public sealed partial class UserSettingsV1 : IModel<UserSettingsV1>
     {

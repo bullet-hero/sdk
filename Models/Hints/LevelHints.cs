@@ -36,7 +36,7 @@ namespace BH.SDK.Models.Hints
     /// sets. Strictly advisory - never authoritative, never required, never trusted blindly.
     /// </summary>
     [RuleContainer]
-    [ModelGeneration(ModelDomains.LevelHints, ModelGenerations.Release)]
+    [ModelGeneration(ModelDomains.LevelHints, ModelGenerations.V1_AlphaRelease)]
     [GenerateModel]
     public sealed partial class LevelHints : IModel<LevelHints>
     {

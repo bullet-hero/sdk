@@ -22,7 +22,7 @@ namespace BH.SDK.Models.Statistics
 
     /// <summary> Everything one player has done, across every level and every screen. </summary>
     [RuleContainer]
-    [ModelGeneration(ModelDomains.GameStatistics, ModelGenerations.Release)]
+    [ModelGeneration(ModelDomains.GameStatistics, ModelGenerations.V1_AlphaRelease)]
     [GenerateModel]
     public sealed partial class GameStatistics : IModel<GameStatistics>
     {

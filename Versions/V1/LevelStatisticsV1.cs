@@ -20,7 +20,7 @@ namespace BH.SDK.Versions.V1
     /// <summary> Generation 1 (Release) of the level-statistics domain - the shape 1.0.0 shipped,
     /// before a record could be filed under "no collision". A frozen snapshot - never edit it to match
     /// today's shape. </summary>
-    [ModelGeneration(ModelDomains.LevelStatistics, ModelGenerations.Release)]
+    [ModelGeneration(ModelDomains.LevelStatistics, ModelGenerations.V1_AlphaRelease)]
     [GenerateModel]
     public sealed partial class LevelStatisticsV1 : IModel<LevelStatisticsV1>
     {

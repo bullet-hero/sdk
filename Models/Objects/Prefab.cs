@@ -18,7 +18,7 @@ namespace BH.SDK.Models.Objects
     /// </summary>
     [RuleContainer]
     [RulePrefabRootFixed]
-    [ModelGeneration(ModelDomains.Prefab, ModelGenerations.Release)]
+    [ModelGeneration(ModelDomains.Prefab, ModelGenerations.V1_AlphaRelease)]
     [GenerateModel]
     public sealed partial class Prefab : IObjectScope, IObjectIdCounter, IModel<Prefab>
     {

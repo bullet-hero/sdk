@@ -94,7 +94,7 @@ namespace BH.SDK.Tests
             settings.Controls.DeviceGyro.InvertX = true;
 
             var root = JObject.Parse(service.SerializeData(settings));
-            root["g"] = ModelGenerations.Release;
+            root["g"] = ModelGenerations.V1_AlphaRelease;
             var value = (JObject)root["v"];
             value.Remove(Names.TutorialCompleted);
 

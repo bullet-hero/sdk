@@ -17,7 +17,7 @@ namespace BH.SDK.Models.Game
     /// which object tracks were dropped or replaced and why.
     /// </summary>
     [RuleContainer]
-    [ModelGeneration(ModelDomains.CameraEvents, ModelGenerations.Release)]
+    [ModelGeneration(ModelDomains.CameraEvents, ModelGenerations.V1_AlphaRelease)]
     [GenerateModel]
     public sealed partial class CameraEvents : IModel<CameraEvents>
     {

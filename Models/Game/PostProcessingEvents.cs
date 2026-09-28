@@ -22,7 +22,7 @@ namespace BH.SDK.Models.Game
     /// Fields are grouped below as general / color grading / glitches.
     /// </summary>
     [RuleContainer]
-    [ModelGeneration(ModelDomains.PostProcessingEvents, ModelGenerations.Release)]
+    [ModelGeneration(ModelDomains.PostProcessingEvents, ModelGenerations.V1_AlphaRelease)]
     [GenerateModel]
     public sealed partial class PostProcessingEvents : IModel<PostProcessingEvents>
     {

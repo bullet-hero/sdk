@@ -27,7 +27,7 @@ namespace BH.SDK.Models.Game
     /// tracks of force the level applies to the player.
     /// </summary>
     [RuleContainer]
-    [ModelGeneration(ModelDomains.PlayerEvents, ModelGenerations.Release)]
+    [ModelGeneration(ModelDomains.PlayerEvents, ModelGenerations.V1_AlphaRelease)]
     [GenerateModel]
     public sealed partial class PlayerEvents : IModel<PlayerEvents>
     {

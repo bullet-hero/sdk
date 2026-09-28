@@ -18,7 +18,7 @@ namespace BH.SDK.Models.Data
     /// looks like - so reusing one effect across a level costs one placement, not one copy.
     /// </summary>
     [RuleContainer]
-    [ModelGeneration(ModelDomains.EffectData, ModelGenerations.Release)]
+    [ModelGeneration(ModelDomains.EffectData, ModelGenerations.V1_AlphaRelease)]
     [GenerateModel]
     public sealed partial class EffectData : IModel<EffectData>, IUpdatable<EffectData>
     {

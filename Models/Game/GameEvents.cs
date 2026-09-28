@@ -20,7 +20,7 @@ namespace BH.SDK.Models.Game
     /// are one-shot flat lists, ScreenLimits/Backgrounds/Themes are real interpolated keyframe tracks.
     /// </summary>
     [RuleContainer]
-    [ModelGeneration(ModelDomains.GameEvents, ModelGenerations.Release)]
+    [ModelGeneration(ModelDomains.GameEvents, ModelGenerations.V1_AlphaRelease)]
     [GenerateModel]
     public sealed partial class GameEvents : IModel<GameEvents>
     {

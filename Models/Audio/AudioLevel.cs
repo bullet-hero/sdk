@@ -15,7 +15,7 @@ namespace BH.SDK.Models.Audio
     /// expressed by tracks overlapping in time and separating by AudioLayer, not by nesting.
     /// </summary>
     [RuleContainer]
-    [ModelGeneration(ModelDomains.AudioLevel, ModelGenerations.Release)]
+    [ModelGeneration(ModelDomains.AudioLevel, ModelGenerations.V1_AlphaRelease)]
     [GenerateModel]
     public sealed partial class AudioLevel : IModel<AudioLevel>
     {

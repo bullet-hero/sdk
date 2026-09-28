@@ -37,7 +37,7 @@ namespace BH.SDK.Tests
             // A real write of today's file, stamped Release and with the new key taken out of every
             // profile - exactly what 1.0.0 put on disk.
             var root = JObject.Parse(service.SerializeData(stats));
-            root["g"] = ModelGenerations.Release;
+            root["g"] = ModelGenerations.V1_AlphaRelease;
             foreach (var token in root.SelectTokens("$..no_collision").ToList())
                 token.Parent.Remove();
 
@@ -64,7 +64,7 @@ namespace BH.SDK.Tests
             var json = service.SerializeData(stats);
             var read = service.DeserializeData<LevelStatistics>(json);
 
-            Assert.AreEqual(ModelGenerations.Tutorial, (int)JObject.Parse(json)["g"]);
+            Assert.AreEqual(ModelGenerations.V2_SimplifyEntrance, (int)JObject.Parse(json)["g"]);
             Assert.AreEqual(2, read.Records.Count);
             Assert.AreEqual(0.4f, read.GetRecord(new RunProfile(0, 100, true, BotKind.None)).Progress);
             Assert.AreEqual(1f, read.GetRecord(new RunProfile(0, 100, true, BotKind.None, true)).Progress);

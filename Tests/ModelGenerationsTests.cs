@@ -112,7 +112,7 @@ namespace BH.SDK.Tests
             // so a reader treating it as "no generation" would refuse the migration path outright.
             Assert.Less(ModelGenerations.Invalid, 0);
             Assert.AreEqual(0, ModelGenerations.Test);
-            Assert.Greater(ModelGenerations.Release, ModelGenerations.Test);
+            Assert.Greater(ModelGenerations.V1_AlphaRelease, ModelGenerations.Test);
         }
 
         [Test]

@@ -39,7 +39,7 @@ namespace BH.SDK.Tests
         private static Level RoundTrip(Level level, SerializationType type)
         {
             var serializer = Serializer(type);
-            var bytes = serializer.SerializeEnvelope(ModelDomains.Level, new EnvelopeData(ModelGenerations.Release, level));
+            var bytes = serializer.SerializeEnvelope(ModelDomains.Level, new EnvelopeData(ModelGenerations.V1_AlphaRelease, level));
             return serializer.DeserializeEnvelope(bytes, typeof(Level)).GetPayload<Level>();
         }
 
@@ -78,7 +78,7 @@ namespace BH.SDK.Tests
         {
             var level = MockData.CreateTestLevel();
             var bytes = Serializer(SerializationType.Json)
-                .SerializeEnvelope(ModelDomains.Level, new EnvelopeData(ModelGenerations.Release, level));
+                .SerializeEnvelope(ModelDomains.Level, new EnvelopeData(ModelGenerations.V1_AlphaRelease, level));
 
             var json = Encoding.UTF8.GetString(bytes);
 

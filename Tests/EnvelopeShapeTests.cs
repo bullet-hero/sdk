@@ -37,7 +37,7 @@ namespace BH.SDK.Tests
             Assert.AreEqual(2, envelope.Count, "an envelope carries the generation and the payload, nothing else");
             Assert.AreEqual(JTokenType.Integer, envelope[Names.Generation].Type,
                 "a number, never the \"major.minor\" string this replaced");
-            Assert.AreEqual(ModelGenerations.Release, envelope[Names.Generation].Value<int>());
+            Assert.AreEqual(ModelGenerations.V1_AlphaRelease, envelope[Names.Generation].Value<int>());
             Assert.AreEqual(JTokenType.Object, envelope[Names.Value].Type);
             Assert.IsNull(envelope[Names.Version], "\"vrs\" is the AUTHOR's version of a level, never the envelope's");
         }
@@ -52,7 +52,7 @@ namespace BH.SDK.Tests
 
             var settings = JObject.Parse(json)[Names.Value]![Names.Settings];
 
-            Assert.AreEqual(ModelGenerations.Release, settings![Names.Generation]!.Value<int>(),
+            Assert.AreEqual(ModelGenerations.V1_AlphaRelease, settings![Names.Generation]!.Value<int>(),
                 "a domain nested inside another is wrapped by whoever holds it - the generator's own branch");
         }
 
@@ -195,11 +195,11 @@ namespace BH.SDK.Tests
             {
                 var serializer = service.GetDataSerializer(format);
                 var bytes = serializer.SerializeEnvelope(ModelDomains.Level,
-                    new EnvelopeData(ModelGenerations.Release, MockData.CreateTestLevel()));
+                    new EnvelopeData(ModelGenerations.V1_AlphaRelease, MockData.CreateTestLevel()));
 
                 var envelope = serializer.DeserializeEnvelope(bytes, typeof(Level));
 
-                Assert.AreEqual(ModelGenerations.Release, envelope.Generation, format.ToString());
+                Assert.AreEqual(ModelGenerations.V1_AlphaRelease, envelope.Generation, format.ToString());
             }
         }
     }

@@ -20,7 +20,7 @@ namespace BH.SDK.Models.Resources
     /// lives in the game's own registries and is referenced by id without being copied in.
     /// </summary>
     [RuleContainer]
-    [ModelGeneration(ModelDomains.LevelResources, ModelGenerations.Release)]
+    [ModelGeneration(ModelDomains.LevelResources, ModelGenerations.V1_AlphaRelease)]
     [GenerateModel]
     public sealed partial class LevelResources : IModel<LevelResources>
     {

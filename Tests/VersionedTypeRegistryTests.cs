@@ -24,7 +24,7 @@ namespace BH.SDK.Tests
         [Category(Metadata.Category.Normal)]
         public void Resolve_AnswersTheTypeThatCarriesThatGeneration()
         {
-            Assert.AreEqual(typeof(Level), VersionedTypeRegistry.Resolve(ModelDomains.Level, ModelGenerations.Release));
+            Assert.AreEqual(typeof(Level), VersionedTypeRegistry.Resolve(ModelDomains.Level, ModelGenerations.V1_AlphaRelease));
             Assert.AreEqual(typeof(LevelV0), VersionedTypeRegistry.Resolve(ModelDomains.Level, ModelGenerations.Test));
         }
 
@@ -37,7 +37,7 @@ namespace BH.SDK.Tests
             // The branch both migrating read paths take. They must be able to tell "no snapshot" from
             // "here is one", and a fallback handed to them silently would be read as the file's own
             // shape - which is the corruption the refusal this replaced was guarding against.
-            Assert.IsNull(VersionedTypeRegistry.TryResolve("not_a_domain", ModelGenerations.Release));
+            Assert.IsNull(VersionedTypeRegistry.TryResolve("not_a_domain", ModelGenerations.V1_AlphaRelease));
             Assert.IsNull(VersionedTypeRegistry.TryResolve(ModelDomains.Level, MockData.FabricatedGeneration));
         }
 
@@ -69,7 +69,7 @@ namespace BH.SDK.Tests
             // generation of a known domain has a current shape to fall back to, and a domain nothing
             // has ever heard of has nothing at all.
             Assert.Throws<NotSupportedException>(() =>
-                VersionedTypeRegistry.Resolve("not_a_domain", ModelGenerations.Release));
+                VersionedTypeRegistry.Resolve("not_a_domain", ModelGenerations.V1_AlphaRelease));
         }
 
         [Test]
@@ -128,7 +128,7 @@ namespace BH.SDK.Tests
         {
             var level = new Level();
 
-            var upgraded = VersionedTypeRegistry.UpgradeToLatest(ModelDomains.Level, level, ModelGenerations.Release);
+            var upgraded = VersionedTypeRegistry.UpgradeToLatest(ModelDomains.Level, level, ModelGenerations.V1_AlphaRelease);
 
             Assert.AreSame(level, upgraded, "nothing to walk, so nothing is rebuilt");
         }
@@ -142,7 +142,7 @@ namespace BH.SDK.Tests
             var latest = VersionedTypeRegistry.GetLatestAttribute(ModelDomains.Level);
 
             Assert.AreEqual(ModelDomains.Level, latest.Domain);
-            Assert.AreEqual(ModelGenerations.Release, latest.Generation);
+            Assert.AreEqual(ModelGenerations.V1_AlphaRelease, latest.Generation);
             Assert.Throws<NotSupportedException>(() => VersionedTypeRegistry.GetLatestAttribute("not_a_domain"));
         }
 

@@ -64,7 +64,7 @@ namespace BH.SDK.Tests
             var service = new SerializationService();
             var json = service.SerializeData(new UserSettings { TutorialCompleted = true });
 
-            Assert.AreEqual(ModelGenerations.Tutorial, (int)JObject.Parse(json)["g"]);
+            Assert.AreEqual(ModelGenerations.V2_SimplifyEntrance, (int)JObject.Parse(json)["g"]);
             Assert.IsTrue(service.DeserializeData<UserSettings>(json).TutorialCompleted);
         }
 
@@ -79,7 +79,7 @@ namespace BH.SDK.Tests
             settings.Controls.Common.CursorRecenter = false;
 
             var root = JObject.Parse(service.SerializeData(settings));
-            root["g"] = ModelGenerations.Release;
+            root["g"] = ModelGenerations.V1_AlphaRelease;
             var value = (JObject)root["v"];
             value.Remove(Names.TutorialCompleted);
             ((JObject)value[Names.Controls][Names.Common])["cursor_return"] = cursorReturn;

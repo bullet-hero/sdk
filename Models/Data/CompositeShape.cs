@@ -28,7 +28,7 @@ namespace BH.SDK.Models.Data
     /// </summary>
     [RuleContainer]
     [RuleShapeGeometry]
-    [ModelGeneration(ModelDomains.CompositeShape, ModelGenerations.Release)]
+    [ModelGeneration(ModelDomains.CompositeShape, ModelGenerations.V1_AlphaRelease)]
     [GenerateModel]
     public sealed partial class CompositeShape : IModel<CompositeShape>, IShapeGeometry
     {
