@@ -1829,11 +1829,14 @@
         /// <summary> Word kept in the key vocabulary; nothing is built from it today. </summary>
         public const string Runs = "runs";
 
-        /// <summary> Word fragment, built into TutorialCompleted. </summary>
+        /// <summary> Word fragment, built into TutorialCompleted; also GameStatistics.Tutorial. </summary>
         public const string Tutorial = "tutorial";
 
-        /// <summary> Word fragment, built into TutorialCompleted. </summary>
+        /// <summary> Word fragment, built into TutorialCompleted, FirstCompletedUtc and LastCompletedUtc. </summary>
         public const string Completed = "completed";
+
+        /// <summary> TutorialStatistics.Completions. </summary>
+        public const string Completions = "completions";
 
         private const string _ = "_";
 
@@ -3090,5 +3093,11 @@
 
         /// <summary> <c>"tutorial_completed"</c> - UserSettings.TutorialCompleted. </summary>
         public const string TutorialCompleted = Tutorial + _ + Completed;
+
+        /// <summary> <c>"first_completed_utc"</c> - TutorialStatistics.FirstCompletedUtc. </summary>
+        public const string FirstCompletedUtc = First + _ + Completed + _ + Utc;
+
+        /// <summary> <c>"last_completed_utc"</c> - TutorialStatistics.LastCompletedUtc. </summary>
+        public const string LastCompletedUtc = Last + _ + Completed + _ + Utc;
     }
 }

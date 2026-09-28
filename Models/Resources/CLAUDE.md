@@ -1,12 +1,12 @@
-# CLAUDE.md — Assets/Plugins/BH.SDK/Models/Resources
+# CLAUDE.md - Assets/Plugins/BH.SDK/Models/Resources
 
-Read `Assets/Plugins/BH.SDK/Models/CLAUDE.md` first — it carries the folder index,
+Read `Assets/Plugins/BH.SDK/Models/CLAUDE.md` first - it carries the folder index,
 the `IModel<T>` contract and the cross-folder effect/audio/theme model.
 
 
 ## Prefab system
 
-Nesting is bounded by `ResourceSettings.Prefabs_MaxInheritanceLevel` — a template may hold a
+Nesting is bounded by `ResourceSettings.Prefabs_MaxInheritanceLevel` - a template may hold a
 placement of another template, and `PrefabMaterializer.Resync` re-propagates through every level of
 that up to the limit.
 
@@ -17,10 +17,10 @@ materializes the template as ONE undo step.
 
 **A placement's materialized copies are not in the FILE.** They are dropped before a write and
 rebuilt after a read by `Utils/PrefabVirtualizationUtils` (`Thin`/`Expand`), from `pfid` + `ids` +
-`mod` — which is all that is needed, and was worth 62-82% of four corpus levels' bytes. Nothing about
+`mod` - which is all that is needed, and was worth 62-82% of four corpus levels' bytes. Nothing about
 the model changed and nothing else learns that a load-time step exists: by the time the editor, the
 runtime or a validator sees a level, the scope is flat exactly as it always was. The one rule to keep
-straight is where an outer id is BORN — at edit time, in the consumer's `PrefabMaterializer`; the
+straight is where an outer id is BORN - at edit time, in the consumer's `PrefabMaterializer`; the
 expander reads the table and refuses rather than minting. `Docs/Issues/PREFAB_VIRTUALIZATION_HISTORY.md`
 is the record.
 
@@ -30,7 +30,7 @@ timeline. `PrefabObject` (a
 `RectObject` subclass) is the *placement*: `PrefabId` (which template) +
 `Dictionary<ObjectId, ObjectId> ObjectIds` (template-inner id → this placement's own materialized
 outer id) + `Dictionary<ModificationKey, Modification> Modifications` (per-instance field overrides,
-below). Placements — whether at level scope or nested inside another `Prefab`'s own `Objects` — live
+below). Placements - whether at level scope or nested inside another `Prefab`'s own `Objects` - live
 in the **same** `Objects` dictionary as everything else, discriminated only by
 `GetModelType() == ObjectType.PrefabObject`; there's no separate placement list.
 
@@ -43,8 +43,8 @@ level of depth per placement. `Prefab` has **no `Name` of its own** any more - `
 template's name, so renaming a template reaches every placement of it.
 
 **THE TEMPLATE'S TIMELINE IS `Root.Span`, and there is no second number for it.** `Prefab` carried a
-`FrameDuration` field of its own until that span was read by nothing — two spellings of one fact,
-free to drift — so the field is gone, `IFrameScope` with it, and `Prefab` is a plain `IObjectScope`.
+`FrameDuration` field of its own until that span was read by nothing - two spellings of one fact,
+free to drift - so the field is gone, `IFrameScope` with it, and `Prefab` is a plain `IObjectScope`.
 The span's **duration** is the authored half; its **start** is `FrameRules.MinFrame` and its anchors
 none, both pinned by `RulePrefabRootFixed` along with the root's identity, `Active` and `Layer`.
 `BH.SDK.Utils.PrefabRootUtils` is the ownership table and the one writer of the length
@@ -68,10 +68,10 @@ a placement contributes is measured from. That is what lets the timeline's Edges
 trim and cut a placement with the level playing identically afterwards, and it is bounded by
 `Span.StartFrame - MinFrame`. `Docs/Issues/PREFAB_ROOT_HISTORY.md` is the record for all of it.
 
-**Per-instance overrides (`PrefabObject.Modifications`) are live and load-bearing** — this is how a
+**Per-instance overrides (`PrefabObject.Modifications`) are live and load-bearing** - this is how a
 placement diverges from its template without breaking the link. Three pieces:
 
-- `ModificationKey` (`Models/Primitives/`) — the *address*: `ObjectId` (the **template's inner** id,
+- `ModificationKey` (`Models/Primitives/`) - the *address*: `ObjectId` (the **template's inner** id,
   not the materialized outer one, so the key survives re-materialization - or
   `ObjectId.PrefabRoot`, which addresses the placement ITSELF and is legal only for the fields the
   template owns, `ModificationFields.IsPrefabRootField`) + `int Field` (a stable
@@ -80,14 +80,14 @@ placement diverges from its template without breaking the link. Three pieces:
   field) pair" a structural guarantee rather than a rule to enforce. It was a dotted string
   (`"pos[0].v"`) until a key rename's cost outgrew it - `Docs/Issues/MODIFICATION_FIELD_IDS_HISTORY.md`
   carries why, including the three spellings that never resolved at all.
-- `Modification` (`Models/Objects/`) — `Key` + an untyped `object Value`. The `Value` setter
+- `Modification` (`Models/Objects/`) - `Key` + an untyped `object Value`. The `Value` setter
   **normalizes integrals to `long` and floating-point to `double`** on assignment, deliberately
   matching what Newtonsoft always produces when deserializing a raw JSON number into an `object`
-  property — without it an override built in code with a plain `int` stops `Equals`-ing itself after
+  property - without it an override built in code with a plain `int` stops `Equals`-ing itself after
   a round trip. Its file header also lists the design limits still in force: only `RectObject`/
   `Prefab` targets, no parenting a `RectObject` *into* a prefab's inner objects (only the reverse),
-  and no deep inheritance — an override applies only within the prefab scope it lives in.
-- `Utils/ModificationUtils.cs` + the generated `ModificationTable` — applying one. The table is a
+  and no deep inheritance - an override applies only within the prefab scope it lives in.
+- `Utils/ModificationUtils.cs` + the generated `ModificationTable` - applying one. The table is a
   flat switch written by `BH.SDK.Roslyn`'s `ModificationTableGenerator` from every member carrying
   `[ModificationField]`, so the apply path is reflection-free; `ModificationValues.TryConvert`
   converts the untyped value back through the serializer that shaped it, which is what makes an int,
@@ -97,17 +97,17 @@ placement diverges from its template without breaking the link. Three pieces:
 
 Overrides are **re-applied on top of a fresh template copy after every materialize/resync**
 (Unity-side: `Core`'s `PrefabMaterializer.ApplyModifications`; recorded by `GameEditor`'s
-`ModificationRecorder`/`EditObjectOperation.RecordModification` — see those folders' `CLAUDE.md`s).
+`ModificationRecorder`/`EditObjectOperation.RecordModification` - see those folders' `CLAUDE.md`s).
 `Modifications` serializes through its own `Serialization/Converters/Dict/
 DictionaryModificationsConverter` (the key is recoverable from the value's own `Key` property, so it
-writes as a plain array — same family as `DictionaryAsListConverter`, see "Value system" below).
+writes as a plain array - same family as `DictionaryAsListConverter`, see "Value system" below).
 
 ## `Models/Resources/`
 
-`LevelResources` (`Level.Resources`): seven dictionaries — `Textures`/`Fonts`/`Audios` (by their
+`LevelResources` (`Level.Resources`): seven dictionaries - `Textures`/`Fonts`/`Audios` (by their
 typed resource id), `CompositeShapes` (by `ShapeId`), `Themes`/`Effects`/`Prefabs` (by their own
-Guid-based id). **Every dictionary here can only ever contain user-defined (negative-id) resources**
-— each concrete `Resource` subtype's id property is rule-capped to the negative range; game-defined
+Guid-based id). **Every dictionary here can only ever contain user-defined (negative-id) resources** -
+each concrete `Resource` subtype's id property is rule-capped to the negative range; game-defined
 resources are baked into the game/its own registries and never appear in a level's own `Resources`.
 `TypedResourceId` (`Models/Primitives/Resources/`) is the shared convention: `0`=Null,
 `[1,MaxInt]`=game-defined (permanent), `[MinInt,-1]`=user-defined (needs `Resource.Sources`, up to
@@ -152,34 +152,34 @@ new keys (`wrap_u`/`wrap_v`) - so a level written before them reads back as
 consumer's Rule 11: the format still broke in place before 1.0.0, when this landed), and
 `LevelResources` stayed at generation 1 either way.
 
-**`FontCharacters` used to live here and no longer does** — it was never a resource, only a fact
+**`FontCharacters` used to live here and no longer does** - it was never a resource, only a fact
 *about* the resources, so it moved to `Level.Hints` with the rest of the advisory data. Don't look
 for it under `Level.Resources`.
 
 `Guid`-based ids (`ShapeId`/`EffectId`/`LevelId`/`PrefabId`/`ThemeId`) deliberately have **no**
-positive/negative split — a `Guid` has no natural sign, so game-defined vs. user-defined is
+positive/negative split - a `Guid` has no natural sign, so game-defined vs. user-defined is
 determined by *which collection* an id is found in (game registry vs. level `Resources`), not by the
 id's own value, unlike the int-based `TypedResourceId` family. `Guid.Empty` is the reserved Null for
 all of them.
 
 **Three `IPrimitiveGuid` properties deliberately allow Null and must NOT carry
-`[RuleIPrimitiveGuidNotNull]`** — for them Null is a real authored state, not an unset reference:
+`[RuleIPrimitiveGuidNotNull]`** - for them Null is a real authored state, not an unset reference:
 `ShapeObject.ShapeId` (Null = drawn as nothing, which combined with a real `ColliderId` is how an
 invisible hitbox is authored), `ShapeObject.ColliderId` (Null = decoration, drawn but never collided
-with — the runtime collision jobs skip on `!IsEnabled()` and the editor's collision toggle writes
-Null) and `PrefabObject.PrefabId` (Null = empty placement, materializes nothing —
+with - the runtime collision jobs skip on `!IsEnabled()` and the editor's collision toggle writes
+Null) and `PrefabObject.PrefabId` (Null = empty placement, materializes nothing -
 `OpLevelCreatePrefabObject` creates every placement this way before the author picks a template).
 `ColliderId`/`PrefabId` default to Null straight from their constructors, so adding the rule makes a
 freshly-constructed object fail validation; worse, its `Fix` assigns a random `Guid`, silently
 inventing a nonexistent shape (giving decoration real damage) or a dangling prefab reference. This
-bit the SDK once already — the rule was on `ColliderId` and broke
+bit the SDK once already - the rule was on `ColliderId` and broke
 `ValidatorTests`/`SerializationTests` against `MockData`. Don't re-add any of the three.
 
 **Two int-backed ids join them, for one reason: `ShapeObject.TextureResourceId` and
 `EffectObjectCore.TextureResourceId`.** Both carry `[RuleReferenceExists(Texture, allowNull: true)]`
 and **no** `[RuleIPrimitiveIntNotNull]`, and both default to `Null` rather than `Square`/`Circle`.
-Geometry moved out of the texture and into `ShapeId` — an object's own, and (since
-`EffectObjectCore.ParticleShapeId`) a particle's too — so the ordinary object and the ordinary
+Geometry moved out of the texture and into `ShapeId` - an object's own, and (since
+`EffectObjectCore.ParticleShapeId`) a particle's too - so the ordinary object and the ordinary
 particle are both a bare tinted silhouette, and an image painted on top of one is the exception. On
 the object side the old default also cost every freshly created object the opaque render path, since
 a texture that exists cannot be *proven* alpha-1 while one that does not exist trivially can

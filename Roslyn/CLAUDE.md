@@ -1,6 +1,6 @@
-# CLAUDE.md — Assets/Plugins/BH.SDK/Roslyn
+# CLAUDE.md - Assets/Plugins/BH.SDK/Roslyn
 
-Read `Assets/Plugins/BH.SDK/CLAUDE.md` first — it carries the mental model, the folder index and the
+Read `Assets/Plugins/BH.SDK/CLAUDE.md` first - it carries the mental model, the folder index and the
 layer-wide conventions. This file is folder-local.
 
 
@@ -8,11 +8,11 @@ layer-wide conventions. This file is folder-local.
 
 the compile-time half: analyzers and incremental source generators, **running**
   since 2026-09-02 (they never had before: the gate `#if BHSDK_ROSLYN` was defined nowhere, and the
-  `RoslynAnalyzer` label sat on the asmdef, which Unity ignores — it honours that label on a
+  `RoslynAnalyzer` label sat on the asmdef, which Unity ignores - it honours that label on a
   precompiled `.dll` alone). Its own `README.md` is the record; the shape in one line: the sources
   are compiled TWICE, by `BH.SDK.Roslyn.Src.asmdef` (Editor-only, referenced by nothing, purely
-  so the IDE resolves them) and by `BH.SDK.Roslyn.csproj`, whose output — `BH.SDK.Roslyn.dll` in
-  this folder's PARENT, i.e. the SDK root — is the only one Unity loads. **The artifact sits in the
+  so the IDE resolves them) and by `BH.SDK.Roslyn.csproj`, whose output - `BH.SDK.Roslyn.dll` in
+  this folder's PARENT, i.e. the SDK root - is the only one Unity loads. **The artifact sits in the
   SDK root rather than in `Roslyn/`** because Unity scopes an analyzer to the asmdef owning its
   folder plus every assembly referencing it: inside `Roslyn/` it reached nothing, in the root it
   reaches `BH.SDK` and the ~25 assemblies built on it. The asmdef takes the `.Src` suffix

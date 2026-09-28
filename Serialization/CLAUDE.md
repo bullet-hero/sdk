@@ -1,6 +1,6 @@
-# CLAUDE.md — Assets/Plugins/BH.SDK/Serialization
+# CLAUDE.md - Assets/Plugins/BH.SDK/Serialization
 
-Read `Assets/Plugins/BH.SDK/CLAUDE.md` first — it carries the mental model, the folder index and the
+Read `Assets/Plugins/BH.SDK/CLAUDE.md` first - it carries the mental model, the folder index and the
 layer-wide conventions. This file is folder-local.
 
 
@@ -8,13 +8,13 @@ layer-wide conventions. This file is folder-local.
 
 `Serializers/` (`SerializationService`, the JSON/BSON entry point),
   `Converters/Base/` + `Converters/CustomTypes/` + `Converters/Dict/` (the polymorphism/id/dictionary
-  JsonConverters — see "Serialization pipeline" below).
+  JsonConverters - see "Serialization pipeline" below).
 
 ## Serialization pipeline (`SerializationService`)
 
 **A level has two formats and `.blob` is the fast one.** `level.json` stays the readable, diffable,
 portable one and is what the project's longevity promise is about; `level.blob` is the same data
-through the generated codec. Measured on the real corpus rather than estimated — volcano (15.7 MB,
+through the generated codec. Measured on the real corpus rather than estimated - volcano (15.7 MB,
 19 341 objects) reads in **203 ms against JSON's 9 946 ms**, writes in 147 ms against 9.6 s, and
 occupies a third of the bytes, round-tripping `Level.Equals`-identical.
 
@@ -22,14 +22,14 @@ The `.json` path is generated too, and its acceptance test is that the format di
 byte. Reading one is six times faster (11 249 ms to 1 837 ms); writing is unchanged, because
 reflection dominates reading while writing is the text writer, which both paths do identically.
 
-**BSON is gone** (it was never the fast format — 5% faster to read, 30% larger to write) and so is
+**BSON is gone** (it was never the fast format - 5% faster to read, 30% larger to write) and so is
 the level cache it stood in for: a side-car has to decide when it is stale, while a format cannot
 disagree with the file because it IS the file.
 
 Two facts about the generated validation walk, both measured rather than assumed: **validation runs
 on the EDITOR's load path only** (`Core`'s `LevelLoaderService` defaults `LoadLevel` to
 `LevelValidation.Skip` and `LoadLevelProtected` to `Report`), and the speedup is **1.9x, not the
-order of magnitude `.blob` bought** — three quarters of it came from hoisting `rule.IsValidType` off
+order of magnitude `.blob` bought** - three quarters of it came from hoisting `rule.IsValidType` off
 the per-node path rather than from generating anything.
 
 **The Roslyn half is compiled separately and must be rebuilt by hand.** Unity loads the analyzers and
@@ -37,11 +37,11 @@ generators only as the built `.dll` in the SDK root; editing a source under `Ros
 changes nothing. `Tools/BH.SDK.Roslyn/Build Analyzer` does.
 `Assets/Plugins/BH.SDK/Roslyn/README.md` is the record.
 
-`SerializationService.SerializeData<T>`/`DeserializeData<T>` are the plain string-JSON entry points —
+`SerializationService.SerializeData<T>`/`DeserializeData<T>` are the plain string-JSON entry points -
 both throw `ArgumentException` if `T` has no `[ModelGeneration]` (only aggregate roots may go through
 this API). They take no mode: **text is always compact JSON**, and which FORMAT a file is written in
 is `SerializeEnvelope`'s question, since only bytes can answer it. `GetDataSerializer(type)` returns
-an `IDataSerializer` (`SerializeEnvelope`/`DeserializeEnvelope` over raw `byte[]` + `EnvelopeData` —
+an `IDataSerializer` (`SerializeEnvelope`/`DeserializeEnvelope` over raw `byte[]` + `EnvelopeData` -
 version tag + untyped payload): `JsonDataSerializer` on `BaseNewtonsoftDataSerializer`, and
 `BlobDataSerializer`, which shares none of that machinery because it goes through no Newtonsoft at
 all. `SerializationType` is `byte`-backed and holds **two** members, `Json = 0` and `Blob = 3`;
@@ -49,7 +49,7 @@ all. `SerializationType` is `byte`-backed and holds **two** members, `Json = 0` 
 
 **Nothing on the read path materializes a `JToken` tree, and that is a rule, not an implementation
 detail.** A version has to be known before the payload can be typed, and reading it used to mean
-loading the whole document into a `JObject` and walking that tree a second time to deserialize — per
+loading the whole document into a `JObject` and walking that tree a second time to deserialize - per
 domain, and domains nest, so a `Level`'s tree was cloned again for `GameLevel`, again for each of the
 four event aggregates, and again for **every** `Prefab` in its resources. `DeserializeEnvelope` now
 makes two streaming passes (the first stops at the version property, only the second reads content)
@@ -82,19 +82,19 @@ numbers happening to be 0, 1, 2.
 
 **`JsonPretty` WAS MEMBER 2 AND IS GONE, and there is no `Formatting` question left anywhere.** It
 wrote the same document as `Json` with indentation, shared its `.json` extension and was read by the
-same reader — so nothing could ever recover the choice from a file, which made it a property of
+same reader - so nothing could ever recover the choice from a file, which made it a property of
 whoever happened to save rather than of the level. What it was FOR is reading a level file by eye,
 and that is what an editor's own formatter does, on demand, without a second shape of the format
 existing to be tested, migrated and explained. Every JSON document this project writes is now
 compact, `ToFormatting` is deleted rather than moved, and `SerializationSettings` carries no
 `formatting` field (it applied to the one shared `JsonSerializer`, so one screen's "write this
 readable" re-indented every file written afterwards). Number 2 is retired like number 1 and is never
-reissued — and the reason nothing may test `== Bson`-style two-branch ternaries survives it: a third
+reissued - and the reason nothing may test `== Bson`-style two-branch ternaries survives it: a third
 member reads as `Json` silently, which is what the Unity project's `Core/Utils/SerializationModeUtils`
 exists to prevent at the five UI call sites that did.
 
 Two `JsonSerializerSettings` are built: one with the full converter list, one bare ("`settingsDefault`",
-the escape hatch every `IRequiresDefaultSerializer` converter needs — see "Value system" above).
+the escape hatch every `IRequiresDefaultSerializer` converter needs - see "Value system" above).
 `ObjectCreationHandling = Replace` is load-bearing (documented inline in `SerializationService.cs`):
 without it, deserializing into a non-null nested object/list left by a parameterless constructor
 (e.g. a default 2-key curve) *populates into* the existing instance instead of replacing it, breaking
@@ -103,14 +103,14 @@ every contract.
 
 **Id/primitive wrapper structs** (`ObjectId`, `ThemeId`, `AudioId`, `PrefabId`, `ShapeId`,
 `EffectId`, any `IPrimitiveGuid`/`IPrimitiveInt`/`IPrimitiveFloat`) serialize as a **bare scalar**, not
-`{"Value": ...}`, via `PrimitiveGuidConverter`/`PrimitiveIntConverter`/`PrimitiveFloatConverter` — all
+`{"Value": ...}`, via `PrimitiveGuidConverter`/`PrimitiveIntConverter`/`PrimitiveFloatConverter` - all
 reconstruct via `Activator.CreateInstance(type, value)`, so every such wrapper needs a public
 single-arg constructor. `PrimitiveGuidConverter` specifically handles Guid surfacing as a `string`
 under JSON but an already-boxed `Guid` under BSON (BSON's native UUID subtype).
 
 ## The JSON codec (`Serialization/Json/`)
 
-The same models write and read their own JSON now. **The format did not change by one byte** — that
+The same models write and read their own JSON now. **The format did not change by one byte** - that
 is the whole acceptance test, and it is checked against the real corpus, volcano included, by
 `Core.Tests`' `CorpusLoadCostTests.EveryCorpusLevel_IsWrittenAndReadIdenticallyByBothJsonPaths` and
 by `JsonParityTests` here. What changed is the cost of READING one: volcano goes 11 249 ms to
@@ -123,7 +123,7 @@ which both paths do identically.
 - **`SerializationSettings.useGeneratedCodecs`** is the switch, on by default, and it exists for
   exactly one caller: the parity test, through `SerializationService.CreateWithoutGeneratedCodecs()`.
   Anything that changes how a level is READ is locked by a test comparing the same bytes through
-  both paths — the rule a withdrawn reader bought this project after it passed 4 494 tests and
+  both paths - the rule a withdrawn reader bought this project after it passed 4 494 tests and
   shipped a game that could not open a level.
 - **`GeneratedModelConverter` goes LAST in the converter list**, and that placement is the whole of
   its wiring: the router takes the first match by runtime type, so a `Vector2Value` still reaches
@@ -186,7 +186,7 @@ domain's *current* type" rule). Read those first; this section only adds what th
 
 - **A GENERATION IS ONE INTEGER, NOT `major.minor`.** `[ModelGeneration(domain, generation)]` marks
   an aggregate-root boundary that gets its own envelope and migrates as one unit. The second number
-  never had anything to say — a shape change either needs a migration or does not, and there is no
+  never had anything to say - a shape change either needs a migration or does not, and there is no
   intermediate grade a minor could express; what it did instead was invite a bump nobody migrated.
   **20 types carry the attribute and every one of them is at generation 1
   (`ModelGenerations.Release`).** Two had bumped and both were put back when their snapshots were
@@ -195,7 +195,7 @@ domain's *current* type" rule). Read those first; this section only adds what th
   the record. The twenty: `Level`, `LevelMeta`,
   `UserSettings`, `Prefab`, `EffectData`, `ThemeData`, `CompositeShape`, `ClipboardData` (SDK-repo
   "core" tier); `PublishProfile` (`Publishing/`); `GameStatistics`, `LevelStatistics`
-  (`Models/Statistics/`, two roots rather than one — see that section); `LevelSettings`, `GameLevel`,
+  (`Models/Statistics/`, two roots rather than one - see that section); `LevelSettings`, `GameLevel`,
   `AudioLevel`, `LevelResources`, `LevelHints` (nested under `Level`); `GameEvents`, `CameraEvents`,
   `PostProcessingEvents`, `PlayerEvents` (nested under `GameLevel`). `ModelDomains.cs` is the
   `nameof()`-based constant list; `ModelGenerations.cs` names the generations themselves, so no
@@ -205,7 +205,7 @@ domain's *current* type" rule). Read those first; this section only adds what th
   treating zero as "no generation" would refuse exactly the files the migration path exists for.
   Every reader therefore asks "did we read one" with a flag rather than by comparing the value.
 - `VersionedEnvelopeConverter` (`Serialization/Converters/`, not `Versions/`) writes/reads the
-  `{"g": <int>, "v": ...}` wrapper, gated purely by `[ModelGeneration]` presence — a
+  `{"g": <int>, "v": ...}` wrapper, gated purely by `[ModelGeneration]` presence - a
   `_activeDomains` reentrancy guard lets member serialization fall through to plain fields while
   writing/reading that same domain's own payload, without special-casing "nested vs. top-level."
   On read, it always resolves + upgrades through `VersionedTypeRegistry` and returns the domain's
@@ -219,7 +219,7 @@ domain's *current* type" rule). Read those first; this section only adds what th
   every `[ModelGeneration]` type and every `IMigration` implementation. `UpgradeToLatest` walks
   `IMigration` step by step from a deserialized instance's generation to the domain's latest,
   throwing if a step is missing. `VersionedTypeRegistryTests` is its own fixture.
-- **`V0` is a scaffold that exercises the machinery end-to-end, not real shipped format history** —
+- **`V0` is a scaffold that exercises the machinery end-to-end, not real shipped format history** -
   its `Names` use placeholder JSON keys (`"test_settings"`, etc.) and its snapshot classes are
   structurally near-identical to current ones. **It is kept for exactly that reason**: the only two
   real snapshots this repo ever had were deleted along with the bumps that needed them, so this is
@@ -240,7 +240,7 @@ domain's *current* type" rule). Read those first; this section only adds what th
   the reflective one. `JsonParityTests` now compares the two stacks' REPORTS as well as their models,
   because two readers can reach identical defaults for opposite reasons.
   `Assets/Plugins/BH.SDK/Docs/VERSIONING.md` is the record.
-- Replaces an older `CompatibilityService`/`SaveData<T>`/`JsonConverterData<T>` design — those names
+- Replaces an older `CompatibilityService`/`SaveData<T>`/`JsonConverterData<T>` design - those names
   are fully gone from the codebase (only survive in a comment explaining what replaced them); don't
   reintroduce or reference them as if live.
 - Open per the SDK's own `TODO.md`: nested/optional aggregates below the current per-domain split,

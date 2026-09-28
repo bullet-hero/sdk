@@ -245,7 +245,7 @@ namespace BH.SDK.Tests
             var expected = new[]
             {
                 Names.Profile, Names.Screens, Names.Totals, Names.Streaks, Names.Avatar,
-                Names.Editor, Names.Devices,
+                Names.Editor, Names.Devices, Names.Tutorial,
             };
 
             CollectionAssert.AreEquivalent(expected, value.Properties().Select(p => p.Name).ToArray());

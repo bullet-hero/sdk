@@ -1,4 +1,5 @@
 ﻿// ReSharper disable InconsistentNaming
+
 namespace BH.SDK.Versions
 {
     // THE GENERATIONS THEMSELVES, NAMED. A generation is a plain int, so without this every
@@ -25,14 +26,14 @@ namespace BH.SDK.Versions
         /// end to end, rather than a format any build ever shipped. </summary>
         public const int Test = 0;
 
-        /// <summary> What 1.0.0 shipped. Every live domain but <c>UserSettings</c> and
-        /// <c>LevelStatistics</c> is still at it. </summary>
+        /// <summary> What 1.0.0 shipped. Every live domain but <c>UserSettings</c>,
+        /// <c>LevelStatistics</c> and <c>GameStatistics</c> is still at it. </summary>
         public const int V1_AlphaRelease = 1;
 
         /// <summary> <c>UserSettings</c> remembers whether the tutorial was offered, and its controls
         /// lose the cursor-return switch (releasing a pointer always stops the avatar); a
-        /// <c>LevelStatistics</c> record can be filed under "no collision" - the first bump after
-        /// release. </summary>
+        /// <c>LevelStatistics</c> record can be filed under "no collision", and <c>GameStatistics</c>
+        /// counts completed tutorials - the first bump after release. </summary>
         public const int V2_SimplifyEntrance = 2;
 
         /// <summary> The newest generation there is - the only thing UI and reports read. A future

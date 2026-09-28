@@ -12,17 +12,18 @@ namespace BH.SDK.Models.Statistics
     // exists as its own document rather than as a sum computed on demand because deriving it would
     // mean opening every file in stats/ to draw one screen.
     //
-    // SEVEN GROUPS, none of them carrying its own [ModelGeneration] - one envelope per FILE, exactly as
+    // EIGHT GROUPS, none of them carrying its own [ModelGeneration] - one envelope per FILE, exactly as
     // UserSettings does with its own sub-groups. A group is a heading on a screen and a place to add
     // a field without touching the root, not an independently versioned document.
     //
-    // Additive by construction: every group builds its own defaults in its constructor, so a file
-    // written before a group existed simply has no key for it and reads back as zeroes. That is what
-    // keeps this domain at (1, 0) as the format grows.
+    // Every group builds its own defaults in its constructor, so a file written before a group
+    // existed reads back as zeroes for it - but since 1.0.0 a new group is still a bump with a
+    // snapshot and a migrator (root CLAUDE.md, Rule 11). Generation 2 added Tutorial
+    // (Versions/V1/GameStatisticsV1).
 
     /// <summary> Everything one player has done, across every level and every screen. </summary>
     [RuleContainer]
-    [ModelGeneration(ModelDomains.GameStatistics, ModelGenerations.V1_AlphaRelease)]
+    [ModelGeneration(ModelDomains.GameStatistics, ModelGenerations.V2_SimplifyEntrance)]
     [GenerateModel]
     public sealed partial class GameStatistics : IModel<GameStatistics>
     {
@@ -61,7 +62,12 @@ namespace BH.SDK.Models.Statistics
         [JsonProperty(Names.Devices)]
         public DeviceTimeStatistics Devices { get; set; }
 
-        // TODO post-alpha feature: achievements. When they arrive they belong here as an eighth group, keyed by a stable
+        /// <summary> What was done in the sandbox's tutorial. </summary>
+        [RuleNotNull]
+        [JsonProperty(Names.Tutorial)]
+        public TutorialStatistics Tutorial { get; set; }
+
+        // TODO post-alpha feature: achievements. When they arrive they belong here as a ninth group, keyed by a stable
         // achievement id. Deliberately not scaffolded now: an empty aggregate cannot be told apart
         // from "this build has no achievements", and every reader would have to handle both anyway.
 
@@ -75,6 +81,7 @@ namespace BH.SDK.Models.Statistics
             Avatar = new AvatarStatistics();
             Editor = new EditorTotalsStatistics();
             Devices = new DeviceTimeStatistics();
+            Tutorial = new TutorialStatistics();
         }
 
         // Every group instance is kept, unlike Update above. This is the object the whole app holds

@@ -1,6 +1,6 @@
-# CLAUDE.md — Assets/Plugins/BH.SDK/Models/Values
+# CLAUDE.md - Assets/Plugins/BH.SDK/Models/Values
 
-Read `Assets/Plugins/BH.SDK/Models/CLAUDE.md` first — it carries the folder index,
+Read `Assets/Plugins/BH.SDK/Models/CLAUDE.md` first - it carries the folder index,
 the `IModel<T>` contract and the cross-folder effect/audio/theme model.
 
 
@@ -18,19 +18,19 @@ each `: IModel<TSelf>` plus a single discriminator method returning a `*Type` en
 | `IScreenLimit` | `ScreenLimitType` | None / Fixed / Bounds |
 | `ILicense` | `LicenseType` | NoSpecified / Typical / Custom |
 
-**Discriminator mechanism — a 2-element JSON array, not Newtonsoft `$type`/`TypeNameHandling`.** Each
+**Discriminator mechanism - a 2-element JSON array, not Newtonsoft `$type`/`TypeNameHandling`.** Each
 interface has its own `JsonConverter<TInterface, TType> : JsonConverterCustomType<T, TType>`
 (`Serialization/Converters/CustomTypes/*.cs`) writing `[typeEnum, payload]`. The base class
 (`Serialization/Converters/Base/JsonConverterCustomType.cs`) needs a *second*, private "default"
 serializer (containing every other converter except itself) to deserialize the resolved concrete
-type's own plain members without recursively re-wrapping them — see `IRequiresDefaultSerializer`
+type's own plain members without recursively re-wrapping them - see `IRequiresDefaultSerializer`
 (`Serialization/Converters/Base/`, **not** under `Models/Interfaces` despite the SDK's own TODO.md
 implying otherwise). `SerializationService.GetConverters` auto-wires this for any converter
-implementing the interface — adding a new polymorphic-value converter needs no other bookkeeping.
+implementing the interface - adding a new polymorphic-value converter needs no other bookkeeping.
 
 **What a serializer actually holds is two converters, not thirty-five.** Newtonsoft resolves a
 settings-level converter by walking `JsonSerializer.Converters` and calling `CanConvert` on each,
-once per **value**, caching nothing — so a long list is paid for on every value in the file, and
+once per **value**, caching nothing - so a long list is paid for on every value in the file, and
 `JsonConverter<T>.CanConvert` is `sealed`, so a converter cannot memoize its own answer. The list in
 `GetConverters` is therefore handed to a `ConverterRouter` (`Converters/Base/`), which resolves
 `Type → converter` once and answers from a cache afterwards; first match wins over the same list in
@@ -44,7 +44,7 @@ own router, since each excludes a different converter.
 Same 2-element-array mechanism backs several other polymorphic families beyond the table above:
 `EffectAngleConverter`/`EffectColorConverter`/`EffectScaleConverter`/`EffectShapeConverter`/
 `EffectShapeSpreadConverter` (effect emitter sub-shapes, see "Effects" below), `Color4X4KeyConverter`
-(4-corner keyframe color — `Color4X4KeyType.Value/Horizontal/Vertical/BariCentrical`), and
+(4-corner keyframe color - `Color4X4KeyType.Value/Horizontal/Vertical/BariCentrical`), and
 `ObjectConverter` (`RectObject` hierarchy, see "Object model" above).
 
 **Dictionaries with a self-describing value** (`ObjectId→RectObject`, `AudioId→LevelTrack`,
@@ -52,6 +52,6 @@ Same 2-element-array mechanism backs several other polymorphic families beyond t
 `ModificationKey→Modification`, resource-id dicts) serialize as a
 **plain array with the key dropped** (`Serialization/Converters/Dict/DictionaryAsListConverter`,
 key recovered from the value on read). Dictionaries where the key *can't* be derived from the value
-(id→id remap tables) use `DictionaryAsPairListConverter` instead (array of `{K,V}` structs) — plain
+(id→id remap tables) use `DictionaryAsPairListConverter` instead (array of `{K,V}` structs) - plain
 Newtonsoft dictionary serialization needs a `TypeConverter` on the key type to use it as a JSON
 property name, which value-type ids like `ObjectId` don't have; this sidesteps that entirely.

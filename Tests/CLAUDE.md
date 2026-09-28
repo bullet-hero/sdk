@@ -1,6 +1,6 @@
-# CLAUDE.md — Assets/Plugins/BH.SDK/Tests
+# CLAUDE.md - Assets/Plugins/BH.SDK/Tests
 
-Read `Assets/Plugins/BH.SDK/CLAUDE.md` first — it carries the mental model, the folder index and the
+Read `Assets/Plugins/BH.SDK/CLAUDE.md` first - it carries the mental model, the folder index and the
 layer-wide conventions. This file is folder-local.
 
 
@@ -10,22 +10,22 @@ layer-wide conventions. This file is folder-local.
   `UnityExtensions/Tests/` (`BH.SDK.UnityExtensions.Tests`), and the split is forced rather
   than stylistic: this one is `noEngineReferences: true` and therefore cannot reference
   `UnityExtensions` at all. It holds `AvatarMovementTests`/`AvatarMovementStateTests`,
-  `Transform2DTests`/`RectTransform2DTests`, and `Approx.cs` — a fixture helper, not a test, that
+  `Transform2DTests`/`RectTransform2DTests`, and `Approx.cs` - a fixture helper, not a test, that
   delegates to `BHSDKMath.Approximately` so the tolerance still lives in one place. `MockData.cs` is the shared fixture factory and
-  `Metadata.cs` the author/category constants (neither is a test) — read `MockData.cs`'s header
+  `Metadata.cs` the author/category constants (neither is a test) - read `MockData.cs`'s header
   comment before writing new tests that need a `Level`/`Prefab`/etc. Root-level files cover
   serialization (`SerializationTests`, `SerializationTypeExtensionsTests`), modification
-  (`ModificationApplyTests`, `ModificationFieldsTests`, `ModificationValuesTests` — the layer file
+  (`ModificationApplyTests`, `ModificationFieldsTests`, `ModificationValuesTests` - the layer file
   says what they are for), validation (`ValidatorTests`), capacity (`LevelCapacityUtilsTests`),
   cryptography, text formatting, `ShapeIdTests`, `ShapeGeometryUtilsTests` and `AvatarRulesTests`, plus
-`Tests/Services/ShapeCatalogServiceTests` (the built-in shape library — id round trip, retired and
+`Tests/Services/ShapeCatalogServiceTests` (the built-in shape library - id round trip, retired and
 future-axis ids refused, and the two geometric invariants a person cannot eyeball across five
 hundred entries: a shape and its inverse tile the sector they were cut from, and slices tile the
 whole) and `Tests/Utils/PrefabVirtualizationTests` (the pair that keeps a prefab placement's copies
-out of the file — both directions, the report's four findings, idempotence, and the two cases a
+out of the file - both directions, the report's four findings, idempotence, and the two cases a
 reader has to survive: a file written before the change that still carries its copies, and a
 capacity hint swept off a thinned level. `Docs/Issues/PREFAB_VIRTUALIZATION_HISTORY.md` is the
-record). **`Tests/Rules/` is the bulk** — 54 files,
+record). **`Tests/Rules/` is the bulk** - 54 files,
   roughly one per `[RuleXxx]` attribute on top of `BaseRuleTests` (the shared analyze/fix harness),
   `RuleCoverageTests` (fails if a rule has no test file), `RuleContextTests`, `RulesConsistencyTests`,
   `LevelGraphAnalyzerTests`, `ValidationFacadeTests`, `ModificationCheckedWriteTests`. Five of them
