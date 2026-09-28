@@ -105,6 +105,8 @@ namespace BH.SDK.Tests
             common["selection"] = 1;
             common["manual_device"] = 2;
             common["cursor_return"] = false;
+            ((JObject)controls[Names.KeyboardMouse]).Remove(Names.CursorReturn);
+            ((JObject)controls[Names.Touchscreen]).Remove(Names.CursorReturn);
 
             ((JObject)controls[Names.Gamepad])["dash_buttons"] = 2 | 64;
 

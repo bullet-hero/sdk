@@ -1427,7 +1427,7 @@
         /// <summary> Word kept in the key vocabulary; nothing is built from it today. </summary>
         public const string Cooldown = "cooldown";
 
-        /// <summary> Word fragment, built into CursorHideAbsolute, CursorHideRelative, CursorRecenter, CursorScale and 1 more. </summary>
+        /// <summary> Word fragment, built into CursorHideAbsolute, CursorHideRelative, CursorRecenter, CursorReturn and 2 more. </summary>
         public const string Cursor = "cursor";
 
         /// <summary> Word fragment, built into CursorVisible. </summary>
@@ -1436,8 +1436,7 @@
         /// <summary> Word fragment, built into CursorRecenter. </summary>
         public const string Recenter = "recenter";
 
-        /// <summary> Word kept in the key vocabulary; nothing is built from it today (CursorReturn
-        /// was, until user-settings generation 2 removed it). </summary>
+        /// <summary> Word fragment, built into CursorReturn. </summary>
         public const string Return = "return";
 
         /// <summary> Word fragment, built into CursorHideAbsolute, CursorHideRelative. </summary>
@@ -2157,6 +2156,10 @@
 
         /// <summary> <c>"cursor_hide_rel"</c> - KeyboardMouseControlsSettings.CursorHideRelative. </summary>
         public const string CursorHideRelative = Cursor + _ + Hide + _ + Relative;
+
+        /// <summary> <c>"cursor_return"</c> - KeyboardMouseControlsSettings.CursorReturn,
+        /// TouchscreenControlsSettings.CursorReturn. </summary>
+        public const string CursorReturn = Cursor + _ + Return;
 
         /// <summary> <c>"finger_off_x"</c> - TouchscreenControlsSettings.FingerOffsetX. </summary>
         public const string FingerOffsetX = Finger + _ + Offset + _ + CoordX;

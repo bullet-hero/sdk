@@ -10,7 +10,7 @@ namespace BH.SDK.Versions.V1
     // The groups are typed as TODAY's classes wherever they did not change at this bump - they are not
     // domains of their own, so a group that changes freezes its own leaf snapshot next to this one (no
     // [ModelGeneration], like AudioLevelV0) and this file is retyped to it. Controls is the one that
-    // did: ControlsSettingsV1 still carries cursor_return. Keys are literal: a snapshot spells them
+    // did: ControlsSettingsV1 still carries cursor_return in its shared group. Keys are literal: a snapshot spells them
     // the way its own generation did.
 
     /// <summary> Generation 1 (Release) of the user-settings domain - the shape 1.0.0 shipped, before
@@ -27,7 +27,8 @@ namespace BH.SDK.Versions.V1
         [JsonProperty("audio")]
         public AudioSettings Audio { get; set; }
 
-        /// <summary> Changed at this bump: lost <c>cursor_return</c>. </summary>
+        /// <summary> Changed at this bump: <c>cursor_return</c> moved from the shared group into the
+        /// mouse and touchscreen groups. </summary>
         [JsonProperty("controls")]
         public ControlsSettingsV1 Controls { get; set; }
 

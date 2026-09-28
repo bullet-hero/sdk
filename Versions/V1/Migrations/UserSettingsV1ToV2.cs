@@ -9,8 +9,8 @@ namespace BH.SDK.Versions.V1.Migrations
     // ReSharper disable once InconsistentNaming
 
     /// <summary> User settings, generation 1 to generation 2 - every group carried as it is except
-    /// that the controls lose <c>cursor_return</c> (releasing a pointer now always stops the avatar),
-    /// the device priority and manual selection (the most recently used device always leads), the
+    /// that the controls' shared <c>cursor_return</c> moves into the mouse and touchscreen groups, the
+    /// device priority and manual selection (the most recently used device always leads), the
     /// gamepad's dash buttons and every form of motion-sensor locality; and the tutorial flag starts
     /// unset, so a player updating from 1.0.0 is offered the tutorial once. </summary>
     public class UserSettingsV1ToV2 : ModelMigration<UserSettingsV1, UserSettings>
@@ -29,7 +29,28 @@ namespace BH.SDK.Versions.V1.Migrations
         private static ControlsSettings Migrate(ControlsSettingsV1 from) => new(
             new CommonControlsSettings(from.Common.CursorVisible, from.Common.CursorScale,
                 from.Common.CursorRecenter),
-            from.KeyboardMouse, from.Touchscreen, Migrate(from.Gamepad), Migrate(from.DeviceGyro));
+            Migrate(from.KeyboardMouse, from.Common.CursorReturn),
+            Migrate(from.Touchscreen, from.Common.CursorReturn),
+            Migrate(from.Gamepad), Migrate(from.DeviceGyro));
+
+        // cursor_return was ONE switch for every pointer at generation 1, default off, and playtests
+        // read that default as a bug on a mouse - so a file still at the default takes each device's
+        // own default instead, while a player who had turned it on keeps it on everywhere.
+        private static KeyboardMouseControlsSettings Migrate(KeyboardMouseControlsSettingsV1 from,
+            bool cursorReturn) => new(
+            from.Active, from.Sensitivity, from.DeadZone, from.Smoothing, from.InvertX, from.InvertY,
+            from.Mode, from.RequireHold, from.HoldButton, from.DashOnDoubleClick, from.DoubleClickTime,
+            from.DashKeys, from.CursorHideAbsolute, from.CursorHideRelative, from.DashButton,
+            cursorReturn || new KeyboardMouseControlsSettings().CursorReturn);
+
+        private static TouchscreenControlsSettings Migrate(TouchscreenControlsSettingsV1 from,
+            bool cursorReturn) => new(
+            from.Active, from.Sensitivity, from.DeadZone, from.Smoothing, from.InvertX, from.InvertY,
+            from.Mode, from.FingerOffsetX, from.FingerOffsetY, from.DashOnSecondFinger,
+            from.DashOnDoubleTap, from.DoubleTapTime, from.TapMaxTravel, from.Handedness,
+            from.JoystickAnchor, from.JoystickSize, from.JoystickTravel, from.JoystickDynamicOrigin,
+            from.DashButtonAnchor, from.DashButtonSize, from.DashButtonIcon,
+            cursorReturn || new TouchscreenControlsSettings().CursorReturn);
 
         // DashButtons is dropped rather than read: every button but Start and Select dashes now.
         private static GamepadControlsSettings Migrate(GamepadControlsSettingsV1 from) => new(

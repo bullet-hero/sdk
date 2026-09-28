@@ -103,6 +103,16 @@ namespace BH.SDK.Models.SettingGroups.Controls
         [JsonProperty(Names.DashButtonIcon)]
         public int DashButtonIcon { get; set; }
 
+        // Off by default, unlike the mouse's: a finger lifts to reposition far more often than to stop,
+        // so returning the cursor on every lift reads as the avatar braking under the player. See
+        // KeyboardMouseControlsSettings.CursorReturn for the other half.
+
+        /// <summary> Cursor modes: lifting the finger returns the cursor onto the avatar, so the avatar
+        /// stops where it stands. Off leaves the cursor where it was and the avatar walks on to
+        /// it. </summary>
+        [JsonProperty(Names.CursorReturn)]
+        public bool CursorReturn { get; set; }
+
         /// <summary> This device's own mode as the device-independent one; the two enums line up by convention. </summary>
         public override ControlMode GeneralMode => (ControlMode)Mode;
         /// <summary> Which device these settings are for. </summary>
@@ -120,7 +130,7 @@ namespace BH.SDK.Models.SettingGroups.Controls
             float fingerOffsetX, float fingerOffsetY, bool dashOnSecondFinger, bool dashOnDoubleTap,
             float doubleTapTime, float tapMaxTravel, Handedness handedness, ScreenAnchor joystickAnchor,
             float joystickSize, float joystickTravel, bool joystickDynamicOrigin,
-            ScreenAnchor dashButtonAnchor, float dashButtonSize, int dashButtonIcon)
+            ScreenAnchor dashButtonAnchor, float dashButtonSize, int dashButtonIcon, bool cursorReturn)
             : base(active, sensitivity, deadZone, smoothing, invertX, invertY)
         {
             Mode = mode;
@@ -138,6 +148,7 @@ namespace BH.SDK.Models.SettingGroups.Controls
             DashButtonAnchor = dashButtonAnchor;
             DashButtonSize = dashButtonSize;
             DashButtonIcon = dashButtonIcon;
+            CursorReturn = cursorReturn;
         }
         private void ResetOwn()
         {
@@ -156,6 +167,7 @@ namespace BH.SDK.Models.SettingGroups.Controls
             DashButtonAnchor = ScreenAnchor.BottomRight;
             DashButtonSize = ControlsRules.DefaultControlSize;
             DashButtonIcon = 0;
+            CursorReturn = false;
         }
     }
 }

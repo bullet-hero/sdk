@@ -8,10 +8,10 @@ namespace BH.SDK.Versions.V1
     // ReSharper disable once InconsistentNaming
 
     // Intentionally doesn't have ModelGeneration: a nested leaf of UserSettingsV1, frozen because
-    // generation 2 removed CursorReturn, Selection and ManualDevice from the live class.
+    // generation 2 moved CursorReturn into the pointer groups and removed Selection and ManualDevice.
 
     /// <summary> The shared cursor/selection settings as generation 1 (Release) of the user-settings
-    /// domain wrote them - with <c>cursor_return</c>, which generation 2 removed. A frozen snapshot -
+    /// domain wrote them - with <c>cursor_return</c>, which generation 2 moved out. A frozen snapshot -
     /// never edit it to match today's shape. </summary>
     [GenerateModel]
     public sealed partial class CommonControlsSettingsV1 : IModel<CommonControlsSettingsV1>
@@ -36,8 +36,8 @@ namespace BH.SDK.Versions.V1
         [JsonProperty("cursor_recenter")]
         public bool CursorRecenter { get; set; }
 
-        /// <summary> The cursor snapped back onto the avatar when steering stopped. Gone at
-        /// generation 2, where it always does. </summary>
+        /// <summary> The cursor snapped back onto the avatar when steering stopped. Moved into the
+        /// mouse and touchscreen groups at generation 2. </summary>
         [JsonProperty("cursor_return")]
         public bool CursorReturn { get; set; }
 

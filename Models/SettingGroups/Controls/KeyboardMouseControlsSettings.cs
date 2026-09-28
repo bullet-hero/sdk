@@ -80,6 +80,18 @@ namespace BH.SDK.Models.SettingGroups.Controls
         [JsonProperty(Names.DashButton)]
         public MouseButton DashButton { get; set; }
 
+        // What letting go of the hold button does is a question of FEEL, answered per device, and the
+        // two defaults are apart on purpose: a mouse player releases to stop, so the cursor comes back
+        // onto the avatar; a finger lifts all the time just to reposition, so the touchscreen default
+        // leaves the cursor where it was and the avatar walks on to it. Off is the pre-generation-2
+        // behaviour, where only a hit moved the cursor (ControlService.RestCursor).
+
+        /// <summary> Cursor modes: releasing the hold button returns the cursor onto the avatar, so the
+        /// avatar stops where it stands. Off leaves the cursor where it was and the avatar walks on to
+        /// it. </summary>
+        [JsonProperty(Names.CursorReturn)]
+        public bool CursorReturn { get; set; }
+
         /// <summary> This device's own mode as the device-independent one; the two enums line up by convention. </summary>
         public override ControlMode GeneralMode => (ControlMode)Mode;
         /// <summary> Which device these settings are for. </summary>
@@ -95,7 +107,7 @@ namespace BH.SDK.Models.SettingGroups.Controls
             float deadZone, float smoothing, bool invertX, bool invertY, KeyboardMouseControlMode mode,
             bool requireHold, MouseButton holdButton, bool dashOnDoubleClick,
             float doubleClickTime, KeyBindingMask dashKeys, bool hideCursorAbsolute,
-            bool hideCursorRelative, MouseButton dashButton)
+            bool hideCursorRelative, MouseButton dashButton, bool cursorReturn)
             : base(active, sensitivity, deadZone, smoothing, invertX, invertY)
         {
             Mode = mode;
@@ -107,6 +119,7 @@ namespace BH.SDK.Models.SettingGroups.Controls
             CursorHideAbsolute = hideCursorAbsolute;
             CursorHideRelative = hideCursorRelative;
             DashButton = dashButton;
+            CursorReturn = cursorReturn;
         }
         private void ResetOwn()
         {
@@ -119,6 +132,7 @@ namespace BH.SDK.Models.SettingGroups.Controls
             CursorHideAbsolute = true;
             CursorHideRelative = false;
             DashButton = MouseButton.Right;
+            CursorReturn = true;
         }
 
         // The last slot is a nested Combine: HashCode.Combine tops out at eight arguments.

@@ -8,8 +8,8 @@ using NUnit.Framework;
 namespace BH.SDK.Tests
 {
     /// <summary> That a settings.json 1.0.0 wrote still opens after the first post-release bump - its
-    /// groups carried, cursor_return dropped, the tutorial flag unset - and that today's shape keeps
-    /// the flag. </summary>
+    /// groups carried, cursor_return moved into the pointer groups, the tutorial flag unset - and that
+    /// today's shape keeps both. </summary>
     [TestFixture]
     public class UserSettingsMigrationTests
     {
@@ -35,15 +35,16 @@ namespace BH.SDK.Tests
                 e.Domain == ModelDomains.UserSettings));
         }
 
-        // 1.0.0 wrote cursor_return into every settings file, and the default was the one that let
-        // the avatar walk on after the button was up. Whichever way it was set, the controls group
-        // has to arrive with everything else in it intact - the switch is simply gone.
-        [TestCase(true)]
-        [TestCase(false)]
+        // 1.0.0 wrote ONE cursor_return into every settings file, default off - the default that let
+        // the avatar walk on after the button was up, which playtests read as a bug on a mouse. Off
+        // therefore lands on each device's own default (mouse on, touch off); on stays on for both.
+        [TestCase(true, true, true)]
+        [TestCase(false, true, false)]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.Normal)]
-        public void AReleaseFile_DropsCursorReturnAndKeepsTheRestOfTheControls(bool cursorReturn)
+        public void AReleaseFile_MovesCursorReturnIntoThePointerGroups(bool cursorReturn,
+            bool expectedMouse, bool expectedTouch)
         {
             var service = new SerializationService();
             var json = ReleaseShaped(service, TouchscreenControlMode.Absolute, cursorReturn);
@@ -53,6 +54,25 @@ namespace BH.SDK.Tests
             Assert.AreEqual(TouchscreenControlMode.Absolute, settings.Controls.Touchscreen.Mode);
             Assert.AreEqual(1.5f, settings.Controls.Common.CursorScale);
             Assert.IsFalse(settings.Controls.Common.CursorRecenter);
+            Assert.AreEqual(expectedMouse, settings.Controls.KeyboardMouse.CursorReturn);
+            Assert.AreEqual(expectedTouch, settings.Controls.Touchscreen.CursorReturn);
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.VeryEasy)]
+        public void TodaysFile_KeepsCursorReturnPerDevice()
+        {
+            var service = new SerializationService();
+            var settings = new UserSettings();
+            settings.Controls.KeyboardMouse.CursorReturn = false;
+            settings.Controls.Touchscreen.CursorReturn = true;
+
+            var read = service.DeserializeData<UserSettings>(service.SerializeData(settings));
+
+            Assert.IsFalse(read.Controls.KeyboardMouse.CursorReturn);
+            Assert.IsTrue(read.Controls.Touchscreen.CursorReturn);
         }
 
         [Test]
@@ -82,7 +102,10 @@ namespace BH.SDK.Tests
             root["g"] = ModelGenerations.V1_AlphaRelease;
             var value = (JObject)root["v"];
             value.Remove(Names.TutorialCompleted);
-            ((JObject)value[Names.Controls][Names.Common])["cursor_return"] = cursorReturn;
+            var controls = (JObject)value[Names.Controls];
+            ((JObject)controls[Names.Common])["cursor_return"] = cursorReturn;
+            ((JObject)controls[Names.KeyboardMouse]).Remove(Names.CursorReturn);
+            ((JObject)controls[Names.Touchscreen]).Remove(Names.CursorReturn);
             return root.ToString();
         }
     }

@@ -8,17 +8,16 @@ namespace BH.SDK.Versions.V1
 {
     // ReSharper disable once InconsistentNaming
 
-    // Intentionally doesn't have ModelGeneration: a nested leaf of UserSettingsV1. Common, Gamepad and
-    // DeviceGyro changed at generation 2, so those are retyped to snapshots; the other device groups
-    // are TODAY's classes, and one that changes later freezes its own leaf next to this file.
+    // Intentionally doesn't have ModelGeneration: a nested leaf of UserSettingsV1. Every group changed
+    // at generation 2, so every one is retyped to a snapshot of its own next to this file.
 
     /// <summary> The controls group as generation 1 (Release) of the user-settings domain wrote it.
     /// A frozen snapshot - never edit it to match today's shape. </summary>
     [GenerateModel]
     public sealed partial class ControlsSettingsV1 : IModel<ControlsSettingsV1>
     {
-        /// <summary> Changed at generation 2: lost <c>cursor_return</c>, <c>selection</c> and
-        /// <c>manual_device</c>. </summary>
+        /// <summary> Changed at generation 2: lost <c>cursor_return</c> (moved into the pointer groups),
+        /// <c>selection</c> and <c>manual_device</c>. </summary>
         [JsonProperty("common")]
         public CommonControlsSettingsV1 Common { get; set; }
 
@@ -26,13 +25,13 @@ namespace BH.SDK.Versions.V1
         [JsonProperty("priority")]
         public ControlDevice[] Priority { get; set; }
 
-        /// <summary> Unchanged at generation 2. </summary>
+        /// <summary> Changed at generation 2: gained <c>cursor_return</c>. </summary>
         [JsonProperty("keyboard_mouse")]
-        public KeyboardMouseControlsSettings KeyboardMouse { get; set; }
+        public KeyboardMouseControlsSettingsV1 KeyboardMouse { get; set; }
 
-        /// <summary> Unchanged at generation 2. </summary>
+        /// <summary> Changed at generation 2: gained <c>cursor_return</c>. </summary>
         [JsonProperty("touchscreen")]
-        public TouchscreenControlsSettings Touchscreen { get; set; }
+        public TouchscreenControlsSettingsV1 Touchscreen { get; set; }
 
         /// <summary> Changed at generation 2: lost <c>dash_buttons</c>. </summary>
         [JsonProperty("gamepad")]
@@ -51,8 +50,8 @@ namespace BH.SDK.Versions.V1
                 ControlDevice.KeyboardMouse, ControlDevice.Touchscreen,
                 ControlDevice.Gamepad, ControlDevice.DeviceGyro,
             };
-            KeyboardMouse = new KeyboardMouseControlsSettings();
-            Touchscreen = new TouchscreenControlsSettings();
+            KeyboardMouse = new KeyboardMouseControlsSettingsV1();
+            Touchscreen = new TouchscreenControlsSettingsV1();
             Gamepad = new GamepadControlsSettingsV1();
             DeviceGyro = new DeviceGyroControlsSettingsV1();
         }
