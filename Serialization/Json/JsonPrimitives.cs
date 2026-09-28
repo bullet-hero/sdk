@@ -5,6 +5,7 @@ using BH.SDK.Models.Enums.Settings;
 using BH.SDK.Models.Primitives;
 using BH.SDK.Models.Resources;
 using BH.SDK.Models.Statistics;
+using BH.SDK.Versions.V1;
 using Newtonsoft.Json;
 
 namespace BH.SDK.Serialization.Json
@@ -129,7 +130,7 @@ namespace BH.SDK.Serialization.Json
 
         #region RunProfile
 
-        /// <summary> The four numbers a run is filed under: lives, speed, checkpoints, bot. </summary>
+        /// <summary> The five things a run is filed under: lives, speed, checkpoints, bot, collision. </summary>
         public static void Write(JsonWriter writer, RunProfile value)
         {
             writer.WriteStartObject();
@@ -141,6 +142,8 @@ namespace BH.SDK.Serialization.Json
             writer.WriteValue(value.UseCheckpoints);
             writer.WritePropertyName(Names.Bot);
             writer.WriteValue((byte)value.Bot);
+            writer.WritePropertyName(Names.NoCollision);
+            writer.WriteValue(value.NoCollision);
             writer.WriteEndObject();
         }
 
@@ -151,11 +154,12 @@ namespace BH.SDK.Serialization.Json
             var speed = 0;
             var checkpoints = false;
             var bot = BotKind.None;
+            var noCollision = false;
 
             if (reader.TokenType != JsonToken.StartObject)
             {
                 reader.Skip();
-                return new RunProfile(lives, speed, checkpoints, bot);
+                return new RunProfile(lives, speed, checkpoints, bot, noCollision);
             }
 
             while (reader.Read() && reader.TokenType != JsonToken.EndObject)
@@ -168,10 +172,59 @@ namespace BH.SDK.Serialization.Json
                 else if (name == Names.SpeedCenti) speed = Convert.ToInt32(reader.Value);
                 else if (name == Names.Checkpoints) checkpoints = Convert.ToBoolean(reader.Value);
                 else if (name == Names.Bot) bot = (BotKind)Convert.ToByte(reader.Value);
+                else if (name == Names.NoCollision) noCollision = Convert.ToBoolean(reader.Value);
                 else reader.Skip();
             }
 
-            return new RunProfile(lives, speed, checkpoints, bot);
+            return new RunProfile(lives, speed, checkpoints, bot, noCollision);
+        }
+
+        // THE SHAPE LevelStatistics GENERATION 1 WROTE, with its own literal keys - a snapshot spells
+        // them the way its generation did. Only the V1 snapshot reaches these.
+
+        /// <summary> A generation-1 profile: lives, speed, checkpoints, bot. </summary>
+        public static void Write(JsonWriter writer, RunProfileV1 value)
+        {
+            writer.WriteStartObject();
+            writer.WritePropertyName("lives");
+            writer.WriteValue(value.LifeCount);
+            writer.WritePropertyName("spd_centi");
+            writer.WriteValue(value.SpeedCenti);
+            writer.WritePropertyName("checkpoints");
+            writer.WriteValue(value.UseCheckpoints);
+            writer.WritePropertyName("bot");
+            writer.WriteValue((byte)value.Bot);
+            writer.WriteEndObject();
+        }
+
+        /// <summary> Reads a generation-1 profile. </summary>
+        public static RunProfileV1 ReadRunProfileV1(JsonReader reader)
+        {
+            var lives = 0;
+            var speed = 0;
+            var checkpoints = false;
+            var bot = BotKind.None;
+
+            if (reader.TokenType != JsonToken.StartObject)
+            {
+                reader.Skip();
+                return new RunProfileV1(lives, speed, checkpoints, bot);
+            }
+
+            while (reader.Read() && reader.TokenType != JsonToken.EndObject)
+            {
+                if (reader.TokenType != JsonToken.PropertyName) continue;
+                var name = (string)reader.Value;
+                reader.Read();
+
+                if (name == "lives") lives = Convert.ToInt32(reader.Value);
+                else if (name == "spd_centi") speed = Convert.ToInt32(reader.Value);
+                else if (name == "checkpoints") checkpoints = Convert.ToBoolean(reader.Value);
+                else if (name == "bot") bot = (BotKind)Convert.ToByte(reader.Value);
+                else reader.Skip();
+            }
+
+            return new RunProfileV1(lives, speed, checkpoints, bot);
         }
 
         #endregion

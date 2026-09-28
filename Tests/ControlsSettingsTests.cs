@@ -119,25 +119,11 @@ namespace BH.SDK.Tests
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.Easy)]
-        public void Settings_DefaultPriority_IsAPermutation()
+        public void Catalog_DeviceGyro_HasNoRelative()
         {
-            var settings = new ControlsSettings();
-
-            CollectionAssert.AreEquivalent(ControlDeviceCatalog.Devices, settings.Priority);
-            CollectionAssert.AllItemsAreUnique(settings.Priority);
-        }
-
-        [Test]
-        [Author(Metadata.Author.Vertoker)]
-        [Category(Metadata.Category.Self)]
-        [Category(Metadata.Category.Easy)]
-        public void Settings_DefaultPriority_IsNotSharedWithTheCatalog()
-        {
-            var settings = new ControlsSettings();
-            settings.Priority[0] = ControlDevice.DeviceGyro;
-
-            Assert.AreEqual(ControlDevice.KeyboardMouse, ControlDeviceCatalog.Devices[0],
-                "Priority handed out the catalog's own array");
+            Assert.IsFalse(ControlDeviceCatalog.Supports(ControlDevice.DeviceGyro, ControlMode.Relative));
+            Assert.IsTrue(ControlDeviceCatalog.Supports(ControlDevice.DeviceGyro, ControlMode.Absolute));
+            Assert.IsTrue(ControlDeviceCatalog.Supports(ControlDevice.DeviceGyro, ControlMode.Direction));
         }
 
         [Test]
@@ -171,7 +157,7 @@ namespace BH.SDK.Tests
 
             copy.Common.CursorScale += 0.5f;
             copy.KeyboardMouse.Sensitivity += 1f;
-            copy.Priority[0] = copy.Priority[1];
+            copy.DeviceGyro.Sensitivity += 1f;
 
             Assert.IsFalse(source.Equals(copy), "Copy shares state with its source");
         }
@@ -243,7 +229,6 @@ namespace BH.SDK.Tests
             var restored = service.DeserializeData<UserSettings>(json);
 
             Assert.IsTrue(settings.Controls.Equals(restored.Controls));
-            CollectionAssert.AreEqual(settings.Controls.Priority, restored.Controls.Priority);
         }
 
         // The removed ClassicControlsType is why UserSettings deliberately did NOT bump its generation:

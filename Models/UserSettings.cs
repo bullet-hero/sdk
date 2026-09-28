@@ -27,7 +27,7 @@ namespace BH.SDK.Models
     /// play the same way regardless of these.
     /// </summary>
     [RuleContainer]
-    [ModelGeneration(ModelDomains.UserSettings, ModelGenerations.Release)]
+    [ModelGeneration(ModelDomains.UserSettings, ModelGenerations.Tutorial)]
     [GenerateModel]
     public sealed partial class UserSettings : IModel<UserSettings>, IMoveable<UserSettings>
     {
@@ -82,6 +82,16 @@ namespace BH.SDK.Models
         [JsonProperty(Names.Keys)]
         public KeybindingsSettings Keybindings { get; set; }
 
+        // THE FIRST MEMBER ADDED AFTER RELEASE, and so the first one that bumped the domain (Rule 11):
+        // generation Release is frozen as Versions/V1/UserSettingsV1, and its migrator reads this back
+        // as false, so a player updating from 1.0.0 is offered the tutorial exactly once. It flips on
+        // DECLINING the offer as much as on finishing it - the offer is what it remembers, and the
+        // sandbox stays one button away in the menu either way.
+
+        /// <summary> Whether the tutorial was already offered - finished or declined. </summary>
+        [JsonProperty(Names.TutorialCompleted)]
+        public bool TutorialCompleted { get; set; }
+
         /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public UserSettings()
         {
@@ -92,12 +102,13 @@ namespace BH.SDK.Models
             GameEditor = new GameEditorSettings();
             Interface = new InterfaceSettings();
             Keybindings = new KeybindingsSettings();
+            TutorialCompleted = false;
         }
 
         /// <summary> Every member at once, in declaration order. </summary>
         public UserSettings(GeneralSettings general, AudioSettings audio,
             ControlsSettings controls, GraphicsSettings graphics, GameEditorSettings gameEditor,
-            InterfaceSettings interfaceSettings, KeybindingsSettings keybindings)
+            InterfaceSettings interfaceSettings, KeybindingsSettings keybindings, bool tutorialCompleted)
         {
             General = general;
             Audio = audio;
@@ -106,6 +117,7 @@ namespace BH.SDK.Models
             GameEditor = gameEditor;
             Interface = interfaceSettings;
             Keybindings = keybindings;
+            TutorialCompleted = tutorialCompleted;
         }
     }
 }

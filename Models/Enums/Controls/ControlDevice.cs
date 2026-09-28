@@ -14,8 +14,8 @@ namespace BH.SDK.Models.Enums.Controls
     // one is genuinely readable.
 
     /// <summary>
-    /// A source of avatar-control input. Ordering is the enum's own and carries no priority - the
-    /// player's ControlsSettings.Priority does.
+    /// A source of avatar-control input. Ordering is the enum's own and carries no priority - which
+    /// device leads is the most recently used one, and the platform's own order decides the first frame.
     /// </summary>
     public enum ControlDevice : byte
     {

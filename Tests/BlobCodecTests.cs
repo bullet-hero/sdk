@@ -245,7 +245,8 @@ namespace BH.SDK.Tests
 
             Assert.AreEqual(ModelDomains.GameLevel, refused.Domain);
             Assert.AreEqual(MockData.FabricatedGeneration, refused.FileGeneration);
-            Assert.AreEqual(ModelGenerations.Current, refused.BuildGeneration);
+            Assert.AreEqual(VersionedTypeRegistry.GetLatestAttribute(ModelDomains.GameLevel).Generation,
+                refused.BuildGeneration);
         }
 
         [Test]

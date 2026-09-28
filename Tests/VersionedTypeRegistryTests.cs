@@ -78,16 +78,20 @@ namespace BH.SDK.Tests
         [Category(Metadata.Category.Easy)]
         public void ThrowIfNewer_RefusesOnlyAGenerationAboveTheLatest()
         {
-            Assert.DoesNotThrow(() => VersionedTypeRegistry.ThrowIfNewer(ModelDomains.Level, ModelGenerations.Current));
+            // "The latest" is the DOMAIN's own, not ModelGenerations.Current: generations are one global
+            // counter, so the level domain sits below Current the moment any other domain bumps.
+            var latest = VersionedTypeRegistry.GetLatestAttribute(ModelDomains.Level).Generation;
+
+            Assert.DoesNotThrow(() => VersionedTypeRegistry.ThrowIfNewer(ModelDomains.Level, latest));
             Assert.DoesNotThrow(() => VersionedTypeRegistry.ThrowIfNewer(ModelDomains.Level, ModelGenerations.Test));
             Assert.DoesNotThrow(() => VersionedTypeRegistry.ThrowIfNewer(ModelDomains.Level, ModelGenerations.Invalid));
 
             var refused = Assert.Throws<NewerGenerationException>(() =>
-                VersionedTypeRegistry.ThrowIfNewer(ModelDomains.Level, ModelGenerations.Current + 1));
+                VersionedTypeRegistry.ThrowIfNewer(ModelDomains.Level, latest + 1));
 
             Assert.AreEqual(ModelDomains.Level, refused.Domain);
-            Assert.AreEqual(ModelGenerations.Current + 1, refused.FileGeneration);
-            Assert.AreEqual(ModelGenerations.Current, refused.BuildGeneration);
+            Assert.AreEqual(latest + 1, refused.FileGeneration);
+            Assert.AreEqual(latest, refused.BuildGeneration);
             StringAssert.Contains(ModelDomains.Level, refused.Message);
         }
 

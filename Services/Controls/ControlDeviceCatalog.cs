@@ -4,10 +4,9 @@ using BH.SDK.Models.Enums.Controls.Modes;
 
 namespace BH.SDK.Services.Controls
 {
-    // The whole matrix is deliberately uniform - all four devices implement all three modes - and that is
-    // why SupportedModes reads All everywhere today. The mask exists anyway, because it is the only place a
-    // future device that genuinely cannot do one of them (a pedal, a wheel, a MIDI pad) can say so without
-    // every consumer growing a special case.
+    // The matrix is uniform but for one hole: the motion sensor has no Relative, because angular velocity
+    // has no absolute up and drifts. The mask is how it says so without every consumer growing a special
+    // case, and it is where a future device that cannot do a mode (a pedal, a wheel) would say so too.
 
     /// <summary>
     /// The static per-device facts, one entry per <see cref="ControlDevice"/>.
@@ -34,7 +33,8 @@ namespace BH.SDK.Services.Controls
             new(ControlDevice.KeyboardMouse, ControlModeMask.All, true, NameKeyPrefix + "keyboard_mouse"),
             new(ControlDevice.Touchscreen, ControlModeMask.All, true, NameKeyPrefix + "touchscreen"),
             new(ControlDevice.Gamepad, ControlModeMask.All, true, NameKeyPrefix + "gamepad"),
-            new(ControlDevice.DeviceGyro, ControlModeMask.All, true, NameKeyPrefix + "device_gyro"),
+            new(ControlDevice.DeviceGyro, ControlModeMask.Absolute | ControlModeMask.Direction, true,
+                NameKeyPrefix + "device_gyro"),
         };
 
         /// <summary> What one device supports. </summary>

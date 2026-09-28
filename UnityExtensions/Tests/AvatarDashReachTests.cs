@@ -8,7 +8,7 @@ namespace BH.SDK.UnityExtensions.Tests
     // THE FOUR RULES A DASH AIMED AT A POINT FOLLOWS, AND THE ONE NUMBER THEY ALL COME OUT OF. A dash
     // is one shape scaled by DashFraction: a point beyond the reach gets a full dash, a point inside
     // it gets a proportionally shorter one that ENDS on it, a point nearer than MinDashFraction of the
-    // reach (one avatar body) gets no dash at all, and the travel is steered towards the point every
+    // reach (the arrival radius) gets no dash at all, and the travel is steered towards the point every
     // frame rather than locked to where it was launched.
     //
     // WHY THIS FIXTURE EXISTS SEPARATELY FROM THE GATE AND THE STEP: those two pin what a dash DOES
@@ -71,8 +71,8 @@ namespace BH.SDK.UnityExtensions.Tests
         // RULE 1, AND IT IS A REFUSAL RATHER THAN A TINY DASH. Zero is the answer the caller turns
         // into "the press was not a dash": no window opens, no cooldown starts.
         [TestCase(0f)]
-        [TestCase(0.01f)]
-        [TestCase(0.05f)]
+        [TestCase(AvatarRules.MinDashFraction * 0.5f)]
+        [TestCase(AvatarRules.MinDashFraction * 0.99f)]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.VeryEasy)]
@@ -80,20 +80,33 @@ namespace BH.SDK.UnityExtensions.Tests
             => Assert.AreEqual(0f, AvatarMovement.ResolveDashFraction(FullReach * ofTheReach, FullReach),
                 Tolerance);
 
-        // The floor is one avatar body of reach: exactly there a dash is taken, just under it none.
+        // The floor is the arrival radius of reach: exactly there a dash is taken, just under it none.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.VeryEasy)]
-        public void TheFloor_IsOneAvatarBody()
+        public void TheFloor_IsTheArrivalRadius()
         {
-            Assert.AreEqual(AvatarRules.AvatarScale, AvatarRules.MinDashFraction * FullReach, Tolerance);
+            Assert.AreEqual(AvatarRules.ArrivedDistance, AvatarRules.MinDashFraction * FullReach,
+                Tolerance);
             Assert.AreEqual(AvatarRules.MinDashFraction,
-                AvatarMovement.ResolveDashFraction(AvatarRules.AvatarScale, FullReach), Tolerance);
+                AvatarMovement.ResolveDashFraction(AvatarRules.ArrivedDistance, FullReach), Tolerance);
             Assert.AreEqual(0f,
-                AvatarMovement.ResolveDashFraction(AvatarRules.AvatarScale * 0.99f, FullReach),
+                AvatarMovement.ResolveDashFraction(AvatarRules.ArrivedDistance * 0.99f, FullReach),
                 Tolerance);
         }
+
+        // THE FLOOR USED TO BE ONE AVATAR BODY, and a cursor sitting inside it made the dash button
+        // do nothing at all. Anything the avatar is not already standing on is dashed to now.
+        [TestCase(0.25f)]
+        [TestCase(0.05f)]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.VeryEasy)]
+        public void APointInsideTheBody_IsStillDashedTo(float ofTheBody)
+            => Assert.AreEqual(AvatarRules.AvatarScale * ofTheBody / FullReach,
+                AvatarMovement.ResolveDashFraction(AvatarRules.AvatarScale * ofTheBody, FullReach),
+                Tolerance);
 
         // A level may zero every speed the avatar has; asking for a fraction of a reach of nothing has
         // no answer, and a division would hand back an infinity the clamp would happily accept.
@@ -173,7 +186,7 @@ namespace BH.SDK.UnityExtensions.Tests
         // in the caller's discipline.
         [TestCase(0f)]
         [TestCase(-3f)]
-        [TestCase(0.01f)]
+        [TestCase(AvatarRules.MinDashFraction * 0.5f)]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.Easy)]
@@ -181,8 +194,9 @@ namespace BH.SDK.UnityExtensions.Tests
             => Assert.AreEqual(AvatarRules.MinDashFraction,
                 AvatarMovement.At(float2.zero).StartDash(0f, asked).DashFraction, Tolerance);
 
-        // The shortest dash still waits for one observed touchable frame: its i-frames (0.02 s) cover
-        // the next 60 fps frame, so the one after is the exposure and the dash is back on the third.
+        // The shortest dash still waits for one observed touchable frame. Its windows are far shorter
+        // than a frame now, so the launch frame is the only protected one: the next frame is the
+        // exposure and the dash is back on the one after - every other frame, never every frame.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
@@ -194,11 +208,10 @@ namespace BH.SDK.UnityExtensions.Tests
             var movement = AvatarMovement.At(float2.zero).StartDash(0f, AvatarRules.MinDashFraction);
 
             movement = movement.Observe(0f, window);
-            movement = movement.Observe(frame, window);
-            Assert.IsFalse(movement.CanDash(frame * 2f), "no touchable frame has been observed yet");
+            Assert.IsFalse(movement.CanDash(frame), "no touchable frame has been observed yet");
 
-            movement = movement.Observe(frame * 2f, window);
-            Assert.IsTrue(movement.CanDash(frame * 3f), "one touchable frame later it is back");
+            movement = movement.Observe(frame, window);
+            Assert.IsTrue(movement.CanDash(frame * 2f), "one touchable frame later it is back");
         }
 
         [Test]

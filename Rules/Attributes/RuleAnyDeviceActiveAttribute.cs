@@ -11,12 +11,10 @@ namespace BH.SDK.Rules.Attributes
     // refuses to clear the last checkbox and settings load falls back to platform defaults, but neither
     // helps a hand-edited or foreign file - which is exactly what validation is for.
     //
-    // A class rule rather than a property one because the invariant spans five properties: four device
-    // groups and the priority order the fix picks from.
+    // A class rule rather than a property one because the invariant spans the four device groups.
 
     /// <summary>
-    /// At least one control device must be active. Fix activates the first one in the authored priority
-    /// order.
+    /// At least one control device must be active. Fix activates the first one in the catalog's order.
     /// </summary>
     [AttributeUsage(ClassTarget)]
     public class RuleAnyDeviceActiveAttribute : BaseObjectRuleAttribute
@@ -38,22 +36,12 @@ namespace BH.SDK.Rules.Attributes
         protected override bool IsValidInternal(object target, RuleContext context)
             => target is ControlsSettings settings && settings.HasActiveDevice();
 
-        /// <summary> Activates the first device in the authored priority order, or the first of the catalog when that order says nothing usable. </summary>
+        /// <summary> Activates the first device of the catalog. Which one a platform would rather have is
+        /// the consumer's call - the format only guarantees that one is on. </summary>
         protected override void FixInternal(object target, RuleContext context)
         {
             if (target is not ControlsSettings settings) return;
             if (settings.HasActiveDevice()) return;
-
-            var priority = settings.Priority;
-            if (priority != null)
-            {
-                foreach (var device in priority)
-                {
-                    if (!System.Enum.IsDefined(typeof(ControlDevice), device)) continue;
-                    settings.GetDevice(device).Active = true;
-                    return;
-                }
-            }
 
             settings.GetDevice(ControlDeviceCatalog.Devices[0]).Active = true;
         }

@@ -71,7 +71,6 @@ namespace BH.SDK.Tests.Rules
             { typeof(RuleShapeGeometryAttribute), nameof(RuleShapeGeometryTests) },
             { typeof(RulePrefabRootFixedAttribute), nameof(RulePrefabRootFixedTests) },
 
-            { typeof(RuleControlPriorityAttribute), nameof(RuleControlPriorityTests) },
             { typeof(RuleAnyDeviceActiveAttribute), nameof(RuleAnyDeviceActiveTests) },
             { typeof(RuleShortcutBindingsAttribute), nameof(RuleShortcutBindingsTests) },
         };

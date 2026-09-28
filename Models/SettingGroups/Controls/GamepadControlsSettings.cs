@@ -9,14 +9,13 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models.SettingGroups.Controls
 {
-    // Dash buttons live here rather than in a pad-wide block, because a gamepad is one device again: the
-    // block existed to share them between the pad's sticks, its touchpad and its gyro, and the last two are
-    // gone. Brand and glyph style went with it - both only meant anything next to a per-brand detector, and
-    // detecting a brand meant reasoning about DualShock/XInput/Switch layouts rather than about a Gamepad.
+    // There is no dash binding here any more: every button but Start and Select dashes, and Start pauses.
+    // Choosing buttons was a setting nobody needed, and a pad handed to someone else then dashed on
+    // whichever button they reached for first rather than on the two the owner had picked.
 
     /// <summary>
-    /// A gamepad, through the Input System's own layout: which stick steers, how its deflection is shaped,
-    /// and which buttons dash.
+    /// A gamepad, through the Input System's own layout: which stick steers, and how its deflection is
+    /// shaped.
     /// </summary>
     [RuleContainer]
     [GenerateModel]
@@ -39,12 +38,6 @@ namespace BH.SDK.Models.SettingGroups.Controls
         [JsonProperty(Names.ResponseCurve)]
         public float ResponseCurve { get; set; }
 
-        /// <summary> Buttons that dash. Named by POSITION rather than by symbol, so a player switching pad
-        /// families keeps the binding and only the glyph would change. </summary>
-        [RuleEnumFlagsValid]
-        [JsonProperty(Names.DashButtons)]
-        public GamepadButtonMask DashButtons { get; set; }
-
         /// <summary> This device's own mode as the device-independent one; the two enums line up by convention. </summary>
         public override ControlMode GeneralMode => (ControlMode)Mode;
         /// <summary> Which device these settings are for. </summary>
@@ -58,13 +51,12 @@ namespace BH.SDK.Models.SettingGroups.Controls
         /// <summary> Every member at once, in declaration order. </summary>
         public GamepadControlsSettings(bool active, float sensitivity,
             float deadZone, float smoothing, bool invertX, bool invertY, GamepadControlMode mode,
-            MotionStick motionStick, float responseCurve, GamepadButtonMask dashButtons)
+            MotionStick motionStick, float responseCurve)
             : base(active, sensitivity, deadZone, smoothing, invertX, invertY)
         {
             Mode = mode;
             MotionStick = motionStick;
             ResponseCurve = responseCurve;
-            DashButtons = dashButtons;
         }
         private void ResetOwn()
         {
@@ -76,7 +68,6 @@ namespace BH.SDK.Models.SettingGroups.Controls
             // is a rate, not a position, so Relative mode moves the cursor by full deflection per second
             // and 1.0 of a camera per second reads as sluggish next to a mouse.
             Sensitivity = ControlsRules.DefaultGamepadSensitivity;
-            DashButtons = GamepadButtonMask.South | GamepadButtonMask.RightShoulder;
         }
     }
 }

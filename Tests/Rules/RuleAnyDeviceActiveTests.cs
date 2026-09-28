@@ -55,21 +55,14 @@ namespace BH.SDK.Tests.Rules
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.Easy)]
-        public void Fix_ActivatesFirstByPriority()
+        public void Fix_ActivatesFirstOfTheCatalog()
         {
             var settings = AllInactive();
-            settings.Priority = new[]
-            {
-                ControlDevice.DeviceGyro,
-                ControlDevice.KeyboardMouse,
-                ControlDevice.Touchscreen,
-                ControlDevice.Gamepad,
-            };
 
             AssertFixed(settings);
 
-            Assert.IsTrue(settings.DeviceGyro.Active);
-            Assert.IsFalse(settings.KeyboardMouse.Active);
+            Assert.IsTrue(settings.GetDevice(ControlDeviceCatalog.Devices[0]).Active);
+            Assert.IsFalse(settings.DeviceGyro.Active);
         }
     }
 }

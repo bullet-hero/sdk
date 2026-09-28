@@ -700,21 +700,9 @@ namespace BH.SDK.Tests
                 {
                     Common =
                     {
-                        Selection = DeviceSelection.Manual,
-                        ManualDevice = ControlDevice.Gamepad,
                         CursorVisible = false,
                         CursorScale = 1.5f,
                         CursorRecenter = false,
-                        CursorReturn = true,
-                    },
-                    // A different permutation of the same four devices, so a round trip has something
-                    // to get wrong: an array read back in catalog order would still be rule-valid.
-                    Priority = new[]
-                    {
-                        ControlDevice.Gamepad,
-                        ControlDevice.KeyboardMouse,
-                        ControlDevice.DeviceGyro,
-                        ControlDevice.Touchscreen,
                     },
                     KeyboardMouse =
                     {
@@ -746,15 +734,12 @@ namespace BH.SDK.Tests
                         Mode = GamepadControlMode.Absolute,
                         MotionStick = MotionStick.Right,
                         ResponseCurve = 1.5f,
-                        DashButtons = GamepadButtonMask.East | GamepadButtonMask.LeftTrigger,
                     },
                     DeviceGyro =
                     {
-                        Mode = DeviceGyroControlMode.Relative,
+                        Mode = DeviceGyroControlMode.Absolute,
                         Active = false,
-                        CalibrateOnStart = false,
-                        TiltCenterX = 0.05f,
-                        TiltCenterY = -0.05f,
+                        Sensitivity = 1.5f,
                         DashSource = GyroDashSource.ScreenButton,
                         DashButtonSize = 0.25f,
                     },
@@ -851,14 +836,8 @@ namespace BH.SDK.Tests
                 },
                 Controls =
                 {
-                    // One device listed twice, another missing: RuleControlPriority's own violation.
-                    Priority = new[]
-                    {
-                        ControlDevice.KeyboardMouse,
-                        ControlDevice.KeyboardMouse,
-                        ControlDevice.Touchscreen,
-                        ControlDevice.Gamepad,
-                    }
+                    // Far past MaxSensitivity: the controls tree's own out-of-range value.
+                    DeviceGyro = { Sensitivity = 50f },
                 },
                 Audio =
                 {

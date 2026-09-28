@@ -80,29 +80,13 @@ namespace BH.SDK.Rules
         /// <summary> The tap travel used when nothing says otherwise, read by TouchscreenControlsSettings. </summary>
         public const float DefaultTapTravel = 0.05f;
 
-        // The setting this bounds is itself called MaxTiltAngle - it is the tilt a player has to reach
-        // for full deflection, and these are the range that number may be set to. Reading MaxTiltAngle
-        // as "the largest tilt the game accepts" is the easy mistake: this is a limit on a limit.
-
-        /// <summary> Degrees of tilt the player's own MaxTiltAngle may be set to. </summary>
-        public const float MinTiltAngle = 5f;
-        /// <summary> Upper bound of DeviceGyroControlsSettings.MaxTiltAngle. </summary>
-        public const float MaxTiltAngle = 90f;
-
         // A wrist covers roughly 20 degrees comfortably, and the default has to be what a WRIST can
         // reach rather than what an arm can: at the old 35 the player ran out of comfortable travel
         // long before the avatar ran out of screen, which reads as the tilt barely responding.
 
-        /// <summary> The tilt angle used when nothing says otherwise, read by DeviceGyroControlsSettings. </summary>
+        /// <summary> Degrees of tilt away from lying flat that read as full deflection at a motion-sensor
+        /// Sensitivity of 1; a sensitivity of 2 reaches it at half the tilt's sine. </summary>
         public const float DefaultTiltAngle = 20f;
-
-        /// <summary> Neutral tilt, per axis, in the same normalized deflection space input resolves
-        /// to. Calibration writes it; 0 means "device held level". </summary>
-        public const float MinTiltCenter = -1f;
-        /// <summary> Upper bound of DeviceGyroControlsSettings.TiltCenterX, DeviceGyroControlsSettings.TiltCenterY. </summary>
-        public const float MaxTiltCenter = 1f;
-        /// <summary> The tilt center used when nothing says otherwise, read by DeviceGyroControlsSettings. </summary>
-        public const float DefaultTiltCenter = 0f;
 
         /// <summary> Offset between the finger and the cursor in touch Absolute mode, as a fraction of
         /// camera height, so the avatar is not hidden under the thumb. </summary>

@@ -24,11 +24,18 @@
         /// end to end, rather than a format any build ever shipped. </summary>
         public const int Test = 0;
 
-        /// <summary> What the game writes today. Every live domain is at this one. </summary>
+        /// <summary> What 1.0.0 shipped. Every live domain but <c>UserSettings</c> and
+        /// <c>LevelStatistics</c> is still at it. </summary>
         public const int Release = 1;
+
+        /// <summary> <c>UserSettings</c> remembers whether the tutorial was offered, and its controls
+        /// lose the cursor-return switch (releasing a pointer always stops the avatar); a
+        /// <c>LevelStatistics</c> record can be filed under "no collision" - the first bump after
+        /// release. </summary>
+        public const int Tutorial = 2;
 
         /// <summary> The newest generation there is - the only thing UI and reports read. A future
         /// bump adds its own named constant and moves this alias onto it. </summary>
-        public const int Current = Release;
+        public const int Current = Tutorial;
     }
 }

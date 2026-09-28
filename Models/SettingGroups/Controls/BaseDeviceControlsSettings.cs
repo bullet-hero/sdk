@@ -33,7 +33,8 @@ namespace BH.SDK.Models.SettingGroups.Controls
         [JsonProperty(Names.Active)]
         public bool Active { get; set; }
 
-        /// <summary> Multiplier on cursor deltas in Relative mode. </summary>
+        /// <summary> Multiplier on cursor deltas in Relative mode; for the motion sensor, how little tilt
+        /// reaches full deflection. </summary>
         [RuleInRange(ControlsRules.MinSensitivity, ControlsRules.MaxSensitivity)]
         [JsonProperty(Names.Sensitivity)]
         public float Sensitivity { get; set; }

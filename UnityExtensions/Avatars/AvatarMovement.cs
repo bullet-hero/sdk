@@ -47,12 +47,12 @@ namespace BH.SDK.Avatars
         // is the ability to stop exactly on a point, and what it costs is one extra touchable frame
         // per dash, because every launch has one (see DashCooldown's note in AvatarRules).
         //
-        // IT IS NEVER BELOW AvatarRules.MinDashFraction AND NEVER ABOVE 1. The floor is one avatar
-        // body of reach, and what it stops is a cursor resting a hair from the avatar launching a dash
-        // every other frame for a move nobody can see: at the floor a dash still runs 0.01 s and its
-        // windows 0.02 s, and it still waits for one observed touchable frame, so the real limiter at
-        // the bottom of the range is the frame rate rather than the clock. The ceiling is the dash
-        // itself: a point beyond the reach gets an ordinary full dash and the avatar stops short of it.
+        // IT IS NEVER BELOW AvatarRules.MinDashFraction AND NEVER ABOVE 1. The floor is
+        // ArrivedDistance of reach - effectively none, a target nearer than that is one the avatar
+        // already stands on. At the bottom of the range the windows are far shorter than a frame, and
+        // every dash still waits for one observed touchable frame, so the real limiter there is the
+        // frame rate rather than the clock. The ceiling is the dash itself: a point beyond the reach
+        // gets an ordinary full dash and the avatar stops short of it.
         //
         // A DASH THAT WAS NEVER TAKEN LEAVES THIS AT 1, so every window reads exactly the constant it
         // is named after until the first dash of the run, and the "no dash yet" state needs no case
@@ -111,7 +111,7 @@ namespace BH.SDK.Avatars
         // THE THREE RULES A CURSOR DASH FOLLOWS, AND THEY ARE ONE LINE OF ARITHMETIC. A point further
         // than the reach is an ordinary dash (the fraction saturates at 1); a point nearer is a dash
         // that ENDS ON IT, because the travel time is exactly the distance over the dash speed; a
-        // point nearer than the floor (AvatarRules.MinDashFraction, one avatar body) is no dash at
+        // point nearer than the floor (AvatarRules.MinDashFraction, the arrival radius) is no dash at
         // all. The caller asks this, gets a fraction, and
         // passes it to StartDash - there is no fourth case and no special branch inside the step.
         //

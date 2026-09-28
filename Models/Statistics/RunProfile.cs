@@ -41,6 +41,16 @@ namespace BH.SDK.Models.Statistics
         [JsonProperty(Names.Bot)]
         public BotKind Bot { get; }
 
+        // PART OF THE KEY, NOT A REASON TO DROP THE RUN. A run nothing could hit is not the same
+        // achievement as a Zen run - which is hit, only never killed - and neither is one with lives,
+        // so it files under its own records rather than beside either. Added at LevelStatistics
+        // generation 2 (Versions/V1/RunProfileV1 is the shape before it).
+
+        /// <summary> Whether the avatar had no collisions at all - the launch's "No collision"
+        /// option. </summary>
+        [JsonProperty(Names.NoCollision)]
+        public bool NoCollision { get; }
+
         /// <summary> The stored hundredths read back as the number a player sees. </summary>
         [JsonIgnore]
         public float Speed => SpeedCenti / 100f;
@@ -53,19 +63,22 @@ namespace BH.SDK.Models.Statistics
         // fill: the members are get-only on purpose (a key that can be mutated after it has been
         // hashed into a dictionary is a bug waiting to happen), so construction is the only way in.
 
-        /// <summary> Built from its count, centi, checkpoints and bot. </summary>
+        /// <summary> Built from its count, centi, checkpoints, bot and collision switch. </summary>
         [JsonConstructor]
-        public RunProfile(int lifeCount, int speedCenti, bool useCheckpoints, BotKind bot)
+        public RunProfile(int lifeCount, int speedCenti, bool useCheckpoints, BotKind bot,
+            bool noCollision = false)
         {
             LifeCount = lifeCount;
             SpeedCenti = speedCenti;
             UseCheckpoints = useCheckpoints;
             Bot = bot;
+            NoCollision = noCollision;
         }
 
         /// <summary> Builds a profile from a launch's own numbers, quantizing the speed. </summary>
-        public static RunProfile FromLaunch(int lifeCount, float speed, bool useCheckpoints, BotKind bot)
-            => new(lifeCount, ToCenti(speed), useCheckpoints, bot);
+        public static RunProfile FromLaunch(int lifeCount, float speed, bool useCheckpoints, BotKind bot,
+            bool noCollision = false)
+            => new(lifeCount, ToCenti(speed), useCheckpoints, bot, noCollision);
 
         /// <summary> Rounds a speed to the hundredths this key is filed under. </summary>
         public static int ToCenti(float speed) => (int)Math.Round(speed * 100.0, MidpointRounding.AwayFromZero);
@@ -75,13 +88,15 @@ namespace BH.SDK.Models.Statistics
             => LifeCount == other.LifeCount
                && SpeedCenti == other.SpeedCenti
                && UseCheckpoints == other.UseCheckpoints
-               && Bot == other.Bot;
+               && Bot == other.Bot
+               && NoCollision == other.NoCollision;
 
         /// <summary> The same, boxed. </summary>
         public override bool Equals(object obj) => obj is RunProfile other && Equals(other);
 
         /// <summary> Matches the equality above. </summary>
-        public override int GetHashCode() => HashCode.Combine(LifeCount, SpeedCenti, UseCheckpoints, Bot);
+        public override int GetHashCode()
+            => HashCode.Combine(LifeCount, SpeedCenti, UseCheckpoints, Bot, NoCollision);
 
         // Ordering exists so a UI listing several profiles is stable across sessions, and so a test
         // can compare two sets without depending on dictionary order.
@@ -94,7 +109,9 @@ namespace BH.SDK.Models.Statistics
             cmp = SpeedCenti.CompareTo(other.SpeedCenti);
             if (cmp != 0) return cmp;
             cmp = UseCheckpoints.CompareTo(other.UseCheckpoints);
-            return cmp != 0 ? cmp : ((byte)Bot).CompareTo((byte)other.Bot);
+            if (cmp != 0) return cmp;
+            cmp = ((byte)Bot).CompareTo((byte)other.Bot);
+            return cmp != 0 ? cmp : NoCollision.CompareTo(other.NoCollision);
         }
 
         /// <summary> Value equality. </summary>
@@ -104,6 +121,6 @@ namespace BH.SDK.Models.Statistics
 
         /// <summary> One line, for a log. </summary>
         public override string ToString()
-            => $"Lives:{LifeCount}, Speed:{Speed:0.00}, Checkpoints:{UseCheckpoints}, Bot:{Bot}";
+            => $"Lives:{LifeCount}, Speed:{Speed:0.00}, Checkpoints:{UseCheckpoints}, Bot:{Bot}, NoCollision:{NoCollision}";
     }
 }

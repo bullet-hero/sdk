@@ -42,7 +42,7 @@
         /// <summary> Word fragment, built into ReplayStepBudget. </summary>
         public const string Replay = "replay";
 
-        /// <summary> Word fragment, built into CalibrateOnStart. </summary>
+        /// <summary> Word kept in the key vocabulary; nothing is built from it today. </summary>
         public const string Start = "start";
 
         /// <summary> Word kept in the key vocabulary; nothing is built from it today. </summary>
@@ -465,7 +465,7 @@
         /// <summary> BloomKey.Intensity, ChromaticAberrationKey.Intensity, DigitalGlitchKey.Intensity, FilmGrainKey.Intensity and 4 more. </summary>
         public const string Intensity = "intns";
 
-        /// <summary> Word kept in the key vocabulary; nothing is built from it today. </summary>
+        /// <summary> Word fragment, built into NoCollision. </summary>
         public const string Collision = "collision";
 
         /// <summary> PlayerEvents.Collisions. </summary>
@@ -1373,9 +1373,6 @@
         /// <summary> Word kept in the key vocabulary; nothing is built from it today. </summary>
         public const string Shared = "shared";
 
-        /// <summary> ControlsSettings.Priority. </summary>
-        public const string Priority = "priority";
-
         /// <summary> CommonControlsSettings.Selection, GameEditorSettings.Selection. </summary>
         public const string Selection = "selection";
 
@@ -1391,10 +1388,10 @@
         /// <summary> Word fragment, built into PickInvisibleAABB. </summary>
         public const string AABB = "aabb";
 
-        /// <summary> Word fragment, built into ManualDevice. </summary>
+        /// <summary> Word kept in the key vocabulary; nothing is built from it today. </summary>
         public const string Manual = "manual";
 
-        /// <summary> Word fragment, built into DeviceGyro, ManualDevice. </summary>
+        /// <summary> Word fragment, built into DeviceGyro. </summary>
         public const string Device = "device";
 
         /// <summary> Word fragment, built into KeyboardMouse. </summary>
@@ -1430,7 +1427,7 @@
         /// <summary> Word kept in the key vocabulary; nothing is built from it today. </summary>
         public const string Cooldown = "cooldown";
 
-        /// <summary> Word fragment, built into CursorHideAbsolute, CursorHideRelative, CursorRecenter, CursorReturn and 2 more. </summary>
+        /// <summary> Word fragment, built into CursorHideAbsolute, CursorHideRelative, CursorRecenter, CursorScale and 1 more. </summary>
         public const string Cursor = "cursor";
 
         /// <summary> Word fragment, built into CursorVisible. </summary>
@@ -1439,7 +1436,8 @@
         /// <summary> Word fragment, built into CursorRecenter. </summary>
         public const string Recenter = "recenter";
 
-        /// <summary> Word fragment, built into CursorReturn. </summary>
+        /// <summary> Word kept in the key vocabulary; nothing is built from it today (CursorReturn
+        /// was, until user-settings generation 2 removed it). </summary>
         public const string Return = "return";
 
         /// <summary> Word fragment, built into CursorHideAbsolute, CursorHideRelative. </summary>
@@ -1457,10 +1455,10 @@
         /// <summary> Word fragment, built into DashButtonAnchor, DashButtonIcon, DashButtonSize, HoldButton. </summary>
         public const string Button = "button";
 
-        /// <summary> Word fragment, built into DashButtons. </summary>
+        /// <summary> Word kept in the key vocabulary; nothing is built from it today. </summary>
         public const string Buttons = "buttons";
 
-        /// <summary> Word fragment, built into DashButtonAnchor, DashButtonIcon, DashButtonSize, DashButtons and 5 more. </summary>
+        /// <summary> Word fragment, built into DashButtonAnchor, DashButtonIcon, DashButtonSize and 5 more. </summary>
         public const string Dash = "dash";
 
         /// <summary> Word fragment, built into DashOnDoubleClick, DashOnDoubleTap, DoubleClickTime, DoubleTapTime. </summary>
@@ -1511,16 +1509,16 @@
         /// <summary> Word kept in the key vocabulary; nothing is built from it today. </summary>
         public const string Area = "area";
 
-        /// <summary> Word fragment, built into AxisMapping. </summary>
+        /// <summary> Word kept in the key vocabulary; nothing is built from it today. </summary>
         public const string Axis = "axis";
 
-        /// <summary> Word fragment, built into AxisMapping. </summary>
+        /// <summary> Word kept in the key vocabulary; nothing is built from it today. </summary>
         public const string Mapping = "mapping";
 
         /// <summary> Word kept in the key vocabulary; nothing is built from it today. </summary>
         public const string Always = "always";
 
-        /// <summary> Word fragment, built into CalibrateOnStart, DashOnDoubleClick, DashOnDoubleTap, DashOnSecondFinger and 3 more. </summary>
+        /// <summary> Word fragment, built into DashOnDoubleClick, DashOnDoubleTap, DashOnSecondFinger and 2 more. </summary>
         public const string On = "on";
 
         /// <summary> Word fragment, built into AlertOnException. </summary>
@@ -1532,10 +1530,10 @@
         /// <summary> Word kept in the key vocabulary; nothing is built from it today. </summary>
         public const string Activation = "activation";
 
-        /// <summary> Word fragment, built into CalibrateOnStart. </summary>
+        /// <summary> Word kept in the key vocabulary; nothing is built from it today. </summary>
         public const string Calibrate = "calibrate";
 
-        /// <summary> Word fragment, built into MaxTiltAngle, TiltCenterX, TiltCenterY. </summary>
+        /// <summary> Word kept in the key vocabulary; nothing is built from it today. </summary>
         public const string Tilt = "tilt";
 
         /// <summary> Word kept in the key vocabulary; nothing is built from it today. </summary>
@@ -1780,6 +1778,9 @@
         /// <summary> RunProfile.LifeCount. </summary>
         public const string Lives = "lives";
 
+        /// <summary> Word fragment, built into NoCollision. </summary>
+        public const string No = "no";
+
         /// <summary> Word fragment, built into SpeedCenti. </summary>
         public const string Centi = "centi";
 
@@ -1827,6 +1828,12 @@
 
         /// <summary> Word kept in the key vocabulary; nothing is built from it today. </summary>
         public const string Runs = "runs";
+
+        /// <summary> Word fragment, built into TutorialCompleted. </summary>
+        public const string Tutorial = "tutorial";
+
+        /// <summary> Word fragment, built into TutorialCompleted. </summary>
+        public const string Completed = "completed";
 
         private const string _ = "_";
 
@@ -2103,9 +2110,6 @@
         /// <summary> <c>"device_gyro"</c> - ControlsSettings.DeviceGyro. </summary>
         public const string DeviceGyro = Device + _ + Gyro;
 
-        /// <summary> <c>"manual_device"</c> - CommonControlsSettings.ManualDevice. </summary>
-        public const string ManualDevice = Manual + _ + Device;
-
         /// <summary> <c>"cursor_visible"</c> - CommonControlsSettings.CursorVisible. </summary>
         public const string CursorVisible = Cursor + _ + Visible;
 
@@ -2114,9 +2118,6 @@
 
         /// <summary> <c>"cursor_recenter"</c> - CommonControlsSettings.CursorRecenter. </summary>
         public const string CursorRecenter = Cursor + _ + Recenter;
-
-        /// <summary> <c>"cursor_return"</c> - CommonControlsSettings.CursorReturn. </summary>
-        public const string CursorReturn = Cursor + _ + Return;
 
         // Same string as SyncDeadZone, which is an audio key - the two can never appear on one model,
         // which is exactly the condition this file reuses keys under.
@@ -2199,27 +2200,8 @@
         /// <summary> <c>"response_crv"</c> - GamepadControlsSettings.ResponseCurve. </summary>
         public const string ResponseCurve = Response + _ + Curve;
 
-        /// <summary> <c>"dash_buttons"</c> - GamepadControlsSettings.DashButtons. </summary>
-        public const string DashButtons = Dash + _ + Buttons;
-
-        /// <summary> <c>"axis_mapping"</c> - DeviceGyroControlsSettings.AxisMapping. </summary>
-        public const string AxisMapping = Axis + _ + Mapping;
-
-        /// <summary> <c>"max_tilt_ang"</c> - DeviceGyroControlsSettings.MaxTiltAngle. </summary>
-        public const string MaxTiltAngle = Max + _ + Tilt + _ + Angle;
-
-        /// <summary> <c>"calibrate_on_start"</c> - DeviceGyroControlsSettings.CalibrateOnStart. </summary>
-        public const string CalibrateOnStart = Calibrate + _ + On + _ + Start;
-
-        /// <summary> <c>"tilt_cntr_x"</c> - DeviceGyroControlsSettings.TiltCenterX. </summary>
-        public const string TiltCenterX = Tilt + _ + Center + _ + CoordX;
-
-        /// <summary> <c>"tilt_cntr_y"</c> - DeviceGyroControlsSettings.TiltCenterY. </summary>
-        public const string TiltCenterY = Tilt + _ + Center + _ + CoordY;
-
         /// <summary> <c>"dash_src"</c> - DeviceGyroControlsSettings.DashSource. </summary>
         public const string DashSource = Dash + _ + Source;
-
 
         // Anti-aliasing. One key per field of AntiAliasingGraphicsSettings, plus the group's own
         // key on GraphicsSettings; the group reuses the shared Type key, which is safe because no
@@ -2677,7 +2659,6 @@
         /// <summary> <c>"lang_strs"</c> - carried by no model today. </summary>
         public const string LanguageStrings = Language + _ + Strings;
 
-
         // Effects
 
         /// <summary> EffectObjectCore.ParticleCount. </summary>
@@ -3032,6 +3013,9 @@
         /// <summary> <c>"spd_centi"</c> - RunProfile.SpeedCenti. </summary>
         public const string SpeedCenti = Speed + _ + Centi;
 
+        /// <summary> <c>"no_collision"</c> - RunProfile.NoCollision. </summary>
+        public const string NoCollision = No + _ + Collision;
+
         /// <summary> <c>"deaths_by_bucket"</c> - DifficultyStatistics.DeathsByBucket. </summary>
         public const string DeathsByBucket = Deaths + _ + By + _ + Bucket;
 
@@ -3103,5 +3087,8 @@
 
         /// <summary> <c>"gyro_seconds"</c> - DeviceTimeStatistics.DeviceGyroSeconds. </summary>
         public const string DeviceGyroSeconds = Gyro + _ + Seconds;
+
+        /// <summary> <c>"tutorial_completed"</c> - UserSettings.TutorialCompleted. </summary>
+        public const string TutorialCompleted = Tutorial + _ + Completed;
     }
 }

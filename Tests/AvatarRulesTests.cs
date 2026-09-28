@@ -91,8 +91,8 @@ namespace BH.SDK.Tests
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.VeryEasy)]
-        public void DamageTime_IsTwoTenths()
-            => Assert.AreEqual(0.2f, AvatarRules.DamageTime, Tolerance);
+        public void DamageTime_IsFifteenHundredths()
+            => Assert.AreEqual(0.15f, AvatarRules.DamageTime, Tolerance);
 
         [Test]
         [Author(Metadata.Author.Vertoker)]

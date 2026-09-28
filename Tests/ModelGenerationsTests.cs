@@ -90,14 +90,15 @@ namespace BH.SDK.Tests
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.Easy)]
-        public void EveryFrozenSnapshot_ReadsTheTestGeneration()
+        public void EveryFrozenSnapshot_IsOlderThanItsLiveDomain()
         {
             var frozen = Tagged().Where(pair => IsFrozen(pair.Type)).ToList();
 
             Assert.IsNotEmpty(frozen, "Versions/V0 is the only proof the migration path still works");
             foreach (var pair in frozen)
             {
-                Assert.AreEqual(ModelGenerations.Test, pair.Attribute.Generation, pair.Type.Name);
+                var live = VersionedTypeRegistry.GetLatestAttribute(pair.Attribute.Domain).Generation;
+                Assert.Less(pair.Attribute.Generation, live, pair.Type.Name);
             }
         }
 

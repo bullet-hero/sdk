@@ -3,6 +3,7 @@ using BH.SDK.Models.Enums.Settings;
 using BH.SDK.Models.Primitives;
 using BH.SDK.Models.Resources;
 using BH.SDK.Models.Statistics;
+using BH.SDK.Versions.V1;
 
 namespace BH.SDK.Serialization.Blob
 {
@@ -76,13 +77,14 @@ namespace BH.SDK.Serialization.Blob
 
         #region RunProfile
 
-        /// <summary> The four numbers a run is filed under: lives, speed, checkpoints, bot. </summary>
+        /// <summary> The five things a run is filed under: lives, speed, checkpoints, bot, collision. </summary>
         public static void Write(ref BlobWriter writer, RunProfile value)
         {
             writer.WriteInt(value.LifeCount);
             writer.WriteInt(value.SpeedCenti);
             writer.WriteBool(value.UseCheckpoints);
             writer.WriteByte((byte)value.Bot);
+            writer.WriteBool(value.NoCollision);
         }
 
         /// <summary> Rebuilds the profile through its constructor, since its properties are get-only. </summary>
@@ -92,7 +94,30 @@ namespace BH.SDK.Serialization.Blob
             var speed = reader.ReadInt();
             var checkpoints = reader.ReadBool();
             var bot = (BotKind)reader.ReadByte();
-            return new RunProfile(lives, speed, checkpoints, bot);
+            var noCollision = reader.ReadBool();
+            return new RunProfile(lives, speed, checkpoints, bot, noCollision);
+        }
+
+        // THE SHAPE LevelStatistics GENERATION 1 WROTE, frozen beside the live one: four numbers, no
+        // collision switch. Only the V1 snapshot reaches these.
+
+        /// <summary> A generation-1 profile: lives, speed, checkpoints, bot. </summary>
+        public static void Write(ref BlobWriter writer, RunProfileV1 value)
+        {
+            writer.WriteInt(value.LifeCount);
+            writer.WriteInt(value.SpeedCenti);
+            writer.WriteBool(value.UseCheckpoints);
+            writer.WriteByte((byte)value.Bot);
+        }
+
+        /// <summary> Reads a generation-1 profile. </summary>
+        public static RunProfileV1 ReadRunProfileV1(ref BlobReader reader)
+        {
+            var lives = reader.ReadInt();
+            var speed = reader.ReadInt();
+            var checkpoints = reader.ReadBool();
+            var bot = (BotKind)reader.ReadByte();
+            return new RunProfileV1(lives, speed, checkpoints, bot);
         }
 
         #endregion

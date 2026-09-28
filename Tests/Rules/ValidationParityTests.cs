@@ -130,7 +130,7 @@ namespace BH.SDK.Tests.Rules
             "rule_min_value General.ResourceWebTimeout\n" +
             "rule_in_range Audio.Game\n" +
             "rule_in_range Audio.UI\n" +
-            "rule_control_priority Controls.Priority\n" +
+            "rule_in_range Controls.DeviceGyro.Sensitivity\n" +
             "rule_min_value Graphics.Effects.FpsFixed\n" +
             "rule_min_value GameEditor.Camera.MinSize\n";
     }
