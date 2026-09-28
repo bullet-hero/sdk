@@ -45,6 +45,9 @@ namespace BH.SDK.Versions
         /// <summary> The publish profile domain. </summary>
         public const string PublishProfile = nameof(Publishing.PublishProfile);
 
+        /// <summary> A resource collection's manifest (collection.json). </summary>
+        public const string Collection = nameof(Models.Collections.ResourceCollection);
+
         // Statistics
 
         /// <summary> The game statistics domain. </summary>

@@ -32,3 +32,9 @@ layer-wide conventions. This file is folder-local.
     for one mistake it prevents: `LevelMeta` is its own aggregate root, so `Validate(level)` never
     touches a single rule on it - and the metadata is precisely the half a publish check is about.
     The level is OPTIONAL, for the same reason the analyzer makes it optional. It repairs nothing.
+  - **`CollectionReadinessAnalyzer` grades a resource collection**, and on one question the level
+    analyzer never asks: does it STAND ON ITS OWN. Named, licensed, not empty, every file the manifest
+    names present, every user resource its prefabs and effects point at carried inside (a missing one
+    is an unresolved reference in every level that imports it). The per-record licence checks are the
+    level analyzer's own, run on the collection's credits; the profile's size cap applies to the whole
+    folder. It reads no files - present paths and a byte count are handed in.

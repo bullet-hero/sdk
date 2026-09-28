@@ -68,5 +68,23 @@ namespace BH.SDK.Publishing
 
         /// <summary> The whole level folder is bigger than the service accepts. </summary>
         PayloadTooLarge = 19,
+
+        // A COLLECTION'S OWN FINDINGS - CollectionReadinessAnalyzer. A collection has no level to
+        // inspect, so what it is graded on is its own manifest and whether it stands on its own.
+
+        /// <summary> The collection has no name to list it under. </summary>
+        CollectionNameMissing = 20,
+
+        /// <summary> The collection states no license of its own. </summary>
+        CollectionLicenseUnspecified = 21,
+
+        /// <summary> The collection holds nothing. </summary>
+        CollectionEmpty = 22,
+
+        /// <summary> A file the manifest names is not in the collection. </summary>
+        CollectionMediaMissing = 23,
+
+        /// <summary> A resource points at a user resource the collection does not carry. </summary>
+        CollectionReferenceMissing = 24,
     }
 }

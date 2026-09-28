@@ -48,3 +48,26 @@ layer-wide conventions. This file is folder-local.
   modes, so `SupportedModes` reads `All` everywhere); the mask exists anyway, as the only place a
   future device that genuinely cannot do one - a pedal, a wheel, a MIDI pad - could say so
   without every consumer growing a special case.
+
+**`Collections/` is the RESOURCE COLLECTION format** - a folder of reusable resources of any of the
+seven kinds, the unit the game keeps in `resources/collections/<guid>/`, archives and publishes to the
+Workshop. Everything here works over `IContentStore`, so on a folder, on memory and on an unpacked
+upload alike, and every failure is a value (`CollectionReadResult`, `CollectionArchiveResult`), never a
+throw - `LevelArchiveReader`'s contract.
+- The MANIFEST is `Models/Collections/ResourceCollection` (a new domain at `V2_SimplifyEntrance`, not a
+  bump - nothing on disk had its shape): name, description, authors, license, the three file-kind
+  dictionaries (a `LevelPath` source is relative to the collection root, media live in `media/`) and
+  the credits. The four data kinds are NOT in it: they sit in `prefabs/`, `themes/`, `shapes/`,
+  `effects/` as the same one-envelope-per-file the device library writes. `CollectionContent` pairs the
+  manifest with a `LevelResources` that SHARES its file dictionaries, so every planner reads one shape.
+- `CollectionReader` skips (and reports in `Skipped`) an entry of a newer generation or whose payload
+  id disagrees with its file name. `CollectionWriter` writes a snapshot - it prunes the owned folders -
+  and the manifest LAST, so a half-written folder is not a collection. `CollectionArchive` packs and
+  unpacks through `TarGzService`/`ZipService`, format sniffed from the bytes, refusing an archive with
+  no manifest at its root.
+- `CollectionImportPlanner` (into a level) and `CollectionExportPlanner` (out of anything holding a
+  `LevelResources`) are PURE: closure through `Utils/ResourceClosure`, identity by the generated
+  `Equals`, fresh level-local ids and unique file names for the file kinds, a `ResourceRemap` the
+  models are rewritten through, and the credits that travel with them. A conflict (same id, different
+  content) is resolved by an answer the host supplies - keep, or copy under a new id - never by the
+  planner.

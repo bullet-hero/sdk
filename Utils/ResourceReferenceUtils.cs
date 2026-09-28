@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using BH.SDK.Models;
 using BH.SDK.Models.Objects;
 using BH.SDK.Models.Primitives;
@@ -23,6 +22,10 @@ namespace BH.SDK.Utils
     // holds - it is a FIELD, which is the same trap PrefabSearchEntries' count and LayerMath's lane
     // sweep each had to be taught.
     //
+    // THE WALK ITSELF IS ResourceGraph's, shared with the closure and the remap an import runs, so a
+    // reference one of them learns about is one all three see. Modifications are left out here: in a
+    // live level they are already applied to the materialized copies, which are counted instead.
+    //
     // A NULL ID IS NEVER COUNTED. Null is how an object says it draws no texture, collides with no
     // shape and points at no template, so counting it would report every plain object in the level
     // as a reference to whatever the author was about to delete.
@@ -32,70 +35,24 @@ namespace BH.SDK.Utils
     {
         /// <summary> Objects drawing with this image, plus effect presets emitting it. </summary>
         public static int CountTextureReferences(Level level, TextureResourceId textureId)
-        {
-            if (level == null || !textureId.IsValid()) return 0;
-
-            var count = 0;
-            foreach (var obj in EnumerateObjects(level))
-                if (obj is ShapeObject shape && shape.TextureResourceId == textureId)
-                    count++;
-
-            if (level.Resources?.Effects != null)
-            {
-                foreach (var effect in level.Resources.Effects.Values)
-                    if (effect?.Core != null && effect.Core.TextureResourceId == textureId)
-                        count++;
-            }
-
-            return count;
-        }
+            => textureId.IsValid() ? Count(level, ResourceRef.Of(textureId)) : 0;
 
         /// <summary> Text objects set in this typeface. </summary>
         public static int CountFontReferences(Level level, FontResourceId fontId)
-        {
-            if (level == null || !fontId.IsValid()) return 0;
-
-            var count = 0;
-            foreach (var obj in EnumerateObjects(level))
-                if (obj is TextObject text && text.FontResourceId == fontId)
-                    count++;
-
-            return count;
-        }
+            => fontId.IsValid() ? Count(level, ResourceRef.Of(fontId)) : 0;
 
         /// <summary> Audio tracks playing this clip. </summary>
         public static int CountAudioReferences(Level level, AudioResourceId audioId)
-        {
-            if (level?.Audio?.Tracks == null || !audioId.IsValid()) return 0;
-
-            var count = 0;
-            foreach (var track in level.Audio.Tracks.Values)
-                if (track != null && track.AudioResourceId == audioId)
-                    count++;
-
-            return count;
-        }
+            => audioId.IsValid() ? Count(level, ResourceRef.Of(audioId)) : 0;
 
         // BOTH SLOTS COUNT, and they are two references rather than one: a shape answers what an
         // object is DRAWN as and what it is HIT as, and an object using the same custom shape for
         // both would otherwise report as one.
 
-        /// <summary> Objects drawn as this shape, plus objects colliding as it. </summary>
+        /// <summary> Objects drawn as this shape, plus objects colliding as it, plus effect presets
+        /// emitting it as their particle mesh. </summary>
         public static int CountShapeReferences(Level level, ShapeId shapeId)
-        {
-            if (level == null || !shapeId.IsEnabled()) return 0;
-
-            var count = 0;
-            foreach (var obj in EnumerateObjects(level))
-            {
-                if (obj is not ShapeObject shape) continue;
-
-                if (shape.ShapeId == shapeId) count++;
-                if (shape.ColliderId == shapeId) count++;
-            }
-
-            return count;
-        }
+            => shapeId.IsEnabled() ? Count(level, ResourceRef.Of(shapeId)) : 0;
 
         // A ThemeRef COLOUR IS NOT A REFERENCE TO ONE THEME. It stores a slot INDEX into whichever
         // theme is active at that frame (see ColorType.ThemeRef), so it survives a theme being
@@ -104,69 +61,28 @@ namespace BH.SDK.Utils
 
         /// <summary> Keyframes on the level's theme track that switch to this palette. </summary>
         public static int CountThemeReferences(Level level, ThemeId themeId)
-        {
-            var themes = level?.Game?.Events?.Themes;
-            if (themes == null || !themeId.IsEnabled()) return 0;
-
-            var count = 0;
-            for (var i = 0; i < themes.Count; i++)
-                if (themes[i] != null && themes[i].ThemeId == themeId)
-                    count++;
-
-            return count;
-        }
+            => themeId.IsEnabled() ? Count(level, ResourceRef.Of(themeId)) : 0;
 
         /// <summary> Objects emitting this particle preset. </summary>
         public static int CountEffectReferences(Level level, EffectId effectId)
-        {
-            if (level == null || !effectId.IsEnabled()) return 0;
-
-            var count = 0;
-            foreach (var obj in EnumerateObjects(level))
-                if (obj is EffectObject effect && effect.EffectId == effectId)
-                    count++;
-
-            return count;
-        }
+            => effectId.IsEnabled() ? Count(level, ResourceRef.Of(effectId)) : 0;
 
         /// <summary> Placements of this template, anywhere in the level - inside other templates
         /// included, which is how a nested prefab is placed at all. </summary>
         public static int CountPrefabReferences(Level level, PrefabId prefabId)
+            => prefabId.IsEnabled() ? Count(level, ResourceRef.Of(prefabId)) : 0;
+
+        private static int Count(Level level, ResourceRef target)
         {
-            if (level == null || !prefabId.IsEnabled()) return 0;
+            if (level == null) return 0;
 
             var count = 0;
-            foreach (var obj in EnumerateObjects(level))
-                if (obj is PrefabObject placement && placement.PrefabId == prefabId)
-                    count++;
-
+            ResourceGraph.Walk(level, reference =>
+            {
+                if (reference == target) count++;
+                return reference;
+            }, modifications: false);
             return count;
-        }
-
-        // Every authored object in the file, in no particular order: the level's own, then each
-        // template's root and its contents. A template with a null Objects dictionary is legal data
-        // in the middle of being built and is skipped rather than throwing.
-        private static IEnumerable<RectObject> EnumerateObjects(Level level)
-        {
-            if (level.Game?.Objects != null)
-            {
-                foreach (var obj in level.Game.Objects.Values)
-                    if (obj != null)
-                        yield return obj;
-            }
-
-            if (level.Resources?.Prefabs == null) yield break;
-
-            foreach (var prefab in level.Resources.Prefabs.Values)
-            {
-                if (prefab == null) continue;
-                if (prefab.Root != null) yield return prefab.Root;
-                if (prefab.Objects == null) continue;
-
-                foreach (var obj in prefab.Objects.Values)
-                    if (obj != null)
-                        yield return obj;
-            }
         }
     }
 }

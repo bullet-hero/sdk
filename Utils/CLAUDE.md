@@ -82,3 +82,14 @@ layer-wide conventions. This file is folder-local.
   `FontCharacterService`, and by `GamePlayer`'s `TextsProvider`/`TextComposeJob`. **It is NOT grapheme
   clustering** (UAX #29): a combining mark is still its own index everywhere, deliberately - see
   `Docs/Issues/PRE_RELEASE_STRUCTURAL_ANALYSIS.md` §7 for what that costs and what buying it would.
+
+**`ResourceGraph` is the ONE list of reference edges** - every field in a level, a prefab, an object
+or an effect that names a resource, including `EffectObjectCore.ParticleShapeId` and the id-valued
+`Modification`s of a placement (converted through `ModificationValues.TryConvert`, the same path
+`Apply` takes). `ResourceReferenceUtils`' counts, `ResourceClosure` (the transitive set a selection
+needs, game-defined ids excluded) and `ResourceRemap` (rewriting those same edges after an import)
+all walk it, so a reference field added to the format is added in ONE place - and a closure that
+misses it is the same bug as a remap that misses it. `ResourceRef` is a typed reference to any of the
+seven kinds (`Guid` for the data kinds, `int` for the file kinds - `ResourceTypeExtensions
+.IsGuidAddressed`), `ResourceSet` a set of them. `ResourceNaming` allocates the next user id and a
+unique file name, and names an entry for a list row.

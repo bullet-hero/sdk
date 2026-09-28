@@ -22,7 +22,7 @@ namespace BH.SDK.Models.Resources
         /// each is a load attempt the player waits through. </summary>
         public const int MaxSourcesCount = 4;
 
-        /// <summary> Where to look for the asset, in order - a local path, a URL, an addressable key.
+        /// <summary> Where to look for the asset, in order - a level path, an absolute path, a URL, a StreamingAssets path.
         /// Several entries are fallbacks for one and the same asset, not several assets. </summary>
         [RuleNotNull, RuleCollectionMaxCount(MaxSourcesCount)]
         [JsonProperty(Names.Src)]

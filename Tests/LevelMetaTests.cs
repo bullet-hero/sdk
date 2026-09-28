@@ -191,7 +191,7 @@ namespace BH.SDK.Tests
             var meta = Authored();
 
             var bytes = serializer.SerializeEnvelope(ModelDomains.LevelMeta,
-                new EnvelopeData(ModelGenerations.V1_AlphaRelease, meta));
+                new EnvelopeData(ModelGenerations.V2_SimplifyEntrance, meta));
             var read = serializer.DeserializeEnvelope(bytes, typeof(LevelMeta)).GetPayload<LevelMeta>();
 
             Assert.AreEqual(meta.MinGeneration, read.MinGeneration);

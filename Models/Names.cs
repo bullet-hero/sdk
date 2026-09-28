@@ -270,7 +270,7 @@
         /// <summary> Word fragment, built into ObjectIds. </summary>
         public const string Ids = "ids";
 
-        /// <summary> Word kept in the key vocabulary; nothing is built from it today. </summary>
+        /// <summary> Word fragment, built into ResourceGuid. </summary>
         public const string Guid = "guid";
 
         /// <summary> CameraEvents.Positions, Checkpoint.Position, RectObject.Positions. </summary>
@@ -703,6 +703,9 @@
         /// <summary> Word fragment, built into MaxResourceBytes, RequireResourceMeta, RequireResourceUrl, ResourceId and 3 more. </summary>
         public const string Resource = "resource";
 
+        /// <summary> Word fragment, built into CollectionId. </summary>
+        public const string Collection = "collection";
+
         /// <summary> Word kept in the key vocabulary; nothing is built from it today. </summary>
         public const string Res = "res";
 
@@ -819,6 +822,9 @@
 
         /// <summary> ResourceMeta.ResourceFeatured. </summary>
         public const string Featured = "featured";
+
+        /// <summary> LevelMeta.LevelAiGenerated and ResourceMeta.ResourceAiGenerated. </summary>
+        public const string AiGenerated = "ai_generated";
 
         // ONE SPELLING FOR A SOURCE. Resource.Sources wrote src while ResourceMeta and
         // PublishProfile wrote sources, for the same concept.
@@ -2348,6 +2354,9 @@
         /// <summary> <c>"level_id"</c> - LevelMeta.LevelId, LevelStatistics.LevelId. </summary>
         public const string LevelId = Level + _ + Id;
 
+        /// <summary> <c>"collection_id"</c> - ResourceCollection.CollectionId. </summary>
+        public const string CollectionId = Collection + _ + Id;
+
         /// <summary> Prefab.PrefabId, PrefabObject.PrefabId. </summary>
         public const string PrefabId = "pfid";
 
@@ -2458,6 +2467,9 @@
 
         /// <summary> <c>"resource_id"</c> - ResourceMeta.ResourceId. </summary>
         public const string ResourceId = Resource + _ + Id;
+
+        /// <summary> <c>"resource_guid"</c> - ResourceMeta.ResourceGuid. </summary>
+        public const string ResourceGuid = Resource + _ + Guid;
 
         /// <summary> <c>"resources_meta"</c> - LevelMeta.ResourcesMeta. </summary>
         public const string ResourcesMeta = Resources + _ + Meta;

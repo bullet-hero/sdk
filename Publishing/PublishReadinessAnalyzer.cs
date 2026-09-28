@@ -105,7 +105,7 @@ namespace BH.SDK.Publishing
         private static void AnalyzeResourceMeta(ResourceMeta resourceMeta, PublishProfile profile,
             DateTime now, List<PublishIssue> issues)
         {
-            var path = DescribeResource(resourceMeta.ResourceType, resourceMeta.ResourceId.value);
+            var path = DescribeResource(resourceMeta);
 
             AnalyzeResourceLicense(resourceMeta, profile, now, path, issues);
             AnalyzePermissions(resourceMeta, now, path, issues);
@@ -257,7 +257,7 @@ namespace BH.SDK.Publishing
             if (bytes <= 0 || bytes <= profile.MaxResourceBytes) return;
 
             issues.Add(new PublishIssue(PublishRule.ResourceTooLarge, RuleGroup.Error,
-                DescribeResource(resourceMeta.ResourceType, resourceMeta.ResourceId.value),
+                DescribeResource(resourceMeta),
                 $"The file is {ByteSizeUtils.Format(bytes)}, over this service's " +
                 $"{ByteSizeUtils.Format(profile.MaxResourceBytes)} limit for one resource."));
         }
@@ -293,17 +293,21 @@ namespace BH.SDK.Publishing
 
         #region Level
 
+        // A RECORD IS KEYED BY BOTH SLOTS, since generation 2 lets it credit a data resource by guid
+        // (ResourceMeta.ResourceGuid). A file record leaves the guid empty and a data record leaves the
+        // int Null, so one key covers both families without either colliding with the other.
+
         private static void AnalyzeLevel(LevelMeta meta, Level level, PublishProfile profile,
             List<PublishIssue> issues)
         {
-            var covered = new HashSet<(ResourceType, int)>();
+            var covered = new HashSet<(ResourceType, int, Guid)>();
             foreach (var resourceMeta in meta.ResourcesMeta)
             {
                 if (resourceMeta == null) continue;
-                covered.Add((resourceMeta.ResourceType, resourceMeta.ResourceId.value));
+                covered.Add(KeyOf(resourceMeta));
             }
 
-            var present = new HashSet<(ResourceType, int)>();
+            var present = new HashSet<(ResourceType, int, Guid)>();
             var resources = level.Resources;
             if (resources != null)
             {
@@ -316,31 +320,40 @@ namespace BH.SDK.Publishing
                 foreach (var pair in resources.Audios)
                     AnalyzeLevelResource(ResourceType.Audio, pair.Key.value, pair.Value,
                         profile, covered, present, issues);
+
+                // A data resource is authored inside level.json and has no file to fetch, so only its
+                // presence is recorded: it can be credited, but no profile demands a record for it.
+                foreach (var id in resources.Themes.Keys) present.Add((ResourceType.Theme, 0, id.value));
+                foreach (var id in resources.Effects.Keys) present.Add((ResourceType.Effect, 0, id.value));
+                foreach (var id in resources.CompositeShapes.Keys) present.Add((ResourceType.Shape, 0, id.value));
+                foreach (var id in resources.Prefabs.Keys) present.Add((ResourceType.Prefab, 0, id.value));
             }
 
-            // Only the three families a level can actually hold are checked for orphans. Bytes and
-            // Text records describe resources LevelResources has no dictionary for, so "no matching
+            // The cover is no resource: it is present whenever the metadata points at a file, which is
+            // the only thing a record addressed by its type alone can be checked against.
+            if (!string.IsNullOrEmpty(meta.LevelLogo?.Uri)) present.Add((ResourceType.LevelLogo, 0, Guid.Empty));
+
+            // Only the families a level can actually hold are checked for orphans. Bytes and Text
+            // records describe resources LevelResources has no dictionary for, so "no matching
             // resource" is their normal state, not a finding.
             foreach (var entry in covered)
             {
                 if (present.Contains(entry)) continue;
-                if (entry.Item1 != ResourceType.Texture
-                    && entry.Item1 != ResourceType.Font
-                    && entry.Item1 != ResourceType.Audio) continue;
+                if (entry.Item1 == ResourceType.Bytes || entry.Item1 == ResourceType.Text) continue;
 
                 issues.Add(new PublishIssue(PublishRule.ResourceMetaOrphaned, RuleGroup.Advice,
-                    DescribeResource(entry.Item1, entry.Item2),
+                    DescribeResource(entry.Item1, entry.Item2, entry.Item3),
                     "The record describes a resource this level does not have."));
             }
         }
 
         private static void AnalyzeLevelResource(ResourceType resourceType, int id, Resource resource,
-            PublishProfile profile, HashSet<(ResourceType, int)> covered,
-            HashSet<(ResourceType, int)> present, List<PublishIssue> issues)
+            PublishProfile profile, HashSet<(ResourceType, int, Guid)> covered,
+            HashSet<(ResourceType, int, Guid)> present, List<PublishIssue> issues)
         {
-            var key = (resourceType, id);
+            var key = (resourceType, id, Guid.Empty);
             present.Add(key);
-            var path = DescribeResource(resourceType, id);
+            var path = DescribeResource(resourceType, id, Guid.Empty);
 
             if (profile.RequireResourceMeta && !covered.Contains(key))
             {
@@ -411,8 +424,18 @@ namespace BH.SDK.Publishing
             return false;
         }
 
-        private static string DescribeResource(ResourceType resourceType, int id)
-            => $"meta.resources[{resourceType}:{id}]";
+        private static (ResourceType, int, Guid) KeyOf(ResourceMeta resourceMeta)
+            => (resourceMeta.ResourceType, resourceMeta.ResourceId.value, resourceMeta.ResourceGuid);
+
+        private static string DescribeResource(ResourceMeta resourceMeta)
+            => DescribeResource(resourceMeta.ResourceType, resourceMeta.ResourceId.value, resourceMeta.ResourceGuid);
+
+        private static string DescribeResource(ResourceType resourceType, int id, Guid guid)
+            => resourceType.IsTypeAddressed()
+                ? $"meta.resources[{resourceType}]"
+                : resourceType.IsGuidAddressed()
+                    ? $"meta.resources[{resourceType}:{guid}]"
+                    : $"meta.resources[{resourceType}:{id}]";
 
         // The platform an unlicensed work names is not another finding - it changes nothing about
         // the verdict, since no platform issues terms. It goes into the message because it is the

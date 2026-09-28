@@ -18,7 +18,7 @@ namespace BH.SDK.Models.Resources
     {
         // URI - Universal Resource Identifier, either for paths, urls or keys
 
-        /// <summary> How Uri should be interpreted (file path / URL / addressable key) - it cannot
+        /// <summary> How Uri should be interpreted (level path / absolute path / URL / StreamingAssets) - it cannot
         /// be guessed reliably from the string itself. </summary>
         [RuleEnumValid(ResourceUriType.Undefined)]
         [JsonProperty(Names.UriType)]

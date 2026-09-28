@@ -127,6 +127,24 @@ namespace BH.SDK.Tests
             Assert.AreEqual(3, ResourceReferenceUtils.CountShapeReferences(level, shapeId));
         }
 
+        // A custom shape used as an effect's particle mesh is in use: deleting it reported zero
+        // references before the effect half was walked.
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Easy)]
+        public void AShapeCountsAnEffectsParticleMesh()
+        {
+            var shapeId = new ShapeId(System.Guid.NewGuid());
+
+            var level = new Level();
+            var effect = new EffectData { EffectId = new EffectId(System.Guid.NewGuid()) };
+            effect.Core.ParticleShapeId = shapeId;
+            level.Resources.Effects.Add(effect.EffectId, effect);
+
+            Assert.AreEqual(1, ResourceReferenceUtils.CountShapeReferences(level, shapeId));
+        }
+
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]

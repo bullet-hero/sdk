@@ -187,3 +187,10 @@ a texture that exists cannot be *proven* alpha-1 while one that does not exist t
 common effect pushes no texture property at all. The other two int-backed references
 (`LevelTrack.AudioResourceId`, `TextObject.FontResourceId`) keep the rule: nothing plays or renders
 without them.
+
+**Resource credits cover all seven kinds since generation 2 of `LevelMeta`.** `ResourceType` gained
+`Theme`, `Effect`, `Shape`, `Prefab`, and `ResourceMeta.ResourceGuid` addresses them (the four kinds
+are guid-addressed, the three file kinds keep `ResourceId`); `RuleResourceMetaId` keeps the two slots
+exclusive. A V1 file migrates through `Versions/V1/Migrations/LevelMetaV1ToV2` with every guid empty.
+The same records travel inside a collection's manifest (`Models/Collections/ResourceCollection`), and
+an import copies the records of what it brings (`GameEditor`'s `OpMetaMergeResourceRecords`).

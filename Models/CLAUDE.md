@@ -33,7 +33,11 @@ the level format itself (see "Object model" / "Value system" below for the
   `Hints/` (`LevelHints` + `LimitHints` - everything advisory, see its own section below),
   `Meta/` (`Author` - name, credit and url, where the credit is a localizable free-text line
   rather than a role enum, since the vocabulary of a credits list is open and an empty one is an
-  ordinary record; `ResourceMeta` - consumed by `LevelMeta`, itself NOT in this folder; note
+  ordinary record; `ResourceMeta` - consumed by `LevelMeta`, itself NOT in this folder, addressed in
+  one of THREE ways (a file resource's negative int, a data resource's guid, or neither for the cover,
+  `ResourceType.LevelLogo`, since a level has exactly one - `RuleResourceMetaId` enforces which); both
+  models carry a three-state `AiGeneration` whose zero is "not specified", and "contains AI" is
+  derived by `LevelMeta.ContainsAiContent`, never stored; note
   `ResourceMeta` carries licensing/attribution only - **the age rating lives on `LevelMeta`
   alone**, since a rating describes the finished experience, not an asset in isolation),
   `Interfaces/`, `Enum/`, `Primitives/` (id structs - **`Assets/Plugins/BH.SDK/Docs/IDENTIFIERS.md` is the criterion that

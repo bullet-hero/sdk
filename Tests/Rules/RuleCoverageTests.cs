@@ -72,6 +72,7 @@ namespace BH.SDK.Tests.Rules
             { typeof(RulePrefabRootFixedAttribute), nameof(RulePrefabRootFixedTests) },
 
             { typeof(RuleAnyDeviceActiveAttribute), nameof(RuleAnyDeviceActiveTests) },
+            { typeof(RuleResourceMetaIdAttribute), nameof(RuleResourceMetaIdTests) },
             { typeof(RuleShortcutBindingsAttribute), nameof(RuleShortcutBindingsTests) },
         };
 

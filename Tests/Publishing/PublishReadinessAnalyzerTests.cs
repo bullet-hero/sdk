@@ -590,6 +590,64 @@ namespace BH.SDK.Tests.Publishing
             Assert.IsTrue(Has(report, PublishRule.ResourceMetaMissing));
         }
 
+        // Generation 2: a record may credit a data resource by guid. One the level holds is covered,
+        // one it does not is an orphan like any file record, and neither is ever demanded.
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Normal)]
+        public void TestThemeRecordIsCoveredWhenPresentAndOrphanedWhenNot()
+        {
+            var themeId = Guid.NewGuid();
+            var meta = CreateCleanMeta();
+            meta.ResourcesMeta.Add(new ResourceMeta
+            {
+                ResourceType = ResourceType.Theme,
+                ResourceId = TypedResourceId.Null,
+                ResourceGuid = themeId,
+                ResourceTitle = new StringValue("a palette"),
+            });
+
+            var level = CreateLevelWithAudio(-1, ResourceUriType.LevelPath);
+            var orphaned = new PublishReadinessAnalyzer().Analyze(meta, PublishProfile.CreateOpen(), level, Now);
+
+            var theme = new BH.SDK.Models.Data.ThemeData { ThemeId = new BH.SDK.Models.Primitives.ThemeId(themeId) };
+            level.Resources.Themes.Add(theme.ThemeId, theme);
+            var covered = new PublishReadinessAnalyzer().Analyze(meta, PublishProfile.CreateOpen(), level, Now);
+
+            Assert.IsTrue(orphaned.Issues.Any(issue => issue.Rule == PublishRule.ResourceMetaOrphaned
+                                                       && issue.Path.Contains(themeId.ToString())));
+            Assert.IsFalse(Has(covered, PublishRule.ResourceMetaOrphaned));
+        }
+
+        // The cover's record is addressed by its type alone, so the only thing it can be an orphan of
+        // is the metadata itself: present while LevelLogo points at a file, orphaned once it does not.
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Normal)]
+        public void TestLogoRecordIsCoveredWithACoverAndOrphanedWithout()
+        {
+            var meta = CreateCleanMeta();
+            meta.ResourcesMeta.Add(new ResourceMeta
+            {
+                ResourceType = ResourceType.LevelLogo,
+                ResourceTitle = new StringValue("the cover"),
+            });
+
+            var level = CreateLevelWithAudio(-1, ResourceUriType.LevelPath);
+            var covered = new PublishReadinessAnalyzer().Analyze(meta, PublishProfile.CreateOpen(), level, Now);
+
+            meta.LevelLogo = new ResourceKey(ResourceUriType.LevelPath, string.Empty);
+            var orphaned = new PublishReadinessAnalyzer().Analyze(meta, PublishProfile.CreateOpen(), level, Now);
+
+            Assert.IsFalse(Has(covered, PublishRule.ResourceMetaOrphaned));
+            Assert.IsTrue(orphaned.Issues.Any(issue => issue.Rule == PublishRule.ResourceMetaOrphaned
+                                                       && issue.Path == "meta.resources[LevelLogo]"));
+        }
+
         // The store profile's whole point: an arbitrary URL is a fetch nobody moderated, and the
         // standard profile allows it while the strict one does not.
 

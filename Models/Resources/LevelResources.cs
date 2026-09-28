@@ -16,8 +16,9 @@ namespace BH.SDK.Models.Resources
 {
     /// <summary>
     /// Everything a level owns beyond its objects: seven dictionaries of user-defined resources.
-    /// Only user-defined (negative-id) entries ever appear here - anything shipped with the game
-    /// lives in the game's own registries and is referenced by id without being copied in.
+    /// Only user-defined entries ever appear here - negative ids for textures, fonts and audio, and
+    /// any guid for shapes, themes, effects and prefabs - while anything shipped with the game lives
+    /// in the game's own registries and is referenced by id without being copied in.
     /// </summary>
     [RuleContainer]
     [ModelGeneration(ModelDomains.LevelResources, ModelGenerations.V1_AlphaRelease)]

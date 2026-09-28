@@ -519,6 +519,7 @@ namespace BH.SDK.Tests
             meta.LevelLogo = new ResourceKey(ResourceUriType.DirectUrl, "https://example.com/logo.png");
             meta.LevelLicense = new TypicalLicense(TypicalLicenseType.CC_BY_NC_4_0);
             meta.LevelAgeRating = AgeRating.Age12;
+            meta.LevelAiGenerated = AiGeneration.Yes;
             meta.LevelAuthors = new List<Author>
             {
                 new(new StringValue("vertoker"), "vertoker.com"),
@@ -537,6 +538,14 @@ namespace BH.SDK.Tests
                     {
                         new(new StringValue("Toby Fox"), "https://x.com/tobyfox"),
                     },
+                    ResourceAiGenerated = AiGeneration.No,
+                },
+                new()
+                {
+                    ResourceType = ResourceType.LevelLogo,
+                    ResourceTitle = new StringValue("Cover"),
+                    ResourceLicense = new TypicalLicense(TypicalLicenseType.CC_BY_NC_4_0),
+                    ResourceAiGenerated = AiGeneration.Yes,
                 },
             };
             meta.ResourcesMeta[0].ResourceSources.Add(new StringValue("https://mirror1.example.com/spider-dance.ogg"));

@@ -71,6 +71,23 @@
         /// <summary> Device-wide prefab library - the only way a prefab is shared between levels. </summary>
         public const string PrefabsDirectory = "prefabs";
 
+        // A COLLECTION IS A FOLDER, the way a level is: resources/collections/<CollectionId>/ holding a
+        // collection.* manifest, the four data folders above with the device library's own envelope
+        // files byte for byte, and media/ for the file resources. Reusing the library layout is what
+        // lets one reader serve both and a library entry be copied into a collection as a file.
+
+        /// <summary> Where resource collections live, under ResourcesDirectory. </summary>
+        public const string CollectionsDirectory = "collections";
+
+        /// <summary> A collection's manifest - the base name, extension chosen like the level's. </summary>
+        public const string CollectionFileBaseName = "collection";
+
+        /// <summary> Where a collection keeps its textures, fonts and audio files. </summary>
+        public const string MediaDirectory = "media";
+
+        /// <summary> A collection's cover image, optional. </summary>
+        public const string CoverFileName = "cover.png";
+
         /// <summary> Where diagnostic reports are written. </summary>
         public const string ReportsDirectory = "reports";
 
