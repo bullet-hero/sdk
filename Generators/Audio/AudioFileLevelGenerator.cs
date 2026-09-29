@@ -45,7 +45,7 @@ namespace BH.SDK.Generators.Audio
             // the clip decides the length here and this is the only number an author adds to it,
             // so between the two it is what "how much level appears" comes down to.
             .Section(GeneratorSections.Main, nameof(Parameters.LevelName), nameof(Parameters.Framerate),
-                nameof(Parameters.TailSeconds))
+                nameof(Parameters.TailSeconds), nameof(Parameters.PinScreenAspect))
             // Additional is ordered by what a row DOES to the level, like every other level
             // preset's: the number deciding where the song starts, then the prose, then the
             // host-filled fields at the bottom.
@@ -73,6 +73,7 @@ namespace BH.SDK.Generators.Audio
             var level = new Level();
             level.Settings.Fps = framerate;
             level.Settings.FrameDuration = FrameDuration(parameters, framerate);
+            if (parameters.PinScreenAspect) SeedScreenLimit(level);
 
             var resourceId = new AudioResourceId(AudioResourceId.MaxUserDefinedValue);
             level.Resources.Audios[resourceId] = new AudioResource(resourceId, new List<ResourceKey>
@@ -204,6 +205,9 @@ namespace BH.SDK.Generators.Audio
 
             /// <summary> How much level is left after it ends. </summary>
             public float TailSeconds = 2f;
+
+            /// <summary> Starts the level with a 16:9 screen limit keyframe on its first frame. </summary>
+            public bool PinScreenAspect = true;
 
             /// <summary> Where the file is; filled by the host, not by the author. </summary>
             public string AudioPath = string.Empty;

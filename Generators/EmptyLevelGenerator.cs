@@ -25,7 +25,7 @@ namespace BH.SDK.Generators
 
         private static readonly GeneratorHints HintsValue = new GeneratorHints.Builder()
             .Section(GeneratorSections.Main, nameof(Parameters.LevelName), nameof(Parameters.Framerate),
-                nameof(Parameters.FrameDuration))
+                nameof(Parameters.FrameDuration), nameof(Parameters.PinScreenAspect))
             .Section(GeneratorSections.Additional, nameof(Parameters.LevelDescription))
             .Range(nameof(Parameters.Framerate), FrameRules.MinFramerate, FrameRules.MaxFramerate)
             .Range(nameof(Parameters.FrameDuration), FrameRules.MinFrameDuration, FrameRules.MaxFrameDuration)
@@ -39,6 +39,7 @@ namespace BH.SDK.Generators
             var level = new Level();
             level.Settings.Fps = parameters.Framerate;
             level.Settings.FrameDuration = parameters.FrameDuration;
+            if (parameters.PinScreenAspect) SeedScreenLimit(level);
 
             var meta = new LevelMeta
             {
@@ -58,12 +59,18 @@ namespace BH.SDK.Generators
         {
             /// <summary> Name the new level is created under. </summary>
             public IString LevelName = new StringValue();
+
             /// <summary> Its description. </summary>
             public IString LevelDescription = new StringValue();
+
             /// <summary> Frames per second the timeline is measured in. </summary>
             public int Framerate = DefaultFramerate;
+
             /// <summary> How many frames long it is. </summary>
             public int FrameDuration = DefaultFramerate * DefaultSeconds;
+
+            /// <summary> Starts the level with a 16:9 screen limit keyframe on its first frame. </summary>
+            public bool PinScreenAspect = true;
 
             private const int DefaultFramerate = 60;
             private const int DefaultSeconds = 10;

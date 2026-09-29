@@ -1,4 +1,8 @@
 using System;
+using BH.SDK.Models;
+using BH.SDK.Models.Keyframes;
+using BH.SDK.Models.Values;
+using BH.SDK.Rules;
 
 namespace BH.SDK.Generators
 {
@@ -19,11 +23,13 @@ namespace BH.SDK.Generators
 
         /// <summary> What must be true before a host offers this run. Nothing, by default. </summary>
         public virtual GeneratorRequirements Requirements => GeneratorRequirements.None;
+
         /// <summary> How a host should lay the parameters out. Empty means declaration order. </summary>
         public virtual GeneratorHints Hints => GeneratorHints.Empty;
 
         /// <summary> The parameters class a host builds its form out of, by reflection. </summary>
         public Type ParametersType => typeof(TParams);
+
         /// <summary> A fresh parameters object at its defaults. </summary>
         public object CreateDefaultParameters() => CreateDefaults();
 
@@ -53,6 +59,22 @@ namespace BH.SDK.Generators
 
         /// <summary> Override where the run's size is knowable in advance. </summary>
         protected virtual GeneratorCost EstimateTyped(TParams parameters) => GeneratorCost.Zero;
+
+        // A level with no screen limit plays at whatever aspect the device has, so a pattern authored
+        // on 16:9 shows what its author left outside the frame on an ultrawide and loses its edges on
+        // a phone. A level built from nothing therefore offers a pin to 16:9 on its first frame, on by
+        // default - a KEYFRAME rather than a runtime default, so the author sees it on the Events
+        // timeline and can change or delete it. The interop generators do not offer it: an import
+        // keeps whatever limit its source had (Afterbeat pins its own, an archive carries the file's).
+
+        /// <summary> Pins a level built from nothing to the default aspect (16:9) from its first
+        /// frame, unless it already has a limit of its own. </summary>
+        protected static void SeedScreenLimit(Level level)
+        {
+            if (level.Game.Events.ScreenLimits.Count > 0) return;
+            level.Game.Events.ScreenLimits.Add(new ScreenLimitKey(
+                new ScreenLimitFixed(new ScreenAspect()), FrameRules.MinFrame));
+        }
 
         private static TParams Cast(object parameters)
         {
