@@ -59,7 +59,7 @@ namespace BH.SDK.Publishing
             var meta = new BH.SDK.Models.LevelMeta { ResourcesMeta = manifest.ResourcesMeta };
             meta.LevelLicense = manifest.License;
             meta.LevelAuthors = manifest.Authors;
-            var records = new PublishReadinessAnalyzer().Analyze(meta, profile, now: now);
+            var records = new PublishReadinessAnalyzer().Analyze(meta, profile, null, now, null, resources);
             foreach (var issue in records.Issues)
                 if (issue.Path != null && issue.Path.StartsWith("meta.resources", StringComparison.Ordinal))
                     issues.Add(issue);
@@ -67,7 +67,8 @@ namespace BH.SDK.Publishing
             if (profile.MaxTotalBytes > 0 && totalBytes > profile.MaxTotalBytes)
                 issues.Add(new PublishIssue(PublishRule.PayloadTooLarge, RuleGroup.Error, "collection",
                     $"The collection weighs {ByteSizeUtils.Format(totalBytes)}, over this service's " +
-                    $"{ByteSizeUtils.Format(profile.MaxTotalBytes)} limit."));
+                    $"{ByteSizeUtils.Format(profile.MaxTotalBytes)} limit.",
+                    ByteSizeUtils.Format(totalBytes), ByteSizeUtils.Format(profile.MaxTotalBytes)));
 
             return new PublishReadinessReport(issues, levelInspected: true, payloadInspected: totalBytes > 0,
                 inputsComplete: presentFiles != null && (!profile.HasSizeLimits || totalBytes > 0),
@@ -90,8 +91,11 @@ namespace BH.SDK.Publishing
                     if (source == null || source.UriType != ResourceUriType.LevelPath) continue;
                     if (presentFiles.Contains(source.Uri)) continue;
 
+                    var name = ResourceNames.OfFile(resource, id);
                     issues.Add(new PublishIssue(PublishRule.CollectionMediaMissing, RuleGroup.Error,
-                        $"collection.{type}:{id}", $"'{source.Uri}' is named by the manifest and is not in the collection."));
+                        $"collection.{type}:{id}",
+                        $"'{source.Uri}', the file of {type} '{name}', is named by the manifest and is not in the collection.",
+                        type, name, source.Uri));
                 }
             }
         }
@@ -104,18 +108,33 @@ namespace BH.SDK.Publishing
         private static void AnalyzeClosure(LevelResources resources, List<PublishIssue> issues)
         {
             var reported = new HashSet<ResourceRef>();
+            var ownerType = ResourceType.Prefab;
+            var ownerName = string.Empty;
             ResourceRef Visit(ResourceRef reference)
             {
                 if (IsGameDefined(reference) || ResourceClosure.Owns(resources, reference) || !reported.Add(reference))
                     return reference;
 
                 issues.Add(new PublishIssue(PublishRule.CollectionReferenceMissing, RuleGroup.Error,
-                    $"collection.{reference}", "A resource points at this, and the collection does not carry it."));
+                    $"collection.{reference}",
+                    $"{ownerType} '{ownerName}' points at {reference}, and the collection does not carry it.",
+                    reference.Type, reference.ToString(), ownerType, ownerName));
                 return reference;
             }
 
-            foreach (var prefab in resources.Prefabs.Values) ResourceGraph.Walk(prefab, Visit, modifications: true);
-            foreach (var effect in resources.Effects.Values) ResourceGraph.Walk(effect, Visit);
+            foreach (var prefab in resources.Prefabs.Values)
+            {
+                ownerType = ResourceType.Prefab;
+                ownerName = prefab?.Root?.Name ?? string.Empty;
+                ResourceGraph.Walk(prefab, Visit, modifications: true);
+            }
+
+            foreach (var effect in resources.Effects.Values)
+            {
+                ownerType = ResourceType.Effect;
+                ownerName = effect?.Name ?? string.Empty;
+                ResourceGraph.Walk(effect, Visit);
+            }
         }
 
         private static bool IsGameDefined(ResourceRef reference)

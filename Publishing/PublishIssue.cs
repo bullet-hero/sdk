@@ -1,3 +1,4 @@
+using System;
 using BH.SDK.Rules;
 
 namespace BH.SDK.Publishing
@@ -11,6 +12,11 @@ namespace BH.SDK.Publishing
     // Warning is "publish, but a human has to look" - the split that lets one analyzer serve both
     // the automatic check in the client and the moderation queue on a server. Advice is neither and
     // never gates anything.
+    //
+    // THE FACTS TRAVEL AS DATA, NOT ONLY INSIDE THE SENTENCE. Message is English prose for a log and
+    // a server; a client that shows the finding in another language needs the same facts - which
+    // resource, which license, what the service accepts instead - as values it can word itself. An
+    // enum stays an enum there, so the caller names it through its own string table.
 
     /// <summary> One reason a level is not ready to be published, and how badly. </summary>
     public readonly struct PublishIssue
@@ -28,13 +34,20 @@ namespace BH.SDK.Publishing
         /// <summary> What to tell the author. </summary>
         public readonly string Message;
 
-        /// <summary> Built from its rule, group, path and message. </summary>
-        public PublishIssue(PublishRule rule, RuleGroup group, string path, string message)
+        /// <summary> The facts behind the finding, in the order its <see cref="PublishRule"/> member
+        /// lists them. A finding about one resource opens with its ResourceType and its name. An enum
+        /// (or an array of one) is a value the caller names itself, anything else is already text.
+        /// Never null. </summary>
+        public readonly object[] Args;
+
+        /// <summary> Built from its rule, group, path, message and facts. </summary>
+        public PublishIssue(PublishRule rule, RuleGroup group, string path, string message, params object[] args)
         {
             Rule = rule;
             Group = group;
             Path = path;
             Message = message;
+            Args = args ?? Array.Empty<object>();
         }
 
         /// <summary> One line, for a log. </summary>

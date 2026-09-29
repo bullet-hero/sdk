@@ -258,7 +258,7 @@
         /// <summary> StringLocalized.Strings. </summary>
         public const string Strings = "strs";
 
-        /// <summary> GeneralSettings.Language, StringLanguage.LanguageCode. </summary>
+        /// <summary> GeneralSettings.Language, StringLanguage.LanguageCode, EditorPublishingSettings.Language. </summary>
         public const string Language = "lang";
 
         /// <summary> Word fragment, built into PrefabIndex. </summary>
@@ -1585,6 +1585,9 @@
 
         /// <summary> GameEditorSettings.Serialization. </summary>
         public const string Serialize = "serialize";
+
+        /// <summary> GameEditorSettings.Publishing. </summary>
+        public const string Publishing = "publishing";
 
         /// <summary> EditorPlayerSettings.BotControl, RunProfile.Bot. </summary>
         public const string Bot = "bot";

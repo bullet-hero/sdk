@@ -82,6 +82,11 @@ namespace BH.SDK.Models.SettingGroups
         [JsonProperty(Names.Serialize)]
         public EditorSerializationSettings Serialization { get; set; }
 
+        /// <summary> How a level goes up to a storefront - which language it is published in first. </summary>
+        [RuleNotNull]
+        [JsonProperty(Names.Publishing)]
+        public EditorPublishingSettings Publishing { get; set; }
+
         /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public GameEditorSettings()
         {
@@ -96,6 +101,7 @@ namespace BH.SDK.Models.SettingGroups
             Timeline = new EditorTimelineSettings();
             Interface = new EditorInterfaceSettings();
             Serialization = new EditorSerializationSettings();
+            Publishing = new EditorPublishingSettings();
         }
 
         /// <summary> Every member at once, in declaration order. </summary>
@@ -103,7 +109,8 @@ namespace BH.SDK.Models.SettingGroups
             EditorPlayerSettings player, EditorGridSettings grid, EditorEffectsSettings effects,
             EditorSelectionSettings selection,
             EditorGizmosSettings gizmos, EditorCreationSettings creation, EditorTimelineSettings timeline,
-            EditorInterfaceSettings interfaceSettings, EditorSerializationSettings serialization)
+            EditorInterfaceSettings interfaceSettings, EditorSerializationSettings serialization,
+            EditorPublishingSettings publishing)
         {
             Savings = savings;
             Camera = camera;
@@ -116,9 +123,10 @@ namespace BH.SDK.Models.SettingGroups
             Timeline = timeline;
             Interface = interfaceSettings;
             Serialization = serialization;
+            Publishing = publishing;
         }
 
-        // HashCode.Combine takes at most 8 values and this holds 10, so the tail folds into the
+        // HashCode.Combine takes at most 8 values and this holds 12, so the tail folds into the
         // eighth slot - the same shape the flat version needed twice over for its sixteen.
     }
 }

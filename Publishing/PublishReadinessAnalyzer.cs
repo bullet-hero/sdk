@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using BH.SDK.Models;
 using BH.SDK.Models.Enums.Meta;
 using BH.SDK.Models.Enums.Resources;
@@ -39,6 +40,13 @@ namespace BH.SDK.Publishing
         /// </summary>
         public PublishReadinessReport Analyze(LevelMeta meta, PublishProfile profile,
             Level level = null, DateTime now = default, PublishPayload payload = null)
+            => Analyze(meta, profile, level, now, payload, level?.Resources);
+
+        /// <summary> The same grading, with <paramref name="names"/> the resources a finding's name is
+        /// looked up in when the record's own title says nothing - a collection's, which has no level
+        /// to hand over. </summary>
+        public PublishReadinessReport Analyze(LevelMeta meta, PublishProfile profile, Level level,
+            DateTime now, PublishPayload payload, LevelResources names)
         {
             if (meta == null) throw new ArgumentNullException(nameof(meta));
             if (profile == null) throw new ArgumentNullException(nameof(profile));
@@ -49,8 +57,9 @@ namespace BH.SDK.Publishing
             foreach (var resourceMeta in meta.ResourcesMeta)
             {
                 if (resourceMeta == null) continue;
-                AnalyzeResourceMeta(resourceMeta, profile, now, issues);
-                AnalyzeResourceSize(resourceMeta, profile, payload, issues);
+                var name = ResourceNames.Of(resourceMeta, names);
+                AnalyzeResourceMeta(resourceMeta, name, profile, now, issues);
+                AnalyzeResourceSize(resourceMeta, name, profile, payload, issues);
             }
 
             if (level != null) AnalyzeLevel(meta, level, profile, issues);
@@ -66,16 +75,32 @@ namespace BH.SDK.Publishing
 
         #region Level meta
 
+        // A SERVICE THAT LISTS LICENSES AND STILL TOLERATES AN UNKNOWN ONE WANTS TO HEAR ABOUT IT. For
+        // such a profile a missing license or a missing credits record is a warning rather than silence:
+        // it passes, and somebody looks. A profile that lists none (the local one) cares about no
+        // license at all and stays silent, and one that does not tolerate an unknown license refuses.
+        private static bool AsksAboutUnknowns(PublishProfile profile)
+            => profile.AllowUnknownLicense && profile.AllowedLicenses.Count > 0;
+
         private static void AnalyzeLevelMeta(LevelMeta meta, PublishProfile profile,
             List<PublishIssue> issues)
         {
-            if (!IsLicenseAcceptable(meta.LevelLicense, profile, out var unspecified))
+            var acceptable = IsLicenseAcceptable(meta.LevelLicense, profile, out var unspecified);
+            if (acceptable && unspecified && AsksAboutUnknowns(profile))
+                issues.Add(new PublishIssue(PublishRule.LevelLicenseNotAllowed, RuleGroup.Warning,
+                    "meta.license", "The level states no license of its own."));
+
+            if (!acceptable)
             {
-                issues.Add(new PublishIssue(PublishRule.LevelLicenseNotAllowed, RuleGroup.Error,
-                    "meta.license",
-                    unspecified
-                        ? "The level states no license of its own."
-                        : $"The level's license is not accepted by profile '{profile.ProfileKey}'."));
+                if (unspecified)
+                    issues.Add(new PublishIssue(PublishRule.LevelLicenseNotAllowed, RuleGroup.Error,
+                        "meta.license", "The level states no license of its own."));
+                else
+                    issues.Add(new PublishIssue(PublishRule.LevelLicenseNotAllowed, RuleGroup.Error,
+                        "meta.license",
+                        $"The level's license, {NameOf(meta.LevelLicense)}, is not accepted by profile " +
+                        $"'{profile.ProfileKey}'; it accepts {Accepted(profile)}.",
+                        LicenseArg(meta.LevelLicense), profile.AllowedLicenses.ToArray()));
             }
 
             if (profile.RequireAgeRating && meta.LevelAgeRating == AgeRating.Unrated)
@@ -94,7 +119,9 @@ namespace BH.SDK.Publishing
             {
                 issues.Add(new PublishIssue(PublishRule.ResourceUriTypeNotAllowed, RuleGroup.Error,
                     "meta.logo", $"The logo is fetched as {meta.LevelLogo.UriType}, " +
-                                 $"which profile '{profile.ProfileKey}' does not accept."));
+                                 $"which profile '{profile.ProfileKey}' does not accept.",
+                    ResourceType.LevelLogo, ResourceNames.FileName(meta.LevelLogo.Uri), meta.LevelLogo.UriType,
+                    profile.AllowedUriTypes.ToArray()));
             }
         }
 
@@ -102,28 +129,34 @@ namespace BH.SDK.Publishing
 
         #region Resource meta
 
-        private static void AnalyzeResourceMeta(ResourceMeta resourceMeta, PublishProfile profile,
+        // A MISSING SOURCE PAGE ASKS, IT DOES NOT BLOCK. The page is how a moderator traces a work
+        // back after a complaint, which is worth asking for, but a work the author made themselves
+        // has no page at all, and refusing it made "I drew this" unpublishable.
+
+        private static void AnalyzeResourceMeta(ResourceMeta resourceMeta, string name, PublishProfile profile,
             DateTime now, List<PublishIssue> issues)
         {
             var path = DescribeResource(resourceMeta);
+            var type = resourceMeta.ResourceType;
 
-            AnalyzeResourceLicense(resourceMeta, profile, now, path, issues);
-            AnalyzePermissions(resourceMeta, now, path, issues);
-            AnalyzeAttribution(resourceMeta, profile, path, issues);
+            AnalyzeResourceLicense(resourceMeta, name, profile, now, path, issues);
+            AnalyzePermissions(resourceMeta, name, now, path, issues);
+            AnalyzeAttribution(resourceMeta, name, profile, path, issues);
 
             if (profile.RequireResourceUrl && string.IsNullOrWhiteSpace(resourceMeta.ResourceUrl))
             {
-                issues.Add(new PublishIssue(PublishRule.ResourceUrlMissing, RuleGroup.Error, path,
-                    "The record names no page the work can be traced back to."));
+                issues.Add(new PublishIssue(PublishRule.ResourceUrlMissing, RuleGroup.Warning, path,
+                    $"The record of {type} '{name}' names no page the work can be traced back to.", type, name));
             }
 
             if (profile.RequireHashes && resourceMeta.ResourceHashes.Count == 0)
             {
                 issues.Add(new PublishIssue(PublishRule.ResourceHashMissing, RuleGroup.Error, path,
-                    "The record carries no content hash, so a takedown could not find this work again."));
+                    $"The record of {type} '{name}' carries no content hash, so a takedown could not find " +
+                    "this work again.", type, name));
             }
 
-            AnalyzeSourceTrust(resourceMeta, profile, path, issues);
+            AnalyzeSourceTrust(resourceMeta, name, profile, path, issues);
         }
 
         // A permission does not make a refused license acceptable - it makes it a question for a
@@ -131,14 +164,26 @@ namespace BH.SDK.Publishing
         // carries proof is that somebody is expected to open it, so this path always produces a
         // review rather than a pass.
 
-        private static void AnalyzeResourceLicense(ResourceMeta resourceMeta, PublishProfile profile,
+        private static void AnalyzeResourceLicense(ResourceMeta resourceMeta, string name, PublishProfile profile,
             DateTime now, string path, List<PublishIssue> issues)
         {
-            if (IsLicenseAcceptable(resourceMeta.ResourceLicense, profile, out var unspecified)) return;
+            var license = resourceMeta.ResourceLicense;
+            var type = resourceMeta.ResourceType;
+            if (IsLicenseAcceptable(license, profile, out var unspecified))
+            {
+                if (unspecified && AsksAboutUnknowns(profile))
+                    issues.Add(new PublishIssue(PublishRule.ResourceLicenseUnspecified, RuleGroup.Warning, path,
+                        $"The record of {type} '{name}' states no license." + DescribeUnlicensedSource(license),
+                        UnlicensedArgs(type, name, license)));
+                return;
+            }
 
             var rule = unspecified
                 ? PublishRule.ResourceLicenseUnspecified
                 : PublishRule.ResourceLicenseNotAllowed;
+            var args = unspecified
+                ? UnlicensedArgs(type, name, license)
+                : new object[] { type, name, LicenseArg(license), profile.AllowedLicenses.ToArray() };
 
             var covered = profile.AllowPermissionInstead
                           && TryGetUsablePermission(resourceMeta, now, out _);
@@ -146,19 +191,20 @@ namespace BH.SDK.Publishing
             if (covered)
             {
                 issues.Add(new PublishIssue(rule, RuleGroup.Warning, path,
-                    "The license alone does not permit publishing; a rights holder's permission is " +
-                    "claimed instead and has to be checked by hand."));
+                    $"The license of {type} '{name}' alone does not permit publishing; a rights holder's " +
+                    "permission is claimed instead and has to be checked by hand.", args));
                 return;
             }
 
             issues.Add(new PublishIssue(rule, RuleGroup.Error, path,
                 unspecified
-                    ? "The record states no license, and no permission stands in for one." +
-                      DescribeUnlicensedSource(resourceMeta.ResourceLicense)
-                    : $"The license is not accepted by profile '{profile.ProfileKey}'."));
+                    ? $"The record of {type} '{name}' states no license, and no permission stands in for one." +
+                      DescribeUnlicensedSource(license)
+                    : $"The license of {type} '{name}', {NameOf(license)}, is not accepted by profile " +
+                      $"'{profile.ProfileKey}'; it accepts {Accepted(profile)}.", args));
         }
 
-        private static void AnalyzePermissions(ResourceMeta resourceMeta, DateTime now, string path,
+        private static void AnalyzePermissions(ResourceMeta resourceMeta, string name, DateTime now, string path,
             List<PublishIssue> issues)
         {
             if (resourceMeta.ResourcePermissions.Count == 0) return;
@@ -172,15 +218,17 @@ namespace BH.SDK.Publishing
                 if (permission.Scope == PermissionScope.Undefined || !permission.HasProof())
                 {
                     issues.Add(new PublishIssue(PublishRule.PermissionIncomplete, RuleGroup.Warning,
-                        path, "A permission names no scope or points at no evidence, so nobody can " +
-                              "verify what was actually allowed."));
+                        path, $"A permission on {resourceMeta.ResourceType} '{name}' names no scope or points " +
+                              "at no evidence, so nobody can verify what was actually allowed.",
+                        resourceMeta.ResourceType, name));
                 }
             }
 
             if (!anyActive)
             {
                 issues.Add(new PublishIssue(PublishRule.PermissionExpired, RuleGroup.Warning, path,
-                    "Every permission recorded for this resource has lapsed."));
+                    $"Every permission recorded for {resourceMeta.ResourceType} '{name}' has lapsed.",
+                    resourceMeta.ResourceType, name));
             }
         }
 
@@ -192,7 +240,7 @@ namespace BH.SDK.Publishing
         // profile's decision, and hard-coding a rights table next to it would put the same policy in
         // two places.
 
-        private static void AnalyzeAttribution(ResourceMeta resourceMeta, PublishProfile profile,
+        private static void AnalyzeAttribution(ResourceMeta resourceMeta, string name, PublishProfile profile,
             string path, List<PublishIssue> issues)
         {
             var hasAuthors = resourceMeta.ResourceAuthors is { Count: > 0 };
@@ -201,10 +249,11 @@ namespace BH.SDK.Publishing
             if (!profile.RequireAttribution) return;
 
             issues.Add(new PublishIssue(PublishRule.ResourceAttributionMissing, RuleGroup.Error, path,
-                "The service requires every resource to credit somebody."));
+                $"The service requires every resource to credit somebody, and {resourceMeta.ResourceType} " +
+                $"'{name}' credits nobody.", resourceMeta.ResourceType, name));
         }
 
-        private static void AnalyzeSourceTrust(ResourceMeta resourceMeta, PublishProfile profile,
+        private static void AnalyzeSourceTrust(ResourceMeta resourceMeta, string name, PublishProfile profile,
             string path, List<PublishIssue> issues)
         {
             if (profile.Sources.Count == 0) return;
@@ -219,25 +268,29 @@ namespace BH.SDK.Publishing
             var trust = known ? source.Trust : profile.UnknownSourceTrust;
             if (trust == SourceTrust.Approved) return;
 
+            var type = resourceMeta.ResourceType;
             if (!known)
             {
+                var host = TrustedSource.ExtractHost(resourceMeta.ResourceUrl) ?? resourceMeta.ResourceUrl;
                 issues.Add(new PublishIssue(PublishRule.SourceUnknown,
                     trust == SourceTrust.NotAllowed ? RuleGroup.Error : RuleGroup.Warning, path,
-                    "The site this came from is in no roster entry, so nothing is known about its " +
-                    $"terms; this service treats such a site as {trust}."));
+                    $"{host}, where {type} '{name}' came from, is in no roster entry, so nothing is known " +
+                    $"about its terms; this service treats such a site as {trust}.", type, name, host));
                 return;
             }
 
+            var note = source.Note ?? string.Empty;
             if (trust == SourceTrust.NotAllowed)
             {
                 issues.Add(new PublishIssue(PublishRule.SourceNotAllowed, RuleGroup.Error, path,
-                    $"Nothing may be published from {source.Title}. {source.Note}".TrimEnd()));
+                    $"Nothing may be published from {source.Title}, where {type} '{name}' came from. {note}".TrimEnd(),
+                    type, name, source.Title, note));
                 return;
             }
 
             issues.Add(new PublishIssue(PublishRule.SourceNeedsReview, RuleGroup.Warning, path,
-                $"{source.Title} is graded {trust}, so this record has to be confirmed by hand. " +
-                $"{source.Note}".TrimEnd()));
+                $"{source.Title} is graded {trust}, so the record of {type} '{name}' has to be confirmed " +
+                $"by hand. {note}".TrimEnd(), type, name, source.Title, note));
         }
 
         #endregion
@@ -248,7 +301,7 @@ namespace BH.SDK.Publishing
         // measure, and a resource whose file it never found must not be reported as comfortably
         // within a limit it was never checked against.
 
-        private static void AnalyzeResourceSize(ResourceMeta resourceMeta, PublishProfile profile,
+        private static void AnalyzeResourceSize(ResourceMeta resourceMeta, string name, PublishProfile profile,
             PublishPayload payload, List<PublishIssue> issues)
         {
             if (payload == null || profile.MaxResourceBytes <= 0) return;
@@ -258,8 +311,10 @@ namespace BH.SDK.Publishing
 
             issues.Add(new PublishIssue(PublishRule.ResourceTooLarge, RuleGroup.Error,
                 DescribeResource(resourceMeta),
-                $"The file is {ByteSizeUtils.Format(bytes)}, over this service's " +
-                $"{ByteSizeUtils.Format(profile.MaxResourceBytes)} limit for one resource."));
+                $"{resourceMeta.ResourceType} '{name}' is {ByteSizeUtils.Format(bytes)}, over this service's " +
+                $"{ByteSizeUtils.Format(profile.MaxResourceBytes)} limit for one resource.",
+                resourceMeta.ResourceType, name, ByteSizeUtils.Format(bytes),
+                ByteSizeUtils.Format(profile.MaxResourceBytes)));
         }
 
         private static void AnalyzePayloadSize(PublishPayload payload, PublishProfile profile,
@@ -267,8 +322,8 @@ namespace BH.SDK.Publishing
         {
             if (profile.MaxDataFileBytes > 0)
             {
-                AddDataFileIssue(payload.LevelBytes, profile.MaxDataFileBytes, "level", issues);
-                AddDataFileIssue(payload.MetaBytes, profile.MaxDataFileBytes, "meta", issues);
+                AddDataFileIssue(payload.LevelBytes, profile.MaxDataFileBytes, "level", "level.json", issues);
+                AddDataFileIssue(payload.MetaBytes, profile.MaxDataFileBytes, "meta", "metadata.json", issues);
             }
 
             if (profile.MaxTotalBytes <= 0) return;
@@ -276,17 +331,19 @@ namespace BH.SDK.Publishing
 
             issues.Add(new PublishIssue(PublishRule.PayloadTooLarge, RuleGroup.Error, "level",
                 $"The level weighs {ByteSizeUtils.Format(payload.TotalBytes)}, over this service's " +
-                $"{ByteSizeUtils.Format(profile.MaxTotalBytes)} limit."));
+                $"{ByteSizeUtils.Format(profile.MaxTotalBytes)} limit.",
+                ByteSizeUtils.Format(payload.TotalBytes), ByteSizeUtils.Format(profile.MaxTotalBytes)));
         }
 
-        private static void AddDataFileIssue(long bytes, long limit, string path,
+        private static void AddDataFileIssue(long bytes, long limit, string path, string file,
             List<PublishIssue> issues)
         {
             if (bytes <= 0 || bytes <= limit) return;
 
             issues.Add(new PublishIssue(PublishRule.DataFileTooLarge, RuleGroup.Error, path,
-                $"The file is {ByteSizeUtils.Format(bytes)}, over this service's " +
-                $"{ByteSizeUtils.Format(limit)} limit for one data file."));
+                $"{file} is {ByteSizeUtils.Format(bytes)}, over this service's " +
+                $"{ByteSizeUtils.Format(limit)} limit for one data file.",
+                file, ByteSizeUtils.Format(bytes), ByteSizeUtils.Format(limit)));
         }
 
         #endregion
@@ -341,9 +398,11 @@ namespace BH.SDK.Publishing
                 if (present.Contains(entry)) continue;
                 if (entry.Item1 == ResourceType.Bytes || entry.Item1 == ResourceType.Text) continue;
 
+                var orphan = ResourceNames.Fallback(entry.Item1, entry.Item2, entry.Item3);
                 issues.Add(new PublishIssue(PublishRule.ResourceMetaOrphaned, RuleGroup.Advice,
                     DescribeResource(entry.Item1, entry.Item2, entry.Item3),
-                    "The record describes a resource this level does not have."));
+                    $"The record of {entry.Item1} '{orphan}' describes a resource this level does not have.",
+                    entry.Item1, orphan));
             }
         }
 
@@ -354,11 +413,14 @@ namespace BH.SDK.Publishing
             var key = (resourceType, id, Guid.Empty);
             present.Add(key);
             var path = DescribeResource(resourceType, id, Guid.Empty);
+            var name = ResourceNames.OfFile(resource, id);
 
-            if (profile.RequireResourceMeta && !covered.Contains(key))
+            if (!covered.Contains(key) && (profile.RequireResourceMeta || AsksAboutUnknowns(profile)))
             {
-                issues.Add(new PublishIssue(PublishRule.ResourceMetaMissing, RuleGroup.Error, path,
-                    "The level ships this resource with no licensing record at all."));
+                issues.Add(new PublishIssue(PublishRule.ResourceMetaMissing,
+                    profile.RequireResourceMeta ? RuleGroup.Error : RuleGroup.Warning, path,
+                    $"The level ships {resourceType} '{name}' with no licensing record at all.",
+                    resourceType, name));
             }
 
             if (resource?.Sources == null) return;
@@ -366,8 +428,9 @@ namespace BH.SDK.Publishing
             {
                 if (source == null || profile.AllowsUriType(source.UriType)) continue;
                 issues.Add(new PublishIssue(PublishRule.ResourceUriTypeNotAllowed, RuleGroup.Error,
-                    path, $"The resource is fetched as {source.UriType}, which profile " +
-                          $"'{profile.ProfileKey}' does not accept."));
+                    path, $"{resourceType} '{name}' is fetched as {source.UriType}, which profile " +
+                          $"'{profile.ProfileKey}' does not accept.",
+                    resourceType, name, source.UriType, profile.AllowedUriTypes.ToArray()));
             }
         }
 
@@ -447,6 +510,24 @@ namespace BH.SDK.Publishing
             if (unlicensed.Source == NoLicenseSourceType.Undefined) return string.Empty;
             return $" Taken from {unlicensed.Source}, which licenses nothing to anyone.";
         }
+
+        private static object[] UnlicensedArgs(ResourceType type, string name, ILicense license)
+            => license is NoSpecifiedLicense { Source: not NoLicenseSourceType.Undefined } unlicensed
+                ? new object[] { type, name, unlicensed.Source }
+                : new object[] { type, name };
+
+        /// <summary> A license as a fact: the enum of a typical one, the name of a custom one. </summary>
+        private static object LicenseArg(ILicense license) => license switch
+        {
+            TypicalLicense typical => typical.Type,
+            CustomLicense custom => string.IsNullOrWhiteSpace(custom.LicenseName) ? "custom" : custom.LicenseName,
+            _ => "none",
+        };
+
+        private static string NameOf(ILicense license) => LicenseArg(license).ToString();
+
+        private static string Accepted(PublishProfile profile)
+            => profile.AllowedLicenses.Count == 0 ? "any" : string.Join(", ", profile.AllowedLicenses);
 
         #endregion
     }

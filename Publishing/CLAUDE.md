@@ -27,6 +27,17 @@ layer-wide conventions. This file is folder-local.
     present. Streaming platforms are listed as `NotAllowed` rather than omitted, since an absent
     site grades differently from a refused one.
   - `PublishIssue`/`PublishRule`/`PublishPayload`/`PublishReadinessReport` are the finding shapes.
+    **A finding carries its facts as `Args`, not only inside its English `Message`**: a resource
+    finding opens with its `ResourceType` and the name the author knows (`ResourceNames` - the
+    record's title, else the file or the resource's own name, else the address), then what its
+    `PublishRule` member lists (the license it has, the accepted list, sizes against the limit). An
+    enum stays an enum so a client names it in its own language. Adding a rule means documenting
+    its Args on the enum member, and the client's detail string reads them by index.
+  - `CreateWorkshop()` is the Steam Workshop's profile and is deliberately LOOSER than `standard`:
+    every CC BY variant passes (ND included, knowingly - see its comment), and missing paperwork is a
+    warning. That warning comes from one analyzer rule, not a profile flag: a profile that LISTS
+    licenses and still tolerates an unknown one hears about the unknown (`AsksAboutUnknowns`).
+    `ResourceUrlMissing` is a warning in every profile.
   - **`ValidationFacade.ValidateForPublish` is how a host asks all three passes at once**, returning
     a `PublishValidationReport` that carries the content half and this one side by side. It exists
     for one mistake it prevents: `LevelMeta` is its own aggregate root, so `Validate(level)` never

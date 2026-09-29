@@ -35,6 +35,7 @@ namespace BH.SDK.Tests
             Assert.NotNull(settings.Timeline);
             Assert.NotNull(settings.Interface);
             Assert.NotNull(settings.Serialization);
+            Assert.NotNull(settings.Publishing);
         }
 
         [Test]
@@ -47,6 +48,17 @@ namespace BH.SDK.Tests
 
             Assert.AreEqual(SerializationType.Json, settings.Serialization.LevelMode);
             Assert.AreEqual(SerializationType.Json, settings.Serialization.ResourcesMode);
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.VeryEasy)]
+        public void PublishLanguage_DefaultsToEnglish()
+        {
+            var settings = new GameEditorSettings();
+
+            Assert.AreEqual(PublishLanguage.English, settings.Publishing.Language);
         }
 
         // The one default here that used to differ by platform: the host seeded it on for a desktop
@@ -118,6 +130,7 @@ namespace BH.SDK.Tests
             settings.Interface.TimelineExpansion = ExpansionMode.Collapsed;
             settings.Timeline.ToolResetOnTabChange = false;
             settings.Serialization.LevelMode = SerializationType.Blob;
+            settings.Publishing.Language = PublishLanguage.System;
 
             settings.Reset();
 
@@ -137,6 +150,7 @@ namespace BH.SDK.Tests
             Assert.AreEqual(ExpansionMode.Partial, settings.Interface.TimelineExpansion);
             Assert.IsTrue(settings.Timeline.ToolResetOnTabChange);
             Assert.AreEqual(SerializationType.Json, settings.Serialization.LevelMode);
+            Assert.AreEqual(PublishLanguage.English, settings.Publishing.Language);
         }
 
         // The nesting's own failure mode, and the reason this test exists at all: Copy() must build
@@ -161,6 +175,7 @@ namespace BH.SDK.Tests
             Assert.AreNotSame(source.Timeline, copy.Timeline);
             Assert.AreNotSame(source.Interface, copy.Interface);
             Assert.AreNotSame(source.Serialization, copy.Serialization);
+            Assert.AreNotSame(source.Publishing, copy.Publishing);
 
             copy.Grid.Size = 8f;
             Assert.AreEqual(1f, source.Grid.Size);
@@ -223,6 +238,7 @@ namespace BH.SDK.Tests
             AssertDiffers(a, s => s.Interface.TimelineExpansion = ExpansionMode.Collapsed);
             AssertDiffers(a, s => s.Timeline.ToolResetOnTabChange = false);
             AssertDiffers(a, s => s.Serialization.ResourcesMode = SerializationType.Blob);
+            AssertDiffers(a, s => s.Publishing.Language = PublishLanguage.System);
         }
 
         private static void AssertDiffers(GameEditorSettings source, System.Action<GameEditorSettings> edit)
@@ -458,6 +474,7 @@ namespace BH.SDK.Tests
             settings.GameEditor.Interface.TimelineExpansion = ExpansionMode.Collapsed;
             settings.GameEditor.Timeline.ToolResetOnTabChange = false;
             settings.GameEditor.Serialization.LevelMode = SerializationType.Blob;
+            settings.GameEditor.Publishing.Language = PublishLanguage.System;
 
             var restored = service.DeserializeData<UserSettings>(service.SerializeData(settings));
             var editor = restored.GameEditor;
@@ -482,6 +499,7 @@ namespace BH.SDK.Tests
             Assert.AreEqual(ExpansionMode.Collapsed, editor.Interface.TimelineExpansion);
             Assert.IsFalse(editor.Timeline.ToolResetOnTabChange);
             Assert.AreEqual(SerializationType.Blob, editor.Serialization.LevelMode);
+            Assert.AreEqual(PublishLanguage.System, editor.Publishing.Language);
         }
 
         // The two nested "iface" keys - UserSettings.Interface and GameEditor.Interface - reuse one

@@ -262,6 +262,92 @@ namespace BH.SDK.Tests.Publishing
             Assert.AreEqual(RuleGroup.Error, Get(report, PublishRule.ResourceLicenseUnspecified).Group);
         }
 
+        // A work the author made has no page to point at, so a missing one is asked about and never
+        // refused.
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.VeryEasy)]
+        public void TestMissingSourcePageOnlyWarns()
+        {
+            var meta = CreateCleanMeta();
+            meta.ResourcesMeta[0].ResourceUrl = string.Empty;
+
+            var report = new PublishReadinessAnalyzer()
+                .Analyze(meta, PublishProfile.CreateStandard(), null, Now);
+
+            Assert.AreEqual(RuleGroup.Warning, Get(report, PublishRule.ResourceUrlMissing).Group);
+            Assert.IsFalse(report.HasErrors);
+        }
+
+        // The facts a client words in its own language: which resource, by the name the author knows,
+        // which license, and what the service would take instead.
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Easy)]
+        public void TestRefusedLicenseCarriesItsFacts()
+        {
+            var meta = CreateCleanMeta();
+            meta.ResourcesMeta[0].ResourceLicense = new TypicalLicense(TypicalLicenseType.Proprietary);
+            meta.ResourcesMeta[0].ResourceTitle = null;
+            var level = CreateLevelWithAudio(-1, ResourceUriType.LevelPath);
+            var profile = PublishProfile.CreateStandard();
+
+            var issue = Get(new PublishReadinessAnalyzer().Analyze(meta, profile, level, Now),
+                PublishRule.ResourceLicenseNotAllowed);
+
+            Assert.AreEqual(ResourceType.Audio, issue.Args[0]);
+            Assert.AreEqual("track.ogg", issue.Args[1]);
+            Assert.AreEqual(TypicalLicenseType.Proprietary, issue.Args[2]);
+            CollectionAssert.AreEqual(profile.AllowedLicenses, (TypicalLicenseType[])issue.Args[3]);
+            StringAssert.Contains("track.ogg", issue.Message);
+        }
+
+        // The Workshop takes the whole CC BY family and only asks about missing paperwork; what it still
+        // refuses is a license that forbids passing the work on.
+
+        [TestCase(TypicalLicenseType.CC_BY_ND_4_0)]
+        [TestCase(TypicalLicenseType.CC_BY_NC_SA_3_0)]
+        [TestCase(TypicalLicenseType.CC_BY_SA_4_0)]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.VeryEasy)]
+        public void TestWorkshopAcceptsEveryCcBy(TypicalLicenseType license)
+        {
+            var meta = CreateCleanMeta();
+            meta.ResourcesMeta[0].ResourceLicense = new TypicalLicense(license);
+
+            var report = new PublishReadinessAnalyzer()
+                .Analyze(meta, PublishProfile.CreateWorkshop(), CreateLevelWithAudio(-1, ResourceUriType.LevelPath), Now);
+
+            Assert.IsFalse(report.HasErrors, string.Join("; ", report.Issues.Select(issue => issue.Message)));
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Easy)]
+        public void TestWorkshopWarnsAboutMissingPaperwork_AndRefusesProprietary()
+        {
+            var profile = PublishProfile.CreateWorkshop();
+            var bare = new LevelMeta { LevelLicense = new ResourceMeta().ResourceLicense };
+            var level = CreateLevelWithAudio(-1, ResourceUriType.LevelPath);
+
+            var report = new PublishReadinessAnalyzer().Analyze(bare, profile, level, Now);
+
+            Assert.IsFalse(report.HasErrors, string.Join("; ", report.Issues.Select(issue => issue.Message)));
+            Assert.AreEqual(RuleGroup.Warning, Get(report, PublishRule.ResourceMetaMissing).Group);
+            Assert.AreEqual(RuleGroup.Warning, Get(report, PublishRule.LevelLicenseNotAllowed).Group);
+
+            var meta = CreateCleanMeta();
+            meta.ResourcesMeta[0].ResourceLicense = new TypicalLicense(TypicalLicenseType.Proprietary);
+            Assert.AreEqual(RuleGroup.Error, Get(new PublishReadinessAnalyzer().Analyze(meta, profile, level, Now),
+                PublishRule.ResourceLicenseNotAllowed).Group);
+        }
+
         // Naming the platform is not a license and must not soften the verdict - it only makes the
         // message actionable.
 

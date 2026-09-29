@@ -249,6 +249,66 @@ namespace BH.SDK.Publishing
             UnknownSourceTrust = SourceTrust.RequiresLicenseCheck,
         };
 
+        // THE WORKSHOP ASKS LESS THAN A PUBLIC SERVER, on purpose and for now. Steam's own agreement puts
+        // a takedown on the uploader, the licensing policy is expected to be rewritten, and until then a
+        // Workshop upload should be refused only where it is plainly unsafe: a license that forbids
+        // passing the work on at all (proprietary, a custom text nobody graded), or a copyleft one that
+        // collides with a store. Every CC BY variant passes, 3.0 and 4.0 alike.
+        //
+        // ND IS ACCEPTED KNOWINGLY. CC 4.0 s.1(a) makes music synced to moving images Adapted Material,
+        // so an ND track in a level is a breach on every publish; the author chose low friction over
+        // catching that case here, and it is answered by a takedown instead. Revisit with the policy.
+        //
+        // WHAT A PUBLIC SERVER DEMANDS IS ASKED, NOT REFUSED: no license stated, no credits record, no
+        // source page. They are warnings (the analyzer's rule for a service that lists licenses and still
+        // tolerates an unknown one), so the author sees them and is never blocked by them.
+
+        /// <summary> The Steam Workshop's conditions: every CC BY variant, CC0, OFL, MIT, Apache and the
+        /// Unlicense pass; missing paperwork is a warning; the public server's sizes. </summary>
+        public static PublishProfile CreateWorkshop() => new()
+        {
+            ProfileKey = "workshop",
+            AllowedLicenses = new List<TypicalLicenseType>
+            {
+                TypicalLicenseType.CC0_1_0,
+                TypicalLicenseType.CC_BY_4_0,
+                TypicalLicenseType.CC_BY_SA_4_0,
+                TypicalLicenseType.CC_BY_NC_4_0,
+                TypicalLicenseType.CC_BY_NC_SA_4_0,
+                TypicalLicenseType.CC_BY_ND_4_0,
+                TypicalLicenseType.CC_BY_NC_ND_4_0,
+                TypicalLicenseType.CC_BY_3_0,
+                TypicalLicenseType.CC_BY_SA_3_0,
+                TypicalLicenseType.CC_BY_NC_3_0,
+                TypicalLicenseType.CC_BY_NC_SA_3_0,
+                TypicalLicenseType.CC_BY_ND_3_0,
+                TypicalLicenseType.CC_BY_NC_ND_3_0,
+                TypicalLicenseType.SIL_OFL_1_1,
+                TypicalLicenseType.MIT,
+                TypicalLicenseType.Apache_2_0,
+                TypicalLicenseType.Unlicensed,
+            },
+            AllowedUriTypes = new List<ResourceUriType>
+            {
+                ResourceUriType.LevelPath,
+                ResourceUriType.StreamingAssets,
+                ResourceUriType.DirectUrl,
+            },
+            AllowUnknownLicense = true,
+            AllowPermissionInstead = true,
+            RequireResourceMeta = false,
+            RequireResourceUrl = true,
+            RequireAttribution = false,
+            RequireAgeRating = false,
+            RequireLevelAuthors = false,
+            RequireHashes = false,
+            MaxResourceBytes = 64 * ByteSizeUtils.Megabyte,
+            MaxDataFileBytes = 32 * ByteSizeUtils.Megabyte,
+            MaxTotalBytes = 256 * ByteSizeUtils.Megabyte,
+            Sources = TrustedSourceCatalog.CreateDefault(),
+            UnknownSourceTrust = SourceTrust.RequiresLicenseCheck,
+        };
+
         // The tighter sizes are not a stricter opinion about the same thing - they are what a phone
         // can actually download over a mobile connection and keep on a device that is already full.
 
