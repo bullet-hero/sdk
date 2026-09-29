@@ -1813,8 +1813,11 @@
         /// <summary> Word fragment, built into CurrentClearStreak, LongestClearStreak. </summary>
         public const string Streak = "streak";
 
-        /// <summary> Word fragment, built into LevelsCreated, LevelsDeleted. </summary>
+        /// <summary> Word fragment, built into LevelsCreated, LevelsDeleted, LevelsLayout. </summary>
         public const string Levels = "levels";
+
+        /// <summary> Word fragment, built into LevelsLayout. </summary>
+        public const string Layout = "layout";
 
         /// <summary> Word fragment, built into TotalDistanceMoved. </summary>
         public const string Moved = "moved";
@@ -2044,6 +2047,10 @@
 
         /// <summary> <c>"menu_background"</c> - InterfaceSettings.MenuBackground. </summary>
         public const string MenuBackground = Menu + _ + Background;
+
+        /// <summary> <c>"levels_layout"</c> - InterfaceSettings.LevelsLayout and
+        /// EditorInterfaceSettings.LevelsLayout, which never share a container. </summary>
+        public const string LevelsLayout = Levels + _ + Layout;
 
         /// <summary> <c>"screen_orientation"</c> - InterfaceSettings.ScreenOrientation. </summary>
         public const string ScreenOrientation = Screen + _ + Orientation;

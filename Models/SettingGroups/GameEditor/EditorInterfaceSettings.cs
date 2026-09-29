@@ -142,6 +142,15 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
         [JsonProperty(Names.TimelineExpansion)]
         public ExpansionMode TimelineExpansion { get; set; }
 
+        // Where the EDITOR's level browser starts, on the list rather than the menu's grid: an author
+        // finds a level by its name and description and scrolls through far more of them than a
+        // player does. Joined the unshipped generation V2_SimplifyEntrance with its menu twin.
+
+        /// <summary> How the editor's level browser lays its results out when it opens. </summary>
+        [RuleEnumValid]
+        [JsonProperty(Names.LevelsLayout)]
+        public LevelBrowserLayout LevelsLayout { get; set; }
+
         /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public EditorInterfaceSettings()
         {
@@ -166,6 +175,7 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
             ExpansionMask = expansionMask;
             HierarchyExpansion = hierarchyExpansion;
             TimelineExpansion = timelineExpansion;
+            LevelsLayout = LevelBrowserLayout.List;
         }
 
         private void ResetOwn()
@@ -181,6 +191,7 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
             ExpansionMask = ObjectTypeMask.All & ~ObjectTypeMask.PrefabObject;
             HierarchyExpansion = ExpansionMode.Partial;
             TimelineExpansion = ExpansionMode.Partial;
+            LevelsLayout = LevelBrowserLayout.List;
         }
     }
 }

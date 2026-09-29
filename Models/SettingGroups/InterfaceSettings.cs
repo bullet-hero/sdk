@@ -171,6 +171,16 @@ namespace BH.SDK.Models.SettingGroups
         [JsonProperty(Names.AlertOnException)]
         public bool AlertOnException { get; set; }
 
+        // Where the MENU's level browser starts; the editor's is EditorInterfaceSettings.LevelsLayout.
+        // The toggle beside the search field still switches it for the session. Joined the unshipped
+        // generation V2_SimplifyEntrance: a V1 file reads back without the key, i.e. on the grid,
+        // which is what the browser always opened on.
+
+        /// <summary> How the menu's level browser lays its results out when it opens. </summary>
+        [JsonProperty(Names.LevelsLayout)]
+        [RuleEnumValid]
+        public LevelBrowserLayout LevelsLayout { get; set; }
+
         /// <summary> What the hitbox ring's opacity is worth before a player touches it. </summary>
         public const float DefaultHitboxRingOpacity = 0.6f;
 
@@ -192,6 +202,7 @@ namespace BH.SDK.Models.SettingGroups
             ShowGameInterface = true;
             HitboxRingOpacity = DefaultHitboxRingOpacity;
             AlertOnException = true;
+            LevelsLayout = LevelBrowserLayout.Grid;
         }
 
         // THE FOUR TRUE-BY-DEFAULT FLAGS ARE NOT PARAMETERS, and that is deliberate: adding one here is a
@@ -216,6 +227,7 @@ namespace BH.SDK.Models.SettingGroups
             ShowGameInterface = true;
             HitboxRingOpacity = DefaultHitboxRingOpacity;
             AlertOnException = true;
+            LevelsLayout = LevelBrowserLayout.Grid;
         }
 
         // Nested because HashCode.Combine takes eight arguments and there are nine values.
