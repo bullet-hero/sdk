@@ -40,8 +40,11 @@ namespace BH.SDK.Publishing
                 issues.Add(new PublishIssue(PublishRule.CollectionNameMissing, RuleGroup.Error, "collection",
                     "The collection has no name to be listed under."));
 
+            // Blocking only where the profile asks for a licence at all: handing a file to a friend is not
+            // publishing it, and a profile that allows an unknown licence says exactly that.
             if (manifest.License == null || manifest.License is NoSpecifiedLicense)
-                issues.Add(new PublishIssue(PublishRule.CollectionLicenseUnspecified, RuleGroup.Error, "collection",
+                issues.Add(new PublishIssue(PublishRule.CollectionLicenseUnspecified,
+                    profile.AllowUnknownLicense ? RuleGroup.Warning : RuleGroup.Error, "collection",
                     "The collection states no license, so nobody may use what is in it."));
 
             if (Count(resources) == 0)

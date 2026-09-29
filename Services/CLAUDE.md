@@ -64,10 +64,18 @@ throw - `LevelArchiveReader`'s contract.
   id disagrees with its file name. `CollectionWriter` writes a snapshot - it prunes the owned folders -
   and the manifest LAST, so a half-written folder is not a collection. `CollectionArchive` packs and
   unpacks through `TarGzService`/`ZipService`, format sniffed from the bytes, refusing an archive with
-  no manifest at its root.
+  no manifest at its root. It takes the level archive's two protections for any content - an OpenPGP
+  wrap of either container, or zip AES-256 - and a missing or wrong passphrase comes back as
+  `PassphraseRequired`/`WrongPassphrase`, which the host answers by asking. The plaintext of an
+  OpenPGP message is sniffed again, since only it says which container it holds.
 - `CollectionImportPlanner` (into a level) and `CollectionExportPlanner` (out of anything holding a
   `LevelResources`) are PURE: closure through `Utils/ResourceClosure`, identity by the generated
   `Equals`, fresh level-local ids and unique file names for the file kinds, a `ResourceRemap` the
   models are rewritten through, and the credits that travel with them. A conflict (same id, different
   content) is resolved by an answer the host supplies - keep, or copy under a new id - never by the
   planner.
+- A FILE resource has no identity outside its folder, so the import planner identifies it by its
+  BYTES: handed both sides' `MediaFingerprints` (sha256 of each file resource's first `LevelPath`
+  source, read from an `IContentStore`), it points an incoming texture, font or audio at the level's
+  own one with the same digest instead of copying it in again (`Reused`). Without fingerprints every
+  file is new - wasteful, never wrong. The planner stays pure; `MediaFingerprints` is its only IO.

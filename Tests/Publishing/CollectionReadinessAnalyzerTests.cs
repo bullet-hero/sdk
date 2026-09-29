@@ -12,7 +12,6 @@ using BH.SDK.Models.Values;
 using BH.SDK.Publishing;
 using BH.SDK.Rules;
 using NUnit.Framework;
-
 using MetaAuthor = BH.SDK.Models.Meta.Author;
 
 namespace BH.SDK.Tests.Publishing
@@ -73,11 +72,31 @@ namespace BH.SDK.Tests.Publishing
         public void ABlankCollection_IsNamelessUnlicensedAndEmpty()
         {
             var manifest = new ResourceCollection();
-            var report = Analyze(manifest, new LevelResources(), new HashSet<string>());
+            var report = Analyze(manifest, new LevelResources(), new HashSet<string>(),
+                profile: PublishProfile.CreateStandard());
             Assert.That(Rules(report), Is.SupersetOf(new[]
             {
-                PublishRule.CollectionNameMissing, PublishRule.CollectionLicenseUnspecified, PublishRule.CollectionEmpty,
+                PublishRule.CollectionNameMissing, PublishRule.CollectionLicenseUnspecified,
+                PublishRule.CollectionEmpty,
             }));
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Easy)]
+        public void AMissingLicense_WarnsWhereTheProfileAllowsOne_AndBlocksWhereItDoesNot()
+        {
+            var (manifest, resources) = CreateClean();
+            manifest.License = new NoSpecifiedLicense();
+            var files = new HashSet<string> { "collection.json", "media/a.png" };
+
+            var open = Analyze(manifest, resources, files, profile: PublishProfile.CreateOpen());
+            Assert.That(open.HasErrors, Is.False, string.Join("; ", open.Issues));
+            Assert.That(open.Issues.Select(issue => issue.Rule), Has.Member(PublishRule.CollectionLicenseUnspecified));
+
+            var standard = Analyze(manifest, resources, files, profile: PublishProfile.CreateStandard());
+            Assert.That(standard.HasErrors, Is.True);
         }
 
         [Test]

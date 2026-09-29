@@ -100,10 +100,13 @@ namespace BH.SDK.Services.Collections
     // contract already defines value equality member by member, and a second definition in terms of
     // serializer output would disagree with it the first time a default is written differently.
     //
-    // A FILE RESOURCE IS ALWAYS NEW. Its id is local to where it lives, so the collection's -1 says
-    // nothing about the level's -1, and no identity survives the crossing to compare against. Two
-    // imports of the same texture therefore land twice; deduplicating by content hash is a possible
-    // refinement, not a correctness question.
+    // A FILE RESOURCE IS IDENTIFIED BY ITS BYTES. Its id is local to where it lives, so the
+    // collection's -1 says nothing about the level's -1, and no identity survives the crossing to
+    // compare against. What does survive is the file: when the host hands in both sides'
+    // MediaFingerprints and the level already holds a file resource of the same kind with the same
+    // digest, the import points at THAT one - no id, no file, no copy of a 3 MB track under a "_1"
+    // name. Without fingerprints (no store on either side) every file resource is new, which is only
+    // wasteful, never wrong.
 
     /// <summary> Plans and resolves bringing part of a collection into a level. </summary>
     public sealed class CollectionImportPlanner
@@ -115,6 +118,7 @@ namespace BH.SDK.Services.Collections
         private readonly Dictionary<ResourceRef, ResourceRef> _externalMoves = new();
         private readonly List<ImportFile> _files = new();
         private readonly Dictionary<ResourceRef, List<ResourceKey>> _externalSources = new();
+        private readonly HashSet<ResourceRef> _reused = new();
 
         /// <summary> Every data resource of the closure and what importing it would do. </summary>
         public IReadOnlyList<ImportEntry> Entries => _entries;
@@ -124,6 +128,10 @@ namespace BH.SDK.Services.Collections
 
         /// <summary> How many resources come along that were not selected. </summary>
         public int DependencyCount { get; }
+
+        /// <summary> File resources the level already holds byte for byte: the import points at the
+        /// level's own one and copies nothing. Keyed by the id in the collection. </summary>
+        public IReadOnlyCollection<ResourceRef> Reused => _reused;
 
         /// <summary> Whether any entry needs the author's answer. </summary>
         public bool HasConflicts => _entries.Exists(entry => entry.State == ImportEntryState.Conflict);
@@ -139,9 +147,12 @@ namespace BH.SDK.Services.Collections
 
         /// <summary> Plans importing <paramref name="selection"/> (and everything it needs) from
         /// <paramref name="source"/> into a level holding <paramref name="target"/>, whose folder already
-        /// holds <paramref name="takenFileNames"/>. </summary>
+        /// holds <paramref name="takenFileNames"/>. With both sides' <see cref="MediaFingerprints"/> a file
+        /// resource the level already holds is reused rather than copied. </summary>
         public static CollectionImportPlanner Plan(LevelResources target, LevelMeta targetMeta,
-            CollectionContent source, IEnumerable<ResourceRef> selection, IEnumerable<string> takenFileNames)
+            CollectionContent source, IEnumerable<ResourceRef> selection, IEnumerable<string> takenFileNames,
+            IReadOnlyDictionary<ResourceRef, string> sourceFingerprints = null,
+            IReadOnlyDictionary<ResourceRef, string> targetFingerprints = null)
         {
             if (target == null) throw new ArgumentNullException(nameof(target));
             if (source == null) throw new ArgumentNullException(nameof(source));
@@ -162,11 +173,21 @@ namespace BH.SDK.Services.Collections
                 [ResourceType.Audio] = Ints(target.Audios.Keys, id => id.value),
             };
 
+            var existing = ByDigest(targetFingerprints);
+
             foreach (var reference in closure)
             {
                 if (reference.Type.IsGuidAddressed())
                 {
                     plan._entries.Add(new ImportEntry(reference, StateOf(target, source.Resources, reference)));
+                    continue;
+                }
+
+                if (sourceFingerprints != null && sourceFingerprints.TryGetValue(reference, out var digest)
+                    && existing.TryGetValue((reference.Type, digest.ToLowerInvariant()), out var same))
+                {
+                    plan._externalMoves[reference] = same;
+                    plan._reused.Add(reference);
                     continue;
                 }
 
@@ -207,7 +228,8 @@ namespace BH.SDK.Services.Collections
             }
 
             foreach (var reference in _externalMoves.Keys)
-                added.Add(reference);
+                if (!_reused.Contains(reference))
+                    added.Add(reference);
 
             var result = new CollectionImportResult { Remap = remap };
             var resources = _source.Resources;
@@ -258,7 +280,11 @@ namespace BH.SDK.Services.Collections
             }
 
             result.Files.AddRange(_files);
-            AddCredits(result, added, remap);
+
+            // A reused file brings its credit along when the level has none for it yet.
+            var credited = new HashSet<ResourceRef>(added);
+            credited.UnionWith(_reused);
+            AddCredits(result, credited, remap);
             return result;
         }
 
@@ -312,6 +338,23 @@ namespace BH.SDK.Services.Collections
             }
 
             return rewritten;
+        }
+
+        // One level resource per (kind, digest); the first wins when the level itself holds duplicates.
+        private static Dictionary<(ResourceType, string), ResourceRef> ByDigest(
+            IReadOnlyDictionary<ResourceRef, string> fingerprints)
+        {
+            var result = new Dictionary<(ResourceType, string), ResourceRef>();
+            if (fingerprints == null) return result;
+
+            foreach (var pair in fingerprints)
+            {
+                if (string.IsNullOrEmpty(pair.Value)) continue;
+                var key = (pair.Key.Type, pair.Value.ToLowerInvariant());
+                if (!result.ContainsKey(key)) result.Add(key, pair.Key);
+            }
+
+            return result;
         }
 
         private static ImportEntryState StateOf(LevelResources target, LevelResources source, ResourceRef reference)

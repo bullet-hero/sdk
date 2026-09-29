@@ -117,7 +117,8 @@ namespace BH.SDK.Tests.Services
 
             Assert.IsTrue(outcome.IsOk);
             var resources = outcome.Content.Resources;
-            CollectionAssert.AreEquivalent(new[] { level.Outer.PrefabId, level.Nested.PrefabId }, resources.Prefabs.Keys);
+            CollectionAssert.AreEquivalent(new[] { level.Outer.PrefabId, level.Nested.PrefabId },
+                resources.Prefabs.Keys);
             CollectionAssert.AreEquivalent(new[] { level.Shape.ShapeId }, resources.CompositeShapes.Keys);
             Assert.AreEqual(1, resources.Textures.Count);
 
@@ -153,6 +154,37 @@ namespace BH.SDK.Tests.Services
             CollectionAssert.AreEqual(TextureBytes, await Read(content.Store, "media/tex.png"));
         }
 
+        [TestCase(ArchiveFormat.Zip, ArchiveProtection.ZipAes256)]
+        [TestCase(ArchiveFormat.Zip, ArchiveProtection.OpenPgp)]
+        [TestCase(ArchiveFormat.TarGz, ArchiveProtection.OpenPgp)]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Hard)]
+        public async Task EncryptedArchive_AsksForThePassphrase_RefusesAWrongOne_OpensWithTheRightOne(
+            ArchiveFormat format, ArchiveProtection protection)
+        {
+            var store = await ExportAsync(new SourceLevel());
+
+            using var archive = new MemoryStream();
+            await CollectionArchive.PackAsync(store, archive, format, protection, "пароль".ToCharArray());
+
+            archive.Position = 0;
+            var (missing, _) = await CollectionArchive.UnpackAsync(archive, new MemoryContentStore("a"), Serialization);
+            Assert.AreEqual(CollectionArchiveResult.PassphraseRequired, missing);
+
+            archive.Position = 0;
+            var (wrong, _) = await CollectionArchive.UnpackAsync(archive, new MemoryContentStore("b"), Serialization,
+                "wrong".ToCharArray());
+            Assert.AreEqual(CollectionArchiveResult.WrongPassphrase, wrong);
+
+            archive.Position = 0;
+            var (result, content) = await CollectionArchive.UnpackAsync(archive, new MemoryContentStore("c"),
+                Serialization, "пароль".ToCharArray());
+            Assert.AreEqual(CollectionArchiveResult.Ok, result);
+            Assert.AreEqual(2, content.Resources.Prefabs.Count);
+            CollectionAssert.AreEqual(TextureBytes, await Read(content.Store, "media/tex.png"));
+        }
+
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
@@ -176,7 +208,8 @@ namespace BH.SDK.Tests.Services
             var level = new SourceLevel();
             var store = await ExportAsync(level);
 
-            var misnamed = CollectionReader.EntryPath(FileNames.PrefabsDirectory, Guid.NewGuid(), SerializationType.Json);
+            var misnamed =
+                CollectionReader.EntryPath(FileNames.PrefabsDirectory, Guid.NewGuid(), SerializationType.Json);
             await Write(store, misnamed, await Read(store, CollectionReader.EntryPath(FileNames.PrefabsDirectory,
                 level.Outer.PrefabId.value, SerializationType.Json)));
 
@@ -229,7 +262,8 @@ namespace BH.SDK.Tests.Services
             Assert.AreEqual(texture.TextureResourceId, drawn.TextureResourceId);
 
             // The prefab credit follows the copy's new id, the texture credit the new texture id.
-            Assert.IsTrue(result.Meta.Any(m => m.ResourceType == ResourceType.Prefab && m.ResourceGuid == outerCopy.PrefabId.value));
+            Assert.IsTrue(result.Meta.Any(m =>
+                m.ResourceType == ResourceType.Prefab && m.ResourceGuid == outerCopy.PrefabId.value));
             Assert.IsTrue(result.Meta.Any(m => m.ResourceType == ResourceType.Texture && m.ResourceId.value == -2));
 
             // The collection itself is untouched.
@@ -246,13 +280,78 @@ namespace BH.SDK.Tests.Services
             var collection = (await CollectionReader.ReadAsync(await ExportAsync(level), Serialization)).Content;
 
             var target = new LevelResources();
-            target.CompositeShapes.Add(level.Shape.ShapeId, collection.Resources.CompositeShapes[level.Shape.ShapeId].Copy());
+            target.CompositeShapes.Add(level.Shape.ShapeId,
+                collection.Resources.CompositeShapes[level.Shape.ShapeId].Copy());
 
             var plan = CollectionImportPlanner.Plan(target, new LevelMeta(), collection,
                 new[] { ResourceRef.Of(level.Shape.ShapeId) }, Array.Empty<string>());
 
             Assert.AreEqual(ImportEntryState.Identical, plan.Entries.Single().State);
             Assert.AreEqual(0, plan.Resolve().Count);
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Normal)]
+        public async Task Import_OfAFileTheLevelHasByteForByte_ReusesTheLevelsOwn()
+        {
+            var level = new SourceLevel();
+            var collection = (await CollectionReader.ReadAsync(await ExportAsync(level), Serialization)).Content;
+            var reference = ResourceRef.Of(collection.Resources.Textures.Keys.Single());
+
+            // The target holds the same bytes under another name and id, and a different file at -1.
+            var folder = new MemoryContentStore("target");
+            await Write(folder, "same.png", TextureBytes);
+            await Write(folder, "other.png", Encoding.UTF8.GetBytes("a different picture"));
+            var target = new LevelResources();
+            var other = new TextureResource { TextureResourceId = new TextureResourceId(-1) };
+            other.Sources.Add(new ResourceKey(ResourceUriType.LevelPath, "other.png"));
+            target.Textures.Add(other.TextureResourceId, other);
+            var same = new TextureResource { TextureResourceId = new TextureResourceId(-7) };
+            same.Sources.Add(new ResourceKey(ResourceUriType.LevelPath, "same.png"));
+            target.Textures.Add(same.TextureResourceId, same);
+
+            var plan = CollectionImportPlanner.Plan(target, new LevelMeta(), collection, new[] { reference },
+                new[] { "same.png", "other.png" },
+                await MediaFingerprints.ComputeAsync(collection.Resources, collection.Store),
+                await MediaFingerprints.ComputeAsync(target, folder));
+            var result = plan.Resolve();
+
+            Assert.AreEqual(1, plan.Reused.Count);
+            Assert.AreEqual(0, result.Added.Textures.Count);
+            Assert.AreEqual(0, result.Files.Count);
+            Assert.AreEqual(-7, result.Remap.Map(reference).Id);
+            // The credit the collection carries lands on the level's own texture.
+            Assert.IsTrue(result.Meta.Any(m => m.ResourceType == ResourceType.Texture && m.ResourceId.value == -7));
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Easy)]
+        public async Task Import_OfAFileWithDifferentBytes_IsStillCopied()
+        {
+            var level = new SourceLevel();
+            var collection = (await CollectionReader.ReadAsync(await ExportAsync(level), Serialization)).Content;
+            var reference = ResourceRef.Of(collection.Resources.Textures.Keys.Single());
+
+            var folder = new MemoryContentStore("target");
+            await Write(folder, "tex.png", Encoding.UTF8.GetBytes("a different picture"));
+            var target = new LevelResources();
+            var theirs = new TextureResource { TextureResourceId = new TextureResourceId(-1) };
+            theirs.Sources.Add(new ResourceKey(ResourceUriType.LevelPath, "tex.png"));
+            target.Textures.Add(theirs.TextureResourceId, theirs);
+
+            var plan = CollectionImportPlanner.Plan(target, new LevelMeta(), collection, new[] { reference },
+                new[] { "tex.png" },
+                await MediaFingerprints.ComputeAsync(collection.Resources, collection.Store),
+                await MediaFingerprints.ComputeAsync(target, folder));
+            var result = plan.Resolve();
+
+            Assert.AreEqual(0, plan.Reused.Count);
+            Assert.AreEqual(1, result.Added.Textures.Count);
+            Assert.AreEqual("tex_1.png", result.Files.Single().DestinationFileName);
         }
     }
 }
