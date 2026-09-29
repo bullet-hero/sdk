@@ -52,9 +52,8 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
         [JsonProperty(Names.PreviewCollider)]
         public bool PreviewColliderOnSelect { get; set; }
 
-        // Only the two ALPHAS are authored, exactly as the grid's colour is: a hitbox reads as one
-        // thing regardless of taste, so its hue stays a constant in the consumer rather than a field
-        // somebody can tune into invisibility.
+        // Only the two ALPHAS live here. The hue is GraphicsSettings.CollidersMode.Color, shared with the
+        // game's Colliders Only mode; these two opacities stay the editor's own.
 
         /// <summary> Fill opacity for the collider of a SELECTED object - the louder of the two,
         /// since it is answering a question the author just asked. </summary>

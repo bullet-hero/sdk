@@ -1,5 +1,6 @@
 using BH.SDK.Models;
 using BH.SDK.Models.Enums.Controls.Modes;
+using BH.SDK.Models.SettingGroups.Graphics;
 using BH.SDK.Serialization;
 using BH.SDK.Versions;
 using Newtonsoft.Json.Linq;
@@ -86,6 +87,27 @@ namespace BH.SDK.Tests
 
             Assert.AreEqual(ModelGenerations.V2_SimplifyEntrance, (int)JObject.Parse(json)["g"]);
             Assert.IsTrue(service.DeserializeData<UserSettings>(json).TutorialCompleted);
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Normal)]
+        public void V1File_WithoutCollidersMode_ReadsTheDefaults()
+        {
+            var service = new SerializationService();
+            var root = JObject.Parse(ReleaseShaped(service, TouchscreenControlMode.Absolute));
+            ((JObject)root["v"][Names.Graphics]).Remove(Names.CollidersMode);
+
+            var settings = service.DeserializeData<UserSettings>(root.ToString());
+
+            // The mode arriving intact proves the file went through the migrator, not around it.
+            Assert.AreEqual(TouchscreenControlMode.Absolute, settings.Controls.Touchscreen.Mode);
+            var collidersMode = settings.Graphics.CollidersMode;
+            Assert.IsFalse(collidersMode.Active);
+            Assert.IsTrue(collidersMode.UseAlpha);
+            Assert.AreEqual(CollidersModeGraphicsSettings.DefaultColor(), collidersMode.Color);
+            Assert.AreEqual(CollidersModeGraphicsSettings.DefaultBackground(), collidersMode.Background);
         }
 
         /// <summary> A real write of today's settings with the flag's key removed and the envelope

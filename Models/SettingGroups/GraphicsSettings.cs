@@ -80,6 +80,11 @@ namespace BH.SDK.Models.SettingGroups
         [JsonProperty(Names.Display)]
         public DisplayGraphicsSettings Display { get; set; }
 
+        /// <summary> Colliders Only, the game screen's practice mode - see the group's own header. </summary>
+        [RuleNotNull]
+        [JsonProperty(Names.CollidersMode)]
+        public CollidersModeGraphicsSettings CollidersMode { get; set; }
+
         /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public GraphicsSettings()
         {
@@ -92,6 +97,7 @@ namespace BH.SDK.Models.SettingGroups
             AntiAliasing = new AntiAliasingGraphicsSettings();
             Textures = new TexturesGraphicsSettings();
             Display = new DisplayGraphicsSettings();
+            CollidersMode = new CollidersModeGraphicsSettings();
         }
 
         /// <summary> Every member at once, in declaration order. </summary>
@@ -109,6 +115,7 @@ namespace BH.SDK.Models.SettingGroups
             AntiAliasing = antiAliasing;
             Textures = textures;
             Display = display;
+            CollidersMode = new CollidersModeGraphicsSettings();
         }
     }
 }

@@ -145,6 +145,16 @@
         /// <summary> Word fragment, built into HitboxRingOpacity. </summary>
         public const string Ring = "ring";
 
+        /// <summary> Word fragment, built into CollidersMode. </summary>
+        public const string Colliders = "colliders";
+
+        /// <summary> Word fragment, built into UseAlpha. </summary>
+        public const string Use = "use";
+
+        /// <summary> CollidersModeGraphicsSettings.Color. The full word, because <see cref="Color"/>
+        /// is the MULTI abbreviation <c>"clr"</c>. </summary>
+        public const string ColorWord = "color";
+
         /// <summary> AudioSettings.Game, Level.Game. </summary>
         public const string Game = "game";
 
@@ -220,7 +230,7 @@
         /// <summary> LevelMeta.LevelDescription, Marker.Description, ResourceMeta.ResourceDescription. </summary>
         public const string Description = "desc";
 
-        /// <summary> BaseDeviceControlsSettings.Active. </summary>
+        /// <summary> BaseDeviceControlsSettings.Active, CollidersModeGraphicsSettings.Active. </summary>
         public const string Active = "active";
 
         /// <summary> Checkpoint.Active, LevelTrackEffects.Active, PostProcessingEvents.Active, PostProcessingKeyframe.Active and 1 more. </summary>
@@ -303,7 +313,7 @@
         /// <summary> BeatSegment.Color4, BloomKey.Color4, Checkpoint.Color4, Color3Key.Value and 8 more. </summary>
         public const string Color = "clr";
 
-        /// <summary> TextureResource.Alpha. </summary>
+        /// <summary> TextureResource.Alpha. Word fragment, built into UseAlpha. </summary>
         public const string Alpha = "alpha";
 
         /// <summary> GradientAlphaKeyValue.Alpha. </summary>
@@ -546,7 +556,7 @@
         /// <summary> GameEvents.Checkpoints, RunProfile.UseCheckpoints. </summary>
         public const string Checkpoints = "checkpoints";
 
-        /// <summary> Word fragment, built into MenuBackground. </summary>
+        /// <summary> CollidersModeGraphicsSettings.Background. Word fragment, built into MenuBackground. </summary>
         public const string Background = "background";
 
         /// <summary> GameEvents.Backgrounds. </summary>
@@ -2069,6 +2079,12 @@
 
         /// <summary> <c>"alert_on_exception"</c> - InterfaceSettings.AlertOnException. </summary>
         public const string AlertOnException = Alert + _ + On + _ + Exception;
+
+        /// <summary> <c>"colliders_mode"</c> - GraphicsSettings.CollidersMode. </summary>
+        public const string CollidersMode = Colliders + _ + Mode;
+
+        /// <summary> <c>"use_alpha"</c> - CollidersModeGraphicsSettings.UseAlpha. </summary>
+        public const string UseAlpha = Use + _ + Alpha;
 
         /// <summary> <c>"fps_target"</c> - EffectsGraphicsSettings.FpsTarget, GraphicsSettings.FpsTarget. </summary>
         public const string FpsTarget = Fps + _ + Target;
