@@ -35,10 +35,16 @@
     projects, so a version in it would also stamp BH.SDK.Roslyn and both test assemblies, which
     version nothing. Services.Shared.Tests' SdkVersionAgreementTests fails the moment one of the
     three moves alone.
+
+    A BETA is written `X.Y.ZbN` (Docs/VERSION-BUMP.md in the game repo, "A beta"), which NuGet
+    refuses outright - restore fails before anything compiles. The conditional line rewrites it to
+    the semver prerelease `X.Y.Z-beta.N` for this build only; the literal line stays the copy the
+    agreement test and release.yml read, so it keeps the one spelling the other two copies have.
   -->
 
   <PropertyGroup>
-    <Version>1.0.0</Version>
+    <Version>1.1.0b1</Version>
+    <Version Condition="$([System.Text.RegularExpressions.Regex]::IsMatch('$(Version)', '^\d+\.\d+\.\d+b\d+$'))">$([System.Text.RegularExpressions.Regex]::Replace('$(Version)', '^(\d+\.\d+\.\d+)b(\d+)$', '$1-beta.$2'))</Version>
     <TargetFramework>netstandard2.1</TargetFramework>
     <LangVersion>9.0</LangVersion>
     <Nullable>disable</Nullable>

@@ -43,6 +43,12 @@ The repository carries a `gv<X.Y.Z>` tag on the commit where each value first ap
 them, `gv0.0.0` (the Unity default `1.0`, before the project had a version of its own) through
 `gv0.5.5`. The gaps (`0.2.x`, `0.4.0`, `0.4.2`-`0.4.9`, `0.5.0`) never existed.
 
+**A beta is `X.Y.ZbN`** (`1.1.0b1`, `1.1.0b2`, then the release `1.1.0`) - a build of the next
+version handed to testers, usually on a Steam beta branch. It moves `gv` and `sv` to the same string
+but carries no tag and no changelog; `Docs/VERSION-BUMP.md` in the game repo, "A beta". The `b` is
+not semver: the csproj rewrites it to `X.Y.Z-beta.N` for NuGet, and nothing in either codebase
+parses `gv` or `sv` as a number.
+
 ### `sv` - the SDK as a package
 
 Semver over the **public API of `BH.SDK`**, for consumers that compile against the DLL rather than
