@@ -110,6 +110,48 @@ namespace BH.SDK.Tests
             Assert.AreEqual(CollidersModeGraphicsSettings.DefaultBackground(), collidersMode.Background);
         }
 
+        // Graphics, Interface and GameEditor are frozen snapshots at generation 1 and the migrator copies
+        // them member by member - so a value off its default in each one, and in the members only the
+        // initializer carries, is what proves no member was dropped on the way.
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Normal)]
+        public void AReleaseFile_CarriesTheFrozenGroupsMemberByMember()
+        {
+            var service = new SerializationService();
+            var root = JObject.Parse(ReleaseShaped(service, TouchscreenControlMode.Absolute));
+            var value = (JObject)root["v"];
+            var graphics = (JObject)value[Names.Graphics];
+            graphics.Remove(Names.CollidersMode);
+            graphics[Names.FpsFixed] = 144;
+            var iface = (JObject)value[Names.Interface];
+            iface.Remove(Names.LevelsLayout);
+            iface[Names.StatsMemory] = true;
+            iface[Names.ShowGamePause] = false;
+            iface[Names.HitboxRingOpacity] = 0.25f;
+            var editor = (JObject)value[Names.GameEditor];
+            editor.Remove(Names.Publishing);
+            var editorIface = (JObject)editor[Names.Interface];
+            editorIface.Remove(Names.LevelsLayout);
+            editorIface[Names.LogRules] = true;
+            editorIface[Names.DirtyFieldDelay] = 0.5f;
+
+            var settings = service.DeserializeData<UserSettings>(root.ToString());
+
+            Assert.AreEqual(144, settings.Graphics.FpsFixed);
+            Assert.IsTrue(settings.Interface.StatsMemory);
+            Assert.IsFalse(settings.Interface.ShowGamePause);
+            Assert.AreEqual(0.25f, settings.Interface.HitboxRingOpacity);
+            Assert.AreEqual(new UserSettings().Interface.LevelsLayout, settings.Interface.LevelsLayout);
+            Assert.IsTrue(settings.GameEditor.Interface.LogRuleFindings);
+            Assert.AreEqual(0.5f, settings.GameEditor.Interface.DirtyFieldDelay);
+            Assert.AreEqual(new UserSettings().GameEditor.Interface.LevelsLayout,
+                settings.GameEditor.Interface.LevelsLayout);
+            Assert.IsNotNull(settings.GameEditor.Publishing);
+        }
+
         /// <summary> A real write of today's settings with the flag's key removed and the envelope
         /// stamped Release - exactly what 1.0.0 put on disk. </summary>
         private static string ReleaseShaped(SerializationService service, TouchscreenControlMode mode,

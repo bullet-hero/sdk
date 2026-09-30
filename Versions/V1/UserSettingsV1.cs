@@ -10,7 +10,8 @@ namespace BH.SDK.Versions.V1
     // The groups are typed as TODAY's classes wherever they did not change at this bump - they are not
     // domains of their own, so a group that changes freezes its own leaf snapshot next to this one (no
     // [ModelGeneration], like AudioLevelV0) and this file is retyped to it. Controls is the one that
-    // did: ControlsSettingsV1 still carries cursor_return in its shared group. Keys are literal: a snapshot spells them
+    // did: ControlsSettingsV1 still carries cursor_return in its shared group, and Graphics, Interface
+    // and GameEditor each gained a member at generation 2. Keys are literal: a snapshot spells them
     // the way its own generation did.
 
     /// <summary> Generation 1 (Release) of the user-settings domain - the shape 1.0.0 shipped, before
@@ -32,17 +33,18 @@ namespace BH.SDK.Versions.V1
         [JsonProperty("controls")]
         public ControlsSettingsV1 Controls { get; set; }
 
-        /// <summary> Unchanged at this bump. </summary>
+        /// <summary> Changed at this bump: gained <c>colliders_mode</c>. </summary>
         [JsonProperty("graphics")]
-        public GraphicsSettings Graphics { get; set; }
+        public GraphicsSettingsV1 Graphics { get; set; }
 
-        /// <summary> Unchanged at this bump. </summary>
+        /// <summary> Changed at this bump: gained <c>levels_layout</c>. </summary>
         [JsonProperty("iface")]
-        public InterfaceSettings Interface { get; set; }
+        public InterfaceSettingsV1 Interface { get; set; }
 
-        /// <summary> Unchanged at this bump. </summary>
+        /// <summary> Changed at this bump: gained <c>publishing</c>, and its interface group gained
+        /// <c>levels_layout</c>. </summary>
         [JsonProperty("game_editor")]
-        public GameEditorSettings GameEditor { get; set; }
+        public GameEditorSettingsV1 GameEditor { get; set; }
 
         /// <summary> Unchanged at this bump. </summary>
         [JsonProperty("keys")]
@@ -54,9 +56,9 @@ namespace BH.SDK.Versions.V1
             General = new GeneralSettings();
             Audio = new AudioSettings();
             Controls = new ControlsSettingsV1();
-            Graphics = new GraphicsSettings();
-            GameEditor = new GameEditorSettings();
-            Interface = new InterfaceSettings();
+            Graphics = new GraphicsSettingsV1();
+            GameEditor = new GameEditorSettingsV1();
+            Interface = new InterfaceSettingsV1();
             Keybindings = new KeybindingsSettings();
         }
     }

@@ -3,6 +3,7 @@ using BH.SDK.Models;
 using BH.SDK.Models.Enums.Controls.Modes;
 using BH.SDK.Models.SettingGroups;
 using BH.SDK.Models.SettingGroups.Controls;
+using BH.SDK.Models.SettingGroups.GameEditor;
 
 namespace BH.SDK.Versions.V1.Migrations
 {
@@ -11,8 +12,9 @@ namespace BH.SDK.Versions.V1.Migrations
     /// <summary> User settings, generation 1 to generation 2 - every group carried as it is except
     /// that the controls' shared <c>cursor_return</c> moves into the mouse and touchscreen groups, the
     /// device priority and manual selection (the most recently used device always leads), the
-    /// gamepad's dash buttons and every form of motion-sensor locality; and the tutorial flag starts
-    /// unset, so a player updating from 1.0.0 is offered the tutorial once. </summary>
+    /// gamepad's dash buttons and every form of motion-sensor locality; the groups that only GAINED a
+    /// member (Colliders Only, both level browser layouts, publishing) take that member's default; and
+    /// the tutorial flag starts unset, so a player updating from 1.0.0 is offered the tutorial once. </summary>
     public class UserSettingsV1ToV2 : ModelMigration<UserSettingsV1, UserSettings>
     {
         /// <summary> Builds the newer shape out of the older one. </summary>
@@ -20,11 +22,42 @@ namespace BH.SDK.Versions.V1.Migrations
             from.General,
             from.Audio,
             Migrate(from.Controls),
-            from.Graphics,
-            from.GameEditor,
-            from.Interface,
+            Migrate(from.Graphics),
+            Migrate(from.GameEditor),
+            Migrate(from.Interface),
             from.Keybindings,
             false); // the flag did not exist at generation 1
+
+        private static GraphicsSettings Migrate(GraphicsSettingsV1 from) => new(
+            from.FpsTarget, from.FpsFixed, from.Audio, from.Effects, from.Avatar, from.PostProcessing,
+            from.AntiAliasing, from.Textures, from.Display);
+
+        // The constructor takes only six of the fifteen members (InterfaceSettings says why), so the
+        // rest go through the initializer; LevelsLayout keeps its default, the grid V1 always opened on.
+        private static InterfaceSettings Migrate(InterfaceSettingsV1 from) => new(
+            from.OpenMenuOnLose, from.StatsActive, from.StatsAlignmentX, from.StatsAlignmentY,
+            from.MenuBackground, from.ScreenOrientation)
+        {
+            StatsFrameObjects = from.StatsFrameObjects,
+            StatsLevelObjects = from.StatsLevelObjects,
+            StatsMemory = from.StatsMemory,
+            StatsProfiling = from.StatsProfiling,
+            ShowGameProgress = from.ShowGameProgress,
+            ShowGamePause = from.ShowGamePause,
+            ShowGameInterface = from.ShowGameInterface,
+            HitboxRingOpacity = from.HitboxRingOpacity,
+            AlertOnException = from.AlertOnException,
+        };
+
+        private static GameEditorSettings Migrate(GameEditorSettingsV1 from) => new(
+            from.Savings, from.Camera, from.Player, from.Grid, from.Effects, from.Selection, from.Gizmos,
+            from.Creation, from.Timeline, Migrate(from.Interface), from.Serialization,
+            new EditorPublishingSettings());
+
+        private static EditorInterfaceSettings Migrate(EditorInterfaceSettingsV1 from) => new(
+            from.DirtyFieldDelay, from.RotationDisplayUnit, from.LogValueClamps, from.RenderInframes,
+            from.LinkColliderToShape, from.SelectionAutoOpenActive, from.SyncTimelineExpansion,
+            from.LogRuleFindings, from.ExpansionMask, from.HierarchyExpansion, from.TimelineExpansion);
 
         private static ControlsSettings Migrate(ControlsSettingsV1 from) => new(
             new CommonControlsSettings(from.Common.CursorVisible, from.Common.CursorScale,
