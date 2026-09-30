@@ -69,8 +69,9 @@ namespace BH.SDK.Rules
         // WHAT IT COSTS: a cursor resting a hair from the avatar can dash on every other sampled
         // frame, each one a trail, a sound and a statistic for a move nobody can see - the windows at
         // the bottom are far shorter than a frame, so the only limiter left is the one observed
-        // touchable frame every dash waits for (AvatarMovement.ExposedSinceDash). Releasing a pointer
-        // now stops the avatar on its own position, which is what keeps that case rare.
+        // touchable frame every dash waits for (AvatarMovement.ExposedSinceDash). Releasing the mouse
+        // stops the avatar on its own position by default, which is what keeps that case rare - it is
+        // a per-device setting (CursorReturn), and touch defaults to walking on.
 
         /// <summary> The shortest dash, as a fraction of a full one - <see cref="ArrivedDistance"/> of
         /// reach, so effectively none. A target nearer than this is not dashed to at all. </summary>

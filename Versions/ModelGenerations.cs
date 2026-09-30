@@ -31,7 +31,8 @@ namespace BH.SDK.Versions
         public const int V1_AlphaRelease = 1;
 
         /// <summary> <c>UserSettings</c> remembers whether the tutorial was offered, and its controls
-        /// lose the cursor-return switch (releasing a pointer always stops the avatar); a
+        /// move the cursor-return switch from the shared group onto each pointer device - what
+        /// releasing a pointer does is that device's setting, on for the mouse and off for touch; a
         /// <c>LevelStatistics</c> record can be filed under "no collision", and <c>GameStatistics</c>
         /// counts completed tutorials - the first bump after release. <c>LevelMeta</c> joined it before
         /// any build carrying it shipped: a resource record can credit a theme, effect, shape or prefab
