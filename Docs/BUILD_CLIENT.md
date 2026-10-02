@@ -4,7 +4,7 @@ Bullet Hero (`BH`) can't have _All in One_ build, each _platform_ and _distribut
 requires build with right configuration of packages, plugins, resources, code and everything related
 
 Originally it's internal Bullet Hero client file, but this information must be public.
-All of this information applied only to game itself, `BH.SDK` use different file for specification (`BUILD_SDK.md`)
+All of this information applied only to game itself; how `BH.SDK` itself is built and packed is in its `README.md`
 
 ### Platforms
 - Windows (`WIN`)

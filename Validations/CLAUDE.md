@@ -15,11 +15,12 @@ the rule engine, in two halves. *Declarative*: `RuleAnalyzer`/`RuleFixer`
 
 ## Rules & validation
 
-`Rules/` classes are mostly pure `public const` numeric tables with zero `Models/` dependency
-(`FrameRules`, `ValueRules`, `LevelRules`, `AudioRules`, `PostProcessingRules`, `ResourceRules`,
-`TextRules`) - `EffectRules` is the one exception, constructing default `CurveValue`/`GradientValue`
-model instances. `RuleGroup` (`None/Error/Warning/Advice`) is the severity enum, and it is **real
-now**: 36 rules are Error, 9 are Warning, 1 is Advice. It was not - forty-four of forty-five took
+`Rules/` classes are mostly pure `public const` numeric tables that depend on no model CLASS -
+at most on `Models/` enums and primitives (`FrameRules` on `Models.Enums`, `LevelRules` on
+`Models.Primitives`, `TextRules` on `Models.Enums.Text`). Two exceptions reach further: `EffectRules`
+constructs default `CurveValue`/`GradientValue` model instances, and `RuleContext` is built over the
+level's object models. `RuleGroup` (`None/Error/Warning/Advice`) is the severity enum, and it is
+**real now** - every rule states its group. It was not - all but one rule took
 `BaseRuleAttribute`'s default, so `ValidationReport.HasErrors` was identical to `!IsValid` and no
 consumer could act on it. What was missing was the CRITERION, which is now written out at the top of
 `RuleGroup.cs`: Error means the file cannot be played as written, Warning means it plays but not as
@@ -62,8 +63,8 @@ whose `Fix` masks the unknown bits off instead of falling back to a default. Don
 
 `Rules/Attributes/` are declarative `[RuleXxx]` property attributes (`[AttributeUsage(Property)]`
 only - never fields), all `: BaseRuleAttribute` (`IsValidType`/`IsValid`/`Fix`). `[RuleContainer]`
-(a bare class-level marker) opts a type into the reflective walk - applied broadly across `Models/`
-(218 files), not just a handful of aggregate roots. `Rules/Attributes/Contextual/` need a
+(a bare class-level marker) opts a type into the reflective walk - applied broadly across `Models/`,
+not just a handful of aggregate roots. `Rules/Attributes/Contextual/` need a
 `RuleContext` (the root `Level` and the resolved object scope) - `RuleObjectIdValidAttribute`/
 `RuleParentObjectIdValidAttribute` check `ObjectId` validity/parent rules against the scope,
 `RuleReferenceExistsAttribute` that a level-defined resource id resolves; uniqueness within a scope
@@ -96,7 +97,7 @@ long an author waits, and nothing a player waits for. Anything here claiming it 
 read is stale.
 
 **IT IS GENERATED NOW.** `BH.SDK.Roslyn`'s `ValidationGenerator` writes a `Validate` for every
-`[RuleContainer]` type - ~220 of them - and `RuleWalk.Node` dispatches a value to its own walk through
+`[RuleContainer]` type, and `RuleWalk.Node` dispatches a value to its own walk through
 `IValidatable`, falling back to `RuleAnalyzer.WalkNode` for anything without one (a non-partial type,
 a test fixture, a future hand-written model). The two are mutually recursive through that one point,
 so a half-migrated tree is a legal state. Measured on the corpus, three passes, volcano's rules pass
@@ -109,7 +110,7 @@ Four things carry that:
 
 - **`RuleWalk`** owns one `Analyze` call's state - the trace, the findings, the settings - and is the
   only place a child node is reached from. A class rather than a `ref struct`: it travels through an
-  interface, so `ref` would spread to ~220 generated signatures to save one object per call.
+  interface, so `ref` would spread to every generated signature to save one object per call.
 - **`RuleTable`** is what the generator deliberately does NOT produce. Reflection builds the
   `PropertyInfo` array and the rule arrays once per type, so a trace holds the same `PropertyInfo`
   object either way, `RuleIssue.Rule` is the same attribute instance it has always been, and the

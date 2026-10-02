@@ -26,8 +26,8 @@ whole) and `Tests/Utils/PrefabVirtualizationTests` (the pair that keeps a prefab
 out of the file - both directions, the report's four findings, idempotence, and the two cases a
 reader has to survive: a file written before the change that still carries its copies, and a
 capacity hint swept off a thinned level. `Docs/Issues/PREFAB_VIRTUALIZATION_HISTORY.md` is the
-record). **`Tests/Rules/` is the bulk** - 57 files,
-  roughly one per `[RuleXxx]` attribute on top of `BaseRuleTests` (the shared analyze/fix harness),
+record). **`Tests/Rules/` is the bulk** -
+  roughly one file per `[RuleXxx]` attribute on top of `BaseRuleTests` (the shared analyze/fix harness),
   `RuleCoverageTests` (fails if a rule has no test file), `RuleContextTests`, `RulesConsistencyTests`,
   `LevelGraphAnalyzerTests`, `ValidationFacadeTests`, `ModificationCheckedWriteTests`. Five of them
   guard the GENERATED walk rather than a rule, and are what any change to it answers to:

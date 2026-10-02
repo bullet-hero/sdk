@@ -39,9 +39,9 @@ namespace BH.SDK.Generators.Modifiers
         All = Transform | Layout | Colors | UVs | FontSizes | Fillments | Appearings,
     }
 
-    // Every track on a RectObject is a List<T> of something implementing IFrame, but they are ten
-    // separate properties of four unrelated element types - so anything wanting to work "on the
-    // object's tracks" generically either writes the same ten-branch switch (every modifier, once
+    // Every track on a RectObject is a List<T> of something implementing IFrame, but they are
+    // separate properties of unrelated element types - so anything wanting to work "on the
+    // object's tracks" generically either writes the same one-branch-per-track switch (every modifier, once
     // each) or gets it from here, once.
     //
     // IList<IFrame> would have been the tidy signature and is not available: List<PosKey> is not

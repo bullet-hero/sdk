@@ -100,7 +100,7 @@ were put back, and every domain shipped 1.0.0 at generation 1.
 **A generation is assigned FORWARD, never reused, and taken from ONE global counter.** A domain that
 changes shape takes `ModelGenerations.Current + 1` - never "the next free number for that domain" -
 and only the one that moved needs a snapshot and a migrator; the others stay where they are, so the
-twenty-one domains still diverge (`UserSettings` at 2 while `Level` is still at 1). The single counter is
+domains diverge (`UserSettings` moved past `Level`, which did not change). The single counter is
 what keeps the one `mg` in the Settings version line meaningful, and what makes `LevelMeta.MinGeneration`
 against `LevelGenerations.Required()` an exact test: with per-domain numbering, a file whose domain B
 moved to 2 would pass that check against a build whose domain A is already at 2, and fail only on

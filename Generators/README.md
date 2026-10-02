@@ -121,7 +121,7 @@ public class RadialGenerator : BaseContentGenerator<RadialGenerator.Parameters>
   host": `IAudioFileInput`, `IWaveformInput`, `IBeatFramesInput`, `IPixelTextureInput`, plus
   `ICurrentFramerateInput`, which is **not** `ExternalAnalysis`: the value is already on the context,
   and the interface exists only so a form can display it (see `Hints.ReadOnly`).
-- `Modifiers/` - `ObjectTrackMask` + `ObjectTracks` (enumerate an object's twelve keyframe tracks
+- `Modifiers/` - `ObjectTrackMask` + `ObjectTracks` (enumerate every keyframe track of an object
   generically) and the modifiers themselves.
 - `Import/`, `Interop/` - the two level generators that read a file.
 - `Geometry/`, `Bullets/`, `Audio/`, `Textures/`, `Utility/` - the concrete generators.

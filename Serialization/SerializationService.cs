@@ -121,7 +121,7 @@ namespace BH.SDK.Serialization
                 new DictionaryAsPairListConverter<ObjectId, ObjectId>(),
 
                 // The pair form rather than the key-from-value one above, because BestRun carries
-                // none of the four numbers RunProfile is made of - a record is filed under the
+                // none of the numbers RunProfile is made of - a record is filed under the
                 // conditions it was set under, and repeating them inside the record would be a
                 // second copy with nothing keeping the two in agreement. RunProfile is also a
                 // value type with no TypeConverter, so Newtonsoft's own dictionary path throws.

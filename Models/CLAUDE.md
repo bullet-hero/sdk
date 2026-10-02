@@ -8,17 +8,17 @@ a file in that folder.
 
 ## Folder index
 
-| Folder | File | Size |
-|---|---|---|
-| `Clipboard/` | `Clipboard/CLAUDE.md` | 474 tok |
-| `Game/` | `Game/CLAUDE.md` | 667 tok |
-| `Hints/` | `Hints/CLAUDE.md` | 1052 tok |
-| `Keyframes/` | `Keyframes/CLAUDE.md` | 619 tok |
-| `Objects/` | `Objects/CLAUDE.md` | 1485 tok |
-| `Resources/` | `Resources/CLAUDE.md` | 2525 tok |
-| `SettingGroups/` | `SettingGroups/CLAUDE.md` | 2179 tok |
-| `Statistics/` | `Statistics/CLAUDE.md` | 681 tok |
-| `Values/` | `Values/CLAUDE.md` | 1039 tok |
+| Folder | File |
+|---|---|
+| `Clipboard/` | `Clipboard/CLAUDE.md` |
+| `Game/` | `Game/CLAUDE.md` |
+| `Hints/` | `Hints/CLAUDE.md` |
+| `Keyframes/` | `Keyframes/CLAUDE.md` |
+| `Objects/` | `Objects/CLAUDE.md` |
+| `Resources/` | `Resources/CLAUDE.md` |
+| `SettingGroups/` | `SettingGroups/CLAUDE.md` |
+| `Statistics/` | `Statistics/CLAUDE.md` |
+| `Values/` | `Values/CLAUDE.md` |
 
 ## Models/
 
@@ -143,7 +143,7 @@ domain model implements: `Copy()` (new instance), `Equals(T)`/`Equals(object)`/`
 `Update(src)` and `Pull(src)`.
 
 **ALL OF IT IS GENERATED, AND SO ARE BOTH CODECS.** `BH.SDK.Roslyn`'s `ModelGenerator` writes every
-one of those bodies for every type carrying `[GenerateModel]` - 239 of them - plus that type's
+one of those bodies for every type carrying `[GenerateModel]`, plus that type's
 `.blob` codec (`IBinaryModel`) and its JSON codec (`IJsonModel`); the model file itself holds only
 its members, its constructors and whatever is genuinely its own. It used to be hand-written per class:
 208 `Copy` bodies, 279 typed `Equals`, 206 `Update`, 206 `Pull`, and the failure mode was never a

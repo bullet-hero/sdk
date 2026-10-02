@@ -189,19 +189,17 @@ domain's *current* type" rule). Read those first; this section only adds what th
   an aggregate-root boundary that gets its own envelope and migrates as one unit. The second number
   never had anything to say - a shape change either needs a migration or does not, and there is no
   intermediate grade a minor could express; what it did instead was invite a bump nobody migrated.
-  **21 types carry the attribute: sixteen at generation 1 (`ModelGenerations.V1_AlphaRelease`),
-  five at 2 (`V2_SimplifyEntrance`) - `LevelMeta`, `UserSettings`, `GameStatistics`,
-  `LevelStatistics` bumped with snapshots under `Versions/V1/`, and `ResourceCollection` was born
-  there as a new domain.** Before 1.0.0 the format changed in place and nothing migrated. Since the
-  release every change is a bump from `ModelGenerations.Current + 1` with a migrator; root
-  `CLAUDE.md` Rule 11 is the record. The twenty-one: `ResourceCollection` (`Models/Collections/`), `Level`, `LevelMeta`,
-  `UserSettings`, `Prefab`, `EffectData`, `ThemeData`, `CompositeShape`, `ClipboardData` (SDK-repo
-  "core" tier); `PublishProfile` (`Publishing/`); `GameStatistics`, `LevelStatistics`
-  (`Models/Statistics/`, two roots rather than one - see that section); `LevelSettings`, `GameLevel`,
-  `AudioLevel`, `LevelResources`, `LevelHints` (nested under `Level`); `GameEvents`, `CameraEvents`,
-  `PostProcessingEvents`, `PlayerEvents` (nested under `GameLevel`). `ModelDomains.cs` is the
-  `nameof()`-based constant list; `ModelGenerations.cs` names the generations themselves, so no
-  attribute carries a bare digit.
+  **Every aggregate root carries the attribute, and the attribute is the record of where it is** -
+  `ModelDomains.cs` is the `nameof()`-based list of domains, `ModelGenerations.cs` names the
+  generations themselves (so no attribute carries a bare digit), and a grep for `[ModelGeneration(`
+  answers who is on which. The first post-release bump moved `LevelMeta`, `UserSettings`,
+  `GameStatistics` and `LevelStatistics` to `V2_SimplifyEntrance` with snapshots under `Versions/V1/`,
+  and `ResourceCollection` was born there as a new domain. Before 1.0.0 the format changed in place and
+  nothing migrated. Since the release every change is a bump from `ModelGenerations.Current + 1` with a
+  migrator; root `CLAUDE.md` Rule 11 is the record. Not every root is a file of its own:
+  `LevelSettings`, `GameLevel`, `AudioLevel`, `LevelResources`, `LevelHints` nest under `Level`, the
+  event groups nest under `GameLevel`, and statistics are two roots rather than one (see that
+  section).
 - **`ModelGenerations.Invalid` is `-1`, and everything negative is equally invalid.** Zero cannot be
   the sentinel: the frozen snapshots under `Versions/V0` are written at generation 0, so a reader
   treating zero as "no generation" would refuse exactly the files the migration path exists for.

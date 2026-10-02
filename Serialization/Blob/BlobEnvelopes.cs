@@ -5,7 +5,7 @@ namespace BH.SDK.Serialization.Blob
 {
     // DEGRADING AT DOMAIN GRANULARITY IS FREE, AND THAT IS WHY IT IS WHERE THE LINE IS DRAWN. A root
     // already writes `domain + generation + length + content`, so the framing that makes a skip safe
-    // is paid for at all twenty roots whether or not anything skips. A root this build cannot parse
+    // is paid for at every root whether or not anything skips. A root this build cannot parse
     // is stepped over whole, leaving its siblings intact.
     //
     // A ROOT FROM THE FUTURE IS NOT SKIPPED - IT IS REFUSED. Since 1.0.0 every model change is a

@@ -25,7 +25,7 @@ the same as an absent key ("the player never touched it"). It shipped additively
 here, so `UserSettings` took no bump for it.
 
 `InterfaceSettings` is the newest of them (the game's own overlays - the diagnostics readout's
-`StatsActive` + `StatsFrameObjects`/`StatsLevelObjects`/`StatsMemory` + `StatsAlignmentX`/`Y`, plus
+`StatsActive` + `StatsFrameObjects`/`StatsLevelObjects`/`StatsMemory`/`StatsProfiling` + `StatsAlignmentX`/`Y`, plus
 `OpenMenuOnLose`, which is a BEHAVIOUR rather than an
 overlay: off - the default - a lost run rewinds itself to the last checkpoint it reached instead of
 opening the result window, see `Assets/Code/Services/Game/CLAUDE.md`, "Checkpoints") and shipped **without bumping the
@@ -34,7 +34,7 @@ additive property whose constructor supplies a default needs no snapshot and no 
 `LevelSettings.Seed` and `GameEvents.Beats`. Its alignment pair is two free `[0,1]` floats rather than
 a nine-value enum, because it is the same convention level content is authored in (`0,0` lower-left) -
 the settings screen offers the nine presets, a hand-edited value between them is legal data.
-The three block switches are all **false** by default, which here is the zero value - and for the
+The four block switches are all **false** by default, which here is the zero value - and for the
 first two it is also the behaviour they shipped with. `StatsMemory` is the exception and the only
 one of the group that TOOK something away: that block used to be drawn whatever the file said, so a
 `settings.json` written before the key reads back without it. It landed before 1.0.0, when Rule 11

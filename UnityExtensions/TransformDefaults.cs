@@ -2,21 +2,18 @@ using Unity.Mathematics;
 
 namespace BH.SDK
 {
-    // THE TRANSFORM HALF OF BH.Shared.defaults, AND ONLY THAT HALF. Transform2D and RectTransform2D
-    // live here now and read their own zero state from these; the consumer's `defaults` keeps every
-    // other field it has (color, uv, cameraZoom, shake, layer_int, scaleUniform) and DELEGATES seven of
-    // these eight, so there is one source of truth for each and every `defaults.position` call site is
-    // untouched.
+    // THE ZERO STATE OF A TRANSFORM, AND ONLY THAT. Transform2D and RectTransform2D read their own zero
+    // state from these; `defaults` beside this file keeps every other field it has (color, uv,
+    // cameraZoom, shake, layer_int, scaleUniform) and DELEGATES its transform fields here, so there is
+    // one source of truth for each and every `defaults.position` call site reads the same number.
     //
     // `Size` IS THE ONE IT NO LONGER DELEGATES, and that split is load bearing: this one is what a
     // TRANSFORM measures before anything is authored onto it, while `defaults.size` is what an OBJECT
     // WITH NO SIZE KEYFRAMES reads, which is nothing at all. Reading them as one question is what let a
     // gizmo handle and an empty track share a number they never shared a meaning with.
     //
-    // MOVING `defaults` WHOLE WAS THE ALTERNATIVE AND IT DOES NOT FIT. That type reaches for
-    // BH.Shared.alignment and BH.Shared.color, both of which stay in the consumer, and it is what every
-    // GamePlayer job falls back to when a per-object keyframe collection is empty - dragging it down
-    // here would drag half of Shared with it for eight numbers.
+    // `defaults` later moved into the SDK as well, together with `alignment` and `color`, and the two
+    // types stayed two: the split is about what each value MEANS, not about which assembly holds it.
     //
     // These are NOT clamps and do not belong in Rules/: a clamp says what a value may be, and these say
     // what a transform IS before anything is authored onto it.

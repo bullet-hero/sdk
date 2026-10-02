@@ -13,12 +13,9 @@ namespace BH.SDK
     // least one keyframe exists - see BuildInstancesJob for the canonical read pattern.
     public struct defaults
     {
-        // SEVEN of the eight transform fields DELEGATE to BH.SDK.TransformDefaults rather than
-        // restating it. Transform2D and RectTransform2D moved into the SDK and needed their own zero
-        // state there; the rest of this type could not follow, since it reaches for alignment and color,
-        // which stay here. So the SDK owns those numbers and this stays the name every consumer reads.
-        //
-        // `size` is the eighth and it is NOT one of them - see its own note below.
+        // The transform fields DELEGATE to TransformDefaults rather than restating it: that type is the
+        // zero state of a transform, this one is the name every consumer reads, and a number has one
+        // owner. `size` is the exception and is NOT delegated - see its own note below.
         
         public static readonly float2 position = TransformDefaults.Position;
         public static readonly float layer = TransformDefaults.Layer;

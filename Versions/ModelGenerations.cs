@@ -6,7 +6,7 @@ namespace BH.SDK.Versions
     // [ModelGeneration] would carry a bare digit and the day a domain moves nobody could tell which
     // digits mean the same thing. A generation is assigned FORWARD, never reused, and taken from ONE
     // global counter: a domain that changes takes Current + 1, never "the next free number for that
-    // domain". The twenty domains still diverge - only the one that changed moves, and only it needs
+    // domain". The domains still diverge - only the one that changed moves, and only it needs
     // a snapshot and a migrator - but one number means one thing across all of them, which is what
     // keeps LevelMeta.MinGeneration against LevelGenerations.Required() an exact test.
     //

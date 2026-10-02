@@ -68,8 +68,10 @@ Unity by the tilde (see `../Directory.Build.props`).
 
 ## Versions
 
-Unity **6000.5.3f1** compiles with **Roslyn 4.10.0**. An analyzer may be built against that or
-anything older, never newer - a component built against a newer Roslyn is silently not loaded.
+The Roslyn the project's Unity compiles with is the ceiling. An analyzer may be built against that
+or anything older, never newer - a component built against a newer Roslyn is silently not loaded.
+The NuGet fallback's version is pinned in the csproj; check it against Unity's bundled
+`Microsoft.CodeAnalysis.dll` after a Unity upgrade.
 
 ## What is here now
 
