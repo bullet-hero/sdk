@@ -73,6 +73,33 @@ or anything older, never newer - a component built against a newer Roslyn is sil
 The NuGet fallback's version is pinned in the csproj; check it against Unity's bundled
 `Microsoft.CodeAnalysis.dll` after a Unity upgrade.
 
+## Not a release artifact
+
+**`BH.SDK.Roslyn.dll` is not shipped on its own** - not as a GitHub Release asset beside
+`BH.SDK.dll`, not inside the `BulletHero.SDK` package. Decided 2026-10-03; the reasons:
+
+- **Everything it generates is already compiled into `BH.SDK.dll`.** `BH.SDK.csproj` runs it as an
+  `Analyzer` project reference, so the `IModel<T>` bodies, the codecs, `Validate` and
+  `ModificationTable` are in the library itself. A consumer reading and writing levels needs none of
+  it - and the package declares no dependency on it (`ReferenceOutputAssembly="false"`).
+- **In someone else's compilation it does harm.** `SandboxProbeGenerator` would stamp a
+  `RoslynSandboxStamp` into every assembly. `ModificationTableGenerator` keys on the PUBLIC
+  `[ModificationField]`, so a consumer using it gets a second `ModificationTable` and a field-id
+  space that collides with the format's. `[GenerateModel]` is public too, but a third-party "model"
+  is not part of the format - a model exists only as a generation of this SDK. `[RuleContainer]`
+  types need no generator: the reflective fallback covers them.
+- **It would become a contract.** The `BHS*` diagnostic ids (two of them already retired) would be
+  public API, and the component is built under Unity's Roslyn ceiling (see "Versions"), so its
+  behaviour under any other compiler is untested.
+
+Who does need it already has it: a source consumer (submodule, UPM) gets the dll in the SDK root,
+where it must sit anyway; a build from source gets it through the project reference.
+
+**What reopens this:** a public extension scenario where third-party code declares its own
+`[RuleContainer]` types and wants the generated `Validate`. Even then the answer is the NuGet
+convention - a build without the probe, packed into `analyzers/dotnet/cs/` of the package - not a
+loose dll on the Release page.
+
 ## What is here now
 
 - `Analyzers/RuleContainerAnalyzer.cs` - the real one: every `[RuleContainer]` class must be
