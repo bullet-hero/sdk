@@ -10,7 +10,7 @@ using BH.SDK.Versions;
 
 namespace BH.SDK.Generators.Import
 {
-    // A LEVEL GENERATOR RATHER THAN A MENU COMMAND, for the same reason the Afterbeat import is one:
+    // A LEVEL GENERATOR RATHER THAN A MENU COMMAND, because importing a level is one in all but name:
     // "build a whole Level and LevelMeta from a few parameters" is exactly what the generator
     // contract already describes, and going through it costs the host no UI at all - the form, the
     // preset list, the estimate and the labels all come off the contract. Importing this project's
@@ -46,8 +46,8 @@ namespace BH.SDK.Generators.Import
         /// <summary> <c>"gen_level_archive"</c>, the key a host lists this generator under. </summary>
         public override string NameKey => "gen_level_archive";
 
-        // Ahead of the foreign-format import at 10: this reads the project's own archives, which is
-        // the commoner answer to "I was sent a level".
+        // Behind every generator that builds a level from nothing: reading an archive someone sent is
+        // the answer to "I was sent a level", not to "make a level", so it is nobody's first pick.
 
         /// <summary> Where this sits in a host's list; lower comes first. </summary>
         public override int ListOrder => 9;

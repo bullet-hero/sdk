@@ -57,7 +57,7 @@ namespace BH.SDK.Rules
         // This is a DIFFERENT concern from MinLayerDelta above, which spaces the editor's own
         // overlay pieces so they do not z-fight each other. Do not merge the two constants.
 
-        /// <summary> Granularity the layer Z offset step is quantized to, read by ABLayerMap. </summary>
+        /// <summary> Granularity the layer Z offset step is quantized to. </summary>
         public const float LayerZOffsetStep = 0.001f;
 
         /// <summary> The layer Z offset count. </summary>
@@ -74,13 +74,11 @@ namespace BH.SDK.Rules
         // created on draws BEHIND it. That is the point of the band sitting where it does - the one
         // thing that must stay readable is the avatar, and a level authored without thinking about
         // draw order must not bury it. Putting something in front of the player is an explicit act:
-        // the author types 1. This also matches Afterbeat, whose whole Default band (depth 0
-        // included) is behind its own player and whose AbovePlayer band is the exception.
+        // the author types 1.
         //
         // Only the consumer draws inside the band (Services.Shared's AvatarInitData, Services.Root's
-        // InframeCursorService), but the interop crossing has to KNOW the line - ABLayerMap packs
-        // each Afterbeat band against its own edge of it and ABObjectExporter infers a band back
-        // from which side a layer falls on. Both cite these two constants rather than 0 and 1.
+        // InframeCursorService). Anything that has to KNOW the line cites these two constants rather
+        // than 0 and 1.
 
         /// <summary> Highest authored layer that draws behind the player. </summary>
         public const int LastLayerBehindPlayer = 0;
@@ -174,7 +172,7 @@ namespace BH.SDK.Rules
         /// <summary> Highest camera layer allowed. </summary>
         public const float MaxCameraLayer = 2000f;
 
-        /// <summary> The layer used when nothing says otherwise, read by ABLevelImporter, ABPrefabImporter, RectObject. </summary>
+        /// <summary> The layer used when nothing says otherwise, read by RectObject, RulePrefabRootFixedAttribute, RulePrefabRootFixedTests. </summary>
         public const int DefaultLayer = 0;
 
         // A MULTIPLIER of whatever size the player already is, so the neutral value is 1 rather
@@ -236,8 +234,8 @@ namespace BH.SDK.Rules
         // A size is measured in the SAME world units a position is, so it gets the same range rather
         // than one of its own: an object may legitimately be as long as the space it is placed in,
         // and the old +-100 was a tenth of that with nothing behind the number. Real content proved
-        // it: levels converted from Afterbeat carry sizes to 820, and 5% of their objects broke a
-        // rule this format had no reason to hold them to.
+        // it: imported levels carry sizes to 820, and 5% of their objects broke a rule this format
+        // had no reason to hold them to.
         //
         // Derived rather than repeated, because the reason they agree is the point - a size that
         // outgrew MinPos/MaxPos would be an object bigger than any coordinate can address.
@@ -304,9 +302,8 @@ namespace BH.SDK.Rules
 
         /// <summary> Lower bound of ZoomKey.Zoom. </summary>
         public const float MinZoom = 0f;
-        // Raised from 100 because real Afterbeat content crosses it: an imported zoom is the
-        // source's own number doubled, and 21% of one workshop level's zoom keyframes landed
-        // between 102 and 142, silently clamped. Nothing normalizes by this bound - it is read
+        // Raised from 100 because real imported content crosses it: 21% of one community level's
+        // zoom keyframes landed between 102 and 142, silently clamped. Nothing normalizes by this bound - it is read
         // only by ZoomKey's range rule, the editor's zoom field and two generator parameters.
 
         /// <summary> Upper bound of ZoomKey.Zoom. </summary>
@@ -346,7 +343,7 @@ namespace BH.SDK.Rules
         // 64 with no room at all. Raising it can invalidate nothing - it only lets a hand-written
         // file carry more than it could before - and 128 triangles is still nothing to draw.
 
-        /// <summary> Lowest shape triangles allowed, read by ABImportTests, ShapeCatalogServiceTests, ShapeSynthUtils and 1 more. </summary>
+        /// <summary> Lowest shape triangles allowed, read by ShapeCatalogServiceTests, ShapeSynthUtils, ShapeSynthUtilsTests. </summary>
         public const int MinShapeTriangles = 1;
 
         /// <summary> Highest shape triangles allowed, read by ShapeCatalogServiceTests, ShapeGeometryUtils, ShapeGeometryUtilsTests and 2 more. </summary>
@@ -377,7 +374,7 @@ namespace BH.SDK.Rules
         /// <summary> Lowest shape point allowed, read by ShapeCatalogServiceTests, ShapeGeometryUtils, ShapeSynthUtilsTests. </summary>
         public const float MinShapePoint = -0.5f;
 
-        /// <summary> Highest shape point allowed, read by ABShapeMap, ShapeCatalogServiceTests, ShapeGeometryUtils and 1 more. </summary>
+        /// <summary> Highest shape point allowed, read by ShapeCatalogServiceTests, ShapeGeometryUtils, ShapeSynthUtilsTests. </summary>
         public const float MaxShapePoint = 0.5f;
 
         // A curve needs two keys to define a segment: below that there is nothing to interpolate

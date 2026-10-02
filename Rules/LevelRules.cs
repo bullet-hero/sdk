@@ -41,7 +41,7 @@ namespace BH.SDK.Rules
 
         /// <summary> Upper bound of PostProcessingEvents.AnalogGlitches, PostProcessingEvents.Blooms, PostProcessingEvents.Chromatics and 9 more. </summary>
         public const int MaxPostProcessingKeys = 512;
-        // 32 was never justified in writing, and five real Afterbeat workshop levels say it was too
+        // 32 was never justified in writing, and five real community levels say it was too
         // low by an order of magnitude: 1 948 authored tracks exceeded it, and the worst carried 189
         // keyframes across 123 seconds - truncating it froze that object for 100 of them. Every
         // consumer of this number is a validation clamp or an import truncation; nothing sizes a
@@ -137,7 +137,7 @@ namespace BH.SDK.Rules
         // object would render correctly and its selection border would not. Cycles are a graph
         // invariant and checked separately.
 
-        /// <summary> Highest object depth allowed, read by ABExportContext, ContentRemoverGenerator, GeneratorContext and 3 more. </summary>
+        /// <summary> Highest object depth allowed, read by ContentRemoverGenerator, GeneratorContext, GraphRule and 6 more. </summary>
         public const int MaxObjectDepth = 15;
 
         // Bounds of one BeatSegment. The tempo range covers everything a real song sits in with room
@@ -166,7 +166,7 @@ namespace BH.SDK.Rules
         /// <summary> Upper bound of BeatSegment.BeatsPerBar. </summary>
         public const int MaxBeatsPerBar = 32;
 
-        /// <summary> The beats per bar used when nothing says otherwise, read by ABEventsImporter, BeatSegment, BeatSegmentTests. </summary>
+        /// <summary> The beats per bar used when nothing says otherwise, read by BeatSegment, BeatSegmentTests, LevelGraphAnalyzerTests. </summary>
         public const int DefaultBeatsPerBar = 4;
 
         // How many grid points one BeatMath collection may produce. Not a format limit - the grid is
@@ -216,7 +216,7 @@ namespace BH.SDK.Rules
         // what every generator must draw from: hand a run seed 0 and it silently means "unseeded",
         // so a generator that could produce it would occasionally produce a run nobody can reproduce.
 
-        /// <summary> The null seed, read by ABLevelExporter, DisplayGraphicsSettings, LevelSettings and 2 more. </summary>
+        /// <summary> The null seed, read by DisplayGraphicsSettings, LevelSettings, LevelSettingsTests and 1 more. </summary>
         public const int NullSeed = 0;
 
         /// <summary> Lower bound of LevelSettings.Seed. </summary>

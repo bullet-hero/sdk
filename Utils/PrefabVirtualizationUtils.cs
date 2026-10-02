@@ -222,7 +222,7 @@ namespace BH.SDK.Utils
             }
 
             // ONE FINDING FOR A WHOLE MISSING TABLE, one per entry for a partial one. A placement
-            // that was never materialized - an Afterbeat import before its host resynced, or one
+            // that was never materialized - an import before its host resynced, or one
             // the materializer refused on depth - owns no table at all, and reporting that per
             // template object would file a thousand findings for a single authoring state.
             if (placement.ObjectIds == null || placement.ObjectIds.Count == 0)

@@ -29,8 +29,8 @@ namespace BH.SDK
         // and they are not: a TRANSFORM with nothing authored on it is a unit square (what the gizmo
         // handles, the collider overlays and RectTransform2D.Default ask for), while an OBJECT with no
         // size keyframes is a group node with no extent of its own. A type that wants the unit square
-        // gets an explicit keyframe written at creation instead (GameEditor's SizeSeed, and the
-        // Afterbeat importer), because a seed can be deleted by the author and a fallback never can.
+        // gets an explicit keyframe written at creation instead (GameEditor's SizeSeed), because a
+        // seed can be deleted by the author and a fallback never can.
         public static readonly float2 size = new(0f, 0f);
         
         public static readonly float cameraZoom = ValueRules.DefaultZoom;

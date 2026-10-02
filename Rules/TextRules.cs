@@ -45,7 +45,7 @@ namespace BH.SDK.Rules
         /// <summary> Upper bound of CachedFontText.Characters. </summary>
         public const int MaxFontBufferSize = 512;
 
-        /// <summary> The default for word wrap, read by ABObjectExporter, TextObject. </summary>
+        /// <summary> The default for word wrap, read by TextObject. </summary>
         public const bool WordWrap_Default = true;
         /// <summary> What TextObject.HorizontalAlignment holds when nothing says otherwise. </summary>
         public const TextObjectHorizontalAlignment HorizontalAlignment_Default = TextObjectHorizontalAlignment.Center;

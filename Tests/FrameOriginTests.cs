@@ -1,4 +1,3 @@
-using BH.SDK.Interop.AfterBeat;
 using BH.SDK.Models.Enums;
 using BH.SDK.Models.Keyframes;
 using BH.SDK.Models.Primitives;
@@ -134,37 +133,6 @@ namespace BH.SDK.Tests
                 JsonConvert.SerializeObject(span, converter));
             Assert.AreEqual(span, JsonConvert.DeserializeObject<FrameSpan>(
                 JsonConvert.SerializeObject(span, converter), converter));
-        }
-
-        // The rule that keeps audio in sync: the level's first frame begins at zero, so nothing has
-        // to compensate for the origin anywhere downstream of this one subtraction.
-        [Test]
-        [Author(Metadata.Author.Vertoker)]
-        [Category(Metadata.Category.Self)]
-        [Category(Metadata.Category.Easy)]
-        public void TheFirstFrameBeginsAtZeroSeconds()
-        {
-            Assert.AreEqual(0f, (FrameRules.MinFrame - FrameRules.MinFrame) / 60f, 1e-6f);
-            Assert.AreEqual(FrameRules.MinFrame, ABTimeMapFirstFrame(60));
-        }
-
-        // ABTimeMap is the only other implementation of the frame/time crossing in this repo (the
-        // Unity project owns FrameUtils, which cannot be reached from here), so its zero has to
-        // agree with the one above or an imported level starts a frame out.
-        private static int ABTimeMapFirstFrame(int framerate)
-            => ABTimeMap.ToFrame(0f, framerate);
-
-        // A count is NOT a frame, and this is the pair that stops the two being spelled with one
-        // function: a length of N frames is N frames long wherever it starts.
-        [Test]
-        [Author(Metadata.Author.Vertoker)]
-        [Category(Metadata.Category.Self)]
-        [Category(Metadata.Category.Easy)]
-        public void ACountCarriesNoOrigin()
-        {
-            Assert.AreEqual(60, ABTimeMap.ToFrameCount(1f, 60));
-            Assert.AreEqual(1f, ABTimeMap.ToSecondsCount(60, 60), 1e-4f);
-            Assert.AreEqual(0f, ABTimeMap.ToSeconds(FrameRules.MinFrame, 60), 1e-4f);
         }
 
         // PROGRESS RUNS BETWEEN THE TWO REACHABLE ENDS, and the last frame is one of them. A playhead

@@ -262,8 +262,8 @@ namespace BH.SDK.Tests.Utils
             Assert.AreEqual(1, level.Game.Objects.Count);
         }
 
-        // What a placement the editor never materialized looks like on disk - an Afterbeat import
-        // before its host resynced, or one the materializer refused on depth. One finding for the
+        // What a placement the editor never materialized looks like on disk - an import before its
+        // host resynced, or one the materializer refused on depth. One finding for the
         // whole placement rather than one per template object, or a 300-object template would file
         // 300 findings for a single authoring state.
         [Test]

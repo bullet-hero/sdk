@@ -20,7 +20,7 @@ namespace BH.SDK.Rules
         // file, which is why FrameUtils carries ToFrame/ToTime for the first kind and
         // ToFrameCount/ToSecondsCount for the second rather than one pair for both.
 
-        /// <summary> Lowest frame allowed, read by ABEventsImporter, ABLevelGenerator, ABLevelImporter and 19 more. </summary>
+        /// <summary> Lowest frame allowed, read by AudioFileLevelGenerator, AudioTextureGeneratorsTests, BaseLevelGenerator and 40 more. </summary>
         public const int MinFrame = 1;
 
         // Freed by the origin move and worth spending on the one thing every frame-valued field
@@ -50,7 +50,7 @@ namespace BH.SDK.Rules
         /// <summary> Upper bound of LevelSettings.FrameDuration. </summary>
         public const int MaxFrameDuration = 1_000_000;
 
-        /// <summary> Highest frame allowed, read by ABMapTests, ABTimeMap, FrameSpan and 2 more. </summary>
+        /// <summary> Highest frame allowed, read by FrameOriginTests, FrameSpan, FrameSpanTests and 2 more. </summary>
         public const int MaxFrame = MaxFrameDuration;
 
         // A PLACEMENT'S IN-POINT IS BOUNDED BY ITS OWN START, and this pair is only the outer cap a
@@ -94,7 +94,7 @@ namespace BH.SDK.Rules
         /// <summary> Granularity the speed step is quantized to. </summary>
         public const float SpeedStep = 0.1f;
 
-        /// <summary> The ease used when nothing says otherwise, read by ABParallaxImporter, BaseSpawnGenerator, BulletLaserSweepGenerator. </summary>
+        /// <summary> The ease used when nothing says otherwise, read by BaseSpawnGenerator, BulletLaserSweepGenerator. </summary>
         public const EaseType DefaultEase = EaseType.Linear;
 
         /// <summary> True when a framerate can be divided by. </summary>

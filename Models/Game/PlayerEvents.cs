@@ -13,8 +13,8 @@ namespace BH.SDK.Models.Game
 {
     // The two force tracks are carried by the FORMAT and read by nobody yet: the player does not
     // apply them. They are here rather than waiting because a level converted from another engine
-    // already has them - Afterbeat's own player-force track lands on Velocities - and a value the
-    // format cannot hold is one that has to be dropped on import and can never come back.
+    // can already have them, and a value the format cannot hold is one that has to be dropped on
+    // import and can never come back.
     //
     // The version stays 1.0: both are additive and default to empty, so a document written before
     // they existed reads exactly as it did, and one written after them is ignored key by key by a

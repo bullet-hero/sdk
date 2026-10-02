@@ -244,7 +244,7 @@ namespace BH.SDK.Rules
             /// <summary> Lower bound of EffectShapeCircle.Radius. </summary>
             public const float CircleRadius_Min = 0f;
 
-            /// <summary> The circle radius used when nothing says otherwise, read by ABObjectExporter, EffectShapeCircle. </summary>
+            /// <summary> The circle radius used when nothing says otherwise, read by EffectShapeCircle. </summary>
             public const float CircleRadius_Default = 1f;
 
             // The vertical semi-axis as a multiple of the horizontal one - a RATIO rather than a
@@ -258,7 +258,7 @@ namespace BH.SDK.Rules
             /// <summary> Upper bound of EffectShapeCircle.Aspect. </summary>
             public const float CircleAspect_Max = 1000f;
 
-            /// <summary> The circle aspect used when nothing says otherwise, read by ABObjectExporter, ABObjectImporter, ABParticleImportTests and 1 more. </summary>
+            /// <summary> The circle aspect used when nothing says otherwise, read by EffectShapeCircle. </summary>
             public const float CircleAspect_Default = 1f;
 
             /// <summary> Lower bound of EffectShapeCircle.Arc, EffectShapeCone.Arc, EffectShapeTorus.Arc. </summary>

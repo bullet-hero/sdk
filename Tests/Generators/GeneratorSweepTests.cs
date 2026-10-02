@@ -373,9 +373,9 @@ namespace BH.SDK.Tests.Generators
         // struct) silently opts the level into a portrait screen its content was never composed
         // for. LevelSettingsTests proves the constructors; this proves nobody went around them.
         //
-        // The two IMPORTERS are out: they read a level somebody else authored, so their
-        // orientation is that file's answer rather than a default, and they need a real file on
-        // disk to produce anything at all.
+        // The IMPORTER is out: it reads a level somebody else authored, so its orientation is
+        // that file's answer rather than a default, and it needs a real file on disk to produce
+        // anything at all.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
@@ -386,7 +386,7 @@ namespace BH.SDK.Tests.Generators
             foreach (var generator in GeneratorRegistry.All.OfType<ILevelGenerator>())
             {
                 var parameters = generator.CreateDefaultParameters();
-                if (parameters is IABLevelInput or ILevelArchiveInput) continue;
+                if (parameters is ILevelArchiveInput) continue;
 
                 var (level, _) = generator.Create(parameters);
                 Assert.AreEqual(LevelOrientation.Horizontal, level.Settings.Orientation, generator.NameKey);

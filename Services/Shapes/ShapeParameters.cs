@@ -108,10 +108,6 @@ namespace BH.SDK.Services.Shapes
         // out from angle zero already has a corner there whatever the side count. Four sides is the
         // exception and has to be turned by half a step, because a 4-gon with a corner at the top is
         // a diamond and the shape wanted here is a square.
-        //
-        // (ShapeSynthUtils.CornerAngle answers this differently - `sides == 4 || sides % 2 == 1` -
-        // and both are right: that one measures from straight DOWN, so an odd count needs the half
-        // step to move a corner from the bottom to the top. Do not copy one predicate to the other.)
 
         /// <summary> Whether the first corner sits half a step round from straight up. </summary>
         public bool UsesHalfStepPhase => Sides == 4;

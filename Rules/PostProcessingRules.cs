@@ -11,9 +11,8 @@
         {
             /// <summary> Lower bound of BloomKey.Intensity. </summary>
             public const float IntensityMin = 0f;
-            // Raised from 10, which was not a rendering limit but a caution: an Afterbeat bloom
-            // intensity is already a URP one and crosses unremapped, the source writes it straight
-            // into URP's own unbounded Bloom.intensity, and 39% of one real workshop level's bloom
+            // Raised from 10, which was not a rendering limit but a caution: the value goes straight
+            // into URP's own unbounded Bloom.intensity, and 39% of one real community level's bloom
             // keyframes sat above 10 - up to 50 - and were silently clamped to a fifth of what was
             // authored. Nothing in this project divides by this bound to normalize, so raising it
             // only widens what may be dialled in. The caution above still stands: this effect is
@@ -149,10 +148,10 @@
         /// <summary> Bounds of the colour curves. </summary>
         public static class ColorCurves
         {
-            /// <summary> Lowest curve allowed, read by ABPostProcessingMap, ColorCurvesKey, ColorCurvesKeyTests. </summary>
+            /// <summary> Lowest curve allowed, read by ColorCurvesKey, ColorCurvesKeyTests. </summary>
             public const float CurveMin = 0f;
 
-            /// <summary> Highest curve allowed, read by ABPostProcessingMap, ColorCurvesKey, ColorCurvesKeyTests. </summary>
+            /// <summary> Highest curve allowed, read by ColorCurvesKey, ColorCurvesKeyTests. </summary>
             public const float CurveMax = 1f;
 
             /// <summary> What HueVsHue/HueVsSat/SatVsSat/LumVsSat read as when nothing is authored:

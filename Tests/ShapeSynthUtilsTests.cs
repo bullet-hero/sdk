@@ -62,16 +62,6 @@ namespace BH.SDK.Tests
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.Easy)]
-        public void Arrows_AreLegalGeometry()
-        {
-            AssertLegal(ShapeSynthUtils.Arrow(Id, "Arrow"));
-            AssertLegal(ShapeSynthUtils.ArrowHead(Id, "ArrowHead"));
-        }
-
-        [Test]
-        [Author(Metadata.Author.Vertoker)]
-        [Category(Metadata.Category.Self)]
-        [Category(Metadata.Category.Easy)]
         public void Rect_IsLegalGeometry()
         {
             AssertLegal(ShapeSynthUtils.Rect(Id, "Rect"));
@@ -90,7 +80,6 @@ namespace BH.SDK.Tests
             AssertLegal(ShapeSynthUtils.Polygon(Id, "TooMany", 10_000));
             AssertLegal(ShapeSynthUtils.RingWedge(Id, "Degenerate", 3, 0f, 0f));
             AssertLegal(ShapeSynthUtils.RingWedge(Id, "Solid", 64, 1f, 2f));
-            AssertLegal(ShapeSynthUtils.Arrow(Id, "Flat", 0f, 0f, 0f));
         }
 
         [Test]

@@ -123,13 +123,12 @@ public class RadialGenerator : BaseContentGenerator<RadialGenerator.Parameters>
   and the interface exists only so a form can display it (see `Hints.ReadOnly`).
 - `Modifiers/` - `ObjectTrackMask` + `ObjectTracks` (enumerate every keyframe track of an object
   generically) and the modifiers themselves.
-- `Import/`, `Interop/` - the two level generators that read a file.
+- `Import/` - the level generator that reads a file.
 - `Geometry/`, `Bullets/`, `Audio/`, `Textures/`, `Utility/` - the concrete generators.
 
 ## Roster
 
-**Level**: `gen_level_empty`, `gen_level_archive` (`Import/`, this project's own package),
-`gen_level_afterbeat` (`Interop/`).
+**Level**: `gen_level_empty`, `gen_level_archive` (`Import/`, this project's own package).
 
 **Geometry** (static shapes): `gen_geometry_grid`, `gen_geometry_radial`, `gen_geometry_spiral`,
 `gen_geometry_polygon`, `gen_geometry_fractal` (Koch / Sierpinski / Tree, depth-capped because these grow by a constant factor per

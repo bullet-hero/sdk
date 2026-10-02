@@ -11,7 +11,7 @@ Licensing
 
 Features after alpha release
 - add difficulty metadata (watch OSU for more info)
-- create trigger/event system (like PA, but more like GD)
+- create trigger/event system (like GD)
   - first of all - see guide for gd editor
   - https://youtube.com/playlist?list=PLD3NfTCEL4uV7zI5QvMLTDs7qActqY5JB
   - or read PDF files

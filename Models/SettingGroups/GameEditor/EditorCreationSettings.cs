@@ -18,10 +18,9 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
     // written, the level carries the number and this group has no further say.
     //
     // TEXT IS WIDER THAN TALL, AND NOT BY TASTE: a TextObject's Size is the BLOCK its glyphs lay out
-    // in rather than the glyphs themselves, so a one-cell square holds a single character - the same
-    // measurement the Afterbeat import has to estimate on its way in (ABObjectImporter.ApplyTextSize
-    // gives a block one cell per character and one line tall). A shape has no such second meaning:
-    // its size IS its rect, and the unit square is what the whole shape library is drawn inside.
+    // in rather than the glyphs themselves, so a one-cell square holds a single character. A shape
+    // has no such second meaning: its size IS its rect, and the unit square is what the whole shape
+    // library is drawn inside.
     //
     // Four floats rather than two vectors, which is the shape every other settings group here takes
     // (see EditorCameraSettings' MoveSensitivityX/Y): a settings group is a flat list of scalars an

@@ -64,8 +64,8 @@ namespace BH.SDK.Generators
         // on 16:9 shows what its author left outside the frame on an ultrawide and loses its edges on
         // a phone. A level built from nothing therefore offers a pin to 16:9 on its first frame, on by
         // default - a KEYFRAME rather than a runtime default, so the author sees it on the Events
-        // timeline and can change or delete it. The interop generators do not offer it: an import
-        // keeps whatever limit its source had (Afterbeat pins its own, an archive carries the file's).
+        // timeline and can change or delete it. An import generator does not offer it: an import
+        // keeps whatever limit its source had (an archive carries the file's own).
 
         /// <summary> Pins a level built from nothing to the default aspect (16:9) from its first
         /// frame, unless it already has a limit of its own. </summary>

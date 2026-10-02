@@ -33,25 +33,25 @@ namespace BH.SDK.Models.Data
         public string Name { get; set; }
 
         /// <summary> The 64 slots, fixed length so a ThemeRef index is always resolvable. Slot
-        /// meanings follow Project Arrhythmya's layout, mapped out below. </summary>
+        /// meanings are mapped out below. </summary>
         [RuleNotNull, RuleCollectionCount(ValueRules.ThemeCount)]
         [JsonProperty(Names.Matrix)]
         public Color4Value[] Matrix { get; set; }
         
         // Theme - is map of colors, level can refer to color via index
         // Theme is a predefined array in runtime
-        // Now it's 64 or 8x8 grid. If you see PA and this game, what indexes means (starts with 1)
+        // Now it's 64 or 8x8 grid. What the indexes mean (starts with 1)
         // 1 - fallback color, if index is not founded
-        // 2 - GUI (PA)
-        // 3 - Background (PA)
-        // 4-7 - Players (PA)
-        // 8 - Tail (PA)
+        // 2 - GUI
+        // 3 - Background
+        // 4-7 - Players
+        // 8 - Tail
         // 9-16 - free space
-        // 17-25 - objects (PA)
+        // 17-25 - objects
         // 26-32 - free
-        // 33-41 - parallax (PA)
+        // 33-41 - parallax
         // 42-48 - free
-        // 49-57 - effects (PA)
+        // 49-57 - effects
         // 58-64 - free
 
         /// <summary> One author-written label per slot, or null when nothing in this palette was

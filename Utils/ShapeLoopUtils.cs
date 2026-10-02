@@ -19,9 +19,8 @@ namespace BH.SDK.Utils
     // inverted slice can subtract the shape from the matching sector OF THE BOX: the same three
     // lines cut both.
     //
-    // Deliberately separate from ShapeSynthUtils, which serves the Afterbeat importer's arbitrary
-    // rounded polygons and reasons in the opposite angular convention (see CornerAngle there). The
-    // two must not share a phase predicate.
+    // Deliberately separate from ShapeSynthUtils, which builds shapes OUTSIDE the catalogue as
+    // level-authored data rather than the catalogue's own presets.
 
     /// <summary>
     /// Radial loops - the intermediate form the built-in shape catalogue is built out of. A loop is

@@ -51,10 +51,8 @@ layer-wide conventions. This file is folder-local.
   built-in shape is built out of, a fan and a resampled annulus, plus sector clipping; its header
   explains why angles are always measured RELATIVE to a reference and why the annulus resamples both
   rims instead of walking them in lockstep, both of which were real bugs), `ShapeSynthUtils`
-  (procedural geometry for shapes the built-in library cannot name - **the Afterbeat importer's
-  rounded custom polygons and its two arrows, and nothing else** now that the library covers its own
-  parameter space; it reasons in the OPPOSITE angular convention to `ShapeLoopUtils`, measuring from
-  straight down, so the two must never share a phase predicate), `ShapeGeometryUtils`
+  (procedural geometry for shapes the built-in library cannot name, built as level-authored data;
+  `Build` is the sanitizing wrap `ShapeCatalogService` goes through), `ShapeGeometryUtils`
   (+`ShapeGeometryReport`) - the single
   implementation of "what a valid shape is" and "how to make an invalid one valid", shared by
   `RuleShapeGeometry.Fix` and the consumer's in-game shape editor on Save. Its `Sanitize` order is

@@ -46,7 +46,7 @@ authoring automation: a generator produces level content from a few parameters.
   generator implements to say "this parameter comes from the host" - matched by interface, not by
   field name, so a rename is a compile error), `Modifiers/` (`ObjectTrackMask`/`ObjectTracks` -
   generic enumeration of every keyframe track an object has, plus the modifiers themselves),
-  `Import/` (`LevelArchiveGenerator`, `gen_level_archive` - importing this project's OWN package, as opposed to `Interop/`'s foreign formats - `ABLevelGenerator`, `gen_level_afterbeat`),
+  `Import/` (`LevelArchiveGenerator`, `gen_level_archive` - importing this project's OWN package),
   `Geometry/`, `Bullets/`, `Audio/`, `Textures/`, `Utility/` (the concrete generators - 25 of them in all,
   the roster the design document calls complete plus `mod_content_remover`/`mod_framerate_remap`,
   `mod_span_fit`, which fits every child's lifetime to its parent's and is what replaced the removed

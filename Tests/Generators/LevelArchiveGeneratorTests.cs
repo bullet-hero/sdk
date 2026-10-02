@@ -27,7 +27,7 @@ namespace BH.SDK.Tests.Generators
     // needs testing is the one where it is turned off.
     //
     // Everything the generator cannot read still has to produce a level the author can see is empty,
-    // never a plausible-looking one - the same rule the Afterbeat import already states.
+    // never a plausible-looking one.
 
     /// <summary> The import half, fed by this project's own writer - so what is proven is that an archive we WROTE
     /// comes back as the level that went in, rather than that the reader agrees with a fixture. </summary>

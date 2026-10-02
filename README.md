@@ -1,7 +1,7 @@
 # bullet-hero-sdk
 
 The open level and save data model of the game Bullet Hero: models, serialization (JSON and
-`.blob`), validation, generators, level packages and the *Afterbeat* interop. It builds inside Unity
+`.blob`), validation, generators and level packages. It builds inside Unity
 and, without it, as a `netstandard2.1` DLL and the NuGet package `BulletHero.SDK`.
 
 **Documentation: https://bullethero.space/en/docs/sdk** - installing, the level format, the blob
