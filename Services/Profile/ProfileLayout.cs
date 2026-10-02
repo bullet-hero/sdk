@@ -27,6 +27,7 @@ namespace BH.SDK.Services.Profile
             ProfileCategory.Library,
             ProfileCategory.Backups,
             ProfileCategory.Reports,
+            ProfileCategory.Recordings,
         };
 
         /// <summary> Whether a path is the manifest. </summary>
@@ -48,6 +49,7 @@ namespace BH.SDK.Services.Profile
                 case ProfileCategory.Library: return FileNames.ResourcesDirectory;
                 case ProfileCategory.Backups: return FileNames.BackupsDirectory;
                 case ProfileCategory.Reports: return FileNames.ReportsDirectory;
+                case ProfileCategory.Recordings: return FileNames.RecordingsDirectory;
                 default: throw new ArgumentOutOfRangeException(nameof(category), category, "Not a single category.");
             }
         }
@@ -74,10 +76,25 @@ namespace BH.SDK.Services.Profile
 
                 if (path.Length > root.Length + 1 && path[root.Length] == Separator &&
                     path.StartsWith(root, StringComparison.Ordinal))
-                    return category;
+                    return IsTransient(category, path.Substring(root.Length + 1)) ? ProfileCategory.None : category;
             }
 
             return ProfileCategory.None;
+        }
+
+        // ONE RULE, READ ON BOTH SIDES: CategoryOf answers None for a transient path, so the reader drops
+        // one an older or foreign archive carries, and the writer skips one the live folder holds.
+
+        /// <summary> Whether a file inside a folder category is scratch that never travels: a video
+        /// export's <see cref="FileNames.RecordingsTempDirectory"/>, at any depth. </summary>
+        public static bool IsTransient(ProfileCategory category, string relative)
+        {
+            if (category != ProfileCategory.Recordings || string.IsNullOrEmpty(relative)) return false;
+
+            foreach (var segment in relative.Split(Separator))
+                if (string.Equals(segment, FileNames.RecordingsTempDirectory, StringComparison.Ordinal))
+                    return true;
+            return false;
         }
 
         /// <summary> The path relative to its category's folder; the file name for a file category. </summary>

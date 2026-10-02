@@ -120,6 +120,23 @@ namespace BH.SDK.Tests.Services
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Normal)]
+        public async Task Pack_LeavesOutARecordingsScratchFolder()
+        {
+            var recordings = new MemoryContentStore("recordings");
+            recordings.Write("a/level_20261002-210509.mp4", Encoding.UTF8.GetBytes("video"));
+            recordings.Write("a/.tmp/job/video.mp4", Encoding.UTF8.GetBytes("partial"));
+
+            var names = Names(await Pack(Manifest(ProfileCategory.Recordings),
+                new Dictionary<ProfileCategory, IContentStore> { [ProfileCategory.Recordings] = recordings }));
+
+            CollectionAssert.Contains(names, "recordings/a/level_20261002-210509.mp4");
+            CollectionAssert.DoesNotContain(names, "recordings/a/.tmp/job/video.mp4");
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.Hard)]
         public async Task Pack_IsDeterministic()
         {
@@ -305,6 +322,9 @@ namespace BH.SDK.Tests.Services
             Assert.AreEqual(ProfileCategory.Library, ProfileLayout.CategoryOf("resources/collections/x/collection.json"));
             Assert.AreEqual(ProfileCategory.Backups, ProfileLayout.CategoryOf("backups/a/backup_level_1.json"));
             Assert.AreEqual(ProfileCategory.Reports, ProfileLayout.CategoryOf("reports/r.txt"));
+            Assert.AreEqual(ProfileCategory.Recordings, ProfileLayout.CategoryOf("recordings/a/level_20261002-210509.mp4"));
+            Assert.AreEqual(ProfileCategory.None, ProfileLayout.CategoryOf("recordings/a/.tmp/job/video.mp4"));
+            Assert.AreEqual(ProfileCategory.Library, ProfileLayout.CategoryOf("resources/.tmp/a.json"));
             Assert.AreEqual(ProfileCategory.None, ProfileLayout.CategoryOf("levels"));
             Assert.AreEqual(ProfileCategory.None, ProfileLayout.CategoryOf("levelsx/a.json"));
             Assert.AreEqual(ProfileCategory.None, ProfileLayout.CategoryOf("profile-backups/profile-backup.zip"));

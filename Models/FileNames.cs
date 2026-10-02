@@ -37,6 +37,15 @@
         /// <summary> What a backup's file name starts with; the rest is its timestamp. </summary>
         public const string BackupLevelFilePrefix = "backup_level_";
 
+        /// <summary> Videos rendered from a level, one folder per level id. Another SIBLING of the levels
+        /// folder, like <see cref="BackupsDirectory"/>: nobody shares a level to send its videos along,
+        /// and a video outlives the level it was rendered from. </summary>
+        public const string RecordingsDirectory = "recordings";
+
+        /// <summary> A running export's scratch folder inside <c>recordings/&lt;level id&gt;/</c>: raw
+        /// passes and the audio mix. Never part of a profile - a leftover exists only after a crash. </summary>
+        public const string RecordingsTempDirectory = ".tmp";
+
         // TWO NAMES, AND NOTHING EVER PROBES FOR EITHER - unlike the level and metadata documents
         // above, whose extension is resolved by what is on disk. A cover is reached through
         // LevelMeta.LevelLogo, an ordinary resource uri, so the name a writer chooses is the name it

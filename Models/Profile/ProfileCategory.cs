@@ -20,8 +20,10 @@ namespace BH.SDK.Models.Profile
         Backups = 1 << 4,
         /// <summary> <c>reports/</c> - error reports. </summary>
         Reports = 1 << 5,
+        /// <summary> <c>recordings/</c> - videos the level editor exported. </summary>
+        Recordings = 1 << 6,
 
         /// <summary> Every category. </summary>
-        All = Levels | Statistics | Settings | Library | Backups | Reports,
+        All = Levels | Statistics | Settings | Library | Backups | Reports | Recordings,
     }
 }

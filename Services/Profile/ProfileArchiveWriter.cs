@@ -77,6 +77,7 @@ namespace BH.SDK.Services.Profile
 
                 foreach (var relative in listing)
                 {
+                    if (ProfileLayout.IsTransient(category, relative)) continue;
                     total += await store.GetLengthAsync(relative, token);
                     entries.Add(Counted(ProfileLayout.Combine(category, relative), store, relative, progress));
                 }
