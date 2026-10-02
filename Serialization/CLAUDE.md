@@ -6,7 +6,8 @@ layer-wide conventions. This file is folder-local.
 
 ## Serialization/
 
-`Serializers/` (`SerializationService`, the JSON/BSON entry point),
+`SerializationService` (the JSON/`.blob` entry point, at the folder root), `Serializers/`
+  (`IDataSerializer`s, `SerializationType`), `Json/`, `Blob/`,
   `Converters/Base/` + `Converters/CustomTypes/` + `Converters/Dict/` (the polymorphism/id/dictionary
   JsonConverters - see "Serialization pipeline" below).
 
@@ -106,7 +107,7 @@ every contract.
 `{"Value": ...}`, via `PrimitiveGuidConverter`/`PrimitiveIntConverter`/`PrimitiveFloatConverter` - all
 reconstruct via `Activator.CreateInstance(type, value)`, so every such wrapper needs a public
 single-arg constructor. `PrimitiveGuidConverter` specifically handles Guid surfacing as a `string`
-under JSON but an already-boxed `Guid` under BSON (BSON's native UUID subtype).
+under JSON but an already-boxed `Guid` under a binary reader.
 
 ## The JSON codec (`Serialization/Json/`)
 
@@ -143,7 +144,7 @@ which both paths do identically.
 ## The binary format (`Serialization/Blob/`)
 
 `.blob` is a first-class level format, equal to `.json` rather than a cache beside it - a level may
-be saved only as `.blob`, and `LevelPackageBuilder` carries it inside a package the same way. What
+be saved only as `.blob`, and `LevelArchiveBuilder` carries it inside an archive the same way. What
 `.json` keeps is the promise the project actually makes about it: readable, diffable, openable by
 somebody else's tool in ten years. `.blob` deliberately does not make that promise, and it is the
 default nowhere.
@@ -159,14 +160,14 @@ default nowhere.
   blob and the JSON `[tag, payload]` carry the same discriminator and cannot drift apart.
 - **Every `[ModelGeneration]` aggregate writes its own envelope**: domain as text, a generation, and
   a byte length the reader checks the content against. That length is what makes degrading
-  affordable, and it is paid for at all twenty roots whether or not anything degrades: a root whose
-  generation this build cannot read is SKIPPED whole and left at its defaults, so a level from the
-  future opens with, say, `GameLevel` empty and its three siblings intact. Anything that throws
-  INSIDE a root's content is treated the same way, and that is safe rather than lax - damage was
+  affordable, and it is paid for at every root whether or not anything degrades. A root from the
+  FUTURE is not skipped but refused (`NewerGenerationException`, the whole file with it); anything
+  that throws INSIDE a root's content is SKIPPED whole by that length and left at its defaults, and
+  that is safe rather than lax - damage was
   already answered by the header's magic, codec generation, declared length and payload hash, so a
   byte that survived all four and then fails to parse is a shape this build does not know.
-  `BlobEnvelopes` is the whole of it. The one case that stays a refusal is content read LONGER than
-  declared: that reader lost its place.
+  `BlobEnvelopes` is the whole of it. Content that does not end exactly at its declared length,
+  in either direction, stays a refusal: that reader lost its place.
 - **The file header is checked in one order and nothing is allocated before it passes**: magic,
   codec generation, declared length against the real one, then an xxHash64 of the payload. Four
   distinct refusals, because "this file is damaged" and "this file is from a newer build" ask
@@ -174,9 +175,9 @@ default nowhere.
   checked is corruption, and forgery is already answered by the OpenPGP layer that protects a level.
 - **A count the FILE chose is refused before it is believed** (`BlobReader.ReadCount`). That is the
   one attack surface a format has and a cache did not: its payload was self-produced.
-- `BlobPrimitives` holds the four structs the generator cannot write for itself - `FrameSpan`
-  (packed, so writing its fields would write the packing), `ModificationKey` and `RunProfile`
-  (readonly, get-only), `Pixel` (four bytes seen as one int, on image-sized arrays).
+- `BlobPrimitives` holds the five structs the generator cannot write for itself - `FrameSpan`
+  (packed, so writing its fields would write the packing), `ModificationKey`, `RunProfile` and its
+  `RunProfileV1` snapshot (readonly, get-only), `Pixel` (four bytes seen as one int, on image-sized arrays).
 
 ## Model versioning (`Versions/`)
 
@@ -188,11 +189,12 @@ domain's *current* type" rule). Read those first; this section only adds what th
   an aggregate-root boundary that gets its own envelope and migrates as one unit. The second number
   never had anything to say - a shape change either needs a migration or does not, and there is no
   intermediate grade a minor could express; what it did instead was invite a bump nobody migrated.
-  **20 types carry the attribute and every one of them is at generation 1
-  (`ModelGenerations.Release`).** Two had bumped and both were put back when their snapshots were
-  deleted - before 1.0.0 the format changed in place and nothing migrated. Since the release every
-  change is a bump from `ModelGenerations.Current + 1` with a migrator; root `CLAUDE.md` Rule 11 is
-  the record. The twenty: `Level`, `LevelMeta`,
+  **21 types carry the attribute: sixteen at generation 1 (`ModelGenerations.V1_AlphaRelease`),
+  five at 2 (`V2_SimplifyEntrance`) - `LevelMeta`, `UserSettings`, `GameStatistics`,
+  `LevelStatistics` bumped with snapshots under `Versions/V1/`, and `ResourceCollection` was born
+  there as a new domain.** Before 1.0.0 the format changed in place and nothing migrated. Since the
+  release every change is a bump from `ModelGenerations.Current + 1` with a migrator; root
+  `CLAUDE.md` Rule 11 is the record. The twenty-one: `ResourceCollection` (`Models/Collections/`), `Level`, `LevelMeta`,
   `UserSettings`, `Prefab`, `EffectData`, `ThemeData`, `CompositeShape`, `ClipboardData` (SDK-repo
   "core" tier); `PublishProfile` (`Publishing/`); `GameStatistics`, `LevelStatistics`
   (`Models/Statistics/`, two roots rather than one - see that section); `LevelSettings`, `GameLevel`,
@@ -221,13 +223,14 @@ domain's *current* type" rule). Read those first; this section only adds what th
   throwing if a step is missing. `VersionedTypeRegistryTests` is its own fixture.
 - **`V0` is a scaffold that exercises the machinery end-to-end, not real shipped format history** -
   its `Names` use placeholder JSON keys (`"test_settings"`, etc.) and its snapshot classes are
-  structurally near-identical to current ones. **It is kept for exactly that reason**: the only two
-  real snapshots this repo ever had were deleted along with the bumps that needed them, so this is
-  the ONLY thing that still proves `VersionedTypeRegistry` and `IMigration` work at all, and they
-  have to work the day the game ships. "Current" is the live, un-suffixed class carrying
-  `[ModelGeneration(..., ModelGenerations.Release)]` directly, and a migrator filename like
+  structurally near-identical to current ones. **It was kept for exactly that reason**: the only two
+  real snapshots this repo had before 1.0.0 were deleted along with the bumps that needed them, so
+  it was the ONLY thing that proved `VersionedTypeRegistry` and `IMigration` work at all until
+  `Versions/V1/` brought real ones. "Current" is the live, un-suffixed class carrying
+  `[ModelGeneration(..., <its generation>)]` directly, and a migrator filename like
   `LevelV0ToV1.cs` names that live class by convention rather than an actual file.
-- **A KNOWN GENERATION MIGRATES, AN UNKNOWN ONE DEGRADES**, in both formats and at both levels. A
+- **A KNOWN GENERATION MIGRATES, AN UNKNOWN OLDER ONE DEGRADES, A NEWER ONE IS REFUSED**
+  (`NewerGenerationException`), in both formats and at both levels. A
   frozen snapshot carries `[GenerateModel]` now, so it reads ITSELF with its own generated codec -
   which is what let `IJsonModel.ReadEnveloped<T>` start migrating a nested domain without ever
   holding a `JsonSerializer`. In `.blob` a snapshot is read through `IBinaryEnvelope.ReadContent`
@@ -243,6 +246,3 @@ domain's *current* type" rule). Read those first; this section only adds what th
 - Replaces an older `CompatibilityService`/`SaveData<T>`/`JsonConverterData<T>` design - those names
   are fully gone from the codebase (only survive in a comment explaining what replaced them); don't
   reintroduce or reference them as if live.
-- Open per the SDK's own `TODO.md`: nested/optional aggregates below the current per-domain split,
-  the first *real* migrator once a domain actually needs to bump past generation 1, Project
-  Arrhythmya import.

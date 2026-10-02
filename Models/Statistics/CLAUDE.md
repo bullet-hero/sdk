@@ -14,11 +14,11 @@ risk on each write - and the menu only ever needs a handful of levels to draw a 
 
 - **`RunProfile` is a KEY, and that is why its speed is an int.** A record only means something
   against runs it can be compared with, so `Records` is `Dictionary<RunProfile, BestRun>` - lives,
-  speed, checkpoints and bot. The speed control is a continuous slider whose readout shows two
+  speed, checkpoints, bot and no-collision. The speed control is a continuous slider whose readout shows two
   decimals; a `float` key compares bit for bit, so `1f` and `0.9999999f` would file two records for
   what the player and the screen both call "1.00", and both would sit in the file forever.
   `SpeedCenti` is exactly the precision the player is shown.
-- **`BestRun` carries none of the key's four numbers.** `LivesLeft` is not one of them - the key says
+- **`BestRun` carries none of the key's five numbers.** `LivesLeft` is not one of them - the key says
   how many lives the run was GIVEN, the record says how many it ended with.
 - **Hence `DictionaryAsPairListConverter` for `Records`**, not the key-from-value form every other
   dictionary here uses: that one requires the value to embed its own key, which is the exact thing

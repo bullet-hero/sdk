@@ -45,14 +45,14 @@ authoring automation: a generator produces level content from a few parameters.
   (the `IAudioFileInput`/`IWaveformInput`/`IBeatFramesInput`/`IPixelTextureInput` interfaces a
   generator implements to say "this parameter comes from the host" - matched by interface, not by
   field name, so a rename is a compile error), `Modifiers/` (`ObjectTrackMask`/`ObjectTracks` -
-  generic enumeration of an object's ten keyframe tracks, plus the modifiers themselves),
-  `Import/` (`LevelPackageGenerator`, `gen_level_package` - importing this project's OWN package, as opposed to `Interop/`'s foreign formats),
-  `Geometry/`, `Bullets/`, `Audio/`, `Textures/`, `Utility/` (the concrete generators - 21 of them,
+  generic enumeration of an object's twelve keyframe tracks, plus the modifiers themselves),
+  `Import/` (`LevelArchiveGenerator`, `gen_level_archive` - importing this project's OWN package, as opposed to `Interop/`'s foreign formats - `ABLevelGenerator`, `gen_level_afterbeat`),
+  `Geometry/`, `Bullets/`, `Audio/`, `Textures/`, `Utility/` (the concrete generators - 25 of them in all,
   the roster the design document calls complete plus `mod_content_remover`/`mod_framerate_remap`,
   `mod_span_fit`, which fits every child's lifetime to its parent's and is what replaced the removed
   `GraphRule.ChildSpanOutsideParent` and its auto-repair, and `mod_prefab_flatten`, which turns every
-  prefab placement in a scope back into an ordinary object - see the consuming project's root
-  `CLAUDE.md`, "Prefab system", for why a flatten always takes a whole chain, and note two things
+  prefab placement in a scope back into an ordinary object - see the consuming project's
+  `Assets/Code/GameEditor/Operations/CLAUDE.md` for why a flatten always takes a whole chain, and note two things
   about the generator itself: its two switches need the WHOLE level and therefore decline in Prefab
   Mode, and its run order is level-then-templates, because a template edit propagates to placements
   and the other order leaves the level describing content its templates no longer hold).

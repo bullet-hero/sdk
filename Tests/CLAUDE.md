@@ -10,6 +10,7 @@ layer-wide conventions. This file is folder-local.
   `UnityExtensions/Tests/` (`BH.SDK.UnityExtensions.Tests`), and the split is forced rather
   than stylistic: this one is `noEngineReferences: true` and therefore cannot reference
   `UnityExtensions` at all. It holds `AvatarMovementTests`/`AvatarMovementStateTests`,
+  `AvatarDashGateTests`/`AvatarDashReachTests`/`AvatarPausedClockTests`, `SharedConstantsTests`,
   `Transform2DTests`/`RectTransform2DTests`, and `Approx.cs` - a fixture helper, not a test, that
   delegates to `BHSDKMath.Approximately` so the tolerance still lives in one place. `MockData.cs` is the shared fixture factory and
   `Metadata.cs` the author/category constants (neither is a test) - read `MockData.cs`'s header
@@ -25,7 +26,7 @@ whole) and `Tests/Utils/PrefabVirtualizationTests` (the pair that keeps a prefab
 out of the file - both directions, the report's four findings, idempotence, and the two cases a
 reader has to survive: a file written before the change that still carries its copies, and a
 capacity hint swept off a thinned level. `Docs/Issues/PREFAB_VIRTUALIZATION_HISTORY.md` is the
-record). **`Tests/Rules/` is the bulk** - 54 files,
+record). **`Tests/Rules/` is the bulk** - 57 files,
   roughly one per `[RuleXxx]` attribute on top of `BaseRuleTests` (the shared analyze/fix harness),
   `RuleCoverageTests` (fails if a rule has no test file), `RuleContextTests`, `RulesConsistencyTests`,
   `LevelGraphAnalyzerTests`, `ValidationFacadeTests`, `ModificationCheckedWriteTests`. Five of them

@@ -15,7 +15,7 @@ the compile-time half: analyzers and incremental source generators, **running**
   this folder's PARENT, i.e. the SDK root - is the only one Unity loads. **The artifact sits in the
   SDK root rather than in `Roslyn/`** because Unity scopes an analyzer to the asmdef owning its
   folder plus every assembly referencing it: inside `Roslyn/` it reached nothing, in the root it
-  reaches `BH.SDK` and the ~25 assemblies built on it. The asmdef takes the `.Src` suffix
+  reaches `BH.SDK` and the ~30 assemblies built on it. The asmdef takes the `.Src` suffix
   because Unity refuses a plugin whose file name equals an asmdef's. `Refs/` holds the Editor's own
   Roslyn assemblies, installed rather than committed. **The build tooling ships with the SDK**, in
   `UnityExtensions/Editor/` (`BH.SDK.UnityExtensions.Editor`, Editor-only): `RoslynLayout` (every

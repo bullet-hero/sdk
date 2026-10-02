@@ -8,9 +8,9 @@ the `IModel<T>` contract and the cross-folder effect/audio/theme model.
 
 **`TextObject` carries two per-character effect tracks** beyond the usual transform ones:
 `Fillments` (how much of the text is written) and `Appearings` (how much of it hides behind
-`AppearingMask`), both plain `List<FloatKey>`, plus the non-keyframed `FillDirection`
-(`Forward`/`Backward`/`FromCenter`/`ToCenter`), `AppearingMode` (`Random`=0/`Forward`/`Backward`) and
-`AppearingMask` (an author-set string, default `"X"`, capped by `TextRules.MaxAppearingMask` - a cap
+`AppearingMask`), `List<FillmentKey>`/`List<AppearingKey>` whose keys each carry a float plus their
+own `TextFillDirection` (`Forward`/`Backward`/`FromCenter`/`ToCenter`) or `TextAppearingMode`
+(`Random`=0/`Forward`/`Backward`), plus the non-keyframed `AppearingMask` (an author-set string, default `"X"`, capped by `TextRules.MaxAppearingMask` - a cap
 on CODE UNITS, so an astral character costs two of them; the consumer picks whole characters out of
 it, never halves, so an emoji mask is legal and simply takes the room of two). They
 are resolved over the string itself by the consumer's text job rather than by the keyframe→transform
@@ -47,20 +47,20 @@ gated rendering only, so an invisible object still hit the player - a trap, sinc
 name said so. `Active` gates *both* paths and applies down the hierarchy. "Not drawn but still
 solid" moved to where it belongs: a Null `ShapeId` with a real `ColliderId`.
 
-`ShapeObject.ShaderType` (`Models/Enum/ShaderType.cs`, byte: `Auto = 0`/`Opaque`/`Transparent`) is
+`ShapeObject.ShaderType` (`Models/Enums/ShaderType.cs`, byte: `Auto = 0`/`Opaque`/`Transparent`) is
 authored intent about the render path, not a shader id - the format deliberately has no
 user-defined shaders. `Auto = 0` is what an older file deserializes to, so adding it needed no
 migration and the domain stayed at generation 1. What `Auto` actually resolves to is a *consumer*
 question and lives in the Unity project (`Core`'s `ShapeShaderResolver`); the format only stores the
-three-way choice. It is one of the hand-written-boilerplate fields, so it must appear in
-`CopyImpl`/`Update`/`EqualsShapeObject`/`GetHashCode` alike.
+three-way choice.
 
 **Polymorphism mechanism** (applies throughout the whole model tree, not just objects - see "Value
 system"): `ObjectType` (byte enum) is resolved by `Serialization/Converters/CustomTypes/
 ObjectConverter.cs`, registered globally in `SerializationService`, **not** via a `[JsonConverter]`
 attribute on `RectObject` itself and **not** via Newtonsoft `TypeNameHandling`/`$type`. Adding a new
-`RectObject` subtype means extending `ObjectConverter.GetType`'s switch (throws
-`ArgumentOutOfRangeException` otherwise) - there's no attribute-based auto-discovery.
+`RectObject` subtype means extending `ObjectConverter.GetType`'s switch (otherwise an unknown tag
+reads back as a plain `RectObject` through `Fallback`, reported to `SerializationReport`) - there's no
+attribute-based auto-discovery.
 
 ## `IObjectScope` / `IObjectIdCounter` - the split every consumer must get right
 

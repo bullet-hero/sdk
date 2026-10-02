@@ -16,7 +16,7 @@ numbers that move with it) are not the SDK's business at all.
 The Settings screen shows them in this order, labelled, and clicking the line copies it:
 
 ```
-gv 0.7.0, sv 0.7.0, mg 1
+gv 1.1.0, sv 1.1.0, mg 2
 ```
 
 | Axis | What it versions | Where it lives | Runtime |
@@ -39,9 +39,9 @@ that formats it.
 `major` is a global update (story, multiplayer), `minor` is ordinary features, `patch` is a hotfix.
 Read at runtime by `ErrorReportService`, which puts it in every error report.
 
-The repository carries a `gv<X.Y.Z>` tag on the commit where each value first appeared - fifteen of
-them, `gv0.0.0` (the Unity default `1.0`, before the project had a version of its own) through
-`gv0.5.5`. The gaps (`0.2.x`, `0.4.0`, `0.4.2`-`0.4.9`, `0.5.0`) never existed.
+The repository carries a `gv<X.Y.Z>` tag on the commit where each value first appeared, from
+`gv0.0.0` (the Unity default `1.0`, before the project had a version of its own) on. The gaps
+(`0.2.x`, `0.4.0`, `0.4.2`-`0.4.9`, `0.5.0`, `0.11.0`) never existed.
 
 **A beta is `X.Y.ZbN`** (`1.1.0b1`, `1.1.0b2`, then the release `1.1.0`) - a build of the next
 version handed to testers, usually on a Steam beta branch. It moves `gv` and `sv` to the same string
@@ -78,7 +78,7 @@ projects and would stamp the analyzer and both test assemblies too.
 **`sv` tags live in THIS repository, not the consumer's.** They are pushed from here, which is why
 tagging the game's repo never produces any - `gv*` and `sv*` are tags of two different repositories
 that happen to share a working tree. `sv0.5.5` (the commit that introduced `SdkVersion.cs`)
-through `sv0.7.0` exist; there is no history before that, because the library carried no version at
+is the first; there is no history before that, because the library carried no version at
 all until then.
 
 Separately, and often confused with the above: what records which `sv` a given `gv` shipped against
@@ -95,12 +95,12 @@ aggregate root, and written into every envelope on disk.
 **Why one number and not `major.minor`.** A change to the shape of a file either needs a migration or
 does not; there is no intermediate grade a second component could express. What the second number did
 instead was invite a bump nobody migrated - two domains had moved to `(2, 0)` and `(1, 1)` and both
-were put back. Every domain now reads generation 1.
+were put back, and every domain shipped 1.0.0 at generation 1.
 
 **A generation is assigned FORWARD, never reused, and taken from ONE global counter.** A domain that
 changes shape takes `ModelGenerations.Current + 1` - never "the next free number for that domain" -
 and only the one that moved needs a snapshot and a migrator; the others stay where they are, so the
-twenty domains still diverge (`Level` at 3 while `ThemeData` is still at 1). The single counter is
+twenty-one domains still diverge (`UserSettings` at 2 while `Level` is still at 1). The single counter is
 what keeps the one `mg` in the Settings version line meaningful, and what makes `LevelMeta.MinGeneration`
 against `LevelGenerations.Required()` an exact test: with per-domain numbering, a file whose domain B
 moved to 2 would pass that check against a build whose domain A is already at 2, and fail only on
@@ -114,7 +114,9 @@ The named constants are in `Versions/ModelGenerations.cs`:
   snapshots are written at; every negative value is equally invalid and `-1` is merely canonical.
 - `Test = 0` - the scaffold under `Versions/V0`, which exists to exercise the migration path end to
   end rather than to describe a format any build shipped.
-- `Release = 1` - what the game writes today.
+- `V1_AlphaRelease = 1` - what 1.0.0 shipped; every live domain not yet bumped is still at it.
+- `V2_SimplifyEntrance = 2` - the first bump after release (`UserSettings`, `LevelStatistics`,
+  `GameStatistics`, `LevelMeta`, `Collection`).
 - `Current` - an alias for the newest. The only one UI and reports read.
 
 ### The envelope on disk

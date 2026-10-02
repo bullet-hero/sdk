@@ -6,7 +6,7 @@ the `IModel<T>` contract and the cross-folder effect/audio/theme model.
 
 ## `Models/SettingGroups/` - one folder, two unrelated aggregates
 
-`LevelSettings` (`Level.Settings`, per-level: `Framerate`, `FrameDuration`, `ObjectIdCounter`,
+`LevelSettings` (`Level.Settings`, per-level: `Fps`, `FrameDuration`, `ObjectIdCounter`,
 `AudioIdCounter` - the `IObjectIdCounter` implementation - and `Seed`) has nothing to do with the
 rest of this folder (`GeneralSettings`/`ControlsSettings`/`AudioSettings`/`GraphicsSettings`/
 `GameEditorSettings`/`InterfaceSettings`), which are all sub-groups of `UserSettings` (per-device,
@@ -22,13 +22,13 @@ happy path. What a binding string may SAY lives in `Utils/ShortcutSyntax` (and i
 for the reason `KeyBindingMask`'s own header gives, and the consumer resolves the name against
 `UnityEngine.InputSystem.Key`. An empty value is a real state ("the player unbound this") and is not
 the same as an absent key ("the player never touched it"). It shipped additively like everything else
-here, so `UserSettings` stays at generation 1.
+here, so `UserSettings` took no bump for it.
 
 `InterfaceSettings` is the newest of them (the game's own overlays - the diagnostics readout's
 `StatsActive` + `StatsFrameObjects`/`StatsLevelObjects`/`StatsMemory` + `StatsAlignmentX`/`Y`, plus
 `OpenMenuOnLose`, which is a BEHAVIOUR rather than an
 overlay: off - the default - a lost run rewinds itself to the last checkpoint it reached instead of
-opening the result window, see root `CLAUDE.md`, "Checkpoints") and shipped **without bumping the
+opening the result window, see `Assets/Code/Services/Game/CLAUDE.md`, "Checkpoints") and shipped **without bumping the
 `UserSettings` domain**: an
 additive property whose constructor supplies a default needs no snapshot and no migrator, exactly like
 `LevelSettings.Seed` and `GameEvents.Beats`. Its alignment pair is two free `[0,1]` floats rather than
@@ -87,16 +87,16 @@ them a twenty-fifth of the objects, which is what makes it a graphics option rat
 preference. **True on every platform**, phones included: 50 inframe squares are not much next to
 what a level draws, and it is the game's main piece
 of readable feedback about how a run is going. Additive like everything else here, so `UserSettings`
-stays at generation 1.
+took no bump for it.
 
-`AntiAliasingGraphicsSettings` (`Type`/`Msaa`/`Hdr`) is the one graphics sub-group that does **not**
+`AntiAliasingGraphicsSettings` (`Type`/`MSAA`/`HDR`) is the one graphics sub-group that does **not**
 derive from `BaseGraphicsSettings`, and the omission is deliberate: an inherited `Render` would mean
 "is anti-aliasing on", which is exactly what `Type = None` already says, and two switches for one
-decision can disagree. It shipped additively like everything else here - the domain stays at
-generation 1, and a settings file written before it deserializes to the constructor's defaults (MSAA,
+decision can disagree. It shipped additively like everything else here - the domain took no bump
+for it, and a settings file written before it deserializes to the constructor's defaults (MSAA,
 x2, no HDR) rather than to a zeroed pair that would read as "off". `MsaaType`'s value **is** its
-sample count, except `None = 0`, which every graphics API states as 1 - convert with
-`MsaaTypeExtensions.ToSampleCount`, never a cast.
+sample count, `None = 1` included (no multisampling is one sample per pixel), so a cast is the
+conversion.
 
 `TexturesGraphicsSettings` (`Compression`/`SizeLimit`/`Mipmaps`/`Filtering`/`CompressionQuality`) is
 the newest of them and the one whose design is half outside this repo: it is the DEVICE's half of how
@@ -107,7 +107,7 @@ same everywhere, so an author may not author a device's memory budget, and a pla
 asked what a picture depicts. Every field defaults to `Auto` and resolves per platform in the
 consumer (`Core`'s `TextureLoadPlanner`), which is what makes an older `settings.json` with no
 `"textures"` key correct rather than merely tolerated. Additive like everything else here, so
-`UserSettings` stays at generation 1.
+`UserSettings` took no bump for it.
 
 **`Filtering` and `CompressionQuality` were both DERIVED from the author's kind before they existed,
 and only `CompressionQuality` belonged here**: the encoder's effort yields the same size in the same

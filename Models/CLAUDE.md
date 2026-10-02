@@ -40,7 +40,7 @@ the level format itself (see "Object model" / "Value system" below for the
   derived by `LevelMeta.ContainsAiContent`, never stored; note
   `ResourceMeta` carries licensing/attribution only - **the age rating lives on `LevelMeta`
   alone**, since a rating describes the finished experience, not an asset in isolation),
-  `Interfaces/`, `Enum/`, `Primitives/` (id structs - **`Assets/Plugins/BH.SDK/Docs/IDENTIFIERS.md` is the criterion that
+  `Interfaces/`, `Enums/`, `Primitives/` (id structs - **`Assets/Plugins/BH.SDK/Docs/IDENTIFIERS.md` is the criterion that
   decides `Guid` vs `int`, and the answer to "will these ever have to be unified"; read it before
   adding an id**). `Models/Names.cs` is the single source of truth
   for every `[JsonProperty]` name (short/abbreviated on purpose - see Serialization).
@@ -53,7 +53,8 @@ the level format itself (see "Object model" / "Value system" below for the
   `Forces` (gravity/velocity/orbital/linear-force), plus 4 independently-polymorphic sub-shapes:
   `IEffectAngle`/`IEffectColor`/`IEffectScale` (each: Value / CurvesOverLife / CurvesBySpeed /
   RandomUniform / RandomPerComponent - the Random pair is structurally identical, differs only in
-  evaluation semantics) and `IEffectShape` (Point/Circle/Rectangle/Line/Cone/Torus, with
+  evaluation semantics; `IEffectColor` names its curve pair `GradientOverLife`/`GradientBySpeed` and
+  adds a sixth, `GradientRandom`) and `IEffectShape` (Point/Circle/Rectangle/Line/Cone/Torus, with
   Circle/Line/Cone/Torus additionally nesting an `IEffectShapeSpread`: Random/Loop/PingPong/Sine -
   `Sine` and `Point` carry zero fields, pure enum-selected behavior).
 - **Audio**: `AudioLevel.Tracks : Dictionary<AudioId, LevelTrack>` (one flat dict per level;
@@ -63,7 +64,7 @@ the level format itself (see "Object model" / "Value system" below for the
   **A slot is NULL until an author touches it**, and null means "this effect is not in the chain" -
   the eleven used to be always-present objects sitting at the disabled floor, which wrote 1.1 KB of
   pure defaults into every track of every level. They are constructed null because a member that may
-  be null has to be (see `docs/NAMING.md`), which is what lets the writer skip it: an untouched
+  be null has to be (see `Docs/NAMING.md`), which is what lets the writer skip it: an untouched
   track's whole chain is now `"eff":{"vlm":[],"stpan":[],"a":false}`, and dialling ONE effect in
   writes that one.
   `MixLevel` did NOT change meaning: it is a real wet level in dB whose floor is silence, so
@@ -142,7 +143,7 @@ domain model implements: `Copy()` (new instance), `Equals(T)`/`Equals(object)`/`
 `Update(src)` and `Pull(src)`.
 
 **ALL OF IT IS GENERATED, AND SO ARE BOTH CODECS.** `BH.SDK.Roslyn`'s `ModelGenerator` writes every
-one of those bodies for every type carrying `[GenerateModel]` - 203 of them - plus that type's
+one of those bodies for every type carrying `[GenerateModel]` - 239 of them - plus that type's
 `.blob` codec (`IBinaryModel`) and its JSON codec (`IJsonModel`); the model file itself holds only
 its members, its constructors and whatever is genuinely its own. It used to be hand-written per class:
 208 `Copy` bodies, 279 typed `Equals`, 206 `Update`, 206 `Pull`, and the failure mode was never a
@@ -189,11 +190,11 @@ sections are held one per timeline, so `GameLevel`, `Prefab` and `ClipboardData`
 key with `ModelUtils.PullDictionary`: keys the source no longer has are dropped, a key whose concrete
 type changed is replaced by a copy, everything else is pulled into the instance already there, and
 the dictionary object itself is never swapped. What merges one **value** is the caller's choice -
-`LevelUtils.PullObject` for a `RectObject`, the constrained `PullDictionary` overload (i.e.
-`PullFrom`) for a concretely typed value like `LevelTrack`. `PullObject` is a hand-kept switch over
-the five `ObjectType`s for the same reason `ObjectConverter.GetType` is one - pulling through a
-`RectObject` reference would write the base half and drop the subclass's own, so **a new `RectObject`
-subtype extends both switches**, and `PullObject` throws rather than truncate if it does not.
+the generated `RectObjectModelPull.PullValue` for a `RectObject`, the constrained `PullDictionary`
+overload (i.e. `PullFrom`) for a concretely typed value like `LevelTrack`. `PullValue` dispatches to
+the concrete type because pulling through a `RectObject` reference would write the base half and
+drop the subclass's own; its cases are whatever `[GenerateModel]` types derive from the base, so a
+new `RectObject` subtype extends `ObjectConverter.GetType`'s switch by hand and this one by itself.
 `AudioLevel.Tracks` and the seven `LevelResources` dictionaries are still replaced; nothing is known
 to hold into them across a pull, and they take the same two lines when something does.
 

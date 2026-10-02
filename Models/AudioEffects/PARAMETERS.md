@@ -11,7 +11,7 @@ Min change = 0.01f
   - Mix Level, Lowpass_MixLevel,     -80f, -80f, 0f, dB, 0.1f
   - Cutoff Freq, Lowpass_CutoffFreq, 5000f, 10f, 22000f, Hz, 1f
 - Highpass
-  - Mix Level, Highpass_MixLevel,     -80f, 0f, dB, 0.1f
+  - Mix Level, Highpass_MixLevel,     -80f, -80f, 0f, dB, 0.1f
   - Cutoff Freq, Highpass_CutoffFreq, 1000f, 10f, 22000f, Hz, 1f
 - Echo
   - Mix Level, Echo_MixLevel,       -80f, -80f, 0f, dB, 0.1f

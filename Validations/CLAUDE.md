@@ -19,7 +19,7 @@ the rule engine, in two halves. *Declarative*: `RuleAnalyzer`/`RuleFixer`
 (`FrameRules`, `ValueRules`, `LevelRules`, `AudioRules`, `PostProcessingRules`, `ResourceRules`,
 `TextRules`) - `EffectRules` is the one exception, constructing default `CurveValue`/`GradientValue`
 model instances. `RuleGroup` (`None/Error/Warning/Advice`) is the severity enum, and it is **real
-now**: 36 rules are Error, 8 are Warning, 1 is Advice. It was not - forty-four of forty-five took
+now**: 36 rules are Error, 9 are Warning, 1 is Advice. It was not - forty-four of forty-five took
 `BaseRuleAttribute`'s default, so `ValidationReport.HasErrors` was identical to `!IsValid` and no
 consumer could act on it. What was missing was the CRITERION, which is now written out at the top of
 `RuleGroup.cs`: Error means the file cannot be played as written, Warning means it plays but not as
@@ -44,7 +44,7 @@ breaking the other. Don't "helpfully" add a collection rule to `Vertices`/`Indic
 
 **`[RuleOptional]` is what makes a nullable member representable at all.** `BasePropertyRuleAttribute
 .IsValid` answers null for every rule at once (`if (value == null) return false`), which is the safety
-net for a forgotten `RuleNotNull` and is pinned by a `TestNull` case in each of the ~12 value-rule
+net for a forgotten `RuleNotNull` and is pinned by a `TestNull` case in each of the ~20 value-rule
 fixtures. It is also why a member that deliberately starts null - `LevelTrackEffects`' eleven DSP
 slots, `EffectObjectForces`' eleven forces, the colours and limits on `ShadowsMidtonesHighlightsKey`/
 `VignetteKey`/`LensDistortionKey` - made every bound on it start reporting an absent value as out of
@@ -54,7 +54,8 @@ and generated paths cannot disagree about it. Null stays `RuleNotNull`'s questio
 is the opposite answer to the same one, written down instead of inferred from an absent attribute.
 
 `RuleEnumValid` covers single-choice enums only; `[Flags]` enums (today: `ClipboardContent` on
-`ClipboardData`, the device masks on the controls settings) go through `RuleEnumFlagsValid`, which
+`ClipboardData`, `KeyBindingMask` on the keyboard-mouse controls settings, `ObjectTypeMask` on
+`EditorInterfaceSettings`, `CurveWeightedMode` on `CurveKeyframeValue`) go through `RuleEnumFlagsValid`, which
 asks "does this carry an undeclared bit" and
 whose `Fix` masks the unknown bits off instead of falling back to a default. Don't loosen
 `RuleEnumValid` to cover both - `Enum.IsDefined` rejects every legitimate flag combination.
@@ -62,15 +63,16 @@ whose `Fix` masks the unknown bits off instead of falling back to a default. Don
 `Rules/Attributes/` are declarative `[RuleXxx]` property attributes (`[AttributeUsage(Property)]`
 only - never fields), all `: BaseRuleAttribute` (`IsValidType`/`IsValid`/`Fix`). `[RuleContainer]`
 (a bare class-level marker) opts a type into the reflective walk - applied broadly across `Models/`
-(156+ files), not just a handful of aggregate roots. `Rules/Attributes/Contextual/` need the root
-`Level` as context (`RuleObjectIdValidAttribute`/`RuleParentObjectIdValidAttribute` check `ObjectId`
-validity/parent rules) - both still carry a `// TODO add complex check for parenting and ids
-uniqueness`, because a property attribute only ever sees one property at a time. **`RuleLevelFrame`
+(218 files), not just a handful of aggregate roots. `Rules/Attributes/Contextual/` need a
+`RuleContext` (the root `Level` and the resolved object scope) - `RuleObjectIdValidAttribute`/
+`RuleParentObjectIdValidAttribute` check `ObjectId` validity/parent rules against the scope,
+`RuleReferenceExistsAttribute` that a level-defined resource id resolves; uniqueness within a scope
+stays the graph pass's, because a property attribute only ever sees one property at a time. **`RuleLevelFrame`
 used to live there and does not any more**: it bounds a frame on the LEFT only
 (`FrameRules.MinFrame`), because a level's end is a number the author drags, so a key parked past it
 is content waiting for the level to grow - the old right-hand bound reported it and its `Fix`
 clamped it away. **Cross-object invariants are implemented,
-just not here** - `Validations/LevelGraphAnalyzer` owns them (duplicate `ObjectId`s, missing or
+just not here** - `Validations/Graph/LevelGraphAnalyzer` owns them (duplicate `ObjectId`s, missing or
 cyclic parents, dangling/self-referencing prefab placements, stale id counters, broken remap tables),
 and `ValidationFacade` is what runs the two passes together. Don't write a graph check as a
 `[RuleXxx]` attribute. `Rules/Attributes/Values/` are
@@ -94,7 +96,7 @@ long an author waits, and nothing a player waits for. Anything here claiming it 
 read is stale.
 
 **IT IS GENERATED NOW.** `BH.SDK.Roslyn`'s `ValidationGenerator` writes a `Validate` for every
-`[RuleContainer]` type - 200 of them - and `RuleWalk.Node` dispatches a value to its own walk through
+`[RuleContainer]` type - ~220 of them - and `RuleWalk.Node` dispatches a value to its own walk through
 `IValidatable`, falling back to `RuleAnalyzer.WalkNode` for anything without one (a non-partial type,
 a test fixture, a future hand-written model). The two are mutually recursive through that one point,
 so a half-migrated tree is a legal state. Measured on the corpus, three passes, volcano's rules pass
@@ -107,7 +109,7 @@ Four things carry that:
 
 - **`RuleWalk`** owns one `Analyze` call's state - the trace, the findings, the settings - and is the
   only place a child node is reached from. A class rather than a `ref struct`: it travels through an
-  interface, so `ref` would spread to 200 generated signatures to save one object per call.
+  interface, so `ref` would spread to ~220 generated signatures to save one object per call.
 - **`RuleTable`** is what the generator deliberately does NOT produce. Reflection builds the
   `PropertyInfo` array and the rule arrays once per type, so a trace holds the same `PropertyInfo`
   object either way, `RuleIssue.Rule` is the same attribute instance it has always been, and the

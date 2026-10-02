@@ -79,14 +79,14 @@ A variant moves exactly three things:
   crash is therefore reproduced by rebuilding as Debug, with no source change. It is likewise absent
   from Player Settings, and it means nothing outside IL2CPP: a Mono player and the Editor read no
   `[Il2CppSetOption]` whether or not it is defined. Which types opted in is
-  `docs/issues/IL2CPP_CHECKS.md`.
+  `Docs/Issues/IL2CPP_CHECKS.md`.
 - **Every profile also repeats the project-wide symbols** (`UNITEXT`, `BHSDK_UNITY`) alongside its
   own three. Whether Unity appends a profile's defines to Player Settings' or replaces them is not
   documented for Unity 6.5; carrying the full set is correct either way, and it makes a profile
   readable on its own.
 
 The profiles are generated, never hand-written - `BuildProfileGeneratorScriptable` in
-`Assets/Settings/Build/` writes one pair per `BuildSpec` asset into `Assets/Settings/Build Profiles/`,
+`Assets/Settings/Editor/` writes one pair per `BuildSpec` asset (`Assets/Settings/Build Specs/`) into `Assets/Settings/Build Profiles/`,
 and re-running it rewrites only the defines and the Development Build flag, leaving every other
 setting on a profile alone. A platform whose Editor module is not installed is skipped and named in
 the report rather than failing the run.

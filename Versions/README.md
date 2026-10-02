@@ -29,7 +29,7 @@ Versions/
       GameLevelV0ToV1.cs
       GameEventsV0ToV1.cs
       LevelResourcesV0ToV1.cs
-  V1/                          # next generation, whenever it exists, same shape
+  V1/                          # the first real one (UserSettingsV1, LevelMetaV1, ... + V1ToV2), same shape
     ...
 ```
 
@@ -84,8 +84,8 @@ Rules that keep this from turning into a mess as more generations pile up:
 `"test_fps"`) and its snapshot classes are near-identical to today's. It stopped being a thing the
 suite merely TOUCHES once the snapshots gained codecs - it is now what the suite MEASURES migration
 with, in three ways it could not before: a `.blob` half, a nested half, and a cross-path identity
-(the same V0 bytes through JSON and through `.blob` must arrive at the same instance). It is kept
-because it is the **only** thing that still proves `VersionedTypeRegistry` and `IMigration` work at all - the two real
+(the same V0 bytes through JSON and through `.blob` must arrive at the same instance). It was kept
+because it was the **only** thing that proved `VersionedTypeRegistry` and `IMigration` work at all - the two real
 snapshots this repo once had were deleted along with the bumps that needed them (before 1.0.0, when
 nothing on anyone's disk was worth migrating; since the release every change is a bump with a real
-snapshot here - the main project's `CLAUDE.md` Rule 11). `VersionedTypeRegistryTests` and `SerializationTests.TestLevelV0Migration` are what exercise it.
+snapshot here - the main project's `CLAUDE.md` Rule 11 - and `V1/` holds the first of them). `VersionedTypeRegistryTests` and `SerializationTests.TestLevelV0Migration` are what exercise it.

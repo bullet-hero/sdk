@@ -6,7 +6,7 @@ the `IModel<T>` contract and the cross-folder effect/audio/theme model.
 
 ## `Models/Hints/` - the level's advisory aggregate
 
-`LevelHints` (`Level.Hints`, `[ModelGeneration(LevelHints, ModelGenerations.Release)]`) is the fifth aggregate on `Level`
+`LevelHints` (`Level.Hints`, `[ModelGeneration(LevelHints, ModelGenerations.V1_AlphaRelease)]`) is the fifth aggregate on `Level`
 and the only one carrying **nothing an author wrote**. Everything in it is DERIVED from the other
 four, written by whoever saves the level, and safe to drop: a consumer that ignores the whole object
 plays the identical level, only paying at load (or mid-playback) for work the hint front-loads.

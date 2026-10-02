@@ -25,7 +25,7 @@ tilde):
 | Project | Target | What it builds |
 |---|---|---|
 | `BH.SDK.csproj` | netstandard2.1 | The library: everything except `Roslyn/`, `Tests/` and `UnityExtensions/`. **`UnityIntegration/` is included WHOLE** - every file there is dual by contract (`#if BHSDK_UNITY`), and this build is what enforces it; see its `README.md` |
-| `Tests/BH.SDK.Tests.csproj` | net8.0 | Every fixture the Unity Test Runner runs, under `dotnet test` - **2068 passing** outside Unity. Its `Compile` include is RECURSIVE; while it was the folder root alone, `Tests/Rules` and `Tests/Services` were silently absent and the run reported a green 454 |
+| `Tests/BH.SDK.Tests.csproj` | net8.0 | Every fixture the Unity Test Runner runs, under `dotnet test` - **2310 passing** outside Unity. Its `Compile` include is RECURSIVE; while it was the folder root alone, `Tests/Rules` and `Tests/Services` were silently absent and the run reported a green 454 |
 | `Roslyn/BH.SDK.Roslyn.csproj` | netstandard2.0 | The analyzers and generators - see `Roslyn/README.md` |
 | `Roslyn/Tests~/BH.SDK.Roslyn.Tests.csproj` | net8.0 | Tests for the components themselves. **Invisible to Unity by the tilde**, and has to be - the asmdef above it would otherwise swallow the fixtures |
 
@@ -43,7 +43,7 @@ describes it; each loads only when you touch a file in that folder.
 | Folder | What is in it | Its own file |
 |---|---|---|
 | `Models/` | the level format itself (see "Object model" / "Value system" below for the architecturally… | `Models/CLAUDE.md` |
-| `Serialization/` | `Serializers/` (`SerializationService`, the JSON/BSON entry point), `Converters/Base/` +… | `Serialization/CLAUDE.md` |
+| `Serialization/` | `SerializationService` (the JSON/.blob entry point), `Serializers/`, `Converters/Base/` +… | `Serialization/CLAUDE.md` |
 | `Versions/` | the model-versioning/migration system (`[ModelGeneration]`, `VersionedTypeRegistry`,… | `Versions/CLAUDE.md` |
 | `Rules/` | `public const` numeric/enum clamp tables (`FrameRules`, `ValueRules`, `LevelRules`,… | `Rules/CLAUDE.md` |
 | `Validations/` | the rule engine, in two halves. *Declarative*: `RuleAnalyzer`/`RuleFixer`… | `Validations/CLAUDE.md` |
@@ -81,17 +81,17 @@ alive so `GamePlayer`'s jobs can re-roll randomness every frame instead of freez
 ## Conventions
 
 - **`Names.cs` constants, never string literals, for `[JsonProperty]`.** Deliberately short/
-  abbreviated (`"f"` for Frame, `"v"` for Value, `"t"` reused for both TypeShort and TimeShort -
+  abbreviated (`"f"` for Frame, `"v"` for Value, `"t"` reused for both TimeShort and TangentShort -
   disambiguated only by never co-occurring on the same model) to keep the wire format compact.
-  Historical `Versions/VX_Y/` snapshot classes intentionally use their own frozen literals/`NamesVX_Y`
+  Historical `Versions/V<n>/` snapshot classes intentionally use their own frozen literals/`NamesV<n>`
   instead, so renaming a *current* key can never silently corrupt what an old snapshot deserializes.
 - **New polymorphic value/effect variant** = new enum case + concrete class + a case in the matching
   `JsonConverterCustomType<T,TType>` subclass's `GetType`/`GetCustomType` switch. No attribute-based
   auto-discovery anywhere in this system (unlike `[RuleContainer]`'s reflection scan or
   `VersionedTypeRegistry`'s reflection scan) - every converter is a manual, explicit mapping.
   Same applies to `RectObject` subtypes via `ObjectConverter`.
-- **New `[ModelGeneration]` aggregate** = add the attribute at `ModelGenerations.Release` if
-  genuinely new, or take the next free generation + write a `VX/` snapshot + `IMigration` pair if
+- **New `[ModelGeneration]` aggregate** = add the attribute at `ModelGenerations.Current` if
+  genuinely new, or take `ModelGenerations.Current + 1` + write a `V<old>/` snapshot + `IMigration` pair if
   changing an existing domain's shape - see `Versions/
   README.md`'s folder-convention rules in full before doing this, several easy-to-miss subtleties
   (nested property must stay typed as the *current* class, snapshot classes skip `IModel<T>`, a
@@ -112,8 +112,8 @@ alive so `GamePlayer`'s jobs can re-roll randomness every frame instead of freez
   how far apart the layer coefficient spaces two layers - don't merge the two families of constant.
 - **Level-wide/track-wide numeric collection caps live in `Rules/LevelRules.cs`/`AudioRules.cs`**
   (max markers/checkpoints/keys/prefabs/audio-layers/...) - check there before hardcoding a magic
-  cap elsewhere; `Level.Objects` itself is deliberately uncapped (see the commented-out
-  `MaxObjects` in `LevelRules.cs`).
+  cap elsewhere; `GameLevel.Objects` is capped by `MaxObjects` (2^18) and the id counter
+  separately by `MaxObjectIds` - the comment between them in `LevelRules.cs` says why they differ.
 - **A new model is `[GenerateModel] public sealed partial class`, and nothing else.** Write the
   members, the constructors and the `[JsonProperty]` names; the whole `IModel<T>` contract and the
   blob codec are written for you. Leave it non-sealed only if something derives from it - `sealed`
@@ -130,7 +130,7 @@ violation `RuleFixer` must detect and fix. A `#region Generation 0` half builds 
 `V0` snapshot types for exercising the migration path, including a hand-spliced JSON envelope
 builder (`CreateTestLevelV0Json`) - needed because `VersionedEnvelopeConverter` always tags a
 *whole* current-shape object with the *current* version when serializing, so each historical fragment
-has to be serialized standalone from its own real `VX_Y` type and spliced in by hand.
+has to be serialized standalone from its own real `V<n>` type and spliced in by hand.
 
 **Every test method carries three attributes**, no exceptions - `[Author(Metadata.Author.Vertoker)]`,
 `[Category(Metadata.Category.Self)]` (`"BH.SDK"`, this namespace minus its `.Tests` suffix), and

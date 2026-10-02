@@ -98,7 +98,7 @@ They should not, and the reason is not the runtime this time:
   gzipped.
 - What it would buy is one scenario - a device-wide pack of shared resources. That is already solved
   the way the level's own song is: the file travels and its `ResourceKey` is rewritten, the id
-  staying local to whichever level holds it - what `LevelPackageBuilder` already does for an
+  staying local to whichever level holds it - what `LevelArchiveBuilder` already does for an
   `AbsolutePath` resource on export.
 
 **Everything `int`** gives up the libraries. A theme imported from the device library into two
@@ -170,14 +170,14 @@ one rewrote every level after it.
   and form code 0 is reserved so no retired 1..78 id can decode into a valid shape. An id carrying a
   bit in the reserved range was written by a build that knows an axis this one does not, and
   degrades to the shape without it.
-- **`FontResourceId` presets are safe today by hand, not by rule**: the id is a `[SerializeField]`
-  on each `FontResourceScriptable`, so reordering the list changes nothing. Nothing checks that two
-  presets do not claim the same number, and nothing stops a retired number being handed out again.
-- **`AudioResourceId` presets are NOT safe.** `AudioResourceGeneratorScriptable.Generate()` clears
-  the folder and renumbers from `MinGameDefinedValue` in list order, so deleting or inserting one
-  clip shifts every id after it - the 78-shape defect exactly, on 121 assets. The editor's audio
-  search offers these presets to authors (`SearchOrigin.Game`), so a level can and does reference
-  them, and a level referencing a shifted id plays a different sound with nothing to report.
+- **`FontResourceId` and `AudioResourceId` presets are safe by a frozen table**: the id is a
+  `[SerializeField]` on each `FontResourceScriptable`/`AudioResourceScriptable`, so reordering a list
+  changes nothing, and the consuming project's `GamePresetCatalog` (`Core.Tests`) is an append-only
+  second statement of every id, asset and target, which `GamePresetCatalogTests` holds the assets to,
+  uniqueness included. The audio presets used to be renumbered from `MinGameDefinedValue` in list
+  order by an editor tool - the 78-shape defect exactly, on 121 assets; that tool is gone. The
+  editor's audio search offers these presets to authors (`SearchOrigin.Game`), so a level can and
+  does reference them, and a shifted id would play a different sound with nothing to report.
 
 **C - the meaning is in the spelling of JSON keys. THIS CLASS NO LONGER EXISTS, and that is worth
 recording rather than deleting.** It held exactly one member, `ModificationKey.Path`: a dotted
@@ -194,8 +194,9 @@ The measured cost of leaving it was higher than the design predicted - three of 
 live paths did not resolve at all, and nobody could see it.
 
 **So the work stability actually asks for is not a change of id type.** It is: freeze the
-game-defined audio numbering and assert uniqueness of both preset tiers. The third item - treat a
-key rename on an overridable member as a breaking change - is done, by removing the reason for it.
+game-defined audio numbering and assert uniqueness of both preset tiers - both done, by
+`GamePresetCatalog`. The third item - treat a key rename on an overridable member as a breaking
+change - is done, by removing the reason for it.
 
 ### What the choice costs, measured
 
@@ -256,4 +257,4 @@ Nothing currently on the roadmap, and the two directions are not symmetric.
 The realistic long-term risk to this format was never the id types. It was `ModificationKey.Path`,
 and class C above records what became of it: the address is a stable field number now, so the
 risk is closed rather than outstanding. What is left in its place is smaller and named in class
-B - the game-defined audio numbering, which is still positional.
+B - the game-defined preset numbering, held by a frozen table rather than by construction.

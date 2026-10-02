@@ -6,7 +6,8 @@ the `IModel<T>` contract and the cross-folder effect/audio/theme model.
 
 ## Prefab system
 
-Nesting is bounded by `ResourceSettings.Prefabs_MaxInheritanceLevel` - a template may hold a
+Nesting is bounded by `PrefabRules.MaxInheritanceLevel` (8; the consumer's
+`ResourceSettings.PrefabsMaxInheritanceLevel` may only lower it) - a template may hold a
 placement of another template, and `PrefabMaterializer.Resync` re-propagates through every level of
 that up to the limit.
 

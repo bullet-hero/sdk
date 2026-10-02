@@ -28,7 +28,7 @@ Content and Modifier share one entry point on purpose: they differ in intent and
 ```csharp
 public class RadialGenerator : BaseContentGenerator<RadialGenerator.Parameters>
 {
-    public override string NameKey => "gen_radial";
+    public override string NameKey => "gen_geometry_radial";
 
     public override GeneratorHints Hints => HintsValue;
 
@@ -121,16 +121,18 @@ public class RadialGenerator : BaseContentGenerator<RadialGenerator.Parameters>
   host": `IAudioFileInput`, `IWaveformInput`, `IBeatFramesInput`, `IPixelTextureInput`, plus
   `ICurrentFramerateInput`, which is **not** `ExternalAnalysis`: the value is already on the context,
   and the interface exists only so a form can display it (see `Hints.ReadOnly`).
-- `Modifiers/` - `ObjectTrackMask` + `ObjectTracks` (enumerate an object's ten keyframe tracks
+- `Modifiers/` - `ObjectTrackMask` + `ObjectTracks` (enumerate an object's twelve keyframe tracks
   generically) and the modifiers themselves.
+- `Import/`, `Interop/` - the two level generators that read a file.
 - `Geometry/`, `Bullets/`, `Audio/`, `Textures/`, `Utility/` - the concrete generators.
 
 ## Roster
 
-**Level**: `gen_level_empty`.
+**Level**: `gen_level_empty`, `gen_level_archive` (`Import/`, this project's own package),
+`gen_level_afterbeat` (`Interop/`).
 
-**Geometry** (static shapes): `gen_grid`, `gen_radial`, `gen_spiral`, `gen_polygon`,
-`gen_fractal` (Koch / Sierpinski / Tree, depth-capped because these grow by a constant factor per
+**Geometry** (static shapes): `gen_geometry_grid`, `gen_geometry_radial`, `gen_geometry_spiral`,
+`gen_geometry_polygon`, `gen_geometry_fractal` (Koch / Sierpinski / Tree, depth-capped because these grow by a constant factor per
 level).
 
 **Bullets** (animated, keys baked at author time): `gen_bullet_wave`, `gen_bullet_spiral`,
@@ -144,7 +146,7 @@ therefore `LevelScope`), `gen_texture_objects` (image → objects, run-merged).
 
 **Modifiers** (edit what is already there, create nothing): `mod_quantize_keyframes` (snap keys to a
 BPM or frame-step grid, Nearest/Floor/Ceil, per-track mask - a key whose grid line is already taken
-stays put rather than overwriting the key that got there first), `mod_stagger` (delay each object one
+stays put rather than overwriting the key that got there first), `mod_span_stagger` (delay each object one
 step further, ordered by selection/layer/x/y/distance; bounds and keyframes shift independently),
 `mod_content_remover` (delete by frame range - `Invert` on removes everything outside the run's
 window, off removes everything inside it; objects always, audio tracks and level-global event keys on
@@ -166,10 +168,12 @@ different framerate: `FrameDuration` and every frame number are resampled by `to
 keeps its wall-clock timing, with objects / audio / level-global events each behind their own switch
 (objects on by default). Lowering the framerate is lossy - two frames can land on one, and a track's
 frames must stay unique - so `MaxKeyShift` (default 1) says how far a key may be nudged off its
-sampled frame to find a free slot before it is dropped instead.
+sampled frame to find a free slot before it is dropped instead. `mod_prefab_flatten` turns every
+prefab placement in a scope back into ordinary objects.
 
 **Utility**: `gen_capacity_hint` - recompute `LevelHints.Limits` (peak simultaneous objects
-per type) on demand, so the number is visible while deciding whether a section is too heavy.
+per type) on demand, so the number is visible while deciding whether a section is too heavy;
+`gen_font_cache` - rebuild `LevelHints.FontCharacters` the same way, undoably.
 
 The roster is complete; new generators are additive from here.
 
@@ -199,8 +203,8 @@ registered texture, and an audio path from the native file picker.
   and a modifier snapping to a level-wide grid has to convert the other way first
   (`mod_quantize_keyframes`). Getting this wrong is invisible in every other check: the objects
   appear, in the right place, with the right lifetime - and then never move, because their keys sit
-  past their own death. A sweep test asserts every created key lands inside
-  `[0, FrameDuration)`.
+  past their own death. A sweep test (`GeneratorSweepTests`) asserts every created key lands inside
+  `[FrameRules.MinFrame, FrameRules.LastFrameOf(span)]`.
 - **Placement math is degrees, storage is RADIANS.** Every hand-authored rotation in a real level is
   a multiple of π (a full turn is 6.2831855), and the Unity project converts to degrees only at its
   inspector boundary. `AddRotation` takes degrees and converts; writing an `AngleKey` by hand without

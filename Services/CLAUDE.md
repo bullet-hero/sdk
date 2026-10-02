@@ -44,9 +44,9 @@ layer-wide conventions. This file is folder-local.
   Finally `Controls/` (`ControlDeviceCatalog`/`ControlDeviceInfo`) - the STATIC per-device facts,
   here rather than in the settings tree because they are not the player's to change and **must not
   survive a file**: a saved "this device supports Relative" would still claim so after the build
-  stopped supporting it. The matrix is deliberately uniform today (all four devices do all three
-  modes, so `SupportedModes` reads `All` everywhere); the mask exists anyway, as the only place a
-  future device that genuinely cannot do one - a pedal, a wheel, a MIDI pad - could say so
+  stopped supporting it. The matrix is uniform but for one hole (three devices do all three
+  modes, `DeviceGyro` has no Relative, so its `SupportedModes` is `Absolute | Direction`); the mask
+  is also the only place a future device that genuinely cannot do one - a pedal, a wheel, a MIDI pad - could say so
   without every consumer growing a special case.
 
 **`Collections/` is the RESOURCE COLLECTION format** - a folder of reusable resources of any of the

@@ -32,5 +32,5 @@ carrying `GetModelType()`, exactly like the value system above:
 
 **No enforced sort order.** `[RuleCollectionUnique(nameof(XKey.Frame))]` validates Frame values are
 *unique* within a track's `List<TKeyframe>` - it does not enforce them being sorted. Consumers must
-sort/search themselves (Unity's `LevelPlayerMath.FindMatchIndexes` assumes sorted input at that
+sort/search themselves (Unity's `LevelPlayerMath.FindBoundIndexes` assumes sorted input at that
 layer, converted once at load via `LevelStateBuilder`).

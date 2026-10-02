@@ -28,5 +28,5 @@ everything that genuinely needs Unity, in four groups. Own asmdef,
     reverse), so the four rotation primitives moved down here as **non-extension statics** - a second
     `RotateVector(this float2, …)` would be ambiguous in every file with both namespaces in scope -
     and `BHMath` delegates to them. `TransformDefaults` is the eight transform fields of
-    `BH.Shared.defaults`, which likewise delegates; the rest of `defaults` reaches for `alignment`
-    and `color` and stays in the consumer.
+    `defaults`, which delegates seven of them (`size` is its own zero). `defaults` itself, with
+    `alignment`, `color`, `color2` and `constants`, has since moved down here too (namespace `BH.SDK`).

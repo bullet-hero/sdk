@@ -6,7 +6,7 @@ the `IModel<T>` contract and the cross-folder effect/audio/theme model.
 
 ## Clipboard (`Models/Clipboard/`)
 
-`ClipboardData` (`[ModelGeneration(ModelDomains.ClipboardData, ModelGenerations.Release)]`) is one copied editor selection,
+`ClipboardData` (`[ModelGeneration(ModelDomains.ClipboardData, ModelGenerations.V1_AlphaRelease)]`) is one copied editor selection,
 split into **one section per editor timeline** - the consumer keeps a single instance as the backing
 store of all its per-timeline buffers, and the same instance is what leaves the process as JSON when
 the author exports it. It is a **partial level**: every section is a collection type the format

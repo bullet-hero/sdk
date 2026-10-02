@@ -50,7 +50,7 @@ Same 2-element-array mechanism backs several other polymorphic families beyond t
 **Dictionaries with a self-describing value** (`ObjectId→RectObject`, `AudioId→LevelTrack`,
 `ThemeId→ThemeData`, `EffectId→EffectData`, `PrefabId→Prefab`,
 `ModificationKey→Modification`, resource-id dicts) serialize as a
-**plain array with the key dropped** (`Serialization/Converters/Dict/DictionaryAsListConverter`,
+**plain array with the key dropped** (`Serialization/Converters/Base/DictionaryAsListConverter`,
 key recovered from the value on read). Dictionaries where the key *can't* be derived from the value
 (id→id remap tables) use `DictionaryAsPairListConverter` instead (array of `{K,V}` structs) - plain
 Newtonsoft dictionary serialization needs a `TypeConverter` on the key type to use it as a JSON

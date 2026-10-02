@@ -27,7 +27,7 @@ diagnose issues and crashes"*. The shipped thing keeps the honest name.
 all.** Unity scopes an analyzer to the asmdef whose folder contains it **and to every assembly
 referencing that asmdef** - measured, not assumed. Left inside `Roslyn/`, it belonged to
 `BH.SDK.Roslyn.Src`, which nothing references, so it analyzed nothing. In the SDK root it
-belongs to `BH.SDK`, i.e. the SDK and the ~25 assemblies built on it.
+belongs to `BH.SDK`, i.e. the SDK and the ~30 assemblies built on it.
 
 **`Refs/` is not committed.** They are 13 MB of Microsoft binaries every machine already has, and
 their version must follow whichever Editor is open. `Tools/BH.SDK.Roslyn/Install Compiler References`
