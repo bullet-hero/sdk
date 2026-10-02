@@ -3140,5 +3140,28 @@
 
         /// <summary> <c>"last_completed_utc"</c> - TutorialStatistics.LastCompletedUtc. </summary>
         public const string LastCompletedUtc = Last + _ + Completed + _ + Utc;
+
+        // Profile archive (profile.json) - one instance per file, full words.
+
+        /// <summary> <c>"created_utc"</c> - ProfileManifest.CreatedUtc. </summary>
+        public const string CreatedUtc = Created + _ + Utc;
+
+        /// <summary> <c>"game_version"</c> - ProfileManifest.GameVersion. </summary>
+        public const string GameVersion = Game + _ + "version";
+
+        /// <summary> <c>"model_generation"</c> - ProfileManifest.ModelGeneration. </summary>
+        public const string ModelGeneration = "model_generation";
+
+        /// <summary> <c>"platform"</c> - ProfileManifest.Platform. </summary>
+        public const string Platform = "platform";
+
+        /// <summary> <c>"categories"</c> - ProfileManifest.Categories. </summary>
+        public const string Categories = "categories";
+
+        /// <summary> <c>"folder"</c> - ProfileLevelEntry.Folder. </summary>
+        public const string Folder = "folder";
+
+        /// <summary> <c>"modified_utc"</c> - ProfileLevelEntry.ModifiedUtc. </summary>
+        public const string ModifiedUtc = "modified" + _ + Utc;
     }
 }

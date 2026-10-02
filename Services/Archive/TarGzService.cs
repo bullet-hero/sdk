@@ -53,6 +53,11 @@ namespace BH.SDK.Services.Archive
 
             policy = policy ?? ArchivePolicy.Default;
 
+            if (policy.MaxNameBytes > ArchivePolicy.MaxEntryNameBytes)
+                throw new ArgumentException(
+                    $"A tar header holds {ArchivePolicy.MaxEntryNameBytes} bytes of name; a policy asking for " +
+                    $"{policy.MaxNameBytes} is a zip-only policy.", nameof(policy));
+
             using (var gzip = new GZipStream(destination, policy.CompressionLevel, leaveOpen: true))
             using (var tar = new TarOutputStream(gzip, ArchivePolicy.NameEncoding) { IsStreamOwner = false })
             {

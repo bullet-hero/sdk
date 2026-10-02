@@ -74,6 +74,17 @@ throw - `LevelArchiveReader`'s contract.
   models are rewritten through, and the credits that travel with them. A conflict (same id, different
   content) is resolved by an answer the host supplies - keep, or copy under a new id - never by the
   planner.
+- **`Profile/` is the PROFILE ARCHIVE** - a player's whole data folder as one zip, the game's
+  Settings > Other transfer. It MIRRORS the profile root under the player's own names
+  (`ProfileLayout`: a category is one folder, or `settings.json`; the mapping is also the whitelist,
+  read the same way on pack and unpack), so it is written to zip only, under a policy that lifts the
+  shared 100-byte name cap (`ArchivePolicy.MaxNameBytes`; tar refuses such a policy). The manifest is
+  `Models/Profile/ProfileManifest` (a new domain, not a bump): categories STORED rather than derived,
+  and each level's export-time write time, since every zip entry is pinned to 1980. The unpack limits
+  are what the archive's own directory declared (`ProfileArchiveReader`), and `ZipService` gained a
+  filtered unpack and a directory listing for it. `ProfileMergePlanner` (levels by `LevelId`, newer
+  wins whole, a tie keeps local) and `StatisticsMerge` (max per counter - idempotent, decided with the
+  author; `BestRunOrder` mirrors the game's `StatisticsMath.IsBetter`) are pure.
 - A FILE resource has no identity outside its folder, so the import planner identifies it by its
   BYTES: handed both sides' `MediaFingerprints` (sha256 of each file resource's first `LevelPath`
   source, read from an `IContentStore`), it points an incoming texture, font or audio at the level's

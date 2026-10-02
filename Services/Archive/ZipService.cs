@@ -129,9 +129,9 @@ namespace BH.SDK.Services.Archive
                     {
                         token.ThrowIfCancellationRequested();
 
-                        if (!ArchivePolicy.FitsName(entry.Path))
+                        if (!policy.Fits(entry.Path))
                             throw new InvalidDataException(
-                                $"'{entry.Path}' is longer than the {ArchivePolicy.MaxEntryNameBytes} bytes " +
+                                $"'{entry.Path}' is longer than the {policy.MaxNameBytes} bytes " +
                                 "an entry name may take. Rename it before packing.");
 
                         var length = await entry.GetLengthAsync(token);
@@ -154,8 +154,21 @@ namespace BH.SDK.Services.Archive
 
         /// <summary> Reads a zip into a store, refusing anything that fails one of the four checks.
         /// Returns what was written, in the order the archive held it. </summary>
+        public static Task<IReadOnlyList<string>> UnpackAsync(Stream source, IContentStore destination,
+            ArchiveLimits limits = null, char[] passphrase = null, CancellationToken token = default) =>
+            UnpackAsync(source, destination, include: null, limits, passphrase, token);
+
+        // AN ENTRY LEFT OUT IS STILL JUDGED, and only its inflating is skipped. Its name, its type and
+        // the duplicate check run exactly as they do for a kept one: an archive that would be refused
+        // whole is refused whatever part of it the caller asked for, so a filter can never be the way
+        // a hostile entry gets past the checks. The size limits count the KEPT entries only - those
+        // are the bytes that reach the store.
+
+        /// <summary> Reads only the entries <paramref name="include"/> accepts into a store; every
+        /// entry is still checked. A null filter keeps everything. </summary>
         public static async Task<IReadOnlyList<string>> UnpackAsync(Stream source, IContentStore destination,
-            ArchiveLimits limits = null, char[] passphrase = null, CancellationToken token = default)
+            Func<string, bool> include, ArchiveLimits limits = null, char[] passphrase = null,
+            CancellationToken token = default)
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
             if (destination == null) throw new ArgumentNullException(nameof(destination));
@@ -167,7 +180,7 @@ namespace BH.SDK.Services.Archive
 
             using (var zip = Open(source, passphrase))
             {
-                RequireDeclaredSizeWithinLimits(zip, limits);
+                RequireDeclaredSizeWithinLimits(zip, limits, include);
 
                 var taken = new HashSet<string>(StringComparer.Ordinal);
                 var totalBytes = 0L;
@@ -180,6 +193,8 @@ namespace BH.SDK.Services.Archive
                     if (entry.IsDirectory) continue;
 
                     var name = RequireName(entry, taken);
+                    if (include != null && !include(name)) continue;
+
                     RequireOpenable(entry, passphrase);
 
                     if (entry.Size > limits.MaxEntryBytes)
@@ -278,6 +293,32 @@ namespace BH.SDK.Services.Archive
             return names;
         }
 
+        /// <summary> Every file entry with what its directory claims about it - name, uncompressed
+        /// size, whether it is encrypted - without inflating anything. </summary>
+        public static IReadOnlyList<ArchiveEntryInfo> ListEntries(Stream source, ArchiveLimits limits = null)
+        {
+            if (source == null) throw new ArgumentNullException(nameof(source));
+
+            limits = limits ?? ArchiveLimits.Default;
+            limits.Validate();
+
+            var entries = new List<ArchiveEntryInfo>();
+
+            using (var zip = Open(source, passphrase: null))
+            {
+                RequireDeclaredSizeWithinLimits(zip, limits);
+
+                foreach (ZipEntry entry in zip)
+                {
+                    if (entry.IsDirectory) continue;
+                    entries.Add(new ArchiveEntryInfo(Normalize(entry.Name), Math.Max(0L, entry.Size),
+                        entry.IsCrypted));
+                }
+            }
+
+            return entries;
+        }
+
         private static ZipFile Open(Stream source, char[] passphrase)
         {
             ZipFile zip;
@@ -307,7 +348,8 @@ namespace BH.SDK.Services.Archive
             return zip;
         }
 
-        private static void RequireDeclaredSizeWithinLimits(ZipFile zip, ArchiveLimits limits)
+        private static void RequireDeclaredSizeWithinLimits(ZipFile zip, ArchiveLimits limits,
+            Func<string, bool> include = null)
         {
             if (zip.Count > limits.MaxEntries)
                 throw new InvalidDataException(
@@ -317,6 +359,7 @@ namespace BH.SDK.Services.Archive
             foreach (ZipEntry entry in zip)
             {
                 if (entry.Size <= 0) continue;
+                if (include != null && !include(Normalize(entry.Name))) continue;
 
                 declared += entry.Size;
                 if (declared > limits.MaxTotalBytes)

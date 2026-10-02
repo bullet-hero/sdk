@@ -26,6 +26,12 @@ namespace BH.SDK.Services.Archive
     // in the other. On READ nothing applies it - ContentPath's validation and the file system's own
     // limit are what an arriving archive is judged by, or an ordinary `zip -r` from outside this
     // game would stop importing.
+    //
+    // A PROFILE IS THE ONE WRITER ALLOWED PAST IT, through MaxNameBytes on its own policy. The shared
+    // cap exists for one level written three ways; a profile is written to zip only, mirrors the
+    // player's folders under their own names, and cannot rename anything - level.json refers to its
+    // media by name, and a renamed media file is a level that no longer finds its song. tar refuses a
+    // policy that raises the cap rather than truncating a name into a different file.
 
     /// <summary> How an archive is written, and what makes writing it reproducible. </summary>
     public sealed class ArchivePolicy
@@ -53,8 +59,16 @@ namespace BH.SDK.Services.Archive
         /// and since netstandard2.1 has no SmallestSize to reach for. </summary>
         public CompressionLevel CompressionLevel { get; set; } = CompressionLevel.Optimal;
 
+        /// <summary> The longest entry name THIS policy writes. Only zip honours a value above
+        /// <see cref="MaxEntryNameBytes"/>; tar refuses such a policy outright. </summary>
+        public int MaxNameBytes { get; set; } = MaxEntryNameBytes;
+
         /// <summary> Whether an entry name fits what the writer can actually record. </summary>
         public static bool FitsName(string path) =>
             !string.IsNullOrEmpty(path) && NameEncoding.GetByteCount(path) <= MaxEntryNameBytes;
+
+        /// <summary> Whether an entry name fits this policy's own cap. </summary>
+        public bool Fits(string path) =>
+            !string.IsNullOrEmpty(path) && NameEncoding.GetByteCount(path) <= MaxNameBytes;
     }
 }

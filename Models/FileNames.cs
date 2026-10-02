@@ -126,5 +126,22 @@
 
         /// <summary> Named so a refusal can say which format it refused. Nothing writes it. </summary>
         public const string SevenZipExtension = ".7z";
+
+        // A PROFILE ARCHIVE MIRRORS THE FOLDERS ABOVE under their own names, so it needs only its own
+        // manifest. profile-backups/ is a sibling that owns EVERYTHING the profile transfer writes on
+        // the device - the one kept backup and, in staging/, every temporary of an import - and it is
+        // never itself packed: a backup that carried the previous backup would grow without end.
+
+        /// <summary> A profile archive's manifest, always its first entry. </summary>
+        public const string ProfileManifestFileName = "profile.json";
+
+        /// <summary> The one kept profile backup and every temporary of a profile import. </summary>
+        public const string ProfileBackupsDirectory = "profile-backups";
+
+        /// <summary> Under <see cref="ProfileBackupsDirectory"/>: an import's working folder. </summary>
+        public const string ProfileStagingDirectory = "staging";
+
+        /// <summary> Under <see cref="ProfileBackupsDirectory"/>: the one kept backup. </summary>
+        public const string ProfileBackupFileName = "profile-backup.zip";
     }
 }

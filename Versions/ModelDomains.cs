@@ -48,6 +48,9 @@ namespace BH.SDK.Versions
         /// <summary> A resource collection's manifest (collection.json). </summary>
         public const string Collection = nameof(Models.Collections.ResourceCollection);
 
+        /// <summary> A profile archive's manifest (profile.json). </summary>
+        public const string ProfileManifest = nameof(Models.Profile.ProfileManifest);
+
         // Statistics
 
         /// <summary> The game statistics domain. </summary>
