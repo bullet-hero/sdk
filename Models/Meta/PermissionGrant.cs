@@ -8,22 +8,9 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models.Meta
 {
-    // Option B of the UGC licensing policy, made storable. A resource whose own license forbids
-    // redistribution can still be published if its rights holder said yes specifically - but a
-    // private "sure, go ahead" is worthless to a moderator who cannot see it, so the claim has to
-    // carry who said it, how far it reaches, until when, and where the proof is. Without this type
-    // the only way to express Option B was a free-text line in ResourceSources, which no code and no
-    // moderator can act on.
-    //
-    // Both timestamps are UTC, and the only reason nothing enforces that is that nothing can: a
-    // DateTime carries its Kind through JSON (ISO-8601 with the offset) and through the blob (UTC
-    // instant by definition), but a caller handing over a Local one still writes a moment that reads
-    // differently on another machine. Whoever fills these in converts first - a permission that
-    // lapses "on the 3rd" must not lapse a day early for a moderator in another timezone.
-    //
-    // default(DateTime) is the unset value, and it means two different things by position, both of
-    // which read correctly as "no constraint": on ExpiresAt it is an open-ended grant, which is the
-    // common case, and on GrantedAt it is a record whose author did not bother with the date.
+    // Option B of the UGC licensing policy, made storable: who said yes, how far it reaches, until when,
+    // where the proof is. Both timestamps are UTC (nothing can enforce it: convert before filling in);
+    // default(DateTime) is unset and reads as "no constraint". Docs/RESOURCE_META.md
 
     /// <summary> One rights holder's permission to use a resource, and the evidence for it. </summary>
     [RuleContainer]

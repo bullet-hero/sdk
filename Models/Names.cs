@@ -1,10 +1,8 @@
 ﻿namespace BH.SDK.Models
 {
     /// <summary>
-    /// Every JSON key used by the format, in one place. Deliberately short and abbreviated to keep
-    /// saved levels small; a key is only ever reused across models that can never co-occur.
-    /// Changing a value here changes the on-disk format - historical snapshots keep their own copies
-    /// precisely so that stays safe.
+    /// Every JSON key used by the format, in one place, short on purpose. A key is reused only across
+    /// models that can never co-occur. Changing a value here changes the on-disk format.
     /// </summary>
     public static class Names
     {
@@ -69,11 +67,8 @@
         /// <summary> Word kept in the key vocabulary; nothing is built from it today. </summary>
         public const string Value = "v";
 
-        /// <summary> The versioned envelope's own generation key - the OTHER half of {g, v}. Not
-        /// Version below, which is the author's own version of a level: one file would then carry
-        /// "vrs" meaning two different things at two depths. The letter is reused by ChannelG and
-        /// GlobalShort, which is fine - keys are local to their object, and an envelope holds
-        /// nothing but these two. </summary>
+        /// <summary> The envelope's own generation key, the OTHER half of {g, v}; not the author's Version
+        /// (that would put "vrs" at two depths). The letter is reused: keys are local. </summary>
         public const string Generation = "g";
 
         /// <summary> The word "value", for a settings key that spells it out - Value
@@ -236,10 +231,7 @@
         /// <summary> Checkpoint.Active, LevelTrackEffects.Active, PostProcessingEvents.Active, PostProcessingKeyframe.Active and 1 more. </summary>
         public const string ActiveShort = "a";
 
-        // EVERY KEYFRAME PAYLOAD IS ONE KEY. A keyframe's concrete type comes from the static
-        // type of the track holding it, and the polymorphic value inside carries its own
-        // positional tag - nothing ever inferred a type from the property name, so spelling the
-        // type out cost 3 characters on 176 383 of volcano's keys and bought nothing.
+        // Every keyframe payload is ONE key: the concrete type comes from the track's static type.
 
         /// <summary> <c>"v"</c> - BoolKey.Value. </summary>
         public const string Bool = ValueShort;
@@ -1880,12 +1872,7 @@
         /// <summary> <c>"editor_settings"</c> - carried by no model today. </summary>
         public const string EditorSettings = Editor + _ + Settings;
 
-        // GameEditorSettings' own keys. Every one of them lives INSIDE one of that model's nine
-        // groups, which is what lets them stay this short - a key only has to be unique among its
-        // siblings, so the group's own name carries the qualifier the flat shape used to spell out
-        // (the old "grid_size" is "grid": { "size" } now). The flat keys these replaced are gone
-        // from here entirely, and now that the snapshot that held them as literals is deleted, they
-        // survive nowhere at all - a settings.json predating the restructure reads back as defaults.
+        // GameEditorSettings' keys live INSIDE a group, so a key only has to be unique among siblings.
 
         /// <summary> <c>"max_autosave_files"</c> - EditorSavingsSettings.MaxAutosaveFiles. </summary>
         public const string MaxFiles = Max + _ + Autosave + _ + Files;
@@ -1941,11 +1928,8 @@
         /// <summary> <c>"pick_invisible_aabb"</c> - EditorSelectionSettings.PickInvisibleAABB. </summary>
         public const string PickInvisibleAABB = Pick + _ + Invisible + _ + AABB;
 
-        // SPELLED OUT rather than built from Shape + Size, and that is the naming rule rather than an
-        // oversight: those two fragments are the MULTIPLE-class spellings ("shp", "sz") because they
-        // are paid for on every object of every level, while a UserSettings key is paid for once per
-        // settings file. Docs/NAMING.md puts every settings group in the SINGLE class - full words,
-        // no abbreviations, readable by whoever opens settings.json.
+        // Spelled out, not Shape + Size: those are MULTIPLE-class keys, a UserSettings key is paid for once
+        // (Docs/NAMING.md: every settings group is the SINGLE class).
 
         /// <summary> <c>"shape_size_x"</c> - EditorCreationSettings.ShapeSizeX. </summary>
         public const string ShapeSizeX = "shape_size_x";
@@ -2119,10 +2103,7 @@
         /// <summary> <c>"frame_step_budget"</c> - EffectsGraphicsSettings.FrameStepBudget. </summary>
         public const string FrameStepBudget = Frame + _ + Step + _ + Budget;
 
-        // Replaced MaxDiffTime, and the key changed with it: what it measures is no longer "how far
-        // audio may drift" but "how far the playhead must JUMP to count as a discontinuity". An old
-        // settings.json simply falls back to the default for it, which is the intended outcome - the
-        // stored number was tuned against a metric that no longer exists.
+        // Measures how far the playhead must JUMP to count as a discontinuity.
 
         /// <summary> <c>"resync_jump_time"</c> - AudioGraphicsSettings.ResyncJumpTime. </summary>
         public const string ResyncJumpTime = Resync + _ + Jump + _ + Time;
@@ -2132,11 +2113,6 @@
 
         /// <summary> <c>"pitch_correction"</c> - AudioGraphicsSettings.PitchCorrection. </summary>
         public const string PitchCorrection = Pitch + _ + Correction;
-
-        // Controls. Replaced ClassicControlsType, whose key is simply gone: it had no gameplay
-        // consumer at all, so an old settings.json losing it loses nothing that ever did anything. The
-        // UserSettings domain deliberately did NOT bump for that - a removed OptIn property is skipped
-        // on read, whereas a bump with no migration registered would throw on every existing file.
 
         /// <summary> <c>"keyboard_mouse"</c> - ControlsSettings.KeyboardMouse. </summary>
         public const string KeyboardMouse = Keyboard + _ + Mouse;
@@ -2930,11 +2906,7 @@
         /// <summary> <c>"age_rating"</c> - LevelMeta.LevelAgeRating. </summary>
         public const string AgeRating = Age + _ + Rating;
 
-        // SPELLED OUT RATHER THAN COMPOSED, and the difference matters here more than anywhere else
-        // in this file. `Min + _ + Generation` would read `"min_g"`, because Generation is the
-        // ENVELOPE's one-character key - a MULTIPLE key, paid for on every envelope in a level. This
-        // one appears once per metadata.json, beside `duration` and `age_rating`, so the rule asks
-        // for full words.
+        // Spelled out, not composed: Min + _ + Generation would read "min_g" (the envelope's MULTIPLE key).
 
         /// <summary> <c>"min_generation"</c> - LevelMeta.MinGeneration. </summary>
         public const string MinGeneration = "min_generation";

@@ -9,10 +9,8 @@ using BH.SDK.Utils;
 
 namespace BH.SDK.Publishing
 {
-    // A FINDING NAMES THE RESOURCE THE AUTHOR KNOWS, never only its address. "meta.resources[Texture:3]"
-    // is what a log wants; an author reading a refusal wants the file they dropped in or the name they
-    // gave the prefab. The record's own title wins, then what the resource itself is called, and the
-    // address is only the last resort.
+    // A finding names the resource the author knows: the record's title, then the resource's own
+    // name, the address only as the last resort.
 
     /// <summary> What a publish finding calls a resource. </summary>
     internal static class ResourceNames

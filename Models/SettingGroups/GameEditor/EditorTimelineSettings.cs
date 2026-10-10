@@ -7,12 +7,8 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models.SettingGroups.GameEditor
 {
-    // Only five of the timeline's several dozen settings are here, and the line between them and the
-    // rest is one question: does a wrong value make the screen WRONG, or merely uncomfortable? Lane
-    // heights, pixels-per-frame, overscans and warmup counts all fail the first way and stay in the
-    // project's asset. These five fail the second way - the ruler spelling a frame in a language the
-    // author does not think in is uncomfortable, never incorrect, since it addresses the same frame
-    // either way.
+    // Only settings whose wrong value is uncomfortable, not WRONG; lane heights, pixels-per-frame and
+    // overscans stay in the project asset.
 
     /// <summary>
     /// How the editor's timelines respond to a pointer, whether playback wraps, and what
@@ -38,10 +34,7 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
         [JsonProperty(Names.EdgeHandle)]
         public float EdgeHandlePx { get; set; }
 
-        // Whether the playhead wraps at the end is a working habit, not a property of the level: an
-        // author polishing one passage wants the loop, an author watching the whole thing through
-        // does not. The two timelines keep separate answers because they are separate questions - a
-        // local loop repeats one object's own span, a global one repeats the level.
+        // A working habit, not a property of the level; the two timelines keep separate answers.
 
         /// <summary> Whether the level timeline's playhead wraps at the end instead of stopping. </summary>
         [JsonProperty(Names.LoopGlobal)]
@@ -52,10 +45,7 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
         [JsonProperty(Names.LoopLocal)]
         public bool LocalLoop { get; set; }
 
-        // One answer for every ruler AND for the playhead readout, which is the whole point of it
-        // being one setting: the two used to speak different languages on the same screen (the ruler
-        // counted frames while the readout printed MM:SS.FF), and an author reading a number off one
-        // to type into the other had to convert it in their head.
+        // One answer for every ruler AND the playhead readout.
 
         /// <summary> How a ruler label and the playhead readout spell a frame. Default
         /// <see cref="TimelineTimeFormat.Frames"/>, which is what the ruler always printed. </summary>
@@ -63,12 +53,8 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
         [JsonProperty(Names.TimeFormat)]
         public TimelineTimeFormat TimeFormat { get; set; }
 
-        // THE TOOL IS PER-TAB NOW, and this decides what a tab shows when it comes back up. On, a
-        // tab always returns to Selection, which is the tool a click means everywhere and the only
-        // one that cannot destroy anything by being pressed by accident; off, each tab remembers
-        // what was last chosen on it. The default is ON because a blade left armed on a tab visited
-        // ten minutes ago is the one way a tool change can cost an author an edit they did not ask
-        // for. Snapping is NOT part of this - it is a preference about the grid, not a tool.
+        // The tool is per-tab; on, a tab returns to Selection, the one tool that cannot destroy anything
+        // when pressed by accident.
 
         /// <summary> Whether switching timeline tabs puts the tab arrived at back on the Selection
         /// tool instead of the one it was last left on. </summary>

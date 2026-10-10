@@ -2,16 +2,8 @@ using System.Text;
 
 namespace BH.SDK.Roslyn.Model
 {
-    // THE BLOB HALF. Its conventions are the level cache's codec, which was written out by hand for
-    // this same model and proved the shape works - strict write/read pairs in member order, a
-    // length prefix of -1 for null (an empty keyframe list and a missing one are different states
-    // and a round trip has to keep them apart), a one-byte tag for a polymorphic value with 0xFF
-    // reserved for null. What is new is what a FORMAT needs and a cache did not: a per-domain
-    // envelope carrying its own version, and a length that the reader checks the content against.
-    //
-    // THE TAG IS THE MODEL'S OWN. GetModelType() is already the discriminator the JSON side writes,
-    // so the blob reuses it rather than inventing a second numbering that could drift from it. The
-    // generator READS it out of the enum member the method names.
+    // The blob half: strict write/read pairs in member order, -1 length for null, a one-byte tag (0xFF =
+    // null) that is the model's own GetModelType(). Conventions and reasons: Docs/ROSLYN_GENERATORS.md.
 
     /// <summary> Writes the IBinaryModel half of a model. </summary>
     internal static class ModelBlobEmitter

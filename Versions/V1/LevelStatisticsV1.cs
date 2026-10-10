@@ -12,10 +12,8 @@ namespace BH.SDK.Versions.V1
 {
     // ReSharper disable once InconsistentNaming
 
-    // Only Records changed at generation 2 - its key gained NoCollision - so only its key is retyped
-    // to a snapshot (RunProfileV1). BestRun, DifficultyStatistics and LevelEditorStatistics are
-    // TODAY's classes; one that changes later freezes its own leaf next to this file. Keys are
-    // literal: a snapshot spells them the way its own generation did.
+    // Only Records changed at generation 2 (its key gained NoCollision), so only its key is a snapshot
+    // (RunProfileV1); the rest are TODAY's classes. Keys are literal, spelled as that generation did.
 
     /// <summary> Generation 1 (Release) of the level-statistics domain - the shape 1.0.0 shipped,
     /// before a record could be filed under "no collision". A frozen snapshot - never edit it to match

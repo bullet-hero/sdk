@@ -5,10 +5,7 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests
 {
-    // ShapeId is a Guid-backed id struct, deliberately structured like ThemeId/EffectId (see
-    // those types' own doc comments) - this test suite exercises the shared shape (Null/IsEnabled/
-    // NewGuid/string constructor/equality) so a future change to one is easy to cross-check against
-    // the others.
+    // ShapeId is Guid-backed like ThemeId/EffectId; this exercises the shared shape for cross-checking.
 
     /// <summary> The id shape ShapeId shares with ThemeId and EffectId - null, enabled, minting, parsing and
     /// equality - so a change to one is easy to cross-check against the others. </summary>

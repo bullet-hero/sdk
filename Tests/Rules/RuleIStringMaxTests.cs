@@ -124,10 +124,7 @@ namespace BH.SDK.Tests.Rules
             AssertInvalid<RuleIStringMaxAttribute>(new Model { Value = null });
         }
 
-        // A StringValue holding a null string blows up inside the rule instead of being reported:
-        // the length check dereferences Value without a guard. Nothing in the SDK prevents building
-        // one (the constructor assigns straight through), and deserializing a JSON null lands here
-        // too. Pinned as a throw so the guard that fixes it has to update this test deliberately.
+        // A null inner string throws inside the rule, unguarded. Pinned so the guard must update this test.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]

@@ -13,9 +13,8 @@ using Newtonsoft.Json;
 namespace BH.SDK.Models.Game
 {
     /// <summary>
-    /// Everything a level shows and does: its objects plus four aggregates of level-global events.
-    /// This is the object scope at level scope - note the id counter that feeds it lives on
-    /// LevelSettings instead, so the pair has to be carried together by anything creating objects.
+    /// Everything a level shows and does: its objects plus four aggregates of level-global events. The
+    /// id counter feeding it lives on LevelSettings, so anything creating objects carries the pair.
     /// </summary>
     [RuleContainer]
     [ModelGeneration(ModelDomains.GameLevel, ModelGenerations.V1_AlphaRelease)]

@@ -15,10 +15,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests.Generators
 {
-    // Stage 4's generators are the first to depend on data the SDK cannot produce itself, so these
-    // tests double as the contract test for ExternalAnalysis: given the inputs a host would supply,
-    // each generator has to produce exactly the content it promised - and given none, it has to
-    // produce nothing rather than inventing some.
+    // Contract test for ExternalAnalysis: given a host's inputs, exactly the promised content; given
+    // none, nothing.
 
     /// <summary> The generators that need data the SDK cannot produce itself: given a host's inputs they must
     /// produce exactly what they promised, and given none they must produce nothing rather than inventing some. </summary>

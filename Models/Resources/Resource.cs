@@ -10,9 +10,8 @@ using Newtonsoft.Json;
 namespace BH.SDK.Models.Resources
 {
     /// <summary>
-    /// Base of every external asset a level carries. Holds no data itself - only where to fetch it
-    /// from; the bytes live outside the level file, which is what keeps a level a folder of files
-    /// rather than one huge blob.
+    /// Base of every external asset a level carries. Holds only where to fetch it; the bytes live outside
+    /// the level file, which keeps a level a folder of files rather than one blob.
     /// </summary>
     [RuleContainer]
     [GenerateModel]
@@ -28,10 +27,8 @@ namespace BH.SDK.Models.Resources
         [JsonProperty(Names.Src)]
         public List<ResourceKey> Sources { get; set; }
 
-        // A MEMBER WITH NO [JsonProperty] IS STILL SERIALIZED, under its C# name - this one wrote
-        // "Type" with a capital T into every resource of every level, the only such key the naming
-        // audit missed, because that audit read attributes and this member had none. Every
-        // serialized member declares its key; see docs/NAMING.md.
+        // A member with no [JsonProperty] is still serialized under its C# name; every member declares a
+        // key (Docs/NAMING.md).
 
         /// <summary> Which category this resource is, filled in by each subtype rather than stored -
         /// it is derivable from the type, so it never has to be kept in sync. </summary>

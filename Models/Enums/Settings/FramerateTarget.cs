@@ -16,9 +16,7 @@
         ScreenHz = 1,
         
         /// <summary>
-        /// Set target framerate to fixed refresh rate.
-        /// Can't be lower than 1 and doesn't make sense if higher than screen refresh rate.
-        /// Used to low power consumption on phones
+        /// Fixed to the refresh rate: not lower than 1, pointless above the screen's. Saves power on phones.
         /// </summary>
         Fixed = 2,
     }

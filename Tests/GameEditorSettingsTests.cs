@@ -7,12 +7,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests
 {
-    // GameEditorSettings is the one UserSettings group that has been RESTRUCTURED rather than added
-    // to - sixteen flat properties became nine nested groups, which is what took the domain to (2,0).
-    // Two kinds of assert live here as a result: the ordinary boilerplate ones every group needs
-    // (defaults, Reset, Copy/Pull, Equals seeing each field independently), and the ones that pin the
-    // NESTING itself - a Copy that shared a group instance with its source, or an Equals that only
-    // compared references, would pass every flat test ever written for this class.
+    // Restructured (flat to nested groups): pins the NESTING itself - a Copy sharing a group instance, or
+    // an Equals comparing references, would pass every flat test.
 
     /// <summary> GameEditorSettings' nine groups: defaults, boilerplate, isolation, round trip. </summary>
     public class GameEditorSettingsTests
@@ -75,13 +71,8 @@ namespace BH.SDK.Tests
             Assert.IsFalse(settings.Player.ActiveDefault);
         }
 
-        // The viewport grid and the effects preview are the other two "where does a session start"
-        // switches, and they answer opposite ways on purpose. The grid is drawn BEHIND every object
-        // and reads as content rather than as a guide on a small screen, so it starts off and is one
-        // press away. The effects preview starts ON, because that is what the editor did before the
-        // field existed and a settings file written before it has to read back as the behaviour it
-        // already had - the per-platform seeding a fresh file gets is the host's (RootEntryPoint),
-        // never the model's.
+        // The grid starts off (it draws behind every object); the effects preview starts ON, as before the
+        // field existed. Per-platform seeding of a fresh file is the host's (RootEntryPoint).
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
@@ -277,10 +268,7 @@ namespace BH.SDK.Tests
             Assert.IsFalse(settings.Interface.LinkColliderToShape);
         }
 
-        // OFF, and the assert is worth its own test because this is the one field here that changed
-        // the editor's behaviour rather than adding to it: the right panel used to open itself on any
-        // selection and now waits to be asked. The field is named for the behaviour, so the zero
-        // value and the shipped default are the same word - which is also what keeps it additive.
+        // Off: the right panel used to open on any selection and now waits to be asked.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
@@ -322,12 +310,8 @@ namespace BH.SDK.Tests
             Assert.IsFalse(older.GameEditor.Interface.SelectionAutoOpenActive);
         }
 
-        // The bot's own two defaults, and they point opposite ways on purpose. BotControl is off
-        // because a preview player that steers itself is a surprise for an author who reached for the
-        // toggle to try a jump by hand. The debug MASTER is off for the same reason, but every part
-        // of it is on: opening the master is meant to show the whole picture at once, and the parts
-        // exist to take pieces of it away again - defaulting them off would make the master do
-        // nothing at all.
+        // BotControl and the debug master are off, but every PART of the debug is on: opening the master
+        // shows the whole picture, and the parts exist to take pieces away.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
@@ -344,11 +328,8 @@ namespace BH.SDK.Tests
             Assert.IsTrue(settings.Player.BotDebugReach);
         }
 
-        // BOTKIND.NONE MUST BE ZERO, and that is a contract rather than a style rule. Nothing in
-        // UserSettings stores a BotKind - the editor's preview player is a bool above, since only the
-        // reflex bot fits that screen - so what depends on the zero is every OTHER default: a
-        // LevelPlayerInfo that was never filled in, and a launch that says nothing about a bot. Both
-        // have to read as "the player steers", and both get there through default(BotKind).
+        // BotKind.None MUST be zero: every other default (an unfilled LevelPlayerInfo, a launch naming no
+        // bot) reads as "the player steers" through default(BotKind).
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
@@ -402,13 +383,8 @@ namespace BH.SDK.Tests
             Assert.AreEqual(0.25f, settings.Grid.Opacity);
         }
 
-        // BOTH SURFACES OPEN ON THE MIDDLE RUNG, and they still hold two settings rather than one
-        // because they are two answers, not one shared one - an author folds a tree and a timeline
-        // for different reasons, and SyncTimelineExpansion exists precisely for the case where they
-        // want them tied. They used to open at OPPOSITE rungs (collapsed / expanded), which is what
-        // each surface did before either was configurable; Partial is the rung that shows authored
-        // content and folds what the mask calls structure, which is what a level is opened to look
-        // at on either surface.
+        // Both surfaces open on the middle rung (Partial) but stay two settings: folding a tree and a
+        // timeline are different decisions (SyncTimelineExpansion ties them).
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
@@ -502,10 +478,7 @@ namespace BH.SDK.Tests
             Assert.AreEqual(PublishLanguage.System, editor.Publishing.Language);
         }
 
-        // The two nested "iface" keys - UserSettings.Interface and GameEditor.Interface - reuse one
-        // name across models that can never co-occur, which is what Names' own header allows. This is
-        // the assert that keeps that reuse honest: if the serializer ever confused them, one group
-        // would read the other's values back.
+        // The two nested "iface" keys reuse a name across models that never co-occur; they must not mix.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]

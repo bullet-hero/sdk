@@ -8,15 +8,9 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models.Profile
 {
-    // WHAT A PROFILE ARCHIVE IS, besides the player's own files under their own names. It is the first
-    // entry of the zip, so a reader learns what it holds - and whether this build may read it - from
-    // the central directory and one small document, before anything is unpacked.
-    //
-    // CATEGORIES ARE STORED, NOT DERIVED FROM THE ENTRIES. "Levels were exported and there were none"
-    // and "levels were not exported" are different instructions to a Replace import: the first empties
-    // levels/, the second must not touch it. An entry listing cannot tell them apart.
-    //
-    // A NEW DOMAIN, NOT A BUMP. Nothing on any disk has this shape, and no existing model refers to it.
+    // The first zip entry, so a reader learns what the archive holds, and whether this build may read it,
+    // from the central directory. Categories are STORED, not derived. A new domain, not a bump.
+    // Services/CLAUDE.md
 
     /// <summary> A profile archive's manifest (<c>profile.json</c>): when and by what it was written,
     /// which categories it carries, and the levels with the timestamps a merge compares. </summary>

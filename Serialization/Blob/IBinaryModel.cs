@@ -2,11 +2,8 @@ using System;
 
 namespace BH.SDK.Serialization.Blob
 {
-    // A SECOND INTERFACE RATHER THAN TWO MORE MEMBERS ON IModel<T>, and the split is the point:
-    // IModel is about what a model IS to the rest of the program - copy it, compare it, reset it,
-    // make it become another instance - and none of that has an opinion about bytes. A model that
-    // is never serialized still wants all five; a codec that changes never wants any of them.
-    // Keeping them apart is also what lets a type opt out of one and not the other.
+    // Separate from IModel<T> on purpose: IModel is what a model IS to the program and has no opinion
+    // about bytes, so a type can opt out of one and not the other.
 
     /// <summary> A model that can write and read itself in the .blob format. Implemented by
     /// BH.SDK.Roslyn for every [GenerateModel] type; the three hand-written models

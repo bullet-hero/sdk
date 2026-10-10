@@ -19,8 +19,7 @@ namespace BH.SDK.Models
 {
     /// <summary>
     /// Everything about a level that is not the level itself: identity, presentation, authorship and
-    /// licensing. Its own file (metadata.json) and its own serialization root - so a menu can list
-    /// hundreds of levels without deserializing a single one of them.
+    /// licensing. Its own file, so a menu can list hundreds of levels without deserializing one.
     /// </summary>
     [RuleContainer]
     [ModelGeneration(ModelDomains.LevelMeta, ModelGenerations.V2_SimplifyEntrance)]
@@ -77,65 +76,33 @@ namespace BH.SDK.Models
         [JsonProperty(Names.ResourcesMeta)]
         public List<ResourceMeta> ResourcesMeta { get; set; }
 
-        // Rating lives on the level and only on the level - deliberately not on ResourceMeta. What a
-        // player is warned about is the finished experience, and an asset has no rating of its own:
-        // the same track is menu music in one level and a jump scare in another. Whoever imported it
-        // would have to guess a number, and a guessed number folded into the level's own would make
-        // the level's rating mean nothing.
-        //
-        // ONE NUMBER AND NOTHING ELSE. A ContentDescriptor flag set sat beside this and is gone: nine
-        // checkboxes an author ticked about their own level, shown to a player who had already read
-        // the number, and read by nothing. The age rating is the whole declaration.
+        // Rating lives on the level only, never on ResourceMeta, and is ONE number (no descriptor flags).
+        // Docs/RESOURCE_META.md
 
         /// <summary> Minimum age the level is meant for - what a player is shown before playing. </summary>
         [RuleEnumValid]
         [JsonProperty(Names.AgeRating)]
         public AgeRating LevelAgeRating { get; set; }
 
-        // PLAIN STRINGS, NOT IString, and that is the one decision here worth arguing. Every
-        // other piece of text on this model is localized because a player READS it; a tag is a
-        // filter token that a player MATCHES, and a translated one stops matching the moment two
-        // players run different languages. So a tag is the author's own word, shown as written.
-        //
-        // Free text rather than a closed set for the same reason ILevelSource.Id is a string:
-        // whoever authors a level knows what it is, and a shipped vocabulary would be wrong for
-        // every genre nobody thought of.
+        // Plain strings, not IString: a tag is a token a player MATCHES, and a translated one stops
+        // matching across languages. Free text, not a closed set. Docs/RESOURCE_META.md
 
         /// <summary> Author-chosen filter tokens, shown as written and never translated. </summary>
         [RuleNotNull]
         [JsonProperty(Names.Tags)]
         public List<string> LevelTags { get; set; }
 
-        // DENORMALISED FROM Level.Settings, and it has to be. The browser reads metadata for
-        // every level in a folder and never opens level.json - reading a length from there would
-        // be hundreds of files parsed to draw one filter chip, which is the same cost this model
-        // already refuses for the age rating. EditorService rewrites it on every save, so it is
-        // correct for anything this game has written.
-        //
-        // ZERO MEANS UNKNOWN, not "instant": a level authored before this field existed, or
-        // written by another tool, has no length here. Every consumer must treat 0 as "do not
-        // know" and never as a value to compare - a duration filter that hid such levels would
-        // hide every level that predates the field.
+        // Denormalised from Level.Settings (the browser never opens level.json). ZERO MEANS UNKNOWN, never
+        // "instant": do not compare it. Docs/RESOURCE_META.md
 
         /// <summary> The level's length in seconds, or 0 when unknown. </summary>
         [RuleMinValue(0f)]
         [JsonProperty(Names.Duration)]
         public float LevelDuration { get; set; }
 
-        // THE GATE THAT COSTS NO READ, and the reason it lives HERE rather than in level.json:
-        // metadata.json is its own file and its own aggregate, and the browser already reads it per
-        // level without touching the level itself. A level claiming more than this build has is
-        // REFUSED - not opened with a warning: every model change since 1.0.0 is a bump, so a newer
-        // level.json would throw NewerGenerationException anyway. This key is what lets the card say
-        // so, and Play and the editor refuse it, before thirteen megabytes are read to find out.
-        //
-        // IT HAS TO SHIP IN THE FIRST RELEASED CLIENT. The key is additive and can be added at any
-        // time; what cannot be added later is a shipped client that knows to look at it.
-        //
-        // COMPUTED AT SAVE FROM THE REGISTRY, NEVER TYPED BY HAND - LevelGenerations.Required() is
-        // the one answer, and ModelGenerations.Invalid is what a file that makes no claim holds:
-        // authored before the key existed, or written by another tool. Zero cannot mean that, since
-        // zero is a real generation.
+        // The gate that costs no read: a level claiming more than this build has is REFUSED. Computed at
+        // save from the registry (LevelGenerations.Required()), never typed; Invalid means "no claim".
+        // Docs/RESOURCE_META.md
 
         /// <summary> The highest model generation any domain in this level uses - what a client must
         /// support to read it whole - or <see cref="ModelGenerations.Invalid"/> when the file makes no claim. </summary>
@@ -143,11 +110,7 @@ namespace BH.SDK.Models
         [JsonProperty(Names.MinGeneration)]
         public int MinGeneration { get; set; }
 
-        // THE LEVEL'S OWN CONTENT ONLY - its design, objects and texts, what LevelAuthors made. Every
-        // resource declares itself on its own record, the cover included (ResourceType.LevelLogo), the
-        // same split LevelAuthors and ResourceAuthors make. Whether the level CONTAINS AI is therefore
-        // not a member at all: ContainsAiContent derives it from what is already in this file, and a
-        // stored aggregate would drift from the records on the first edit.
+        // The level's OWN content only; each resource declares itself. ContainsAiContent is derived.
 
         /// <summary> Whether the level's own content was generated by AI, as its author declares.
         /// NotSpecified until they say. </summary>

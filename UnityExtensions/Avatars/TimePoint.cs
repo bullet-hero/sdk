@@ -2,16 +2,8 @@ using System.Runtime.CompilerServices;
 
 namespace BH.SDK.Avatars
 {
-    // WHEN SOMETHING HAPPENED, AND WHETHER ITS WINDOW IS STILL OPEN. It was a private nested struct on
-    // the consumer's AvatarController, which is exactly why the warm bot's route verifier could not
-    // reach it and restated the same three lines of arithmetic in its own type - two copies of "is this
-    // window open" is how a verifier starts certifying routes the game will not fly. It is public and
-    // here now, so there is one.
-    //
-    // TIME IS THE LEVEL'S, IN SECONDS, AND IT ARRIVES AS AN ARGUMENT. This type owns no clock: the game
-    // hands it the level clock (which playback speed, pause and the checkpoint ramp all bend), and the
-    // bake hands it the time of the frame being replayed. Reaching for a clock here would make the two
-    // disagree the moment a run is played at anything but 1x.
+    // When something happened and whether its window is still open. Owns no clock: time arrives as an
+    // argument, or game and bake disagree at any speed but 1x (Docs/AVATAR_MOVEMENT.md).
 
     /// <summary> An instant on the level clock, and the windows measured from it. </summary>
     public readonly struct TimePoint

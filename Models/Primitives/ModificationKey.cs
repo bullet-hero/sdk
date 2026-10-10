@@ -4,22 +4,13 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models.Primitives
 {
-    // THE INDEX IS WRITTEN UNCONDITIONALLY, even at -1, and the eight bytes that saves are refused
-    // on purpose. This key has TWO writers that must agree byte for byte - the reflective one
-    // (Newtonsoft over the [JsonProperty]s below, reached through DictionaryModificationsConverter)
-    // and JsonPrimitives.Write. Omitting a default means DefaultValueHandling on one side and an if
-    // on the other, which is exactly the divergence JsonParityTests exists to catch. The string this
-    // replaced already paid for those bytes several times over.
-    //
-    // The members stay settable auto-properties rather than becoming a readonly struct, and that is
-    // load-bearing for the same reason: Newtonsoft binds a constructor by matching parameter names
-    // against the resolved PROPERTY names, which here are "id", "f" and "i". A readonly struct would
-    // bind nothing and read back three defaults, silently.
+    // The index is written unconditionally, even at -1: two writers (reflective and JsonPrimitives.Write)
+    // must agree byte for byte (JsonParityTests). The members stay settable auto-properties: Newtonsoft
+    // binds a constructor by PROPERTY names ("id", "f", "i"), a readonly struct would read three defaults.
 
     /// <summary>
-    /// Address of a single overridable field inside a prefab placement: which object, which field,
-    /// and which element of it. Used as the key of PrefabObject.Modifications, which is what makes
-    /// "one override per (object, field) pair" a structural guarantee instead of a rule to enforce.
+    /// Address of one overridable field in a prefab placement: which object, field and element. As the key
+    /// of PrefabObject.Modifications it makes "one override per pair" structural rather than a rule.
     /// </summary>
     public struct ModificationKey : IModel<ModificationKey>, IComparable<ModificationKey>
     {

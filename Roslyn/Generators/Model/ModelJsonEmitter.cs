@@ -2,22 +2,8 @@
 
 namespace BH.SDK.Roslyn.Model
 {
-    // THE JSON HALF, AND ITS ONLY ACCEPTANCE TEST IS BYTE IDENTITY. Everything here reproduces a
-    // format that is already on players' disks, so "cleaner" is never an argument: the shapes below
-    // are what Newtonsoft's contract plus this project's thirty-five converters already write, and
-    // any difference is a level that stops loading somewhere.
-    //
-    // TWO THINGS ARE THE OPPOSITE OF THE BLOB'S, and both were measured off a real file rather than
-    // reasoned about. Members are written DERIVED FIRST, THEN BASE - Newtonsoft's contract collects
-    // the most-derived type's members ahead of its base's, which is why a ShapeObject reads
-    // `shid, cid, ... , id, pid, name` and not the other way round. And a GET-ONLY property is
-    // written even though nothing can read it back: the resolver sets MemberSerialization after the
-    // properties are already collected, so the contract is OptOut in practice, and Resource.Type
-    // rides on that. Dropping either would change the wire format silently.
-    //
-    // READING IS ORDER-INDEPENDENT, deliberately. A hand-edited file, a file from another tool and
-    // a file this build wrote all have to work, so the reader switches on the property name and
-    // skips whatever it does not know - which is also what makes an additive member free.
+    // The JSON half; its only acceptance test is BYTE IDENTITY with what is on players' disks. Members are
+    // written DERIVED FIRST, get-only ones too; reading is order-independent (Docs/ROSLYN_GENERATORS.md).
 
     /// <summary> Writes the IJsonModel half of a model. </summary>
     internal static class ModelJsonEmitter
@@ -76,15 +62,8 @@ namespace BH.SDK.Roslyn.Model
             {
                 if (member.JsonIgnored) continue;
 
-                // A NULL SUB-MODEL IS OMITTED WHOLE, name included, and only a sub-model is. Null is
-                // how the format says "the author never touched this" (ColorCurvesKey's eight curves
-                // are the worked example), and writing `"crvmstr":null` eight times per keyframe made
-                // that third state cost more than the sentinel it replaced. Absent reads back as the
-                // constructor's value, so a member that may be null must be constructed null.
-                //
-                // COLLECTIONS ARE DELIBERATELY NOT SKIPPED: an empty list and a missing one are
-                // different states the blob codec keeps apart (BlobFormat's header), and dropping a
-                // null list here would make JSON the one format that cannot say which it had.
+                // A null SUB-MODEL is omitted whole ("never touched"); collections never are, since an empty
+                // list and a missing one are different states. Absent reads back as the constructor's value.
                 var skippable = member.Shape == MemberShape.Model
                                 || member.Shape == MemberShape.PolymorphicModel;
 
@@ -223,10 +202,8 @@ namespace BH.SDK.Roslyn.Model
                     if (value.Generation >= 0)
                         return Json + ".JsonModels.WriteEnvelope(writer, " + access + ", " + value.Generation + ");";
 
-                    // A CONCRETE member of a value family is still tagged. ConverterRouter resolves
-                    // by the value's RUNTIME type and a family converter matches every implementor,
-                    // so Marker.Color4 is `[0,{...}]` on disk even though it can only ever hold a
-                    // Color4Value. Fifteen members are like this, and the corpus is what found them.
+                    // A CONCRETE member of a value family is still tagged: ConverterRouter resolves by
+                    // runtime type.
                     if (value.Family.Length > 0)
                         return JsonDispatcher(value.Family) + ".Write(writer, " + access + ");";
 
@@ -244,11 +221,8 @@ namespace BH.SDK.Roslyn.Model
 
         private static void EmitRead(StringBuilder builder, string indent, ModelSpec spec)
         {
-            // ReadJson is emitted on the ROOT of a hierarchy and nowhere else, unlike WriteJson.
-            // A writer has to know which members to write, so every level of the hierarchy needs
-            // its own; a reader does not - it loops over whatever the document carries and hands
-            // each name to ReadJsonMember, which IS overridden all the way down. One method, no
-            // vtable slot per level, and no chance of the two halves disagreeing about the order.
+            // ReadJson is emitted on the ROOT only: the reader loops over names and ReadJsonMember is
+            // overridden down.
             if (spec.BaseModel == null)
             {
                 builder.Append(indent).AppendLine("/// <summary> Reads one back over this instance. </summary>");
@@ -262,10 +236,8 @@ namespace BH.SDK.Roslyn.Model
                 builder.AppendLine();
             }
 
-            // Public because it is an IJsonModel member: the read LOOP lives outside the model, in
-            // JsonModels, so it has to be able to call this. Virtual only where something can
-            // actually override it - a sealed root has no subtype to dispatch to, and a virtual
-            // member on a sealed type is not merely useless, it does not compile.
+            // Public (an IJsonModel member); virtual only where a subtype exists - on a sealed type it won't
+            // compile.
             var modifier = spec.BaseModel != null ? "public override "
                 : spec.IsSealed ? "public "
                 : "public virtual ";
@@ -422,10 +394,8 @@ namespace BH.SDK.Roslyn.Model
                 case ValueKind.Struct:
                     return Primitives + ".Read" + SimpleName(value.Type) + "(reader)";
                 case ValueKind.ModelSealed:
-                    // BOTH the domain and the generation go across: the generation says a file
-                    // disagrees, and only the domain says what to resolve it against. A known
-                    // generation then migrates through the snapshot's own generated codec, and an
-                    // unknown one is read by property name into today's class and reported.
+                    // Both domain and generation go across: the generation says a file disagrees, the domain
+                    // says what to resolve it against.
                     if (value.Generation >= 0)
                         return Json + ".JsonModels.ReadEnveloped<" + value.Type + ">(reader, \""
                                + value.Domain + "\", " + value.Generation + ")";

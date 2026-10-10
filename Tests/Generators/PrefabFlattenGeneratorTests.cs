@@ -9,12 +9,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests.Generators
 {
-    // The mass form of a flatten, whose whole promise is "no placement survives in this scope". Two
-    // of its properties are not visible from the level it produces and have to be pinned here: that
-    // the run reaches the LEVEL before it reaches the templates (a template edit propagates to
-    // placements, so the other order leaves the level describing content the templates no longer
-    // hold until something happens to resync it), and that both switches decline in Prefab Mode
-    // rather than answering half the question from inside one template.
+    // "No placement survives in this scope": the run reaches the LEVEL before the templates, and both
+    // switches decline in Prefab Mode.
 
     /// <summary> What a whole-scope flatten leaves behind, in a level and inside its templates. </summary>
     public class PrefabFlattenGeneratorTests

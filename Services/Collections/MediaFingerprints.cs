@@ -8,14 +8,8 @@ using BH.SDK.Utils;
 
 namespace BH.SDK.Services.Collections
 {
-    // WHAT A FILE RESOURCE IS, when its id cannot say: a texture's -1 means nothing outside the folder it
-    // lives in, so two file resources are the same one exactly when their bytes are. This is the one
-    // place that reads them, and the only IO an import plan needs - CollectionImportPlanner stays pure
-    // and is handed the answer.
-    //
-    // THE FIRST LevelPath SOURCE IS THE FILE. A later source is a fallback the loader tries when the
-    // first fails, and a URL or an absolute path has no bytes in the store to read - such a resource
-    // gets no fingerprint and is simply never matched.
+    // What a file resource IS when its id cannot say: its bytes. The first LevelPath source is the file;
+    // a URL or absolute path has none and is never matched. The only IO an import plan needs.
 
     /// <summary> Content digests of the file resources whose bytes sit in a store. </summary>
     public static class MediaFingerprints

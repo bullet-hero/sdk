@@ -17,20 +17,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests.Services
 {
-    // THE WHOLE PIPELINE, WITH NO DISK ANYWHERE - which is the server's path exactly. A backend
-    // accepts an archive, hands it to the reader and gets a store back; nothing in that sentence
-    // mentions a file system, and these tests are what makes it true rather than aspirational.
-    //
-    // The seven export modes are three independent choices - folder or file, which container, and
-    // which protection scheme - and what is checked here is that they stay independent: a protected
-    // ARCHIVE is opaque from the outside, while a protected FOLDER encrypts the level document alone
-    // and leaves the metadata and the cover readable, so a browser can still draw the card and ask
-    // for the passphrase only when the level is opened. Those are different promises, and each is
-    // worth a test that would fail if the other were implemented.
-    //
-    // THE FORMAT AXIS IS THE NEWEST OF THE THREE and the one most likely to rot: everything above
-    // the "Every container" region was written when tar.gz was the only container there was, so a
-    // case that names it explicitly is testing tar.gz rather than "an archive".
+    // The whole pipeline with no disk (the server's path). The export modes are three independent choices:
+    // a protected ARCHIVE is opaque, a protected FOLDER encrypts the level document alone.
 
     /// <summary> The whole pipeline with no disk anywhere - which is the server's path exactly - and the
     /// three independent choices behind the seven export modes. </summary>
@@ -90,11 +78,7 @@ namespace BH.SDK.Tests.Services
             return LevelArchiveReader.ReadAsync(source, passphrase, token: CancellationToken.None);
         }
 
-        // READING A LEVEL DOCUMENT IS TWO STEPS, and an archive's is a level document like any other:
-        // the bytes carry a placement rather than the copies it stands for, so a reader that stops
-        // at the deserializer holds a level that is missing everything every prefab contributes.
-        // LevelArchiveGenerator - the real importer - does exactly this pair; so does
-        // LevelLoaderService on the host side.
+        // Reading a level document is two steps (deserialize, then expand placements), as the importer does.
         private static Level Deserialize(LevelArchiveContent content)
         {
             var level = Serialization.DeserializeEnvelope<Level>(content.LevelBytes, content.LevelFormat);
@@ -111,10 +95,7 @@ namespace BH.SDK.Tests.Services
             ArchiveProtection protection = ArchiveProtection.None) =>
             new LevelArchiveOptions { Format = format, Protection = protection };
 
-        // BOTH CONTAINERS, ONE PIPELINE, and the axis is what proves it. Everything above this
-        // region was written when tar.gz was the only shape an archive could take; a zip that
-        // round trips through the same builder, writer and reader is what makes "second first-class
-        // format" a fact rather than a claim in a document.
+        // Both containers through one pipeline; earlier cases were written when tar.gz was the only one.
         [Test]
         [TestCase(ArchiveFormat.TarGz)]
         [TestCase(ArchiveFormat.Zip)]
@@ -197,12 +178,7 @@ namespace BH.SDK.Tests.Services
                 content.ResourceFileNames);
         }
 
-        // WHAT A PASSPHRASE ALONE MEANS, which is the question the export UI now answers by
-        // default. The options say WHICH scheme; a caller that says nothing and hands over a
-        // passphrase gets the container's own answer - AES for a zip, because the person receiving
-        // the level opens it with the archiver they already have, and the OpenPGP layer for a
-        // .tar.gz, which has no encryption of its own to fall back to. The one reading that is NOT
-        // available is writing it in the clear, and the sniffer is what tells the two apart.
+        // A passphrase alone means the container's own scheme: AES for zip, OpenPGP for .tar.gz.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
@@ -240,11 +216,7 @@ namespace BH.SDK.Tests.Services
             Assert.AreEqual(plan.Level, Deserialize(content));
         }
 
-        // THE IMPORT DIRECTION, WITH NOTHING OF OURS ON THE WRITING SIDE. Every case above packs
-        // with the writer under test, so together they prove only that the pair agrees with itself;
-        // a level arriving from a player was zipped by Explorer, by `zip -r` or by a website. This
-        // one is built field by field - stored entries, no unix mode, no extra fields, the shape a
-        // desktop produces - and goes through the reader a player's file actually goes through.
+        // The import direction with nothing of ours on the writing side: stored entries, no unix mode.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
@@ -505,11 +477,7 @@ namespace BH.SDK.Tests.Services
             Assert.AreEqual(plan.Meta, DeserializeMeta(content));
         }
 
-        // PROTECTION AND FORMAT ARE INDEPENDENT, and this is the corner where nothing checked that.
-        // A protected folder names its document by appending .gpg to the format's OWN extension, so
-        // a blob level is level.blob.gpg - and the reader's probe has to try both formats behind the
-        // encrypted name to find it. Every other protected test above runs in Json, and the blob
-        // tests are all unprotected, so this combination is the one a refactor could break silently.
+        // Protection and format are independent: a blob folder is level.blob.gpg and the probe tries both.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]

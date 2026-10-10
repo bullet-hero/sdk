@@ -3,14 +3,8 @@ using System.Reflection;
 
 namespace BH.SDK.Rules.Attributes
 {
-    // RuleEnumValid's counterpart for [Flags] enums, which it explicitly refuses: Enum.IsDefined
-    // rejects every legitimate combination (Violence | Blood is not a declared member, but is exactly
-    // what a [Flags] enum is for). The right question for a flags field is not "is this a member" but
-    // "does it carry a bit nobody declared", so this rule asks that instead.
-    //
-    // Fix masks the unknown bits off rather than falling back to a default, unlike RuleEnumValid. A
-    // combination read from a foreign or newer file is usually mostly meaningful - dropping the whole
-    // set because one bit is unrecognized loses information the author really did state.
+    // RuleEnumValid's counterpart for [Flags] enums: asks "does it carry an undeclared bit". Fix masks
+    // the unknown bits off instead of resetting, since a newer file's combination is mostly meaningful.
 
     /// <summary>
     /// A [Flags] enum field must not carry bits outside the union of its declared members. Fix clears

@@ -6,21 +6,8 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models.SettingGroups.GameEditor
 {
-    // WHETHER THE EFFECTS ARE ON RIGHT NOW is not here, and that is the same split the viewport grid
-    // and the preview player already make: the current view is session state (Services.GameEditor's
-    // EditorPostProcessingService, which forwards to LevelPlayer.PostProcessingActive), while what a
-    // SESSION STARTS with describes how the author works and is remembered.
-    //
-    // TRUE in the model and per-platform in a fresh settings file, which is the one place this group
-    // differs from its two neighbours. The model's default is what an author who never had the
-    // setting gets - the behaviour the editor already had, so the field is additive and no
-    // generation moved - while a settings.json BORN on a phone is seeded false
-    // (Services.Root's RootEntryPoint, beside the controls seeding it already does): post-processing
-    // is the single most expensive thing the editor draws, and the one screen a phone runs it on is
-    // also the one where the author is scrubbing rather than watching.
-    //
-    // The seed and the default disagree ON PURPOSE and it is not a contradiction: a default answers
-    // "what did this field mean before it existed", a seed answers "what does this device want".
+    // Whether effects are on NOW is session state; this is what a session STARTS with. True in the model,
+    // seeded false in a settings.json born on a phone (RootEntryPoint). Docs/SETTING_GROUPS.md
 
     /// <summary>
     /// The editor's preview of a level's post-processing effects.

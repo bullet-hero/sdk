@@ -7,31 +7,12 @@ using BH.SDK.Utils;
 
 namespace BH.SDK.Services.Shapes
 {
-    // THE ID IS THE PARAMETERS, one axis per nibble, and the layout is a contract rather than a
-    // packing detail. Six rules keep it extensible, and every one of them exists because the
-    // library it replaces broke on exactly that point:
-    //
-    //   1. One axis per nibble. Two axes sharing a nibble means a new value in one can collide
-    //      with the other.
-    //   2. Zero in any field is today's behaviour. A future axis living in the reserved nibbles is
-    //      zero in every id ever written, so adding it cannot change what an existing id means.
-    //   3. Enumerated axes get a nibble each; booleans share the flags nibble.
-    //   4. The form is the SIDE COUNT itself, offset by ShapeForm.PolygonBase - so an eleven-,
-    //      thirteen- or twenty-sided shape slots in later with no renumbering and no lookup table.
-    //      The four named starting shapes sit in a low band below the ladder, which is what puts
-    //      them first when ids are sorted, without a hand-kept ordering list.
-    //   5. Reserved nibbles are documented with their intended occupants, so the next axis does not
-    //      take another one's room.
-    //   6. The NAME's field order mirrors the id's, so a name is decodable and sorts the same way.
-    //
-    // The library this replaces numbered its shapes 1..78 by position in an array, which meant
-    // inserting a form renumbered everything after it and rewrote every level that referenced them.
-    // Form code 0 is reserved precisely so none of those old ids can decode into a valid new shape.
+    // The ID IS THE PARAMETERS, one axis per nibble: a contract, not a packing detail. The six layout
+    // rules (IDENTIFIERS.md) make a future axis free and an inserted side count harmless; form code 0
+    // is reserved so no retired 1..78 id decodes. Docs/SHAPES.md.
 
-    /// <summary>
-    /// The built-in shape catalogue: which shapes exist, what each one's <see cref="ShapeId"/> is,
-    /// and how to build its geometry. Engine-agnostic - the consuming project bakes what this
-    /// enumerates into assets and meshes.
+    /// <summary> The built-in shape catalogue: which shapes exist, each one's <see cref="ShapeId"/> and
+    /// how to build its geometry. Engine-agnostic; the consuming project bakes what this enumerates.
     /// </summary>
     public static class ShapeCatalogService
     {
@@ -81,11 +62,7 @@ namespace BH.SDK.Services.Shapes
                 yield return ShapeForm.Polygon(sides);
         }
 
-        // A SLICE OF THESE THREE IS ANOTHER SHAPE PLUS A SIZE, which is why they are the forms with
-        // no sectors: half a square is a rectangle and a quarter is a smaller square, both of which
-        // are what Size already does; half an equilateral triangle is a 30-60-90 triangle, which is
-        // RightTriangle under a non-uniform Size. Circle is NOT in this list - it is the form whose
-        // sectors are used most.
+        // A slice of these three is another shape plus a Size, hence no sectors. Circle is NOT here.
 
         /// <summary> Whether this form is only ever whole. </summary>
         public static bool HasNoSectors(ShapeForm form)
@@ -122,15 +99,8 @@ namespace BH.SDK.Services.Shapes
             ShapeThickness.T8, ShapeThickness.T16, ShapeThickness.T32,
         };
 
-        // Not omissions - each of these is another entry in the catalogue seen from a different
-        // angle, and shipping both would put two ids on one shape.
-        //
-        //   Square inverted   - the square fills its own box, so subtracting it leaves nothing at
-        //                       all; and subtracting a square RING leaves the ring's inner square,
-        //                       which is Square under a smaller Size.
-        //   RightTriangle     - the box minus a filled right triangle is the other right triangle,
-        //   inverted, filled    i.e. the same shape rotated 180 degrees. Its rings invert fine:
-        //                       those leave two pieces, not one.
+        // Omitted inverts are not omissions: each is another entry seen differently (Square inverted
+        // leaves nothing; RightTriangle inverted and filled is the other one turned 180). Docs/SHAPES.md.
 
         /// <summary> Whether this combination is another catalogue entry in disguise. </summary>
         public static bool IsDegenerate(ShapeParameters parameters)
@@ -171,10 +141,8 @@ namespace BH.SDK.Services.Shapes
         public static ShapeId ToShapeId(ShapeParameters parameters)
             => new(GuidHelper.FromIntAtEnd(Encode(parameters)));
 
-        /// <summary>
-        /// Reads a built-in shape's parameters back out of its id. False for a level-authored shape,
-        /// for one of the retired 1..78 ids, and for an id carrying a field this build does not
-        /// know - which a caller must report rather than draw something plausible for.
+        /// <summary> Reads a built-in shape's parameters back out of its id. False for a level-authored
+        /// shape, a retired 1..78 id, or an id with a field this build does not know: report, never guess.
         /// </summary>
         public static bool TryDecode(ShapeId shapeId, out ShapeParameters parameters)
         {
@@ -315,10 +283,8 @@ namespace BH.SDK.Services.Shapes
             }
         }
 
-        // THE OFFSET IS THE FULL SHAPE'S, applied to every sector, ring and inversion of it. That is
-        // what makes switching an object from Hexagon to Hexagon_S4 truncate the shape where it
-        // stands instead of moving and rescaling it, and it is what keeps a ring concentric with the
-        // disc it belongs to. Centring each entry on its OWN bounds would do neither.
+        // The offset is the FULL shape's, applied to every sector, ring and inversion, so truncating a
+        // shape does not move it and a ring stays concentric with its disc.
 
         /// <summary> A form's outer rim, already AABB-centred - the frame every one of its
         /// catalogue entries is built in. </summary>
@@ -334,10 +300,8 @@ namespace BH.SDK.Services.Shapes
             return ShapeLoopUtils.Translate(rim, new Vector2Value(-centre.X, -centre.Y));
         }
 
-        /// <summary>
-        /// The pivot that puts an object's transform on this form's centre of mass, in the same
-        /// 0..1 space RectObject.Pivots uses. (0.5, 0.5) - the default - is already the centre of
-        /// the AABB, so any form whose two centres coincide answers exactly that.
+        /// <summary> The pivot (0..1, as RectObject.Pivots) putting an object's transform on this form's
+        /// centre of mass. (0.5, 0.5) is the AABB centre, so forms whose centres coincide answer that.
         /// </summary>
         public static Vector2Value GetCentroidPivot(ShapeForm form)
         {
@@ -365,11 +329,8 @@ namespace BH.SDK.Services.Shapes
                 }
                 else
                 {
-                    // A whole ring is measured from the SHAPE's centroid, not the box's, because
-                    // those differ for an odd-sided form and only the first is inside both rims -
-                    // the right triangle's hypotenuse runs straight through the box centre. A
-                    // SLICED ring has no such choice: its two cut rays leave the box centre, so
-                    // that is where its angles have to be measured from too.
+                    // A whole ring is measured from the SHAPE's centroid (the box centre can lie outside
+                    // an odd-sided rim); a SLICED ring from the box centre, where its cut rays start.
                     var inner = ShapeLoopUtils.Inset(outer, parameters.ThicknessFraction);
                     var centre = full ? ShapeLoopUtils.GetCornerCentroid(outer) : Vector2Value.Zero;
                     AddSectorAnnulus(vertices, indices, outer, inner, full, from, to, centre);
@@ -377,10 +338,8 @@ namespace BH.SDK.Services.Shapes
             }
             else
             {
-                // The shape comes out of ITS OWN SECTOR of the box, not out of the whole box: the
-                // same vertical, horizontal and diagonal that cut the shape cut the box too. So an
-                // inverted quarter is a quarter of a wall with a quarter of a hole in it, and the
-                // two cuts line up instead of leaving a sliver of wall along the cut.
+                // The shape comes out of ITS OWN SECTOR of the box, so the cuts line up and no sliver of
+                // wall is left along them.
                 AddSectorAnnulus(vertices, indices, ShapeLoopUtils.BoxRim(), outer,
                     full, from, to, Vector2Value.Zero);
 

@@ -8,14 +8,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests.Rules
 {
-    // RuleGroup existed from the start but nothing ever set it away from Error and nothing ever read
-    // it, so "severity" was decoration. These tests cover the filter that makes it real: a consumer
-    // that only wants to know whether a level is playable asks for Error, an editor showing a full
-    // report asks for Advice.
-    //
-    // The Advice-level rule lives here rather than in the SDK because no shipped rule is below Error
-    // yet - RuleCollectionSorted will be the first. Test-assembly rules are invisible to
-    // RuleCoverageTests, which only scans the SDK assembly.
+    // The filter that makes severity real. The Advice rule lives here: RuleCoverageTests scans only the
+    // SDK assembly.
 
     /// <summary>
     /// RuleAnalyzerSettings.weakestGroup: which severities the analyzer reports.

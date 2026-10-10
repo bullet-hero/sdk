@@ -13,9 +13,8 @@ using Newtonsoft.Json;
 namespace BH.SDK.Models.Data
 {
     /// <summary>
-    /// A whole particle system definition, stored once in Level.Resources.Effects and referenced by
-    /// any number of EffectObject placements. The object says where/when it plays, this says what it
-    /// looks like - so reusing one effect across a level costs one placement, not one copy.
+    /// A whole particle system definition in Level.Resources.Effects, referenced by any number of
+    /// EffectObject placements: the object says where/when, this says what it looks like.
     /// </summary>
     [RuleContainer]
     [ModelGeneration(ModelDomains.EffectData, ModelGenerations.V1_AlphaRelease)]

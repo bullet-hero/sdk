@@ -12,21 +12,9 @@ using BH.SDK.Utils;
 
 namespace BH.SDK.Services
 {
-    // Builds LevelHints.FontCharacters - the per-font distinct-character sets a player warms a
-    // glyph atlas from. This lives in the SDK rather than in a host's editor so a third-party tool
-    // writes byte-identical sets: the hint is only worth trusting blindly (which every reader does)
-    // if everyone who writes one agrees on what it should contain.
-    //
-    // Building is split from writing on purpose. Build/BuildAll are pure and return values, so a
-    // caller that must journal its writes - the gen_font_cache generator, whose undo depends on it -
-    // can route them through its own mechanism, while a caller that owns the model outright uses
-    // Apply. Merging the two would force the generator to either duplicate the algorithm or break
-    // undo.
-    //
-    // Localized text makes the set localized too: one language's alphabet is not another's, so
-    // warming the union everywhere would drag a Cyrillic level's glyphs into an English player's
-    // atlas. Text that is NOT localized is visible whatever the language, so its characters land in
-    // every language's set rather than in one of them.
+    // Builds LevelHints.FontCharacters. In the SDK so a third-party tool writes byte-identical sets.
+    // Build/BuildAll are pure (a journaling caller routes them itself); Apply writes. Localized text
+    // makes the set localized, non-localized text lands in every language's set. Docs/ARCHIVE.md.
 
     /// <summary>
     /// The one algorithm for turning a scope's text objects into per-font character sets.
@@ -118,16 +106,8 @@ namespace BH.SDK.Services
             return collected;
         }
 
-        // SortedSet everywhere rather than HashSet: the output is written to a file that the author
-        // diffs and version-controls, so re-saving an unchanged level must produce an unchanged
-        // line. Hash iteration order is not contractually stable across runtimes, so it would not.
-        //
-        // The sets hold CODE POINTS, not chars, and that is about what lands in the FILE rather than
-        // about the atlas: a set accumulated per code unit stores the two halves of an astral
-        // character as two entries, sorts them among the BMP ones, and writes a level.json carrying
-        // surrogates that pair with nothing. A reader then warms U+FFFD - harmless, since an unwarmed
-        // glyph still rasterizes on demand, and invisible, since the hint is advisory. Storing the
-        // whole character costs one branch and cannot produce that file at all.
+        // SortedSet, not HashSet (the output is diffed; hash order is not stable across runtimes). The
+        // sets hold CODE POINTS: per code unit an astral character would write unpaired surrogates.
 
         /// <summary> One font's accumulating character sets - a shared one for text that reads the
         /// same in every language, plus one per language that doesn't. </summary>
@@ -138,11 +118,8 @@ namespace BH.SDK.Services
             private readonly SortedDictionary<string, SortedSet<int>> _perLanguage =
                 new(System.StringComparer.Ordinal);
 
-            // The appearing mask goes into the SHARED set, not a language's: a mask character is
-            // drawn in place of whatever the text says, so it is needed in every language the object
-            // can be read in. Missing it is invisible until the effect actually runs, at which point
-            // the hidden characters render as boxes - the one moment the author is looking straight
-            // at them.
+            // The appearing mask goes into the SHARED set: it is drawn in place of the text in every
+            // language, and a miss shows as boxes exactly when the author is looking.
 
             /// <summary> Folds one text object's characters into the set. </summary>
             public void Add(TextObject textObject)
@@ -217,12 +194,8 @@ namespace BH.SDK.Services
                 }
             }
 
-            // Truncation is silent and deliberate: the set is advisory, so a CJK level that overruns
-            // the cap warms a prefix and renders the rest on demand, which is strictly better than
-            // refusing to build a set at all. Merging happens before the cap so a shared character
-            // can't be dropped in favour of a language-specific one that sorts earlier. The cap
-            // counts code units, since it bounds what lands in the FILE - and a character is taken
-            // whole or not at all, so the prefix can never end on half of one.
+            // Truncation is silent: the set is advisory. Merge BEFORE the cap; the cap counts code units
+            // but a character is taken whole or not at all.
             private static string Join(SortedSet<int> own, SortedSet<int> shared)
             {
                 var merged = shared == null ? own : new SortedSet<int>(own);

@@ -6,10 +6,8 @@ using BH.SDK.Validations.Graph;
 namespace BH.SDK.Validations
 {
     /// <summary>
-    /// Everything one validation pass found, from both halves of the standard: the declarative rules
-    /// and the cross-object graph. Kept as two lists rather than one merged sequence, because they
-    /// address findings differently - a rule issue points at a property and can often repair itself,
-    /// a graph issue points at a relationship and never can.
+    /// Everything one validation pass found, from the declarative rules and the cross-object graph. Two
+    /// lists, not one: a rule issue points at a property and can often repair itself, a graph issue never.
     /// </summary>
     public readonly struct ValidationReport
     {

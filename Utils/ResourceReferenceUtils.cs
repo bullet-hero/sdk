@@ -5,30 +5,8 @@ using BH.SDK.Models.Primitives.Resources;
 
 namespace BH.SDK.Utils
 {
-    // WHAT STILL POINTS AT THIS RESOURCE, and until now nothing in the project could answer it. The
-    // validator answers the OPPOSITE direction - LevelGraphAnalyzer's UnresolvedReference finds a
-    // reference with no resource behind it - which is the state a delete CREATES, discovered on the
-    // next load rather than at the press. So removing a texture eight objects draw with was silent,
-    // and what it cost was found later, in a level that had since been edited.
-    //
-    // A COUNT RATHER THAN A LIST, and that is a decision about what the caller can do with it: the
-    // question is "is this safe to delete, and how much is at stake", not "which object number 4172
-    // is". A list of ids is unreadable in a confirmation and would have to be resolved into names
-    // this layer has no business knowing.
-    //
-    // EVERY SCOPE IS WALKED, not only Level.Game: a template's objects are ordinary authored content
-    // that reference the same resource dictionaries, and a texture used by nothing but a prefab is
-    // very much still used. Prefab.Root is walked with them and is the one object no dictionary
-    // holds - it is a FIELD, which is the same trap PrefabSearchEntries' count and LayerMath's lane
-    // sweep each had to be taught.
-    //
-    // THE WALK ITSELF IS ResourceGraph's, shared with the closure and the remap an import runs, so a
-    // reference one of them learns about is one all three see. Modifications are left out here: in a
-    // live level they are already applied to the materialized copies, which are counted instead.
-    //
-    // A NULL ID IS NEVER COUNTED. Null is how an object says it draws no texture, collides with no
-    // shape and points at no template, so counting it would report every plain object in the level
-    // as a reference to whatever the author was about to delete.
+    // What still POINTS at a resource: a COUNT, over every scope including Prefab.Root (a field no
+    // dictionary holds), null ids never counted, Modifications left out (Docs/RESOURCE_GRAPH.md).
 
     /// <summary> How much of a level still points at one of its resources. </summary>
     public static class ResourceReferenceUtils
@@ -54,10 +32,8 @@ namespace BH.SDK.Utils
         public static int CountShapeReferences(Level level, ShapeId shapeId)
             => shapeId.IsEnabled() ? Count(level, ResourceRef.Of(shapeId)) : 0;
 
-        // A ThemeRef COLOUR IS NOT A REFERENCE TO ONE THEME. It stores a slot INDEX into whichever
-        // theme is active at that frame (see ColorType.ThemeRef), so it survives a theme being
-        // deleted exactly as it survives one being added - what it resolves against is the track
-        // below, and only the track names a ThemeId.
+        // A ThemeRef colour stores a slot INDEX into the active theme, so only the theme track names a
+        // ThemeId.
 
         /// <summary> Keyframes on the level's theme track that switch to this palette. </summary>
         public static int CountThemeReferences(Level level, ThemeId themeId)

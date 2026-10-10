@@ -9,21 +9,9 @@ using Microsoft.CodeAnalysis.Text;
 
 namespace BH.SDK.Roslyn.Modification
 {
-    // WHICH FIELD AN OVERRIDE MEANS, answered at compile time by a flat switch instead of at run
-    // time by reflection. What this replaces walked ~200 types at static init to build a dictionary
-    // keyed on ([JsonProperty] name, declaring type), parsed a dotted path like "pos[0].v" per
-    // apply, and answered an unresolved lookup by returning - silently, with the warning commented
-    // out. Three of the twenty-eight live paths did not resolve at all, and nothing could see it.
-    //
-    // IT KEYS ON THE MEMBER, not on the type, which is what makes inheritance free: the attribute
-    // sits on RectObject.Layer and a ShapeObject, a TextObject and an EffectObject all reach it
-    // through the same number. The generated Apply takes the base type and casts down only where
-    // the declaring type is not the root - so a case is one type test at most, and most are none.
-    //
-    // WHY THE COLLECTED OUTPUT REPORTS EVERY DIAGNOSTIC, including the per-member ones that could
-    // be reported in the transform: a collision is only visible across members, and splitting the
-    // reporting would mean a member with two problems naming one of them in this build and the
-    // other in the next. One pass, every problem named.
+    // Which field an override means, as a compile-time switch keyed on the MEMBER (inheritance is free).
+    // Every diagnostic is reported from the collected output, since a collision spans members
+    // (Docs/ROSLYN_GENERATORS.md).
 
     /// <summary> Writes the field-id-to-member table the modification system applies overrides through. </summary>
     [Generator]
@@ -36,10 +24,7 @@ namespace BH.SDK.Roslyn.Modification
         private const string IgnoreAttribute = "BH.SDK.Models.Attributes.GenerateModelIgnoreAttribute";
         private const string ListType = "System.Collections.Generic.List<T>";
 
-        // The one type the table applies onto, and it is a design limit of the override system
-        // rather than of this generator: Modification's own header states that only RectObject and
-        // Prefab are override targets. A placement holds overrides for objects inside a template,
-        // and every one of those is a RectObject.
+        // The one target type is a limit of the override system (only RectObject and Prefab take overrides).
         private const string RootType = "global::BH.SDK.Models.Objects.RectObject";
 
         /// <summary> Builds the pipeline: find the marked members, turn each into a spec, emit from the specs alone. </summary>
@@ -102,20 +87,9 @@ namespace BH.SDK.Roslyn.Modification
                 null, location);
         }
 
-        // What a member has to have to carry an override, stated as the reason it does not. Note
-        // this is NOT a second encodability check: the model generator already refuses a member it
-        // cannot encode (BHS1003), and every type carrying these attributes is one it owns.
-        //
-        // A [GenerateModelIgnore] MEMBER IS ADDRESSABLE TOO, and the reason the [JsonProperty] test
-        // alone was never the right question: what an override has to be able to save is the
-        // MODIFICATION, not the member. A derived property - one whose getter and setter are a view
-        // onto a member that IS saved - therefore qualifies, and the ignore attribute is exactly the
-        // marker saying it is derived: it keeps the member out of every generated body, so nothing
-        // stores the value twice and neither JSON writer emits it. PrefabObject.PlacementDuration is
-        // the first of them, a view onto Span's duration half.
-        //
-        // The setter check does NOT relax. A member nothing can write is unaddressable whatever it
-        // is derived from.
+        // Not a second encodability check (BHS1003 is the model generator's). A [GenerateModelIgnore] member
+        // IS addressable - a derived view onto a saved member (PrefabObject.PlacementDuration). The setter
+        // check stays.
         private static string Unaddressable(IPropertySymbol property)
         {
             var attributes = property.GetAttributes();

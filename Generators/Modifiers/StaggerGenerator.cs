@@ -25,14 +25,8 @@ namespace BH.SDK.Generators.Modifiers
         Distance = 4,
     }
 
-    // Turns a wall into a wave: identical objects placed at once, delayed one after another. That is
-    // usually the second half of "generate a grid, then make it arrive in sequence", which is why it
-    // pairs with every geometry generator rather than doing any placement itself.
-    //
-    // Both halves of the shift are optional and separately useful: moving an object's BOUNDS delays
-    // when it exists, moving its KEYFRAMES delays what it does. Doing only the first makes a row
-    // appear in sequence; doing only the second makes them all appear at once but animate in
-    // sequence. Doing both is what most authors mean.
+    // Turns a wall into a wave and pairs with every geometry generator. Both halves are optional:
+    // moving the BOUNDS delays when an object exists, moving its KEYFRAMES delays what it does.
 
     /// <summary>
     /// Delays each selected object a little more than the last, in a chosen order.

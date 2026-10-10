@@ -1,26 +1,7 @@
 namespace BH.SDK.Models.Enums.Resources
 {
-    // SHARP OR SOFT IS A LOOK, NOT A BUDGET, and that is why this axis is the author's even though
-    // its neighbour in the player's settings (TextureFilterMode) looks like the same question. Point
-    // and bilinear sampling cost the same on every GPU this ships to, so nothing about the device
-    // decides between them; what they change is whether the picture has visible pixels, which is
-    // exactly the kind of statement the rest of TextureResource's fields make.
-    //
-    // It was DERIVED from TextureKind before it existed - pixel art point-sampled, everything else
-    // smoothed - and that derivation is what this replaces. A kind is a claim about content and it
-    // still SEEDS this one (PixelArt seeds Sharp), but "crisp" and "pixel art" are not the same
-    // claim: a hand-drawn sprite sheet an author wants unblurred is a Graphic, and saying PixelArt to
-    // get the look also refuses compression and mip-maps, which is a memory decision made by
-    // accident.
-    //
-    // WHAT IT DOES NOT TOUCH IS RESAMPLING. Refusing to be AVERAGED while being scaled down is a
-    // property of pixel art alone and stays keyed to the kind (see TextureLoadPlan's own header): a
-    // sharp graphic reduced from 4096 to 1024 must still average, or fifteen pixels in sixteen are
-    // thrown away and the mip chain cannot repair it. Sharp says how the finished texture is DRAWN.
-    //
-    // The player's own Filtering keeps a real say: it decides whether a smoothed image blends
-    // between mip levels (bilinear against trilinear), which IS a device question. So the two halves
-    // compose rather than compete - this one picks sharp or soft, that one picks how soft.
+    // Sharp or soft is a look, not a budget, so it is the author's. A kind SEEDS it; resampling stays keyed
+    // to the kind (PixelArt), not to this. Why: Docs/ENUMS.md
 
     /// <summary>
     /// How an image is sampled when it is drawn - whether its pixels are visible or blurred

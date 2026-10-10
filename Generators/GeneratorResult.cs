@@ -17,10 +17,8 @@ namespace BH.SDK.Generators
         /// <summary> The journal that undoes and redoes this run. </summary>
         public readonly GeneratorChangeLog Log;
 
-        // Validation is not run here. It costs a full reflective walk of the touched roots, most
-        // runs don't need it, and the decision of what to DO about findings is a host policy
-        // (ValidationFacade's own header makes the same point). A host that wants a report runs
-        // ValidationFacade itself and calls WithReport.
+        // Validation is not run here (a full reflective walk, and what to do about findings is host
+        // policy): a host that wants a report runs ValidationFacade and calls WithReport.
 
         /// <summary> Findings for this run, if the host asked for any. Default (empty) otherwise. </summary>
         public readonly ValidationReport Report;

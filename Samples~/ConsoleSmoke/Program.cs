@@ -11,11 +11,8 @@ using Newtonsoft.Json.Linq;
 
 namespace BH.SDK.Samples.ConsoleSmoke
 {
-    // THE SDK AS A THIRD PARTY SEES IT: a DLL, a level folder, nothing else. Reads level + metadata,
-    // prints what a tool would want to know, and round-trips the level through both formats. Any
-    // mismatch - or a file this build refuses as newer - is a non-zero exit, so a script can run it.
-    //
-    // Exit codes: 0 ok, 1 usage, 2 missing file, 3 round-trip mismatch, 4 newer than this SDK.
+    // The SDK as a third party sees it: a DLL and a level folder. Exit codes: 0 ok, 1 usage, 2 missing file,
+    // 3 round-trip mismatch, 4 newer than this SDK.
     internal static class Program
     {
         private static readonly SerializationService Service = new();

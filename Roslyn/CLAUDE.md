@@ -30,3 +30,5 @@ the compile-time half: analyzers and incremental source generators, **running**
   `BH.SDK.Roslyn.Src`, which declares `overrideReferences` with five precompiled references. Its
   harness compiles against a STUBBED model API rather than referencing `BH.SDK`, so a broken
   generator stays visible while the library itself is mid-refactor.
+
+- **Design record**: `Docs/ROSLYN_GENERATORS.md` (the generators, their tests, the Editor tooling).

@@ -8,10 +8,7 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests.Generators
 {
-    // These are the whole-system invariants: every generator the SDK ships is discoverable, named
-    // uniquely, and describes its own form completely. They cost nothing per generator and catch
-    // the two mistakes that would otherwise only surface in a host's UI - a duplicate key silently
-    // shadowing a generator, and a field the form renders in an unpredictable position.
+    // Whole-system invariants: discoverable, uniquely named, complete forms (no shadowed or misplaced field).
 
     /// <summary> The whole-system invariants: every shipped generator is discoverable, uniquely named, and
     /// describes its own form completely - the two mistakes that would otherwise surface only in a host's UI. </summary>
@@ -113,10 +110,7 @@ namespace BH.SDK.Tests.Generators
             }
         }
 
-        // An unbounded number is a level the format rejects one keystroke later: a host clamps
-        // writes against Hints.Ranges and has nothing to clamp against without one. Types that carry
-        // their own bounds (bool, enum, ids) are exempt; everything an author can type a number into
-        // is not.
+        // A host clamps against Hints.Ranges; an unbounded number has nothing to clamp against.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
@@ -139,10 +133,7 @@ namespace BH.SDK.Tests.Generators
                || typeof(IFloat).IsAssignableFrom(type) || typeof(IInt).IsAssignableFrom(type)
                || typeof(IVector2).IsAssignableFrom(type) || typeof(IVector3).IsAssignableFrom(type);
 
-        // A parameters class hiding an inherited field of the same name breaks the whole
-        // name-keyed design: two FieldInfos answer to one name, so a form binds one of them at
-        // random and every hint keyed on that name hits both. ShapeObjectsGenerator did exactly
-        // this with SpawnParameters.Texture before its own image field was renamed to Image.
+        // A shadowed field breaks name-keyed forms (ShapeObjectsGenerator once hid SpawnParameters.Texture).
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]

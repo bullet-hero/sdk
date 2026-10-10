@@ -4,17 +4,9 @@ using System.Text;
 
 namespace BH.SDK.Serialization.Blob
 {
-    // EVERY READ IS BOUNDS-CHECKED AND EVERY FAILURE IS THE SAME FAILURE. A .blob comes off a disk
-    // that can lie - a truncated download, a half-written save, a file from a future build - and the
-    // reader's whole job on a bad one is to stop, not to guess. So it throws BlobFormatException and
-    // exactly one place catches it: the envelope, which turns it into "this file could not be read"
-    // and lets the caller fall back to the .json beside it. That is why the generated bodies below
-    // carry no error handling at all - there is nothing for them to do about it.
-    //
-    // A HOSTILE COUNT IS THE ONE ATTACK THIS FORMAT HAS. `new List<T>(count)` on a length the file
-    // chose is an allocation of the file's choosing, which the level cache could ignore because its
-    // payload was self-produced and a format cannot. Remaining is what every collection checks
-    // against before it allocates.
+    // Every read is bounds-checked and every failure is the one BlobFormatException, caught in the
+    // envelope only, so generated bodies carry no error handling. A file-chosen count is refused
+    // before it is believed: Remaining is what every collection checks before allocating.
 
     /// <summary> A .blob payload could not be read. Always caught at the envelope. </summary>
     public sealed class BlobFormatException : Exception

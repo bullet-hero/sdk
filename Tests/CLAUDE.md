@@ -13,8 +13,8 @@ layer-wide conventions. This file is folder-local.
   `AvatarDashGateTests`/`AvatarDashReachTests`/`AvatarPausedClockTests`, `SharedConstantsTests`,
   `Transform2DTests`/`RectTransform2DTests`, and `Approx.cs` - a fixture helper, not a test, that
   delegates to `BHSDKMath.Approximately` so the tolerance still lives in one place. `MockData.cs` is the shared fixture factory and
-  `Metadata.cs` the author/category constants (neither is a test) - read `MockData.cs`'s header
-  comment before writing new tests that need a `Level`/`Prefab`/etc. Root-level files cover
+  `Metadata.cs` the author/category constants (neither is a test) - read `Docs/TESTING.md` ("Other fixtures")
+  before writing new tests that need a `Level`/`Prefab`/etc. Root-level files cover
   serialization (`SerializationTests`, `SerializationTypeExtensionsTests`), modification
   (`ModificationApplyTests`, `ModificationFieldsTests`, `ModificationValuesTests` - the layer file
   says what they are for), validation (`ValidatorTests`), capacity (`LevelCapacityUtilsTests`),
@@ -36,3 +36,6 @@ record). **`Tests/Rules/` is the bulk** -
   emit), `RuleContainerCoverageTests` (every container declares its marker and has a generated
   walk), `RuleSeverityTests` (a rule states its `Group` or is named as deliberately Error) and
   `ValidationFacadePublishTests`.
+
+Why the fixtures are shaped as they are (async deadlock, parity, hostile archives, avatar history):
+`Docs/TESTING.md`.

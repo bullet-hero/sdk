@@ -11,12 +11,8 @@
         {
             /// <summary> Lower bound of BloomKey.Intensity. </summary>
             public const float IntensityMin = 0f;
-            // Raised from 10, which was not a rendering limit but a caution: the value goes straight
-            // into URP's own unbounded Bloom.intensity, and 39% of one real community level's bloom
-            // keyframes sat above 10 - up to 50 - and were silently clamped to a fifth of what was
-            // authored. Nothing in this project divides by this bound to normalize, so raising it
-            // only widens what may be dialled in. The caution above still stands: this effect is
-            // what a weak phone feels first, and 50 is a level asking a lot of one.
+            // Feeds URP's unbounded Bloom.intensity and nothing divides by it, so the bound only widens
+            // what may be dialled in. This effect is what a weak phone feels first.
 
             /// <summary> Upper bound of BloomKey.Intensity. </summary>
             public const float IntensityMax = 50f;
@@ -138,12 +134,8 @@
             /// <summary> Upper bound of MotionBlurKey.Intensity. </summary>
             public const float IntensityMax = 1f;
         }
-        // One range for all eight curves rather than one per curve, because URP gives them one:
-        // every ColorCurves curve is sampled out of a 128x1 texture whose axes are both 0..1, so a
-        // key outside it is not a stronger effect, it is a value the texture clamps away. The two
-        // neutrals differ though, and that is a real distinction rather than a naming one - the
-        // YRGB curves are an absolute mapping and are neutral at IDENTITY, the hue/saturation ones
-        // are an offset/multiplier and are neutral at a flat CurveNeutral.
+        // One range for all eight curves: URP samples each from a 128x1 texture over 0..1. Neutrals differ:
+        // the YRGB curves are neutral at IDENTITY, the hue/saturation ones at a flat CurveNeutral.
 
         /// <summary> Bounds of the colour curves. </summary>
         public static class ColorCurves

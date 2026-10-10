@@ -104,13 +104,8 @@ namespace BH.SDK.Services.Profile
         }
     }
 
-    // EVERY REFUSAL IS A VALUE, LevelArchiveReader's contract: the host turns each into a sentence for
-    // the player, and a future server turns each into a status code - neither wants to catch.
-    //
-    // THE UNPACK LIMITS ARE WHAT THE DIRECTORY DECLARED. Before anything is written the player has been
-    // shown the size and the disk has been checked against it, so a file that inflates past its own
-    // claim is lying, and that is exactly what the copy's hard counter stops. A bomb can make the
-    // directory claim a lot - which the player sees - but cannot make the disk receive more than that.
+    // Every refusal is a value (LevelArchiveReader's contract). The unpack limits are what the directory
+    // DECLARED: a file inflating past its claim is lying, and the copy's hard counter stops it.
 
     /// <summary> Reads a profile archive: its manifest and directory first, then the chosen categories. </summary>
     public static class ProfileArchiveReader

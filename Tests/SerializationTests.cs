@@ -74,10 +74,7 @@ namespace BH.SDK.Tests
             Assert.IsTrue(level.Equals(level2));
         }
 
-        // Seed is the one LevelSettings field whose DEFAULT is the interesting case: a level that
-        // never pinned a seed writes LevelRules.NullSeed, and a level written before the field
-        // existed deserializes to the same thing. Both have to survive a round trip as zero, or an
-        // unpinned level would silently become pinned to whatever the reader invented.
+        // A level that never pinned a seed writes NullSeed and an older one reads the same; both stay zero.
         [TestCase(0)]
         [TestCase(12345)]
         [Author(Metadata.Author.Vertoker)]
@@ -98,13 +95,8 @@ namespace BH.SDK.Tests
             Assert.IsTrue(level.Equals(level2));
         }
 
-        // IDataSerializer (Docs/VERSIONING.md, "Format-agnosticism") is generic per [ModelGeneration]
-        // domain, not per concrete type - exercised here against two unrelated domains (Level and
-        // Theme) to prove it isn't hardcoded to either one. Parametrized over SerializationType so
-        // both implementations run through the same assertions - and unlike the JSON/BSON pair this
-        // replaced, these two share NOTHING below the interface: one binds members by reflection
-        // through Newtonsoft, the other is generated code on the models themselves. That is what
-        // makes running the same assertions twice worth the seconds it costs.
+        // IDataSerializer is generic per [ModelGeneration] domain; run on two domains and both
+        // implementations (they share nothing below the interface).
         [TestCase(SerializationType.Json)]
         [TestCase(SerializationType.Blob)]
         [Author(Metadata.Author.Vertoker)]
@@ -141,13 +133,8 @@ namespace BH.SDK.Tests
             Assert.IsTrue(shape.Equals(shapeEnvelope.GetPayload<CompositeShape>()));
         }
 
-        // Exercises the full recursive migration chain against a generation 0 fixture (Versions/V0) -
-        // Level -> LevelSettings/GameLevel/LevelResources (each independently
-        // versioned, auto-upgraded by VersionedEnvelopeConverter) -> GameEvents (nested one level
-        // deeper inside GameLevel) -> Audio (intentionally NOT independently versioned at generation 0,
-        // migrated by hand inside LevelV0ToV1 instead). See Docs/VERSIONING.md. The fixture JSON
-        // itself comes from MockDataSource.CreateTestLevelV0Json, built from the real VX snapshot
-        // classes rather than a hand-typed literal - see that method's own comment for why.
+        // The full recursive migration chain against a generation 0 fixture (Versions/V0); Audio is
+        // migrated by hand inside LevelV0ToV1. See Docs/VERSIONING.md.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
@@ -216,10 +203,7 @@ namespace BH.SDK.Tests
             Assert.IsTrue(prefab.Equals(prefab2));
         }
 
-        // ColorNames is the first member of the format that is a collection AND legally null, so
-        // both of its states have to survive both codecs. The null case is the one with a byte cost
-        // attached: an unnamed palette must write no key at all, which is what keeps naming free for
-        // every level that never uses it.
+        // ColorNames is a collection AND legally null; an unnamed palette must write no key at all.
 
         /// <summary> A palette nobody named round-trips as absent, and writes nothing. </summary>
         [TestCase(SerializationType.Json)]

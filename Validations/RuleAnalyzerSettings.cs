@@ -20,15 +20,8 @@ namespace BH.SDK.Validations
         /// RuleGroup itself, so this is an upper bound on the enum value, not a lower one. </summary>
         public RuleGroup weakestGroup = RuleGroup.Advice;
 
-        // THE WITHDRAWN-READER SWITCH, and it exists for exactly one caller: the parity test that
-        // runs the same level through both walks and compares the two reports element by element.
-        // It is the same shape, and the same reason, as SerializationSettings.useGeneratedCodecs -
-        // anything that changes how data is READ is locked by a test comparing both paths, which is
-        // the rule this project bought after shipping a reader that passed 4 494 tests and could not
-        // open a level.
-        //
-        // It is also why the reflective walk is not deleted once every model has a generated one:
-        // deleting it would take the proof with it.
+        // Exists for one caller: the parity test comparing both walks element by element (same shape as
+        // SerializationSettings.useGeneratedCodecs). Also why the reflective walk is not deleted.
 
         /// <summary> Whether a model's own generated walk is used. Off falls back to reflection for
         /// everything, which must produce an identical report. </summary>

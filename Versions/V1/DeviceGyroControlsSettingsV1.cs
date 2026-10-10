@@ -7,11 +7,9 @@ namespace BH.SDK.Versions.V1
 {
     // ReSharper disable once InconsistentNaming
 
-    // Intentionally doesn't have ModelGeneration: a nested leaf of ControlsSettingsV1, frozen because
-    // generation 2 took every form of locality out of the motion sensor - the calibration, the stored
-    // neutral point, the axis mapping and the angular-velocity mode - and folded the tilt angle into
-    // the shared Sensitivity. Flat rather than derived from BaseDeviceControlsSettings, so nothing the
-    // live base does later can reach it.
+    // No ModelGeneration: a nested leaf of ControlsSettingsV1, frozen because generation 2 removed all
+    // locality from the motion sensor (calibration, neutral point, axis mapping, angular velocity).
+    // Flat, not derived from BaseDeviceControlsSettings, so nothing the live base does reaches it.
 
     /// <summary> The motion-sensor group as generation 1 (Release) of the user-settings domain wrote
     /// it. A frozen snapshot - never edit it to match today's shape. </summary>

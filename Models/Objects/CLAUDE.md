@@ -90,3 +90,54 @@ outside it, falling back to the plain range check when no scope is resolved;
 `RuleObjectIdValid` accepts `PrefabRoot` as an identity on the same terms and nothing else negative
 at all. What stops an inner object claiming that identity is `Prefab.Objects`' own
 `RuleDictionaryKeyMatches` - an id has to be the key it is filed under.
+
+**`Modification` is one of three models the generator does not cover** (`FrameSpan` and `ModificationKey` are
+structs with no constructor body to read defaults from). Its `Value` is an untyped `object`: copying it is not
+an assignment (a whole-track override stores a `List<TKeyframe>`, which would alias, so `Copy` rebuilds a
+same-type list and clones each element) and comparing it is not `object.Equals` (a `List` has no value
+equality). It is `partial` anyway for `ValidationGenerator`, which writes a walk for every `[RuleContainer]`
+(`BHS1101` is an error otherwise). The setter widens integrals to `long` and floats to `double`, the CLR types
+Newtonsoft produces for a raw JSON number, so a `Modification` built with a plain `int` still equals itself
+after a round trip. A non-scalar value comes back as a `JToken` and `JContainer` compares by REFERENCE, so
+`Equals` uses `JToken.DeepEquals` (found by `CorpusLoadCostTests` once the corpus carried whole-track
+overrides); it does NOT make an in-memory `List<TKeyframe>` equal to the `JArray` a reading of it produces -
+the round-trip promise is about the scalars. The blob and the JSON half are hand-written: `Value` is written as
+JSON TEXT, not a tagged union, because the elements of a track override are polymorphic values only this
+project's converters can write, and text from the same serializer lands on exactly what a `.json` round trip
+lands on. It costs a few bytes on a member a level carries a handful of; anything cleverer is a second
+definition of what `Value` means.
+
+**`PrefabObject.PlacementOffset` is the in-point and moves everything the template contributes**: every
+materialized copy's span (`PrefabMaterializer`/`PrefabVirtualizationUtils` subtract it) and the placement's own
+instance origin (`LevelStateBuilder`), which must move together or the placement's animation slides against
+the content it places. It exists so a placement can be trimmed and cut without the template restarting: the two
+halves of a cut are one template played from two in-points, with no per-child override. `S - PlacementOffset`
+is what both gestures preserve. The bound `PlacementOffset <= Span.StartFrame - MinFrame` is not an attribute
+(`FrameRules.MinPlacementOffset`): a property rule sees one number and never the span. A placement's own length
+is an OVERRIDE, not a field: `PrefabRootUtils.ApplyRoot` rewrites the duration from the template root on every
+materialize, resync and load, `ApplyModifications` runs after it, so a Modification against that member wins
+while a written duration would not. The property is serialized by neither codec (`[GenerateModelIgnore]` +
+`[JsonIgnore]`: the duration is already in `Span`, and the two JSON writers must agree byte for byte).
+
+**`RectObject.Layer` is static, deliberately.** A `Random*` value is addressed by Hash(seed, frame, EFFECTIVE
+layer, span start, track, channel), so a layer track would reroll every random value under the object on every
+frame it moved (`Docs/Issues/LEVEL_MODEL_ANALYSIS.md`, C5). `TextObject.FontSizes` is the only track whose key
+class is polymorphic: a `FontSizeKey` draws at its size, an `AutoFontSizeKey` is fitted into its band, a track
+mixes them freely, the LATER key of a pair decides the frame, and across the boundary a plain key blends as the
+degenerate band min = max = Value. Fillment/Appearing are per-character effects resolved over the string by the
+text job, and their direction/mode lives on each key (like `Ease`), so one track can change mode without a split.
+
+**What a prefab override may address** (`ModificationFields`): the number belongs to the DECLARATION, so
+`RectObject.Layer` is one number for every subclass, and two members sharing a wire key stay two numbers
+(`ShapeObject.Colors` 0x0205, `TextObject.Colors` 0x0303). Bands: 0x01 `RectObject`, 0x02 `ShapeObject`, 0x03
+`TextObject`, 0x04 `EffectObject`, 0x05 `PrefabObject`; a new declaring type takes the next FREE band.
+`PrefabId`, `ObjectIds` and `Modifications` are what an override is expressed IN, so none is addressable, and
+`ObjectId` is the identity the address is built from. `PlacementOffset` is addressable, because a NESTED placement
+must diverge in it like any inner object's field. `PlacementDuration` is a view onto `Span`'s duration half (not
+a stored member): overriding `Span` whole would restate the start and beat every ordinary move. A Modification
+keyed to `ObjectId.PrefabRoot` lands on the placement itself (`PrefabRootUtils`), so it may address only what the
+template owns: `Name`, the seven positional tracks and `PlacementDuration`. `Span`, `Active`, `Layer`,
+`ParentObjectId` and `PlacementOffset` are the placement's OWN authored fields, and an override would be a
+second way to say the same thing that overwrote the first, since `ApplyModifications` runs last; an outer
+placement overriding an inner one's `Span` uses the inner object's own id (case 1 in `ModificationRecorder`).
+`Docs/Issues/MODIFICATION_FIELD_IDS_HISTORY.md` is the record of the numbering.

@@ -15,21 +15,16 @@ using Newtonsoft.Json;
 namespace BH.SDK.Models.Resources
 {
     /// <summary>
-    /// Everything a level owns beyond its objects: seven dictionaries of user-defined resources.
-    /// Only user-defined entries ever appear here - negative ids for textures, fonts and audio, and
-    /// any guid for shapes, themes, effects and prefabs - while anything shipped with the game lives
-    /// in the game's own registries and is referenced by id without being copied in.
+    /// Everything a level owns beyond its objects: seven dictionaries of user-defined resources only
+    /// (negative ids for textures, fonts, audio; any guid for the rest). Shipped ones are referenced by id.
     /// </summary>
     [RuleContainer]
     [ModelGeneration(ModelDomains.LevelResources, ModelGenerations.V1_AlphaRelease)]
     [GenerateModel]
     public sealed partial class LevelResources : IModel<LevelResources>
     {
-        // Every dictionary here is capped and key-checked. The caps bound LOAD time rather than frame
-        // time: each entry is a user-defined resource the loader resolves before playback starts.
-        // The key checks close a gap serialization hides - DictionaryAsListConverter rebuilds keys
-        // from values on read, so only in-memory code can make the two disagree, and when it does,
-        // lookup by id finds nothing while iteration finds the resource.
+        // Every dictionary is capped (bounding LOAD time) and key-checked: DictionaryAsListConverter
+        // rebuilds keys from values on read, so only in-memory code can make the two disagree.
 
         /// <summary> Images the level ships with. </summary>
         [GenerateModelKeyed(nameof(TextureResource.TextureResourceId))]

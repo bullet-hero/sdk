@@ -6,19 +6,8 @@ using System.Threading.Tasks;
 
 namespace BH.SDK.Services.Content
 {
-    // The half of the store contract that touches a disk, and the first file IO the SDK has ever
-    // done. Everything about it is deliberately dull: ContentPath decides what a name may be, the
-    // root decides where it lands, and nothing here interprets content.
-    //
-    // A WRITE CREATES THE DIRECTORIES IT NEEDS, INCLUDING THE ROOT. Export picks a folder that may
-    // not exist yet and unpack writes a tree several levels deep; making the caller pre-create each
-    // one means the same loop in every caller. A READ never creates anything - a missing blob is a
-    // missing blob.
-    //
-    // Every method completes synchronously except the two that hand back a stream, and even those
-    // only open a handle. That is not a defect of the async contract: the interface is async for
-    // the implementation that genuinely needs it (the server's own store over a database), and
-    // ValueTask is what makes saying so cost nothing here.
+    // The half of the store contract that touches a disk. A write creates the directories it needs, root
+    // included; a read never creates anything. Nothing here interprets content.
 
     /// <summary> An <see cref="IContentStore"/> over a directory on disk. </summary>
     public sealed class DirectoryContentStore : IContentStore
@@ -140,12 +129,8 @@ namespace BH.SDK.Services.Content
             return new ValueTask<long>(info.Length);
         }
 
-        // ContentPath already refuses "..", rooted paths and drive letters, so this cannot fail on
-        // any name it accepted. It runs anyway, and that is the point of "rooted by construction":
-        // the guarantee is a property of the type, held by the type, rather than an argument that
-        // the validator upstream is exhaustive. A symlink INSIDE the root pointing out is the one
-        // case no path check can see - refusing to unpack a link entry at all is what covers it,
-        // and that lives in the archive layer.
+        // ContentPath already refuses "..", rooted paths and drive letters; this runs anyway because
+        // "rooted by construction" is held by the type. A symlink INSIDE the root is the archive layer's.
         private string Resolve(string path, string parameterName)
         {
             ContentPath.Require(path, parameterName);

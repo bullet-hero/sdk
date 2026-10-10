@@ -13,15 +13,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests
 {
-    // THE SHAPES THESE TAKE ARE THE LEVEL CACHE'S, deliberately: its own header called them "the
-    // shape the .blob format's own tests should take", and they were the right ones - a round trip,
-    // a truncation sweep, a wrong generation, garbage. What is added is what a FORMAT has to answer
-    // for and a cache did not: a payload damaged in the middle while its header still looks right,
-    // and a length the file chose that the reader must refuse before allocating anything.
-    //
-    // THE ROUND TRIP IS THE ONLY ONE THAT PROVES CORRECTNESS, and it proves it through Level.Equals
-    // rather than through byte comparison: a codec that writes and reads its own mistakes
-    // consistently passes every byte comparison ever written.
+    // Shapes are the level cache's plus what a FORMAT answers for (mid-payload damage, a hostile length).
+    // The round trip proves correctness through Level.Equals, not bytes. BH.SDK/Docs/TESTING.md.
 
 
     /// <summary> The binary format: a round trip proven through Level.Equals, plus every way a file can be
@@ -192,11 +185,8 @@ namespace BH.SDK.Tests
         [Category(Metadata.Category.Easy)]
         public void AHostileCount_DoesNotAllocate()
         {
-            // The one attack a format has that a cache did not: `new List<T>(count)` on a length
-            // the FILE chose. The reader compares a count against the bytes actually left before it
-            // believes it, so this costs an exception rather than a gigabyte.
-            // A ref struct cannot be captured by a lambda, so the call is wrapped rather than the
-            // reader - which is also closer to how a generated body reaches it.
+            // A count the FILE chose: the reader checks it against the bytes left before believing it.
+            // A ref struct cannot be captured by a lambda, so the call is wrapped.
             static void ReadHostileCount()
             {
                 var reader = new BlobReader(BitConverter.GetBytes(int.MaxValue));
@@ -223,11 +213,7 @@ namespace BH.SDK.Tests
 
         #region Forward and backward
 
-        // THE FUTURE IS FABRICATED FROM FILES, NEVER FROM TYPES. A future type the SDK knows about is
-        // not a future type, so every fixture here takes a file this build wrote and makes it claim
-        // something this build cannot answer. The offset of a root's generation is FOUND by reading
-        // the header back rather than counted by hand - `string domain, int generation, int length`
-        // is the only thing that has to stay true, and it is the thing the format promises.
+        // The future is fabricated from FILES, never from types; the offset is found, not counted.
 
         [Test]
         [Author(Metadata.Author.Vertoker)]
@@ -272,13 +258,7 @@ namespace BH.SDK.Tests
         [Category(Metadata.Category.Normal)]
         public void ContentLongerThanDeclaredInsideARoot_DegradesTheRootAroundIt()
         {
-            // THE SAME DAMAGE ONE LEVEL DOWN OPENS INSTEAD OF THROWING, and the recovery happens at
-            // the ENCLOSING root rather than at the broken one: a reader that ran past its declared
-            // end lost its place, so nothing inside that subtree can be trusted - but the root above
-            // still knows where its own content ends, and skipping to there is a real recovery.
-            //
-            // Here that root is Level itself, so the level comes back holding almost nothing. That is
-            // the guarantee working rather than failing: the file opens, and the loss is reported.
+            // The same damage one level down opens instead of throwing: recovery is at the ENCLOSING root.
             var payload = Payload(Write(MockData.CreateTestLevel()));
 
             var lengthOffset = GenerationOffset(payload, ModelDomains.LevelSettings) + sizeof(int);
@@ -301,13 +281,8 @@ namespace BH.SDK.Tests
         [Category(Metadata.Category.Normal)]
         public void AnUnreadableRoot_DegradesAloneAndIsReported()
         {
-            // A POSITIONAL FORMAT CANNOT SKIP ONE VALUE IT DOES NOT UNDERSTAND - what it skips is the
-            // root that carried it. That is why an unknown polymorphic tag needs no framing of its
-            // own, and why rule two (a new variant bumps its domain's generation) is what makes this
-            // sufficient: such a tag only ever arrives inside a root whose generation already moved.
-            //
-            // The desync is made at the one place a shape can be broken without knowing where any
-            // tag sits: GameEvents' own domain string, which GameLevel's content reads first.
+            // A positional format skips the ROOT that carried an unknown tag, never one value. The desync
+            // is made in GameEvents' own domain string.
             var level = MockData.CreateTestLevel();
             var payload = Payload(Write(level));
             var events = GenerationOffset(payload, ModelDomains.GameEvents);
@@ -358,10 +333,7 @@ namespace BH.SDK.Tests
         [Category(Metadata.Category.Hard)]
         public void AV0NestedDomainInsideATodaysLevel_MigratesThroughTheBlob()
         {
-            // The NESTED half, which LevelV0 cannot reach: it types its nested domains as today's
-            // classes, so a V0 level still writes its settings at today's generation. Here a level of
-            // today carries a settings envelope written from the real LevelSettingsV0 type, spliced in
-            // where its own settings envelope was.
+            // The NESTED half LevelV0 cannot reach: a settings envelope written from the real V0 type.
             var payload = Payload(Write(MockData.CreateTestLevel()));
 
             var name = System.Text.Encoding.UTF8.GetBytes(ModelDomains.LevelSettings);
@@ -452,10 +424,7 @@ namespace BH.SDK.Tests
         [Category(Metadata.Category.VeryEasy)]
         public void XxHash64_MatchesTheReferenceVectors()
         {
-            // The published vectors for the empty input and for "abc" at seed 0. Written out
-            // because "our hash agrees with itself" is worth nothing: the point of choosing a
-            // NAMED algorithm is that a second implementation, one day, in another language, reads
-            // the same file.
+            // Published vectors: a second implementation in another language must read the same file.
             Assert.AreEqual(0xEF46DB3751D8E999UL, XxHash64.Compute(Array.Empty<byte>()));
             Assert.AreEqual(0x44BC2CF5AD770999UL, XxHash64.Compute(new byte[] { 0x61, 0x62, 0x63 }));
         }

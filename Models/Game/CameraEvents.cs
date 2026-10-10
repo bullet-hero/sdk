@@ -12,25 +12,15 @@ using Newtonsoft.Json;
 namespace BH.SDK.Models.Game
 {
     /// <summary>
-    /// The camera's animation tracks - a trimmed-down RectObject, kept as its own aggregate because
-    /// the camera has no parent, no layer and no independent axes. The comment below lists exactly
-    /// which object tracks were dropped or replaced and why.
+    /// The camera's animation tracks - a trimmed-down RectObject, kept as its own aggregate because the
+    /// camera has no parent, no layer and no independent axes.
     /// </summary>
     [RuleContainer]
     [ModelGeneration(ModelDomains.CameraEvents, ModelGenerations.V1_AlphaRelease)]
     [GenerateModel]
     public sealed partial class CameraEvents : IModel<CameraEvents>
     {
-        // Camera - is a unique form of default RectObject. It cut some data, here's all
-        // Positions - unchanged
-        // Layers - camera is not an ShapeObject, you can't see it, it's otherwise, remove
-        // Rotations - unchanged
-        // Scales - always (1f, 1f) because of aspect, remove
-        // Size - camera aspect is locked by user screen, also Level.Settings provide tool for
-        // manual setup aspect (IScreenLimit). Because of that
-        // changed to Zooms - Size with 1 value applied to xy simultaneously
-        // AnchorsMin/AnchorsMax - camera doesn't have any parents, remove
-        // Pivot - unchanged
+        // Which RectObject tracks the camera drops or replaces: Models/Game/CLAUDE.md
         
         /// <summary> Where the camera looks, in level space - it has no parent to be relative to. </summary>
         [RuleNotNull, RuleCollectionMaxCount(LevelRules.MaxCameraKeys)]

@@ -9,14 +9,8 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models.Keyframes
 {
-    // A plain float rather than the polymorphic IFloat every other scalar track uses: this is a
-    // fraction of a string, bounded to 0..1, and a RandomMinMax draw on it would mean the text
-    // writing itself to a different length every keyframe rather than animating.
-    //
-    // Direction travels WITH the key, exactly like Ease, and is read the same way - see
-    // Keyframe.Ease's own note. Between two keys the LATER one's direction wins, because a
-    // direction describes the segment arriving at its key, so one track can start forward and
-    // finish from the centre without being split in two.
+    // A plain float, not IFloat: a random draw would make the text write itself to a different length every
+    // key. Direction travels WITH the key like Ease (Keyframe.Ease): the LATER of two keys wins.
 
     /// <summary>
     /// How much of a text object is written at one frame, and from which end.

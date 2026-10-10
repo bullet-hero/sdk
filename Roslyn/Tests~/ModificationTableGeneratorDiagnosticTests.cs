@@ -5,11 +5,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Roslyn.Tests
 {
-    // EVERY REFUSAL IS LOUD, for the same reason ModelGeneratorDiagnosticTests says it: the number
-    // in a [ModificationField] is written by hand, and every way of writing it wrongly produces
-    // code that compiles and behaves almost right. A duplicated id gives one override two fields
-    // and reaches whichever the switch answers first; an unserialized member gives an override that
-    // is recorded and never saved. Both are the silent failure this whole item exists to end.
+    // Every refusal is loud: the id is written by hand, and each wrong way of writing it compiles and
+    // misbehaves.
 
     [TestFixture]
     public class ModificationTableGeneratorDiagnosticTests

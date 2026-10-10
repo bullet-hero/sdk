@@ -5,13 +5,8 @@ using Unity.Mathematics;
 
 namespace BH.SDK.UnityExtensions.Tests
 {
-    // THE ARITHMETIC A BAKED ROUTE IS CERTIFIED AGAINST. AvatarController calls this for the avatar a
-    // player drives and the warm bot's verifier calls it to replay a route it is about to promise is
-    // damage-free - so a defect here is not a movement bug, it is a bot confidently walking into a
-    // hazard it told itself it would clear.
-    //
-    // Every case below is a property the extraction had to preserve, not a property invented for it:
-    // each one is a line of AvatarController that carries its own comment explaining a bug it fixed.
+    // The arithmetic a baked route is certified against: a defect here is a bot walking into a hazard it
+    // promised to clear.
 
     /// <summary> <see cref="AvatarMovement"/> - one frame of avatar movement. </summary>
     [TestFixture]
@@ -184,15 +179,8 @@ namespace BH.SDK.UnityExtensions.Tests
 
         #region Micro movement
 
-        // WHAT THIS PINS IS THE DIFFERENCE BETWEEN "MOVING" AND "TRAVELLING", and it was a real
-        // defect rather than a nicety: a followed route hands the avatar a target a few hundredths of
-        // a unit away every frame, and TargetSpeed answered with the full walking speed because it
-        // was read off the setting rather than off the travel. The avatar's own move trail is emitted
-        // at that velocity, so during those small steps the particles were launched as if it were
-        // sprinting while it crawled - and they sat under it instead of trailing behind it.
-        //
-        // The POSITION must not move by any of this. The snap onto the target was already exact; what
-        // changed is only what the step reports about itself.
+        // "Moving" is not "travelling": TargetSpeed follows the travel, not the setting, or a followed
+        // route's move trail sits under the avatar. The position must not change.
 
         [Test]
         [Author(Metadata.Author.Vertoker)]
@@ -249,14 +237,7 @@ namespace BH.SDK.UnityExtensions.Tests
             Assert.AreEqual(target.y, result.Position.y);
         }
 
-        // THE KNOCKBACK IS THE ONLY UNTHROTTLED BRANCH LEFT. It covers a distance of its own rather
-        // than closing on a point, so what is left in front of it means nothing to it. The dash used
-        // to be the second such branch and is not any more: it is sized to its target before it
-        // starts, so being clamped to the distance left is what it is FOR - see the dash region.
-        //
-        // A TARGET INSIDE THE ARRIVAL RADIUS IS A TARGET THE AVATAR IS STANDING ON, dash or no dash,
-        // and standing on it means no direction and therefore no speed. That is the same answer the
-        // walk gives, which is the point: the dash stopped being a special case.
+        // The knockback is the only unthrottled branch; a target inside the arrival radius means no speed.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
@@ -286,13 +267,8 @@ namespace BH.SDK.UnityExtensions.Tests
 
         #region Dash
 
-        // A DASH STOPS ON ITS TARGET, AND THIS ASSERTION IS THE REVERSE OF THE ONE IT REPLACES. It
-        // used to overshoot on purpose: a dash covered DashSpeed * DashTime whatever was in front of
-        // it, because clamping a FULL dash to a near target would have made it cover nothing. What
-        // changed is that a dash aimed at a near point is no longer a full dash - the caller sizes
-        // the window to the distance first (AvatarMovement.ResolveDashFraction), so the clamp and the
-        // window agree instead of fighting. The clamp is what makes an overshoot impossible even when
-        // they cannot agree, which is a level moving its Speed track mid-dash.
+        // A dash stops on its target: its window is sized to the distance first, and the clamp guarantees
+        // it.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
@@ -306,11 +282,7 @@ namespace BH.SDK.UnityExtensions.Tests
             Assert.AreEqual(target.x, result.Position.x, Tolerance);
         }
 
-        // A DASH FOLLOWS THE TARGET, and this assertion reversed with the one above for the same
-        // reason. The launch direction used to be kept for the length of the dash because a re-aimed
-        // dash oscillated around a point it had overshot - and a dash that cannot overshoot cannot
-        // oscillate. Steering during a dash is what a direction player always had; this is the line
-        // that gives it to a cursor player.
+        // A dash follows the target: a dash that cannot overshoot has nothing to lock its direction against.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]

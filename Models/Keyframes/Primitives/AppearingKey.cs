@@ -9,10 +9,7 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models.Keyframes
 {
-    // Same shape and same reasoning as FillmentKey: a bounded fraction rather than a polymorphic
-    // IFloat, and a mode that travels with the key the way Ease does - between two keys the LATER
-    // one's mode wins, so a track can dissolve at random and then resolve left-to-right without
-    // being split into two objects.
+    // Same shape as FillmentKey: a bounded fraction, and a mode that travels with the key (the LATER wins).
 
     /// <summary>
     /// How much of a text object hides behind its appearing mask at one frame, and in what order.

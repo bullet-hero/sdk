@@ -10,33 +10,21 @@ using BH.SDK.Models.Hints;
 namespace BH.SDK.Utils
 {
     /// <summary>
-    /// Measures how many objects a level needs alive at the same time, at its heaviest frame. A
-    /// player/editor uses this to size its per-frame buffers before playback starts, and the editor
-    /// stores the result into the level itself as an advisory hint (see LevelHints.Limits).
-    /// <br/><br/>
-    /// Every family is measured independently: an object occupies an instance slot always, and a
-    /// texture/effect/text slot only if it is of that type. That is deliberate - one level can hold
-    /// thousands of plain transform anchors next to a handful of effects, and sizing the (far more
-    /// expensive) effect buffers off the object count would be wasteful.
+    /// How many objects a level needs alive at once, at its heaviest frame; sizes per-frame buffers and fills
+    /// the advisory LevelHints.Limits. Every family is measured independently (Docs/UTILS_DESIGN.md).
     /// </summary>
     public static class LevelCapacityUtils
     {
-        // isOpaque exists because ShaderType.Auto is not decidable here. Resolving it needs the
-        // alpha of the object's TEXTURE, and this library has no idea what a texture is - only the
-        // consumer that loaded the atlas does. So a consumer that cares passes its own resolver;
-        // everyone else gets Auto counted as transparent, which is the same fallback the consumer
-        // applies and the harmless direction to be wrong in (an object sized into the wrong pool
-        // still draws, it just misses out on depth rejection).
+        // isOpaque exists because ShaderType.Auto needs a texture's alpha, which this library cannot see;
+        // null counts Auto as transparent, the harmless direction to be wrong in.
 
         /// <summary>
-        /// Peak simultaneous usage across the whole level. O(n log n) - a sweep over each family's
-        /// half-open FrameSpan, so two objects meeting end to start are never counted as
-        /// simultaneous. Placed prefabs need no special handling: their contents are materialized
-        /// into the same Objects dictionary as everything else.
+        /// Peak simultaneous usage, O(n log n): a sweep over each family's half-open FrameSpan, so objects
+        /// meeting end to start never overlap. Placed prefabs are already materialized into Objects.
         /// </summary>
         /// <param name="level"> Level to measure. </param>
-        /// <param name="isOpaque"> Resolves <see cref="ShaderType.Auto"/> for one shape. Null means
-        /// every Auto object counts as transparent. </param>
+        /// <param name="isOpaque"> Resolves <see cref="ShaderType.Auto"/> per shape; null counts Auto as
+        /// transparent. </param>
         public static LimitHints GetPeakUsage(Level level, Func<ShapeObject, bool> isOpaque = null)
         {
             if (level?.Game?.Objects == null) return new LimitHints();
@@ -104,9 +92,7 @@ namespace BH.SDK.Utils
         }
 
         /// <summary>
-        /// Classic sweep line. A FrameSpan's end is already the first frame the object is gone, so
-        /// the ordering between an end and a start landing on the same frame needs no correction:
-        /// an object ending there and one starting there are never alive at the same time.
+        /// Classic sweep line; a span's end is the first frame the object is gone, so no tie-break is needed.
         /// </summary>
         private struct IntervalSweep
         {

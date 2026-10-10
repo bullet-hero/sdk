@@ -5,19 +5,9 @@ using System.Threading.Tasks;
 
 namespace BH.SDK.Services.Archive
 {
-    // A STREAM THAT LIES ABOUT ONE THING, AND THE LIE IS THE POINT. SharpZipLib's ZipOutputStream
-    // writes a DIFFERENT FILE depending on whether it can seek: given a seekable destination it
-    // writes a local header, streams the entry and then goes back to patch the sizes into it;
-    // given a pipe it writes a data descriptor after the entry instead. Both are valid zip. They
-    // are not the same bytes.
-    //
-    // That would make the container depend on WHERE it was written rather than on what it holds -
-    // a desktop export is a FileStream, an Android SAF export is not - and ArchivePolicy's whole
-    // claim is that the same input packed twice is the same output. So every zip written here goes
-    // through this wrapper and takes the data-descriptor form, everywhere. Nothing is lost:
-    // patching only ever saved a few bytes per entry, and no reader here needs it.
-    //
-    // Write-only by construction. A reader wrapped in this would be a bug rather than a shape.
+    // Lies about seeking on purpose: ZipOutputStream writes a different file (patched header versus data
+    // descriptor) when it can seek, and the container must not depend on WHERE it was written.
+    // Every zip goes through this wrapper. Write-only by construction.
 
     /// <summary> Hides a destination's seekability, so a writer always takes its streaming path. </summary>
     public sealed class NonSeekableWrite : Stream

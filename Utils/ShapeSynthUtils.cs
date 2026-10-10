@@ -7,15 +7,8 @@ using BH.SDK.Rules;
 
 namespace BH.SDK.Utils
 {
-    // These build the shapes the game does NOT ship as presets. The built-in library is exactly the
-    // 78 ids ShapeId names, and anything outside it - a half ring, an outline slice - arrives as
-    // level-authored data instead of growing that library. A level carrying its own geometry already works everywhere; a 79th preset would
-    // have to exist in every build that ever opens the file.
-    //
-    // Everything here ends with ShapeGeometryUtils.Sanitize, which is the same call RuleShapeGeometry
-    // .Fix makes. That is what lets a generator be written as plain trigonometry: winding, welding,
-    // the point box and both caps are somebody else's problem by construction, and a shape this file
-    // returns is by definition one the format accepts.
+    // Shapes the game does NOT ship as presets arrive as level-authored data, not a bigger library. Every
+    // one ends with Sanitize, so a result is by definition accepted by the format (Docs/SHAPES.md).
 
     /// <summary>
     /// Procedural <see cref="CompositeShape"/> geometry, built from parameters rather than authored.

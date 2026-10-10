@@ -3,14 +3,9 @@ using BH.SDK.Utils;
 
 namespace BH.SDK.Serialization.Blob
 {
-    // THE FILE HEADER, AND THE ORDER IT IS CHECKED IN IS THE DESIGN. magic, then generation, then
-    // the declared length against the real one, then the hash - and only then is a single byte
-    // decoded. Nothing is allocated on the strength of anything the file says until the file has
-    // been shown to be whole, which is the difference between a format and the level cache this
-    // took its encoding from: a cache's payload was its own, a format's payload is a stranger's.
-    //
-    // FOUR REFUSALS, NOT ONE, and they are worth telling apart on screen: "this file is damaged"
-    // and "this file is from a newer build" ask completely different things of a player.
+    // The header is checked in ONE order and the order is the design: magic, codec generation,
+    // declared length against the real one, hash - nothing is decoded or allocated before that.
+    // Four refusals, so the UI can tell "damaged" from "from a newer build". Docs/SERIALIZATION.md.
 
     /// <summary> The .blob file header. </summary>
     public static class BlobFormat
@@ -18,17 +13,9 @@ namespace BH.SDK.Serialization.Blob
         /// <summary> 'B','H','B','O'. </summary>
         public const uint Magic = 0x4F42_4842;
 
-        // TWO DIFFERENT THINGS ARE CALLED A GENERATION IN THIS SUBSYSTEM, and only one of them is
-        // here. THIS one belongs to the ENCODING: which byte layout a .blob is written in. The other
-        // is ModelGenerationAttribute.Generation, which belongs to a DOMAIN - what shape its model
-        // was when the file was written - and travels inside each envelope. A domain moving does not
-        // move this; this moving invalidates every .blob whatever its domains say.
-        //
-        // It cannot be folded into the model generation: that one lives INSIDE an envelope, and an
-        // envelope can only be found by a reader that already knows the byte layout. Since it also
-        // seeds the hash below, a file from another codec is refused by the header rather than
-        // misread deeper in. It was reset to 1 together with the magic's move to BHBO; the
-        // pre-release 1 -> 2 step it carried before is not readable by anything any more.
+        // The CODEC generation: which byte layout a .blob uses. NOT ModelGenerationAttribute.Generation
+        // (a domain's shape, inside each envelope); moving this invalidates every .blob. It seeds the
+        // hash, so a file from another codec is refused by the header.
 
         /// <summary> The CODEC's generation, not any domain's. It moves when the encoding itself
         /// changes shape - which per-domain envelopes are designed to make unnecessary. </summary>

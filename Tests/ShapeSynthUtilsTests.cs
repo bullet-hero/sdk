@@ -6,11 +6,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests
 {
-    // ShapeSynthUtils builds the shapes the game does not ship as presets. Its whole claim is that
-    // a caller can write plain trigonometry and get back geometry the FORMAT accepts - so what is
-    // asserted here is exactly that claim, not the trigonometry: every generator's output must be
-    // inside the authored box, within both caps, and already sanitized (running Sanitize again must
-    // find nothing left to change).
+    // Plain trigonometry in, geometry the FORMAT accepts out: inside the box, within both caps, already
+    // sanitized.
 
     /// <summary> That a caller can write plain trigonometry and get geometry the FORMAT accepts: inside the
     /// authored box, within both caps, and already sanitized. </summary>

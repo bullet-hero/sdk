@@ -253,10 +253,8 @@ namespace BH.SDK.Transforms
             return position - pivotPoint; // apply pos
         }
 
-        // The AABB, not the rect: a rotated rect no longer fits inside FullSize, and every caller
-        // that has to CONTAIN it (framing a camera on an object, a bounds test) needs the box that
-        // does. Scale is taken as an absolute value, since a mirrored object (negative scale) covers
-        // exactly as much screen as an unmirrored one.
+        // The AABB, not the rect: a rotated rect no longer fits FullSize. Scale is absolute (a mirror covers
+        // as much screen as the original).
 
         /// <summary> Axis-aligned size the rect covers once rotated - equal to <see cref="FullSize"/>
         /// at zero rotation, larger at every other angle. </summary>

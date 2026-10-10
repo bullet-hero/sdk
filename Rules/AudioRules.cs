@@ -25,10 +25,8 @@ namespace BH.SDK.Rules
         /// <summary> The offset time used when nothing says otherwise, read by LevelTrack. </summary>
         public const float OffsetTimeDefault = 0f;
 
-        // Same numbers as FrameRules.MinSpeed/MaxSpeed, different thing entirely: this is one
-        // track's own rate, that one is the whole level's playback rate. The two multiply, so the
-        // real pitch a source ends up with reaches +-4 - which Unity allows, its own +-3 limit is
-        // an inspector slider, not an API bound.
+        // One track's own rate, same numbers as FrameRules.MinSpeed/MaxSpeed but a different thing; the
+        // two multiply, so real pitch reaches +-4 (Unity's +-3 is an inspector slider, not a bound).
 
         // -2f - 2f, 0.01f, x
 
@@ -43,10 +41,8 @@ namespace BH.SDK.Rules
         // screen offers and what validation checks; nothing clamps at runtime, exactly like every
         // other UserSettings value - a hand-edited file is the player's own doing.
 
-        // How far the playhead must jump before it counts as a discontinuity rather than drift.
-        // The floor is one audio buffer: below that it would fire on AudioSettings.dspTime's own
-        // quantization alone and re-seek constantly, which is audible as a stutter. The ceiling is
-        // where a scrub starts feeling unresponsive.
+        // Playhead jump that counts as a discontinuity. The floor is one audio buffer: below it dspTime
+        // quantization alone would trigger constant re-seeks (audible stutter).
 
         // 0.02f - 0.5f, 0.01f, s
 
@@ -70,10 +66,8 @@ namespace BH.SDK.Rules
         /// <summary> The sync dead zone used when nothing says otherwise, read by AudioGraphicsSettings. </summary>
         public const float SyncDeadZoneDefault = 0.02f;
 
-        // How far the rate correction may bend playback. 0 turns it off entirely, leaving the hard
-        // resync as the only correction - a legitimate choice if the resampler is more objectionable
-        // than the occasional jump. The ceiling is ~0.85 of a semitone, past which it stops reading
-        // as a correction and starts reading as the music being wrong.
+        // How far rate correction may bend playback; 0 leaves hard resync as the only correction. The
+        // ceiling (~0.85 of a semitone) is where it stops reading as correction.
 
         // 0f - 0.05f, 0.005f, x
 
@@ -96,11 +90,8 @@ namespace BH.SDK.Rules
         /// <summary> True when a mix level actually mixes anything - the floor is silence, not a quiet setting. </summary>
         public static bool IsActiveMixLevel(float mixLevel) => mixLevel > MixLevel_Disabled;
 
-        // The two keyframed per-track values. Their bounds lived only in the comment beside each
-        // default until now, so a Volume of 40 or a StereoPan of -12 was legal authored data the
-        // mixer then silently saturated. They are NOT reachable by a [RuleInRange]: both are stored
-        // in the shared FloatKey, which every other float track uses too, so an attribute there
-        // would bound all of them at once. The editor clamps against these instead.
+        // The two keyframed per-track values. Not a [RuleInRange]: both live in the shared FloatKey, an
+        // attribute there would bound every float track. The editor clamps against these instead.
 
         /// <summary> The volume used when nothing says otherwise, read by AudioFileLevelGenerator, LevelTrack, LevelTrackTests and 1 more. </summary>
         public const float VolumeDefault = 1f; // 0f - 1f, 0.01f

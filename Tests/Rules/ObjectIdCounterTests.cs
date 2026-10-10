@@ -9,20 +9,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests.Rules
 {
-    // THE COUNTER IS NOT THE COLLECTION, and binding it to LevelRules.MaxObjects said it was. Ids
-    // are never reused, so the counter measures how many have ever been MINTED over a level's whole
-    // authoring life - generator runs, pastes, prefab materializes, undone creations - while
-    // MaxObjects bounds how many objects may EXIST at once. The two diverge with editing TIME rather
-    // than with level size, so a long-lived level could fail validation while holding almost
-    // nothing.
-    //
-    // And fail it DESTRUCTIVELY: RuleInRange is an Error whose Fix clamps to the nearer bound, so
-    // the repair wrote the counter back down to 262 144 and the next object created took an id that
-    // was already live - the never-reuse invariant broken by the rule meant to protect the file.
-    // That second half is the regression these tests exist for; the first half only says the rule
-    // no longer fires.
-    //
-    // Docs/Issues/LEVEL_MODEL_ANALYSIS.md section D is the record.
+    // The counter is not the collection: ids minted over a level's life vs objects existing. The regression
+    // is the clamping Fix reissuing a live id. Docs/Issues/LEVEL_MODEL_ANALYSIS.md section D.
 
     /// <summary>
     /// The object-id counters: what bounds them, what happens at the end of the id space, and the

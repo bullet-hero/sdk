@@ -6,22 +6,12 @@ using BH.SDK.Models.Primitives;
 
 namespace BH.SDK.Generators
 {
-    // Why a journal and not a Level copy. A generator run has to be undoable, and the obvious
-    // implementation - snapshot the whole Level before running, restore it on undo - costs memory
-    // proportional to the LEVEL, on every run, forever. A level anywhere near LevelRules.MaxObjects
-    // (262 144) would make each generator click a multi-megabyte copy, and the undo stack holds many
-    // of them. A journal costs memory proportional to what actually CHANGED, which for the typical
-    // "spawn 32 bullets" run is 32 objects rather than the entire level.
-    //
-    // The consequence every generator author must internalise: mutating the model outside
-    // GeneratorContext compiles fine, runs fine, and silently breaks undo. There is no way for this
-    // layer to detect it. That is the single most dangerous mistake available in this system.
+    // A journal, not a Level copy (memory proportional to what CHANGED, not to the level). Mutating the
+    // model outside GeneratorContext compiles, runs, and silently breaks undo; nothing here can detect
+    // it. Docs/GENERATORS.md.
 
-    /// <summary>
-    /// Everything one generator run changed, in the order it changed it, as a replayable journal.
-    /// Revert() walks it backwards, Reapply() forwards; both are exact, so an undo/redo pair leaves
-    /// the model where it started.
-    /// </summary>
+    /// <summary> Everything one generator run changed, in order, as a replayable journal. Revert() walks
+    /// it backwards, Reapply() forwards; both are exact. </summary>
     public sealed class GeneratorChangeLog
     {
         private readonly List<IGeneratorChange> _changes = new();
@@ -32,10 +22,8 @@ namespace BH.SDK.Generators
         /// <summary> Records one edit. Internal: only the context may write to the journal. </summary>
         internal void Add(IGeneratorChange change) => _changes.Add(change);
 
-        // The scope is part of the question, not decoration: a Prefab template owns its ObjectId
-        // namespace (it is its own IObjectIdCounter), so id 1 in a template and id 1 in the level are
-        // different objects. A run that edits both - flattening placements inside templates as well
-        // as in the level - would otherwise take the first one's before-copy for the second's.
+        // The scope is part of the key: a Prefab template owns its ObjectId namespace, so id 1 in a
+        // template and id 1 in the level are different objects.
 
         /// <summary> Whether this log already carries a before-copy for that object, so a second
         /// Edit() of the same object doesn't overwrite the ORIGINAL state with an already-modified
@@ -88,11 +76,8 @@ namespace BH.SDK.Generators
         void Reapply();
     }
 
-    // Id counters are deliberately NOT part of the journal. LevelSettings.ObjectIdCounter only ever
-    // grows and ids of deleted objects are never reused (see its own doc comment), so rolling one
-    // back on undo would let a later creation hand out an id a stale reference still points at.
-    // Reapply re-inserts the SAME instance under the SAME id instead of minting a fresh one, so redo
-    // stays exact without the counter having to move at all.
+    // Id counters are NOT journaled: they only grow and ids are never reused, so rolling one back could
+    // hand out an id a stale reference points at. Reapply re-inserts the SAME instance under the SAME id.
 
 
     /// <summary> An object the run added to a scope. </summary>
@@ -119,10 +104,8 @@ namespace BH.SDK.Generators
         public void Reapply() => _scope.Objects[Id] = _instance;
     }
 
-    // Whole-object granularity, not per-field: an Edit hands the generator the live instance and it
-    // may rewrite any part of it, including entire keyframe tracks, so a before-copy of the object
-    // is the only snapshot that can describe every outcome. The after-copy is taken lazily, on the
-    // first Revert, because it doesn't exist yet at Edit time.
+    // Whole-object granularity: an Edit may rewrite any part of the object, so a before-copy is the only
+    // complete snapshot. The after-copy is taken lazily, on the first Revert.
 
     /// <summary> An existing object the run replaced the contents of. </summary>
     internal sealed class ObjectEdited : IGeneratorChange
@@ -253,11 +236,8 @@ namespace BH.SDK.Generators
         public void Reapply() => _target.Remove(_id);
     }
 
-    // Level-global tracks (GameEvents/CameraEvents/PostProcessingEvents/PlayerEvents) are plain
-    // List<TKey> with no owning object to snapshot, which is why they get their own change types
-    // instead of riding along on ObjectEdited. Index is preserved on both sides: these lists carry
-    // no enforced sort order (see the SDK's Keyframes section), so re-inserting at the end after an
-    // undo would reorder a track the author never touched.
+    // Level-global tracks have no owning object, hence their own change types. Index is preserved on both
+    // sides: these lists carry no enforced sort order, so re-inserting at the end would reorder a track.
 
     /// <summary> A level-global keyframe the run added - a camera, theme or post-processing key. </summary>
     internal sealed class LevelKeyAdded<TKey> : IGeneratorChange

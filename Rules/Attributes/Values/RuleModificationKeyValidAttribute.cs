@@ -6,25 +6,13 @@ using BH.SDK.Utils;
 
 namespace BH.SDK.Rules.Attributes
 {
-    // ModificationKey is a struct used as a dictionary key, which puts it in the analyzer's blind
-    // spot twice over: keys are not walked, and a struct can never be a [RuleContainer] anyway. So
-    // its members - the template-inner ObjectId being overridden and the field it addresses - were
-    // never validated at all, while an address that fails to resolve degrades into "the override
-    // silently does not apply" rather than into anything visible.
-    //
-    // WHAT IT CHECKS CHANGED SHAPE WITH THE ADDRESS. It used to ask whether a dotted path was
-    // non-empty and shorter than a ceiling, which was the most a string could be asked without the
-    // model in hand. A field id can be asked the real question instead - is this a field of
-    // anything at all, and is an index legal on it - because ModificationTable answers both at
-    // compile time. What it still does NOT check is whether the field exists on the type of the
-    // object that key addresses: that needs the placement, its PrefabId and the template it points
-    // at, i.e. the graph pass. The table makes that check POSSIBLE for the first time; it is its
-    // own item, not this one.
+    // A struct dictionary key is in the analyzer's blind spot, so it needs this. Checks the field id is
+    // registered and an index legal; NOT that the field exists on the addressed object's type (graph
+    // pass: needs the placement and its template).
 
     /// <summary>
-    /// A modification key must address a real user-space object - or the template root, for a field
-    /// the template owns - and a registered field, with an index only where the field is a
-    /// collection.
+    /// A modification key must address a real user-space object (or the template root, for a field
+    /// the template owns) and a registered field, with an index only on a collection field.
     /// </summary>
     [AttributeUsage(PropertyTarget)]
     public class RuleModificationKeyValidAttribute : BasePropertyRuleAttribute
@@ -39,12 +27,8 @@ namespace BH.SDK.Rules.Attributes
         /// <summary> A warning: the level still plays, but this is not what the author meant. </summary>
         public override RuleGroup Group => RuleGroup.Warning;
 
-        // NOTHING HERE IS REPAIRABLE, which is why this rule declares no fix at all rather than
-        // offering one that sometimes does nothing. An unregistered field id cannot be turned into
-        // a registered one without inventing which field the author meant, and repointing a broken
-        // ObjectId would apply the override to the wrong object - silently and plausibly. Dropping
-        // the whole entry is the right repair and it belongs to whoever owns the dictionary.
-        // RuleReferenceExistsAttribute declines for the same reason.
+        // Nothing here is repairable, so no fix is declared: any repair guesses which field or object
+        // the author meant. Dropping the entry belongs to whoever owns the dictionary.
 
         /// <summary> No automatic repair - see the note above. </summary>
         public override bool HasFix => false;
@@ -69,21 +53,9 @@ namespace BH.SDK.Rules.Attributes
         {
         }
 
-        // TWO KINDS OF OBJECT ARE ADDRESSABLE, and the second one is narrower than the first. An
-        // ordinary user-space id names one of the placement's materialized copies and may be
-        // overridden in any field that copy has. ObjectId.PrefabRoot names the template's own root,
-        // which materializes AS the placement rather than beside it - so an override there is
-        // writing onto the placement, and it may only touch what the template owns
-        // (ModificationFields.IsPrefabRootField). Span, Active, Layer and PlacementOffset are the
-        // placement's own authored fields and nothing copies them off the root, so an override on
-        // one of them would be a second way to say the same thing that additionally won,
-        // ApplyModifications running last. PlacementDuration is the exception that proves it: the
-        // duration IS copied off the root, so the only way a placement keeps a length of its own is
-        // an override, and that is the one field here backed by a derived property rather than a
-        // stored member.
-        //
-        // The other two reserved ids stay unaddressable: nothing is ever the camera or the avatar,
-        // so neither can be a thing a placement carries a copy of.
+        // Two kinds of object are addressable: a user-space id (any field of the copy) and PrefabRoot
+        // (only ModificationFields.IsPrefabRootField). Camera and avatar ids never are.
+        // Why PlacementDuration is the one placement field: BH.SDK/Docs/RULES.md.
         private static bool IsAddressableObject(ModificationKey key)
         {
             if (key.ObjectId.IsValid()) return true;

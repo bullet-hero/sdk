@@ -4,14 +4,8 @@ using BH.SDK.Models.Profile;
 
 namespace BH.SDK.Services.Profile
 {
-    // THE ARCHIVE MIRRORS THE PROFILE ROOT, and this is the whole of the mapping. A category is one
-    // folder (or, for settings, one file) directly under the root, named by FileNames, so an archive
-    // entry's category is its first path segment - nothing has to be renamed on the way in or out.
-    //
-    // IT IS ALSO THE WHITELIST, read the same way on pack and on unpack: a path that maps to no
-    // category is not part of a profile and is ignored, whoever put it in the zip. That is what keeps
-    // profile-backups/ (the one backup and every temporary of an import) out of every archive without
-    // a special case anywhere.
+    // The archive mirrors the profile root: a category is one folder (or settings.json), its first path
+    // segment. Also the WHITELIST on pack and unpack: a path mapping to no category is ignored.
 
     /// <summary> Which profile category owns which path, and the order a profile is packed in. </summary>
     public static class ProfileLayout

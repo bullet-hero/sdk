@@ -6,20 +6,9 @@ using BH.SDK.Rules;
 
 namespace BH.SDK.Services.Profile
 {
-    // MAX, NOT SUM, AND THAT IS A CHOICE ABOUT WHAT A MERGE IS FOR. The common case is one history
-    // travelling - phone to PC and back - and a profile carries no identity a merge could subtract a
-    // common base with. Summing would double every counter the second time the same history comes
-    // home; max makes merging idempotent (merge(a, a) == a) and never inflates. What it gives up is two
-    // genuinely separate histories, which it undercounts to the larger of the two. Decided with the
-    // author; Docs/Plans/PROFILE_TRANSFER_PLAN*.md is the record.
-    //
-    // Everything else follows from "never invent a number": a first-time is the earlier of the two
-    // that are set (a default DateTime is "never", not "the year 1"), a last-time is the later, a value
-    // that describes the latest state (a level's name, the current streak) comes from whichever side
-    // played last, and a record is the better of two real runs - never a blend.
-    //
-    // Merges write INTO the local instance and keep its nested instances, which is the contract
-    // StatisticsStore relies on: views hold references into these objects.
+    // MAX, not SUM: idempotent (merge(a, a) == a), never inflates, undercounts two separate histories.
+    // Never invent a number: firsts take the earlier set value, lasts the later, records the better
+    // run. Writes INTO the local instance (views hold references). Docs/ARCHIVE.md.
 
     /// <summary> Merges two copies of a player's statistics into the local one. </summary>
     public static class StatisticsMerge
@@ -164,10 +153,8 @@ namespace BH.SDK.Services.Profile
             totals.DistinctLevelsCleared = Math.Max(totals.DistinctLevelsCleared, cleared);
         }
 
-        // THE HISTOGRAMS ARE TIED TO A LENGTH (DifficultyStatistics' header): a bucket is a fraction of
-        // the level as it was when the deaths were counted. Two copies built against the same length
-        // merge bucket by bucket; built against different lengths they describe two different levels,
-        // and the copy from whichever side played last is the one describing the level that exists.
+        // Histograms are tied to a length (DifficultyStatistics): equal lengths merge bucket by bucket,
+        // different ones take the copy from whichever side played last.
         private static void MergeDifficulty(DifficultyStatistics local, DifficultyStatistics incoming,
             bool incomingLater)
         {
@@ -237,10 +224,8 @@ namespace BH.SDK.Services.Profile
         private static DateTime Latest(DateTime a, DateTime b) => a >= b ? a : b;
     }
 
-    // THE SAME ORDER THE GAME FILES A RECORD BY - further, then fewer hits, then more lives left, then
-    // fewer dashes (Services.Shared's StatisticsMath.IsBetter, which compares a live run rather than two
-    // stored ones). One more tie-break here, because two stored runs can be equal in all four and a
-    // merge still has to pick: the earlier one, since it was achieved first. Change one, change both.
+    // The game's record order (Services.Shared StatisticsMath.IsBetter) plus one tie-break: the earlier
+    // run. Change one, change both.
 
     /// <summary> Orders two stored records the way the game decides a new one is better. </summary>
     public static class BestRunOrder

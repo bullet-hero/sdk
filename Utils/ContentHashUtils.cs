@@ -5,19 +5,8 @@ using System.Text;
 
 namespace BH.SDK.Utils
 {
-    // Identity of the bytes behind a resource, for ResourceMeta.ResourceHashes. A takedown names a
-    // work and answering it means finding every level that carries it - by title that is a guess,
-    // by digest it is a lookup.
-    //
-    // The algorithm is part of the stored value ("sha256:ab12...") rather than assumed, so a future
-    // digest can be introduced without invalidating what is already written: an old hash keeps
-    // saying what it is, and a comparison of two different algorithms fails as unequal instead of
-    // silently matching. Lowercase hex with no separators, because that is what every other tool a
-    // moderator might reach for prints.
-    //
-    // Not cryptography in the CryptographyService sense - nothing here protects anything. SHA-256
-    // is chosen for being collision-resistant enough that two different tracks never collide by
-    // accident, and universally available outside this codebase.
+    // Identity of a resource's bytes for ResourceMeta.ResourceHashes. The algorithm is part of the stored
+    // value ("sha256:ab12..."), so a future digest never silently matches an old one. Not cryptography.
 
     /// <summary> Content digests for resource files. </summary>
     public static class ContentHashUtils

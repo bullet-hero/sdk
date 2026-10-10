@@ -5,11 +5,7 @@ using NUnit.Framework;
 
 namespace BH.SDK.Roslyn.Tests
 {
-    // EVERY REFUSAL HAS TO BE LOUD, and that is not a style preference - it is the reason the
-    // generator exists. The defect it replaces is silent by nature: a member present in Copy and
-    // missing from Equals compiles and behaves almost right. So a member the generator cannot
-    // express is an error naming the member, and these fixtures are what keep it from quietly
-    // becoming a skip.
+    // Every refusal must be loud; these fixtures keep a diagnostic from quietly becoming a skip.
 
     /// <summary> That every refusal is loud: a member the generator cannot express is an error naming the
     /// member, never a silent skip. </summary>
@@ -181,12 +177,7 @@ namespace Fixture
         [Category(Metadata.Category.Easy)]
         public void APolymorphicModelWithNoDiscriminator_IsRefused()
         {
-            // Reachable through the base, so a reader meets it without knowing what to construct.
-            // Before this was a diagnostic it was a dispatcher that simply did not get emitted, and
-            // the failure surfaced as a missing class at the one member that referenced it.
-            //
-            // The two TYPES are fine and are still emitted - what cannot be built is the dispatcher
-            // between them, so this is the one refusal that is not "emit nothing".
+            // The two types are still emitted; only the dispatcher between them cannot be built.
             var run = Run(@"
 namespace Fixture
 {
@@ -207,10 +198,7 @@ namespace Fixture
     [GenerateModel]
     public sealed partial class Holder : IModel<Holder>
     {
-        // Declared as the BASE - which is what makes a discriminator necessary at all. Without a
-        // member like this the hierarchy is never met polymorphically and nothing is demanded of
-        // it, which is the case for most of the real ones (every keyframe member is a concrete
-        // List<PosKey>, every audio effect its own field).
+        // Declared as the BASE, which is what makes a discriminator necessary at all.
         [JsonProperty(Names.Value)] public Node Item { get; set; }
         public Holder() { }
     }

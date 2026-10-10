@@ -5,18 +5,9 @@ using BH.SDK.Services;
 
 namespace BH.SDK.Generators.Utility
 {
-    // The sibling of CapacityHintGenerator, and for the same reason: LevelHints.FontCharacters is
-    // advisory, a host editor already refreshes it on every save, and this exists so an author can
-    // rebuild the whole thing on demand without saving - after importing a foreign level, after
-    // editing the file by hand, or whenever the saved set is suspected of having drifted.
-    //
-    // Unlike CapacityHintGenerator it is fully undoable. That one writes Hints.Limits
-    // directly because the journal has no entry shape for a bare field; FontCharacters is a
-    // keyed dictionary, which AddResource/RemoveResource already cover whatever it is keyed by.
-    // Every write
-    // below therefore goes through the context, and an existing entry is REMOVED before the new one
-    // is added rather than overwritten - ResourceAdded.Revert removes the key it added, so
-    // overwriting in place would make undo delete an entry that existed before the run.
+    // The sibling of CapacityHintGenerator, but fully undoable (a keyed dictionary, covered by
+    // AddResource/RemoveResource). An existing entry is REMOVED before the new one is added: undo of an
+    // overwrite would delete an entry that existed before the run. Docs/GENERATORS.md.
 
     /// <summary>
     /// Rebuilds every per-font character set in the level from scratch, out of the text the level
@@ -58,12 +49,8 @@ namespace BH.SDK.Generators.Utility
                 context.RemoveResource(cache, fontResourceId);
         }
 
-        // Reported as Resources, and not left at Zero the way CapacityHintGenerator leaves it: a host
-        // refuses a Content run whose whole estimate is zero, on the grounds that a button which
-        // silently does nothing is worse than a refusal (see the editor's GeneratorsView). Counting
-        // the entries this would write and drop makes the estimate both honest and non-zero whenever
-        // there is anything to do - and correctly zero, hence correctly refused, on a level with no
-        // text and no stale entries.
+        // Reported as Resources (entries written and dropped), so it is non-zero whenever there is
+        // anything to do and a host does not refuse the run.
 
         /// <summary> What this run would add, answered before it runs. </summary>
         protected override GeneratorCost EstimateTyped(GeneratorContext context, Parameters parameters)

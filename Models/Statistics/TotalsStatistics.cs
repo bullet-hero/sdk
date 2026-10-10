@@ -7,14 +7,8 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models.Statistics
 {
-    // THE SUM OVER EVERY LEVEL, kept here rather than computed by walking stats/ on demand: the
-    // profile screen would otherwise have to open every per-level file the player has ever made,
-    // which is the one thing the per-level split was chosen to avoid.
-    //
-    // DistinctLevelsPlayed and DistinctLevelsCleared are COUNTERS, not sets of ids. A set would grow
-    // without bound inside a file read on every launch, and neither number is ever asked "which
-    // ones" - that question is answered by listing stats/ itself. The first is incremented when a
-    // level file is created, the second when a level first records a clear.
+    // The sum over every level, kept to avoid opening each file; the Distinct* members are COUNTERS, not
+    // id sets. Docs/STATISTICS.md
 
     /// <summary> Every counter summed across every level. </summary>
     [RuleContainer]

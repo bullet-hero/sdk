@@ -5,11 +5,7 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests.Rules
 {
-    // THE THIRD PASS, AND THE ONE MISTAKE IT EXISTS TO PREVENT. Publishing is the only caller that
-    // needs all three analyzers, and the only one that would get them wrong by hand: LevelMeta is
-    // its own aggregate root, so `Validate(level)` never touches a single rule on it - and the
-    // metadata is exactly the half a publish check is about. Every test here is ultimately about
-    // that: the metadata is validated, with or without a level beside it.
+    // The mistake it prevents: Validate(level) never touches LevelMeta's rules, the half publishing is about.
 
 
     /// <summary> The publish check, the only caller needing all three analyzers - and the one mistake it exists to

@@ -10,18 +10,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests.Services
 {
-    // WHAT IS ACTUALLY AT RISK HERE IS NOT "does a shape look right" but two invariants a person
-    // cannot check by eye across five hundred entries:
-    //
-    //   An id means one thing forever. The library this replaced numbered its shapes by their
-    //   position in an array, so inserting a form renumbered everything after it and every level
-    //   referencing them drew something else. The packed layout is what fixes that, and it is only
-    //   fixed while the round trip below holds and the reserved bits stay refused.
-    //
-    //   A shape and its inverse tile the sector they were cut from. That single equality catches
-    //   the whole class of triangulation bugs this generator can have - a folded ribbon, a wedge
-    //   spanning a pinch point, a rim clipped to the wrong sector - because every one of them shows
-    //   up as area counted twice or not at all, while the picture still looks plausible.
+    // Two invariants no eye can check across hundreds of entries: an id means one thing forever, and a shape
+    // plus its inverse tiles its sector. BH.SDK/Docs/TESTING.md.
 
     /// <summary> The two invariants nobody can check by eye across five hundred entries: an id means one thing
     /// forever, and a shape plus its inverse tile the sector they were cut from. </summary>
@@ -111,10 +101,7 @@ namespace BH.SDK.Tests.Services
                 "a random Guid must not read as a built-in shape");
         }
 
-        // The four starting shapes occupy 0x01..0x04 and the ladder starts at 0x10, so every id the
-        // retired library issued (1..78) has form code 0 - which is reserved and never issued. That
-        // is the whole reason a level written against the old library resolves to nothing visible
-        // instead of to whichever new shape happened to land on its number.
+        // Retired ids (1..78) have form code 0, reserved and never issued, so old levels resolve to nothing.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
@@ -146,15 +133,7 @@ namespace BH.SDK.Tests.Services
                 "an id with a reserved bit set must not resolve");
         }
 
-        // THE ORDER IS FORM-MAJOR, NOT ASCENDING BY ID, and the difference is deliberate. Invert is
-        // a flag high in the id, so sorting numerically would put every ordinary shape first and
-        // every inverted one after them - splitting each form's block in half wherever it is read as
-        // a list. Grouping by form keeps a picker legible and puts the four named shapes an author
-        // reaches for at the very front, which is the ordering that was asked for.
-        //
-        // Extensibility does not depend on this. It comes from the id being derived from what a
-        // shape IS, so a form added later takes ids nobody else can hold whatever order it is
-        // enumerated in.
+        // Form-major, not by id: Invert is a high flag, so a numeric sort would split each form's block.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
@@ -209,10 +188,7 @@ namespace BH.SDK.Tests.Services
             }
         }
 
-        // The invariant the whole AABB-centring decision rests on: fitting a form by its BOUNDS
-        // rather than by its circumradius means every one of them measures exactly one unit across
-        // its longer axis and sits centred on the origin - so nothing reaches outside its own rect
-        // and Size means the same thing whichever shape it is applied to.
+        // Fitting by BOUNDS makes every form one unit across its longer axis, centred on the origin.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]

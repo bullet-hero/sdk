@@ -96,10 +96,7 @@ namespace BH.SDK.Tests.Rules
             CollectionAssert.AreEqual(new[] { 1, 2, 3 }, model.Value);
         }
 
-        // The array Fix rebuilds at exactly MaxCount whenever the length differs, including when the
-        // array is SHORTER - it would pad a 1-element array up to 3. Unreachable through the analyzer
-        // (a short array raises no issue, so Fix never runs), but it makes the array path lossy in the
-        // other direction if anything ever calls Fix directly.
+        // The array Fix would pad a short array up to MaxCount; unreachable through the analyzer.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]

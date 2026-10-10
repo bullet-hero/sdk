@@ -11,20 +11,12 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models.Game
 {
-    // The two force tracks are carried by the FORMAT and read by nobody yet: the player does not
-    // apply them. They are here rather than waiting because a level converted from another engine
-    // can already have them, and a value the format cannot hold is one that has to be dropped on
-    // import and can never come back.
-    //
-    // The version stays 1.0: both are additive and default to empty, so a document written before
-    // they existed reads exactly as it did, and one written after them is ignored key by key by a
-    // build that has not heard of them. A minor bump would need a frozen snapshot and a migrator to
-    // say nothing at all.
+    // The two force tracks are carried by the format and applied by nobody yet. Why, and why the domain
+    // stays at 1.0: Models/Game/CLAUDE.md
 
     /// <summary>
-    /// Level-driven overrides of the player's own state. Three independent switch tracks, so a level
-    /// can e.g. keep the player visible but take control away during a cutscene section, plus two
-    /// tracks of force the level applies to the player.
+    /// Level-driven overrides of the player's own state: three independent switch tracks (e.g. visible
+    /// but uncontrollable in a cutscene) plus two tracks of force the level applies to the player.
     /// </summary>
     [RuleContainer]
     [ModelGeneration(ModelDomains.PlayerEvents, ModelGenerations.V1_AlphaRelease)]
@@ -66,16 +58,8 @@ namespace BH.SDK.Models.Game
         [JsonProperty(Names.Collisions)]
         public List<BoolKey> Collisions { get; set; } // active collision detection system for player
 
-        // A MULTIPLIER of the size the player already has, not a size in world units - the avatar's
-        // own scale is a device/skin setting, and a level that stated an absolute size would fight
-        // it. So the neutral value is 1 and an empty track means 1, which is why a level written
-        // before this existed reads exactly as it did.
-        //
-        // ValueRules.MinPlayerSize is 0 and there is no maximum: 0 is a player that is there,
-        // controllable and hittable at a point, which is a legitimate thing to author, and a level
-        // that wants a giant player is not this format's business to argue with. The floor is
-        // enforced where it matters rather than by an attribute - FloatKey is shared by every float
-        // track in the format, so a rule on its Value would bind all of them.
+        // A MULTIPLIER of the avatar's own size, not world units: neutral and empty-track are 1, the floor
+        // (ValueRules.MinPlayerSize) is enforced on read, there is no maximum. Models/Game/CLAUDE.md
 
         /// <summary> How large the player is drawn and hit, as a multiple of its ordinary size.
         /// Applied every frame; 1 leaves it alone. </summary>
@@ -84,13 +68,8 @@ namespace BH.SDK.Models.Game
         [JsonProperty(Names.Size)]
         public List<FloatKey> Sizes { get; set; }
 
-        // The one multiplier every speed the avatar has is scaled by - walking, dashing and the
-        // knockback a hit gives it - rather than a walking speed of its own. A level that only wanted
-        // to slow a section down would otherwise have to know which of the three the player is in.
-        //
-        // Same shape as Sizes and for the same reasons: neutral is 1, an empty track is 1, the floor
-        // (ValueRules.MinPlayerSpeed) is enforced where the value is read rather than by an attribute
-        // on FloatKey, and there is no maximum.
+        // The one multiplier on walking, dashing and knockback alike. Same shape as Sizes: neutral is 1,
+        // the floor (ValueRules.MinPlayerSpeed) is enforced on read, there is no maximum.
 
         /// <summary> How fast the player moves, as a multiple of its ordinary speed. Applied every
         /// frame to every speed it has; 1 leaves it alone. </summary>

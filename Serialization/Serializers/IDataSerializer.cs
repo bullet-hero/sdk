@@ -3,12 +3,8 @@ using BH.SDK.Versions;
 
 namespace BH.SDK.Serialization.Serializers
 {
-    // Format-agnostic envelope contract (requirement 3, see Docs/VERSIONING.md "Format-agnosticism").
-    // Only the envelope read/write step is format-specific - resolving a version tag to a concrete
-    // type and walking the migration chain to a domain's current shape both live in
-    // BH.SDK.Versions.VersionedTypeRegistry and are shared by every implementation of this
-    // interface. JsonDataSerializer and BlobDataSerializer are today's implementations; a future XML
-    // one would implement the same contract without touching VersionedTypeRegistry at all.
+    // Format-agnostic envelope contract: only the envelope step is format-specific; tag resolution and
+    // the migration walk live in VersionedTypeRegistry for every implementation (JSON and Blob today).
 
     /// <summary> One wire format. Only the envelope's bytes are its own - resolving a version and migrating
     /// to today's shape is shared by every implementation. </summary>

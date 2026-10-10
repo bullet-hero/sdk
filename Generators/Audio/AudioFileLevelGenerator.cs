@@ -13,14 +13,9 @@ using BH.SDK.Rules;
 
 namespace BH.SDK.Generators.Audio
 {
-    // The single most common way a level actually begins: pick a song, get a level whose timeline
-    // already matches it. Doing that by hand means creating a level, importing the clip, adding a
-    // track, and computing FrameDuration from a duration nobody has in front of them.
-    //
-    // The SDK cannot measure that duration - it has no decoder, on purpose - so DurationSeconds is
-    // an ExternalAnalysis input the host fills in (see IAudioFileInput). A duration of zero is not
-    // an error: the generator falls back to a fixed default length, so a level still gets created
-    // when a host cannot measure the file.
+    // The commonest way a level begins: pick a song, get a timeline that matches it. The SDK has no
+    // decoder, so DurationSeconds is an ExternalAnalysis input; zero falls back to a fixed default
+    // length instead of failing (IAudioFileInput). Docs/GENERATORS.md.
 
     /// <summary>
     /// Creates a level built around one audio file: the clip as a resource, a track playing it from
@@ -81,14 +76,9 @@ namespace BH.SDK.Generators.Audio
                 new(parameters.UriType, parameters.AudioPath ?? string.Empty),
             });
 
-            // THE TRACK IS THE SONG, THE LEVEL IS THE SONG PLUS THE TAIL. Both start on the level's
-            // first frame, and the track stops where the music does, so the tail is what it says it
-            // is - room to author an ending in, with nothing sounding through it. The track used to
-            // take the level's whole FrameDuration, which ran it into that silence.
-            // A span is a COUNT of frames from its start, so a track of SongDuration frames ends on
-            // frame SongDuration and the level's own last frame is FrameDuration - this used to be
-            // the easiest off-by-one in the format to write by accident, back when the end was a
-            // separate inclusive field.
+            // The track is the song, the level is the song plus a tail: both start on the first frame, the
+            // track stops where the music does. A span is a COUNT, so SongDuration frames end ON frame
+            // SongDuration while the level's last frame is FrameDuration.
             var audioId = level.Settings.GetNextAudioId();
             level.Audio.Tracks[audioId] = new LevelTrack(audioId, resourceId,
                 new FrameSpan(FrameRules.MinFrame, SongDuration(parameters, framerate)), parameters.OffsetSeconds,
@@ -119,11 +109,8 @@ namespace BH.SDK.Generators.Audio
         private static int SongDuration(Parameters parameters, int framerate)
             => ClampDuration((int)Math.Ceiling(Seconds(parameters) * framerate));
 
-        // DurationSeconds is what the HOST measured off the file's own header and zero when it could
-        // not - an .mp3 costs a frame-by-frame walk to measure exactly, so it is deliberately not
-        // read and lands here as zero. The fallback is a length to start authoring in, not a guess
-        // at the song: the author sets the real one in Level Settings, or uses the audio track's own
-        // fit buttons.
+        // DurationSeconds is what the host measured, zero when it could not (an .mp3 is deliberately not
+        // read). The fallback is a length to start authoring in, not a guess at the song.
         private static float Seconds(Parameters parameters)
             => parameters.DurationSeconds > 0f ? parameters.DurationSeconds : DefaultSeconds;
 
@@ -182,10 +169,8 @@ namespace BH.SDK.Generators.Audio
             => value < FrameRules.MinFramerate ? FrameRules.MinFramerate
                 : value > FrameRules.MaxFramerate ? FrameRules.MaxFramerate : value;
 
-        // The ExternalAnalysis inputs are FIELDS like everything else, with the interface implemented
-        // explicitly on top of them. A property would be invisible to the form builder (it reflects
-        // over public fields), which would make Hints.Hidden on them meaningless and leave an author
-        // no way to ever inspect what the host filled in.
+        // FIELDS with the interface implemented explicitly: a property is invisible to the form builder
+        // (it reflects over public fields), so Hints.Hidden on it would mean nothing.
 
         /// <summary> Which file the level is built around, and how long its timeline ends up. Public mutable
         /// fields, like every parameters class here - a form binds to them and a preset serializes from them. </summary>

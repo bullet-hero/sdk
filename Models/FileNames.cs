@@ -22,10 +22,7 @@
         /// <summary> The metadata document, read by a browser without opening the level. </summary>
         public const string MetadataFileBaseName = "metadata";
 
-        // The editor's autosaves, and they live OUTSIDE levels/ on purpose: a backup that sits inside
-        // the folder it protects is copied, zipped, shared and deleted along with it, and a level
-        // folder is a portable document (see the project's "Level portability") rather than a place to
-        // hide a history. One folder per level id, so a level deleted by mistake still has its copies.
+        // The editor's autosaves live OUTSIDE levels/: a level folder is portable. Docs/FILE_LAYOUT.md
 
         /// <summary> A SIBLING of the levels folder, so a level being zipped, shared or deleted does not take its
         /// backups with it. </summary>
@@ -46,11 +43,8 @@
         /// passes and the audio mix. Never part of a profile - a leftover exists only after a crash. </summary>
         public const string RecordingsTempDirectory = ".tmp";
 
-        // TWO NAMES, AND NOTHING EVER PROBES FOR EITHER - unlike the level and metadata documents
-        // above, whose extension is resolved by what is on disk. A cover is reached through
-        // LevelMeta.LevelLogo, an ordinary resource uri, so the name a writer chooses is the name it
-        // has to record in the metadata in the same step. Which of the two it chooses is decided by
-        // the file's own bytes (the game's LevelLogoFile), never by what the source was called.
+        // Two names, nothing probes for either: the writer records the one it chose in LevelMeta.LevelLogo,
+        // decided by the file's own bytes. Docs/FILE_LAYOUT.md
 
         /// <summary> The cover image, without its extension. </summary>
         public const string LogoName = "logo";
@@ -80,10 +74,7 @@
         /// <summary> Device-wide prefab library - the only way a prefab is shared between levels. </summary>
         public const string PrefabsDirectory = "prefabs";
 
-        // A COLLECTION IS A FOLDER, the way a level is: resources/collections/<CollectionId>/ holding a
-        // collection.* manifest, the four data folders above with the device library's own envelope
-        // files byte for byte, and media/ for the file resources. Reusing the library layout is what
-        // lets one reader serve both and a library entry be copied into a collection as a file.
+        // A collection is a folder like a level, reusing the device library's layout. Docs/FILE_LAYOUT.md
 
         /// <summary> Where resource collections live, under ResourcesDirectory. </summary>
         public const string CollectionsDirectory = "collections";
@@ -100,11 +91,8 @@
         /// <summary> Where diagnostic reports are written. </summary>
         public const string ReportsDirectory = "reports";
 
-        // A SIBLING OF levels/, LIKE backups/, AND FOR THE SAME REASON: what is in here describes the
-        // PLAYER rather than the level, so it must survive the level folder being zipped, shared,
-        // re-imported or deleted. A per-level file is named by the level's own LevelId - the one
-        // identifier a rename, a translation or a folder move cannot change, and the one LevelMeta
-        // already declares that scores and progress attach to.
+        // A sibling of levels/, like backups/: it describes the PLAYER and is named by LevelId.
+        // Docs/FILE_LAYOUT.md
 
         /// <summary> Another SIBLING of the levels folder: progress must survive a level being deleted, and must
         /// never travel with one - it would arrive already won. </summary>
@@ -113,19 +101,14 @@
         /// <summary> The player's device-wide statistics, beside the per-level files. </summary>
         public const string StatisticsFileName = "statistics.json";
 
-        // A protected level is level.json.gpg, and the inner extension stays in the name on purpose:
-        // it is what gpg itself does (`gpg -c level.json` writes level.json.gpg), and it answers
-        // "which SerializationType is this" without a header byte or a guess. Appended, never
-        // replacing - level.gpg would lose that answer.
+        // level.json.gpg: the inner extension stays, as gpg itself writes it, and names the
+        // SerializationType. Appended, never replacing. Docs/FILE_LAYOUT.md
 
         /// <summary> Appended to a document's own name when it is encrypted. </summary>
         public const string EncryptedExtension = ".gpg";
 
-        // THREE CONTAINERS, ONE FEATURE. A level archive is named by whichever of them wrote it,
-        // and none of the three is the "real" one: tar.gz is what a shell opens, zip is what
-        // Windows Explorer opens on a double click, and 7z is what this build can so far only
-        // recognise well enough to refuse by name. What a file IS is still sniffed from its bytes -
-        // these constants name what an export WRITES, never what an import trusts.
+        // Three containers, one feature: these name what an export WRITES, never what an import trusts
+        // (it sniffs the bytes). Docs/FILE_LAYOUT.md
 
         /// <summary> What a level archive is called outside the game. </summary>
         public const string TarGzExtension = ".tar.gz";
@@ -136,10 +119,8 @@
         /// <summary> Named so a refusal can say which format it refused. Nothing writes it. </summary>
         public const string SevenZipExtension = ".7z";
 
-        // A PROFILE ARCHIVE MIRRORS THE FOLDERS ABOVE under their own names, so it needs only its own
-        // manifest. profile-backups/ is a sibling that owns EVERYTHING the profile transfer writes on
-        // the device - the one kept backup and, in staging/, every temporary of an import - and it is
-        // never itself packed: a backup that carried the previous backup would grow without end.
+        // A profile archive mirrors the folders above; profile-backups/ is never itself packed.
+        // Docs/FILE_LAYOUT.md
 
         /// <summary> A profile archive's manifest, always its first entry. </summary>
         public const string ProfileManifestFileName = "profile.json";

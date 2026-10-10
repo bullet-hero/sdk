@@ -4,21 +4,9 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests
 {
-    // THE MIX A PLAYER IS FIRST HANDED, and the only thing about it worth pinning is that the four
-    // channels do not all start at 1. UI sits at half on purpose - interface sounds are feedback on
-    // a press the player already made, while the music is what they came for - and a value that
-    // reads as a typo is exactly the kind that gets "corrected" back.
-    //
-    // EditorUI starts at that same half and is a separate channel anyway, which is the part a
-    // reader is likeliest to mistake for a duplicate: the two differ in what they SOUND, not in how
-    // loud they are - the shell sounds every press, the editor only its outcomes - so an author
-    // silencing one must not lose the other.
-    //
-    // Nothing here needs an absent-key case for UI: 0.5 is not the zero value, so a settings.json
-    // written before that change carries an explicit "ui" of 1 and keeps it. That is the intended
-    // cost and Rule 11's whole position - the author's own file is re-saved, and no migrator
-    // exists. EditorUI is the opposite case and is covered below: its key is genuinely absent from
-    // every file written so far, and the constructor is what has to answer.
+    // The four channels do not all start at 1: UI and EditorUI start at half on purpose and are separate
+    // channels (the shell sounds every press, the editor only outcomes). EditorUI's key is absent from
+    // every older file, so the constructor must answer. BH.SDK/Docs/TESTING.md.
 
     /// <summary> The volume mix's defaults and its round trip. </summary>
     public class AudioSettingsTests

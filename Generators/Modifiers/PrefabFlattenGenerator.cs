@@ -6,17 +6,9 @@ using BH.SDK.Utils;
 
 namespace BH.SDK.Generators.Modifiers
 {
-    // The mass form of what one placement's own Flatten does - see PrefabFlattenUtils for why a
-    // flatten is bookkeeping removal rather than a rebuild, and why it always takes a whole chain.
-    // Nothing here materializes, resyncs or moves anything: every copy a placement owns is already an
-    // ordinary object, so the level looks identical the instant after a run.
-    //
-    // ORDER IS LOAD-BEARING WHEN TEMPLATES ARE INCLUDED: the active scope goes first, templates
-    // second. A template edit is normally propagated to every placement of it, so flattening
-    // templates while placements still stand would leave the level showing content the templates no
-    // longer describe until something happens to resync them. Once the level holds no placement at
-    // all, a template reaches nobody and the order stops mattering - which is exactly the state the
-    // first half produces.
+    // The mass form of one placement's Flatten (PrefabFlattenUtils): nothing materializes or moves.
+    // ORDER IS LOAD-BEARING with templates included: the active scope first, templates second, or the
+    // level shows content its templates no longer describe. Docs/GENERATORS.md.
 
     /// <summary>
     /// Turns prefab placements back into ordinary objects: the link to the template goes, the objects
@@ -27,10 +19,8 @@ namespace BH.SDK.Generators.Modifiers
         /// <summary> <c>"mod_prefab_flatten"</c>, the key a host lists this generator under. </summary>
         public override string NameKey => "mod_prefab_flatten";
 
-        // Whole-scope rather than the selection, the same reasoning mod_content_remover and
-        // mod_span_fit record: "leave no placements here" is a statement about the scope, and
-        // quietly limiting it to what happens to be selected would leave the rest linked while
-        // reporting success. Per-placement flattening is the editor's own operation, not this.
+        // Whole-scope, not the selection (mod_content_remover and mod_span_fit say why). Per-placement
+        // flattening is the editor's own operation.
 
         /// <summary> Nothing beyond a scope to run against. </summary>
         public override GeneratorRequirements Requirements => GeneratorRequirements.None;
@@ -46,10 +36,8 @@ namespace BH.SDK.Generators.Modifiers
         {
             FlattenScope(context, context.Scope);
 
-            // Both switches need to see the WHOLE level - one to reach the level's placements before
-            // the templates they instantiate, the other to know which templates are still referenced
-            // at all. Game is null while a Prefab template is the active scope, and half an answer
-            // there is worse than none: see each field's own summary.
+            // Both switches need the WHOLE level; Game is null while a Prefab template is the scope, and
+            // half an answer there is worse than none.
             if (context.Game == null) return;
 
             if (parameters.IncludeTemplates) FlattenTemplates(context);
@@ -64,10 +52,8 @@ namespace BH.SDK.Generators.Modifiers
         protected override GeneratorCost EstimateTyped(GeneratorContext context, Parameters parameters)
             => GeneratorCost.Zero;
 
-        // Flattening itself is never dangerous: it destroys no content, and the templates stay in the
-        // level exactly as they were, so one undo puts every link back. Removing templates is the
-        // opposite - it takes authored content out of the level, and a template nothing references
-        // today is still the thing an author placed yesterday.
+        // Flattening destroys no content (one undo restores every link); removing templates takes
+        // authored content out, even one nothing references today.
 
         /// <summary> True where these parameters would destroy content the author did not point at. </summary>
         protected override bool IsDangerousTyped(GeneratorContext context, Parameters parameters)
@@ -90,12 +76,8 @@ namespace BH.SDK.Generators.Modifiers
                 FlattenScope(context, template);
         }
 
-        // SWEPT TO A FIXED POINT, NOT IN ONE PASS. A template is kept by any surviving reference,
-        // including one from inside another template - so removing an unreferenced template can leave
-        // whatever IT named referenced by nothing, and a single pass would keep that one for a reason
-        // it no longer has. Repeating until nothing moves is also what makes the result independent
-        // of dictionary order. The loop always terminates: every round either removes at least one
-        // template or stops.
+        // Swept to a FIXED POINT: a template kept by another template that is itself removed would
+        // survive a single pass. Also makes the result independent of dictionary order.
         private static void RemoveUnusedTemplates(GeneratorContext context)
         {
             if (context.Resources?.Prefabs == null) return;

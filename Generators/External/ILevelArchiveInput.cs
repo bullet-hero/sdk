@@ -2,19 +2,9 @@ using BH.SDK.Serialization.Serializers;
 
 namespace BH.SDK.Generators.External
 {
-    // BYTES, NOT A STORE AND NOT A PATH, and that is the one decision worth stating here. Generator
-    // parameters are bound by a reflection-built form and SERIALIZED INTO A PRESET FILE - so an open
-    // store handle would be a live resource written to disk as a field, and a passphrase would be a
-    // password written to disk as a field. Neither belongs in a preset, and the type system is where
-    // that gets settled rather than in a convention nobody reads.
-    //
-    // Which is also why THE PASSPHRASE IS ABSENT FROM THIS INTERFACE ENTIRELY. The host opens the
-    // archive, asks for the passphrase if the archive wants one, and hands over plaintext; the
-    // generator never learns that the archive was protected at all.
-    //
-    // The format travels beside the bytes because nothing inside them says which they are: a level
-    // document is Json or Blob according to the NAME it was stored under, exactly as in a level
-    // folder on disk.
+    // BYTES, not a store or a path: parameters are SERIALIZED INTO A PRESET FILE, so a handle or a
+    // passphrase would be written to disk as a field. The passphrase is absent entirely: the host
+    // decrypts. The format travels beside the bytes (a document's format is its stored name).
 
     /// <summary> A generator that builds a level out of an archive the host already opened. </summary>
     public interface ILevelArchiveInput

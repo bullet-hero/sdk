@@ -1,9 +1,8 @@
 namespace BH.SDK.Models.Enums.Controls
 {
     /// <summary>
-    /// Where an on-screen control sits. Only the nine corner/edge/centre positions, since a thumb
-    /// control is placed by reach rather than by coordinate; Handedness mirrors the whole layout on
-    /// top of this.
+    /// Where an on-screen control sits: nine corner/edge/centre positions (a thumb control is placed by
+    /// reach); Handedness mirrors the layout on top.
     /// </summary>
     public enum ScreenAnchor : byte
     {

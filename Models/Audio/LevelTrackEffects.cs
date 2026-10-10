@@ -101,16 +101,9 @@ namespace BH.SDK.Models.Audio
             StereoPans = new List<FloatKey>();
             Active = AudioRules.ActiveDefault;
 
-            // THE ELEVEN SLOTS ARE BORN EMPTY, and null is what "this effect is not in the
-            // chain" means. It used to be an always-present object at the disabled floor, which
-            // wrote 1.1 KB of pure defaults into every track of every level - eleven effects with
-            // every parameter, whether or not one was in use. A member that may be null must be
-            // CONSTRUCTED null (docs/NAMING.md), which is what makes the writer's skip reach it.
-            //
-            // MixLevel stays exactly what it was: a real wet level whose floor means silence. It
-            // answers "how loud", null answers "is it here at all", and the two are not the same
-            // question - an effect an author dialled in and then switched off keeps its object and
-            // its settings.
+            // Born null: null means "this effect is not in the chain", which is what lets the writer
+            // skip it (Docs/NAMING.md). MixLevel is "how loud", null is "is it here at all" - an effect
+            // dialled in and switched off keeps its object.
         }
 
         /// <summary> Every member at once, in declaration order. </summary>

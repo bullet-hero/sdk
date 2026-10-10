@@ -9,21 +9,12 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models.Values
 {
-    // THE SEVEN PERMISSION FLAGS ARE GONE AND ARE NOT COMING BACK AS A SHORTER SET. They existed so
-    // the game could "reason about a licence it has never seen", and nothing ever did: one branch in
-    // PublishReadinessAnalyzer read AllowsDistribution, one read RequiresAttribution, and both were
-    // asking the author to grade their own wording. A ticked box is not a fact about a licence - it
-    // is a claim nobody can check, indistinguishable in the file from one that was read carefully,
-    // and wrong more often than not, since whoever fills it in is rarely the rights holder.
-    //
-    // What is left is what an author can actually supply and a moderator can actually open: a name,
-    // an address, and the wording itself. A custom licence is therefore never auto-approved by any
-    // publish profile - a person reads it, which is what was really happening anyway.
+    // No permission flags: a ticked box is a claim nobody can check. A name, an address and the wording,
+    // and a custom licence is never auto-approved by a publish profile. Models/Values/CLAUDE.md
 
     /// <summary>
-    /// ILicense variant for terms that no preset covers - the licence's name, where it is published,
-    /// and its full wording. The escape hatch of the ILicense family (NoSpecified / Typical /
-    /// Custom).
+    /// ILicense variant for terms no preset covers: the licence's name, where it is published, and its full
+    /// wording. The escape hatch of the ILicense family (NoSpecified / Typical / Custom).
     /// </summary>
     [RuleContainer]
     [GenerateModel]
@@ -39,11 +30,8 @@ namespace BH.SDK.Models.Values
         [JsonProperty(Names.Url)]
         public string LicenseUrl { get; set; }
 
-        // UNCAPPED, and the only string in the format that is. Every other RuleStringMax truncates a
-        // field whose meaning survives truncation - a title, a description, a tag. A licence body
-        // does not: cutting it produces a different legal document that still reads like a whole one,
-        // and no cap can be picked that is generous enough for every steward's wording and still
-        // small enough to be worth having. The level file's own size limits are the real bound.
+        // UNCAPPED, the only string in the format that is: truncating a licence yields a different legal
+        // document that still reads whole. The level file's own size limits are the bound.
 
         /// <summary> Full license wording embedded in the level, so it survives the URL going dead. </summary>
         [RuleNotNull]

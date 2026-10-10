@@ -5,18 +5,9 @@ using Unity.Mathematics;
 
 namespace BH.SDK.UnityExtensions.Tests
 {
-    // THE FOUR RULES A DASH AIMED AT A POINT FOLLOWS, AND THE ONE NUMBER THEY ALL COME OUT OF. A dash
-    // is one shape scaled by DashFraction: a point beyond the reach gets a full dash, a point inside
-    // it gets a proportionally shorter one that ENDS on it, a point nearer than MinDashFraction of the
-    // reach (the arrival radius) gets no dash at all, and the travel is steered towards the point every
-    // frame rather than locked to where it was launched.
-    //
-    // WHY THIS FIXTURE EXISTS SEPARATELY FROM THE GATE AND THE STEP: those two pin what a dash DOES
-    // once it has started, and this pins what a dash IS - the arithmetic that decides, before it
-    // starts, how long it runs and therefore how long its two windows last. Scaling the travel without
-    // scaling the windows would hand a cursor player a free dash every time they aimed close, which is
-    // the failure this whole scheme has to avoid: a cursor and a direction player must be on the same
-    // terms, and the terms are these.
+    // What a dash IS (before it starts): the arithmetic that sizes its windows by DashFraction, so a cursor
+    // and a direction player stay on the same terms. The gate and the step fixtures pin what it DOES
+    // afterwards.
 
     /// <summary> <see cref="AvatarMovement"/>'s dash length: what a target asks for, and what that
     /// costs. </summary>
@@ -256,10 +247,8 @@ namespace BH.SDK.UnityExtensions.Tests
             Assert.AreEqual(0f, movement.Position.y, 1e-3f);
         }
 
-        // AND IT MAY NOT OVERSHOOT EVEN WHEN THE ARITHMETIC IS MADE TO DISAGREE. The clamp in Step is
-        // the guarantee rather than the mechanism: here the dash is launched at full length against a
-        // target well inside it, which is exactly what a level moving its Speed track mid-dash would
-        // produce.
+        // The Step clamp is the guarantee: a full dash at a near target, as a mid-dash Speed track change
+        // makes.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]

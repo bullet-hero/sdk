@@ -6,9 +6,8 @@ using NUnit.Framework;
 namespace BH.SDK.Tests.Rules
 {
     /// <summary>
-    /// RuleNotNull: the most-used rule in the format (228 properties). Its Fix constructs a
-    /// replacement, which is why the Roslyn analyzer insists every [RuleContainer] has a public
-    /// parameterless constructor - these tests cover each construction path it can take.
+    /// RuleNotNull, the most-used rule (hundreds of properties). Its Fix constructs a replacement, so every
+    /// [RuleContainer] needs a public parameterless constructor; each construction path is covered.
     /// </summary>
     public class RuleNotNullTests : BaseRuleTests
     {
@@ -197,10 +196,7 @@ namespace BH.SDK.Tests.Rules
             AssertInvalid<RuleNotNullAttribute>(new NullableModel { Value = null });
         }
 
-        // Nullable<T> is detected as invalid but cannot be repaired: Fix builds the replacement with
-        // Activator.CreateInstance(typeof(T?)), which yields null again, and a null replacement is
-        // skipped. So a nullable property with this rule reports forever. No live model has one
-        // today - pinned here so adding the first one is a deliberate choice, not a surprise.
+        // Nullable<T> is invalid but unrepairable (Fix yields null); no live model has one. Pinned.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]

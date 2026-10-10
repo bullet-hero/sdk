@@ -17,10 +17,8 @@ namespace BH.SDK.Generators.Geometry
         Tree = 2,
     }
 
-    // Depth is capped at 6 rather than left open because these grow by a constant factor per level:
-    // Koch alone is 3*4^depth, so depth 8 is 196 608 objects - within shouting distance of
-    // LevelRules.MaxObjects (262 144) from a single click. The cap keeps the estimate meaningful
-    // instead of making it a warning nobody can act on.
+    // Depth is capped at 6: growth is constant-factor per level (Koch is 3 * 4^depth), so depth 8 is
+    // 196 608 objects from one click. The cap keeps the estimate actionable.
 
     /// <summary>
     /// Self-similar figures built by recursion: a Koch snowflake, a Sierpinski triangle, or a

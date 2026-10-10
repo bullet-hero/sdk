@@ -47,6 +47,9 @@ the level format itself (see "Object model" / "Value system" below for the
 
 ## Effects, Audio, PostProcessing, Theme
 
+`Models/Data/` design facts (theme slot bands, `CompositeShape`, effect scope decisions):
+`Docs/RESOURCE_DATA.md`.
+
 - **Effects**: `EffectObject.EffectId` points at an `EffectData` resource (`Models/Data/
   EffectData.cs`, `Level.Resources.Effects`) - the SDK-side analog of Unity's `EffectGameStatic`
   index table. `EffectData` groups: `Core` (render/loop/particle-count/lifetime/texture/pivot),
@@ -114,12 +117,12 @@ the level format itself (see "Object model" / "Value system" below for the
   `Green`/`Blue` (an absolute mapping, neutral at the IDENTITY line) and `HueVsHue`/`HueVsSat`/
   `SatVsSat`/`LumVsSat` (an offset or a multiplier, neutral at a flat
   `PostProcessingRules.ColorCurves.CurveNeutral`). Null means "the author never touched this", which
-  is a real state rather than missing data. It replaced two scalars, and its own header carries the
+  is a real state rather than missing data. It replaced two scalars, and `Docs/POST_PROCESSING.md` carries the
   LutBuilder formula that is the reason six MORE scalars would have been worthless. Both wrap modes
   are `ClampForever` on purpose - `CurveWrapMode.Default` behaves as `Once`, which answers a sample
   at exactly the last key time by wrapping to the first.
 - **Theme**: `ThemeData` (`Level.Resources.Themes`) holds a fixed `Color4Value[64] Matrix` (an
-  "8×8 grid", index layout documented in-file) and,
+  "8×8 grid", slot bands in `Docs/RESOURCE_DATA.md`) and,
   beside it, a NULLABLE `List<string> ColorNames` (`clrn`) of the same length - the author's own
   label per slot. **Null is the normal state** and writes as one null; a non-null list is exactly
   `ValueRules.ThemeCount` long and an empty entry means that one slot is unnamed. It is
@@ -213,3 +216,14 @@ used to skip all of this as one-shot deserialization targets, and stopped being 
 migrating reader needed to read one with a codec rather than with reflection. They carry
 `[GenerateModel]`, declare `IModel<T>`, construct their members, and `ModelContractTests` sweeps them
 with everything else.
+
+`Models/Meta/` design facts (licence default, hashes, no per-resource age rating, UTC grants): `Docs/RESOURCE_META.md`.
+Enum design facts (zero values, mirrors, the texture axes): `Docs/ENUMS.md`.
+Settings groups (why a default is what it is, which group owns a field): `Docs/SETTING_GROUPS.md`.
+
+`Level.ShallowClone`, a reference-sharing copy (`MemberwiseClone`, used only by `PrefabVirtualizationUtils.Thin`): a
+write must replace two collections without touching the level the editor keeps editing through a save, and
+`Copy()` walks the whole graph (124 ms on the largest level then, paid on every autosave). `MemberwiseClone` over
+a member list so a later member joins by itself; shared instances are safe because the writer only reads.
+File and folder names: `Docs/FILE_LAYOUT.md`. Statistics groups: `Docs/STATISTICS.md`. Post-processing keys:
+`Docs/POST_PROCESSING.md`.

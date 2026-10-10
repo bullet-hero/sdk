@@ -151,3 +151,5 @@ non-static, non-abstract, and has a public parameterless constructor - because s
 (`RuleNotNullAttribute`, the `RuleIPrimitiveXxx` family) call `Activator.CreateInstance` on property
 *types* at runtime, and a violation here would otherwise only surface as a rare, hard-to-place
 `MissingMethodException` deep inside an editor "auto-fix my level" flow.
+
+Engine design notes (`RuleWalk`, `RuleTable`, the graph pass, the facade): `Docs/VALIDATIONS.md`.

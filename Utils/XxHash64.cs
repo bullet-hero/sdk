@@ -2,19 +2,8 @@ using System;
 
 namespace BH.SDK.Utils
 {
-    // WHAT IS BEING CHECKED IS CORRUPTION, NOT FORGERY, and that decides everything about this
-    // file. A .blob is a player's level: an interrupted download, a file half-written when the
-    // process died, a failing SD card. None of those are adversarial, and the one thing that IS -
-    // a level someone tampered with - is already answered where it belongs: a protected level goes
-    // through OpenPGP SEIPD, which authenticates its own payload. A cryptographic digest here would
-    // cost several times as much and buy a guarantee the format does not need.
-    //
-    // 64 BITS RATHER THAN CRC32's 32, for the same money. Levels reach 18 MB and sit on disk for
-    // years, and a 32-bit check leaves a one-in-four-billion chance of accepting a damaged one -
-    // small until it is multiplied by every level of every player over the life of the game.
-    //
-    // Written out by hand because netstandard2.1 has no System.IO.Hashing, and one algorithm in
-    // eighty lines is not worth a NuGet dependency in a library that ships inside a game.
+    // Detects CORRUPTION, not forgery (tampering is OpenPGP SEIPD's job). 64 bits, hand-written because
+    // netstandard2.1 has no System.IO.Hashing: Docs/UTILS_DESIGN.md.
 
     /// <summary> xxHash64, the reference algorithm. Deterministic across platforms and runtimes. </summary>
     public static class XxHash64

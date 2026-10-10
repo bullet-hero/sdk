@@ -1,11 +1,7 @@
 namespace BH.SDK.Models.Enums.Controls.Modes
 {
-    // One mode enum per device, and the duplication is the point: an unsupported mode must be
-    // unrepresentable, not merely invalid, so a device that later drops a mode or gains a unique one
-    // changes here alone. Values line up with ControlMode at 0/1/2 so the map to it stays trivial and
-    // RuleEnumValid still validates against this device's own set.
-
-    /// <summary>
+    // One mode enum per device so an unsupported mode is unrepresentable; values line up with ControlMode
+    // at 0/1/2 and RuleEnumValid validates against this device's own set.
     /// How keyboard and mouse drive the avatar.
     /// </summary>
     public enum KeyboardMouseControlMode : byte

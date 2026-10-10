@@ -17,17 +17,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests.Generators
 {
-    // One sweep over EVERY registered scope generator, run with its own defaults. These are the
-    // properties no individual generator should have to re-prove and every future one inherits by
-    // being registered: the estimate is honest, the output stays inside the window it was given,
-    // undo is exact, and the result is a level the format itself accepts.
-    //
-    // Adding a generator adds coverage here automatically - which is the point. A generator that
-    // breaks one of these fails the suite the day it is written, not the day someone tries it.
-    //
-    // Each property is one test looping over the registry rather than a [TestCaseSource] case per
-    // generator, so the whole sweep also runs under a plain reflective runner (no NUnit engine) -
-    // which is what makes it verifiable outside a live Unity Editor.
+    // One sweep over EVERY registered scope generator with its defaults: honest estimate, output inside
+    // the window, exact undo, a level the format accepts. Loops (not TestCaseSource) to run reflectively.
 
     /// <summary> One sweep over every registered scope generator at its own defaults: honest estimate, output
     /// inside the given window, exact undo, and a level the format accepts. Registering a generator adds coverage. </summary>
@@ -144,13 +135,8 @@ namespace BH.SDK.Tests.Generators
             Assert.IsNotEmpty(ScopeGenerators.ToList());
         }
 
-        // GeneratorCost describes what a run ADDS - a Modifier legitimately adds nothing while
-        // changing plenty, and mod_content_remover/mod_framerate_remap actively remove. So additions
-        // are measured directly rather than as a net delta, which a removing generator would drive
-        // negative: the ids the run reports creating, and the keys those new objects plus the
-        // level-global camera tracks came out holding. The one thing this cannot see is a generator
-        // adding keys to an object that already existed - none does, and a Modifier that starts to
-        // would need this measurement rethought rather than the assertion relaxed.
+        // GeneratorCost describes ADDITIONS, measured directly (a Modifier adds nothing, removers would go
+        // negative). Cannot see keys added to a pre-existing object; none does.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
@@ -185,12 +171,8 @@ namespace BH.SDK.Tests.Generators
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.Normal)]
-        // The window bounds what a run may CREATE, not what it may touch. A Modifier shifting an
-        // object that already lived outside the window must not drag it inside - the author scoped
-        // where new content goes, not which existing objects are allowed to exist where. Existing
-        // objects are still bounded, by the level's own timeline - on the left by RuleLevelFrame,
-        // which GeneratedLevel_PassesValidation checks, and on the right by nothing, since a level's
-        // end is a number the author drags.
+        // The window bounds what a run CREATES, not what it touches; existing objects are bounded by the
+        // level's timeline (left by RuleLevelFrame, right by nothing).
         public void EveryCreatedObject_StaysInsideTheContextWindow()
         {
             foreach (var generator in ScopeGenerators)
@@ -211,11 +193,7 @@ namespace BH.SDK.Tests.Generators
             }
         }
 
-        // A keyframe's Frame is LOCAL to its object (the runtime reads it back as obj.Span.StartFrame +
-        // Frame), and writing an absolute one is invisible in every other check here: the object is
-        // created, framed and validated correctly, it just never reaches its own keys and therefore
-        // never moves. Every animated generator shipped with an absolute frame once; this is what
-        // stops the next one.
+        // A keyframe's Frame is LOCAL to its object; an absolute one is invisible to every other check.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
@@ -366,16 +344,8 @@ namespace BH.SDK.Tests.Generators
             }
         }
 
-        // EVERY NEW LEVEL IS COMPOSED FOR A HORIZONTAL FRAME, and the sweep is over the LEVEL
-        // generators rather than the scope ones because this is the only place the answer is
-        // decided: LevelSettings' constructors set Horizontal, and a generator that builds its
-        // settings any other way (an object initializer, a foreign file's numbers, a copied
-        // struct) silently opts the level into a portrait screen its content was never composed
-        // for. LevelSettingsTests proves the constructors; this proves nobody went around them.
-        //
-        // The IMPORTER is out: it reads a level somebody else authored, so its orientation is
-        // that file's answer rather than a default, and it needs a real file on disk to produce
-        // anything at all.
+        // Levels are composed for a horizontal frame; LevelSettings constructors set it, a generator going
+        // around them opts into portrait. The importer is out (a file's own orientation).
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]

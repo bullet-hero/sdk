@@ -10,15 +10,8 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models.SettingGroups.Controls
 {
-    // Everything every control device shares, and deliberately NOT the mode: each device stores its
-    // own mode enum instead, so an unsupported mode is unrepresentable rather than merely invalid, and
-    // dropping a mode from one device touches nothing else. GeneralMode is the read side of that - the
-    // one place a device's own enum is mapped onto the shared ControlMode vocabulary.
-    //
-    // These settings describe how the AVATAR is steered, and nothing else. An earlier design let each
-    // device declare which scenes it may drive (game / menu / editor); that abstraction is gone, because
-    // the menu and the level editor drive themselves - their own pointer, focus and shortcut handling -
-    // and never asked this tree anything.
+    // What every device shares, and NOT the mode: each device stores its own enum (an unsupported mode is
+    // unrepresentable) and GeneralMode maps it to ControlMode. Describes how the AVATAR is steered only.
 
     /// <summary>
     /// Base of every per-device control group: whether the device is in play, and the four tuning knobs

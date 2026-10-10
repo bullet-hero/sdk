@@ -11,14 +11,7 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests.Services
 {
-    // A MIRROR OF TarGzServiceTests, CASE FOR CASE, and being able to hold the two side by side is
-    // what proves the second container refuses what the first one refuses. Where a case has no twin
-    // it says so in its own comment - and there are three, all of them zip facts tar has no shape
-    // for: a declared size that lies, two entries under one name, and an encrypted entry.
-    //
-    // THE HOSTILE ARCHIVES ARE WRITTEN FIELD BY FIELD, by RawZip - see its header for why that is
-    // the only way this assembly can write a zip at all. Everything here goes through ZipService or
-    // through bytes.
+    // A MIRROR OF TarGzServiceTests, case for case; zip-only cases say so. Hostile archives come from RawZip.
 
     /// <summary> The zip half of the archive layer - the four unpack checks, the limits, AES, and
     /// the central directory that makes reading one entry cheap. </summary>
@@ -147,11 +140,8 @@ namespace BH.SDK.Tests.Services
             Assert.AreEqual(ArchiveFormat.Zip, ArchiveFormatSniffer.Detect(packed));
         }
 
-        // The claim ArchivePolicy makes, and the one NonSeekableWrite exists to keep: a zip written
-        // to a file and a zip written to a pipe have to be the same archive, or a backend cannot
-        // recognise a re-upload by its digest. ZipOutputStream patches the local header when it can
-        // seek and writes a data descriptor when it cannot, so without the wrapper this fails on
-        // one platform and passes on another.
+        // A zip written to a file and to a pipe must be the same archive (digest of a re-upload);
+        // NonSeekableWrite keeps them equal.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
@@ -373,11 +363,7 @@ namespace BH.SDK.Tests.Services
                 await Unpack(packed, destination, new ArchiveLimits { MaxTotalBytes = 3000 }));
         }
 
-        // NO TAR TWIN, and the reason the limit is enforced twice. In a tar the header length IS
-        // the payload length; in a zip the directory is a claim the archive makes about itself, so
-        // an entry can declare a kilobyte and inflate into as much as the reader will hold. Here
-        // the directory declares 32 bytes and the entry really holds a quarter of a megabyte: the
-        // cheap check waves it through, and the byte counter during the copy is what stops it.
+        // No tar twin: a zip's directory is a claim the archive makes, so the size limit is enforced twice.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
@@ -463,17 +449,8 @@ namespace BH.SDK.Tests.Services
                 await Unpack(archive, destination, ArchiveLimits.Default, "wrong"));
         }
 
-        // THE DEFECT THIS TEST EXISTS FOR SHIPPED ONCE AND WAS INVISIBLE FROM INSIDE. SharpZipLib
-        // encodes a password with the machine's ANSI code page, AE-2 derives the key from its UTF-8
-        // bytes, and a pack/unpack pair that shares the mistake round trips perfectly - so the
-        // archive opened here and nowhere else, which is the worst shape a bug can take in a format
-        // whose whole point is that other tools read it.
-        //
-        // So the verifier is recomputed from the spec instead of from the library: PBKDF2-HMAC-SHA1
-        // over the passphrase bytes and the salt the archive carries, 1000 iterations, two keys and
-        // then the two-byte password verification value. It matches the UTF-8 reading of the
-        // passphrase and no other, which is the interoperability claim itself rather than a proxy
-        // for it. An ASCII passphrase would pass under either reading and prove nothing.
+        // Shipped once: SharpZipLib encodes the password in ANSI, AE-2 derives the key from UTF-8. Verifier
+        // is recomputed from the spec (PBKDF2-HMAC-SHA1, 1000 iterations); ASCII would prove nothing.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
@@ -492,10 +469,7 @@ namespace BH.SDK.Tests.Services
                 "A single-byte reading of the passphrase must not be what was used.");
         }
 
-        // The price of AE-2, pinned rather than regretted: the entry NAMES stay in the clear, so an
-        // archiver lists an encrypted level and a passphrase covers the content alone. An import
-        // preview reads this list before it asks for anything, which is what makes the question
-        // "this level needs a password" rather than "this file is unreadable".
+        // AE-2 leaves entry NAMES in the clear, so an import preview can ask for a password.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]

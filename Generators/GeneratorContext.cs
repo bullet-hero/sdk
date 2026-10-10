@@ -13,15 +13,9 @@ using BH.SDK.Rules;
 
 namespace BH.SDK.Generators
 {
-    // The one rule of this class: a generator mutates the model THROUGH it and nowhere else. Every
-    // mutating method here records what it did in the change log, which is the whole undo story
-    // (see GeneratorChangeLog's header for why a journal rather than a Level copy).
-    //
-    // Scope and Counter are carried as a pair and neither is ever inferred from the other. A Prefab
-    // implements both IObjectScope and IObjectIdCounter on one class, but at level scope they are
-    // split across two: Level.Game is the scope, Level.Settings is the counter. Code that assumes
-    // symmetry works in Prefab Mode and breaks at level scope, or the reverse - see the SDK's
-    // CLAUDE.md, "the split every consumer must get right".
+    // A generator mutates the model THROUGH this and nowhere else: every mutator journals itself, which
+    // is the whole undo story. Scope and Counter are a pair, never inferred from each other (a Prefab is
+    // both, at level scope Game is the scope and Settings the counter). Docs/GENERATORS.md.
 
     /// <summary>
     /// The sandbox a Content/Modifier generator runs in: what it may read, what it may write, and
@@ -60,15 +54,8 @@ namespace BH.SDK.Generators
         /// fall outside it - see BaseSpawnGenerator.ClampSpan. </summary>
         public FrameSpan Span { get; }
 
-        // Grouping lives here rather than in each generator's parameters for the same reason
-        // Span/Layer/Seed do: every generator that creates anything wants it, and a per-
-        // generator copy would be one more field to forget. Because every generator already parents
-        // what it creates to context.Parent (that is the contract), routing Parent through a lazily
-        // created container is all it takes - no generator changes, including future ones.
-        //
-        // Lazy on purpose: a run that creates nothing (gen_audio_waveform with no peaks) must not
-        // leave an empty container behind. It is also why the group only appears once something asks
-        // for Parent, and why Estimate adds its object only when the run itself produces objects.
+        // Grouping lives here: every generator parents to context.Parent, so a lazily created container
+        // behind it needs no generator changes. Lazy, so a run that creates nothing leaves no container.
 
         /// <summary> Parent every created object should attach to. ObjectId.Null means scope root.
         /// With grouping on, reading this creates (once) the container object and returns it. </summary>
@@ -77,11 +64,8 @@ namespace BH.SDK.Generators
         /// <summary> Whether this run wraps everything it creates in one container object. </summary>
         public bool IsGrouping => _groupName != null;
 
-        // Layer splitting is the same kind of run-wide option as grouping, and deliberately NOT
-        // something a generator implements: a generator knows the order it created things in and
-        // nothing else, while "one layer per object" is a decision about the whole run. Doing it as
-        // a pass over the journal AFTER Generate keeps every generator free of it - including ones
-        // that write Layer themselves - and keeps the layers contiguous in creation order.
+        // Layer splitting is a run-wide option, not a generator's: done as a pass over the journal AFTER
+        // Generate, it also wins over a generator that writes Layer itself.
 
         /// <summary> Whether every object this run creates gets its own Layer, stepping up from
         /// Layer, instead of all of them sharing one. </summary>
@@ -97,11 +81,8 @@ namespace BH.SDK.Generators
         /// this. </summary>
         public int Layer { get; }
 
-        // Layer is parent-relative in this format: an object's effective draw order is its own Layer
-        // plus every ancestor's. So writing the author's number straight onto a child parented under
-        // anything non-zero silently offsets the whole run by the parent's layer - which is exactly
-        // what "layer is computed without the parent" looked like. Subtracting the chain once here
-        // keeps the effective result equal to what was asked for, whatever the run is parented to.
+        // Layer is parent-relative: writing the author's number under a non-zero parent would offset the
+        // whole run, so the parent chain is subtracted once here.
 
         /// <summary> Layer to actually write on a created object: the author's Layer expressed
         /// relative to whatever this run parents to. </summary>
@@ -163,10 +144,8 @@ namespace BH.SDK.Generators
             IsSplittingLayers = splitLayers;
         }
 
-        // Runs after Generate rather than inside Create, because "the Nth object of this run" only
-        // exists once the run is over - and because a generator that writes Layer itself (every
-        // spawning one does, from context.Layer) would otherwise overwrite whatever Create handed
-        // out. The container keeps Layer 0: it is the parent, and Layer is parent-relative.
+        // After Generate, not inside Create: "the Nth object of this run" exists only once the run is
+        // over, and a spawning generator writes Layer itself. The container keeps Layer 0 (the parent).
 
         /// <summary> Gives every object this run created its own Layer, stepping up from Layer in
         /// creation order. Called once by the base generator after Generate; a no-op when splitting
@@ -226,11 +205,8 @@ namespace BH.SDK.Generators
         /// or every object gets the same number. </summary>
         public GeneratorRandom CreateRandom() => new(Seed);
 
-        // Deliberately does NOT set Span/Layer/ParentObjectId - the generator does,
-        // from this context's own inputs, because "spread objects across the range" and "put them
-        // all on the same frame" are both legitimate and only the generator knows which it means.
-        // It also can't use LevelUtils.SetObjectId: that overload takes LevelSettings specifically,
-        // which is the wrong counter inside a Prefab template.
+        // Does NOT set Span/Layer/ParentObjectId: only the generator knows what it means by them. Nor can
+        // it use LevelUtils.SetObjectId (that takes LevelSettings, the wrong counter in a template).
 
         /// <summary> Create a new object in the target scope with a freshly minted id. </summary>
         public T Create<T>() where T : RectObject, new()
@@ -259,12 +235,9 @@ namespace BH.SDK.Generators
         /// <summary> Same as Edit&lt;T&gt; when the concrete subtype doesn't matter. </summary>
         public RectObject Edit(ObjectId id) => Edit<RectObject>(id);
 
-        // CHANGING AN OBJECT'S TYPE IN PLACE IS ITS OWN PRIMITIVE BECAUSE NEITHER OF THE OTHER TWO
-        // CAN DO IT. Edit<T> refuses a mismatched subtype by contract, and Delete + Create<T> mints a
-        // fresh ObjectId - which orphans every child pointing at the old one, drops it out of any
-        // selection and breaks any operation already holding it. The id is exactly what has to
-        // survive, so the object is replaced under it. ObjectEdited already keeps whole instances and
-        // assigns them back by id, so a type change needs no journal entry of its own.
+        // Changing an object's TYPE in place is its own primitive: Edit<T> refuses a mismatched subtype
+        // and Delete + Create<T> mints a fresh ObjectId, orphaning children. ObjectEdited already keeps
+        // whole instances by id, so no journal entry of its own.
 
         /// <summary> Replace an object with a fresh one of another type, keeping its id and every
         /// member RectObject declares. Returns the new instance, live in the scope. </summary>
@@ -298,10 +271,8 @@ namespace BH.SDK.Generators
             Log.Add(new ObjectDeleted(Scope, id, obj));
         }
 
-        // For the parts of a level that are neither an object, a resource nor a keyframe track -
-        // LevelSettings.Framerate/FrameDuration above all. Delegates rather than a property path
-        // because the context has no business knowing which fields of which settings group a future
-        // generator will need, and a journal entry only ever needs "put it back the way it was".
+        // For what is neither object, resource nor track (LevelSettings.Framerate/FrameDuration): a
+        // delegate, since a journal entry only needs "put it back the way it was".
 
         /// <summary> Journalled write of one plain value. Reads the current value first, so undo
         /// restores exactly what was there. </summary>
@@ -331,13 +302,8 @@ namespace BH.SDK.Generators
             Log.Add(new ResourceRemoved<TId, TResource>(target, id, resource));
         }
 
-        // Object-owned keyframe tracks never come through here - they belong to an object, so
-        // Create/Edit already snapshots them. These two are only for the level-global tracks in
-        // GameEvents/CameraEvents/PostProcessingEvents/PlayerEvents, which have no owning object.
-        //
-        // Neither sorts nor deduplicates. Tracks carry no enforced sort order, and Frame uniqueness
-        // ([RuleCollectionUnique]) is a per-generator decision - mod_quantize_keyframes alone has
-        // three different answers for what to do about a collision.
+        // For the level-global tracks (game, camera, post-processing, player events), which have no owner
+        // to snapshot. Neither sorts nor deduplicates: Frame uniqueness is a per-generator decision.
 
         /// <summary> Append a keyframe to a level-global track. </summary>
         public void AddLevelKey<TKey>(List<TKey> track, TKey key)

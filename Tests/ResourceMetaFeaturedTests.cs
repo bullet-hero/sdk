@@ -11,15 +11,8 @@ using ResourceMeta = BH.SDK.Models.Meta.ResourceMeta;
 
 namespace BH.SDK.Tests
 {
-    // ResourceFeatured is the newest member on this model and the one a CLIENT decides a whole
-    // screen from - a level card names the musician when a record says it is worth naming. So the
-    // cases here are the ones the generated contract cannot state for itself: that the flag is off
-    // until somebody turns it on, and that a record written before the field existed reads back off
-    // rather than throwing. The second one is what makes the field additive - no generation bump on
-    // LevelMeta, no migrator - and it is the same claim AuthorTests makes for Author.Credit.
-    //
-    // The two models are aliased rather than imported by namespace: NUnit's own [Author] attribute
-    // is on every method here, and a plain `using` of BH.SDK.Models.Meta makes the name ambiguous.
+    // The flag is off until turned on, and a record written before the field reads back off (additive, no
+    // bump). Models are aliased (NUnit's [Author]).
 
     /// <summary> ResourceMeta.ResourceFeatured: off by default, off out of a record that predates it,
     /// and it survives a round trip. </summary>

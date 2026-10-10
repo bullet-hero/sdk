@@ -8,13 +8,9 @@ using BH.SDK.Rules;
 
 namespace BH.SDK.Validations.Graph
 {
-    // The half of the standard the declarative rules structurally cannot cover. A [RuleXxx] sees one
-    // value, an object rule sees one instance; everything about how objects relate - who owns which
-    // id, what a parent points at, whether a template places itself - needs the whole level at once.
-    //
-    // Written as an explicit walk rather than reflection, unlike RuleAnalyzer: there are a handful of
-    // invariants, each with its own shape, and a generic engine for them would be more machinery than
-    // the invariants themselves.
+    // The half the declarative rules structurally cannot cover: how objects relate (ids, parents,
+    // placements) needs the whole level. An explicit walk rather than reflection - a handful of
+    // invariants, each with its own shape.
 
     /// <summary>
     /// Checks the cross-object invariants of a whole Level: id uniqueness and counters, parent
@@ -50,13 +46,8 @@ namespace BH.SDK.Validations.Graph
 
         #region Beat segments
 
-        // "Where does the grid run, and how fast" must have exactly one answer per frame, and a
-        // property attribute cannot see a second segment to compare against - which is what puts this
-        // here rather than on BeatSegment.Span. Reported per PAIR, not per segment: a segment is only
-        // ever wrong relative to another one, and naming both is what makes the finding actionable.
-        //
-        // Order is not assumed. The list is authored, and nothing in the format sorts it, so a
-        // segment can legally sit before its predecessor in the list while its span sits after it.
+        // Here, not on BeatSegment.Span: a property attribute cannot see a second segment. Reported per
+        // PAIR, and order is not assumed - the list is authored and a segment may precede its predecessor.
 
         private static void AnalyzeBeatSegments(List<BeatSegment> beats, List<GraphIssue> result)
         {
@@ -141,13 +132,8 @@ namespace BH.SDK.Validations.Graph
                     return;
                 }
 
-                // A child whose span reaches outside its parent's is deliberately NOT reported. It is
-                // legal authored data: a consumer resolves the containment on read rather than
-                // storing the clipped value (the Unity project's FrameSpanFitMath), so the overhang
-                // never plays and comes back the moment the parent grows again. Saying so on every
-                // load turned out to be noise about content that is behaving exactly as designed -
-                // fitting the lifetimes is now an edit the author asks for (mod_span_fit), not a
-                // finding that follows them around.
+                // An overhanging child is NOT reported: legal data, resolved on read (FrameSpanFitMath), and
+                // fitting lifetimes is an edit the author asks for (mod_span_fit).
 
                 current = parent;
             }
@@ -157,17 +143,9 @@ namespace BH.SDK.Validations.Graph
                 $"parent chain is deeper than {LevelRules.MaxObjectDepth}"));
         }
 
-        // A counter at or below an id already in use hands the next created object a colliding id -
-        // the one failure here that is silent at authoring time and corrupt afterwards.
-        //
-        // The second finding is the opposite kind of news: a counter that is FINE but running out.
-        // Ids are never reused, so this number only ever climbs - it measures how long a level has
-        // been edited, not how big it is - and the day it reaches LevelRules.MaxObjectIds the scope
-        // stops being able to create anything at all. Reported well before that (three quarters of
-        // the range) because by the time minting refuses there is nothing left to do but renumber
-        // the whole file, and being told at that point is being told too late. It is checked
-        // WITHOUT the objects-empty early return above, since an emptied-out level whose counter
-        // sits near the ceiling is precisely the case the warning is for.
+        // A counter at or below a used id hands the next object a colliding id: silent, then corrupt. The
+        // second finding is a counter running out (ids are never reused); checked WITHOUT the empty early
+        // return above, since an emptied level near the ceiling is the case it is for.
         private static void AnalyzeIdCounter(Dictionary<ObjectId, RectObject> objects, int counter,
             string scopeName, List<GraphIssue> result)
         {
@@ -202,11 +180,8 @@ namespace BH.SDK.Validations.Graph
 
         #region Placements: remaps and overrides
 
-        // OTHER placements' copies, which is one case narrower than PrefabVirtualizationUtils
-        // .CollectMaterializedChildIds and deliberately so: a placement whose own ObjectIds names
-        // ITSELF is broken data, and hiding it here would silence the very rule below that reports
-        // it. Everywhere else that set is used to decide what to write, where self-reference is a
-        // reason to leave the entry alone rather than to talk about it.
+        // One case narrower than PrefabVirtualizationUtils.CollectMaterializedChildIds, deliberately: a
+        // placement whose own ObjectIds names ITSELF is broken data, and hiding it would silence its rule.
         private static void CollectCopiesOfOtherPlacements(Dictionary<ObjectId, RectObject> objects,
             HashSet<ObjectId> into)
         {
@@ -219,13 +194,9 @@ namespace BH.SDK.Validations.Graph
             }
         }
 
-        // ONLY A GENUINE PLACEMENT IS ASKED THESE QUESTIONS, for the reason PrefabMaterializer
-        // .FindPlacements states at length: a scope also holds PrefabObject entries that are
-        // themselves materialized COPIES of some other placement here, and their ObjectIds name ids
-        // in the INNER template's scope rather than in this one. Reading them as independent
-        // placements reported every remap of every copy as a broken one - 38736 findings on the
-        // level that prompted this, none of them true, and the real findings were unreachable
-        // behind them.
+        // ONLY A GENUINE PLACEMENT IS ASKED THESE QUESTIONS: a PrefabObject that is a materialized COPY
+        // names ids in the INNER template's scope. Reading it as a placement reports every remap as
+        // broken (PrefabMaterializer.FindPlacements has the long form).
         private static void AnalyzePlacements(Level level, IObjectScope scope,
             string scopeName, List<GraphIssue> result)
         {
@@ -269,13 +240,9 @@ namespace BH.SDK.Validations.Graph
                 {
                     if (template.Objects.ContainsKey(modification.Key.ObjectId)) continue;
 
-                    // THE ROOT IS NOT IN Objects AND NEVER WAS - it is a FIELD of the template
-                    // (Prefab.Root), which is the whole reason ObjectId.PrefabRoot exists as an
-                    // address at all. A dictionary probe therefore reads every root-addressed
-                    // override as dangling, which is what reported 19993 findings over a level whose
-                    // placements were all in order. What IS worth reporting here is a root override
-                    // naming a field the root does not own, since ApplyModifications would silently
-                    // drop it (PrefabRootUtils.TryGetModificationTarget).
+                    // THE ROOT IS A FIELD (Prefab.Root), NOT IN Objects: a dictionary probe reads every
+                    // root-addressed override as dangling. Report only a field the root does not own, which
+                    // ApplyModifications would drop (PrefabRootUtils.TryGetModificationTarget).
                     if (modification.Key.ObjectId == ObjectId.PrefabRoot)
                     {
                         if (ModificationFields.IsPrefabRootField(modification.Key.Field)) continue;

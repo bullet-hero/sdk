@@ -26,13 +26,8 @@ namespace BH.SDK.Models.Values
         [JsonProperty(Names.HeightShort)]
         public int Height { get; set; }
         
-        // NO ORIENTATION METADATA HERE, DELIBERATELY. LevelSettings.Orientation already answers
-        // "which way is this level held", once, for the whole level; a second answer sitting beside
-        // two numbers that already imply it is a second source of truth. ScreenLimits is also a
-        // KEYFRAME TRACK, so metadata on this type would be animatable - a level that rotates the
-        // phone mid-run. That may one day be a feature; shipping it by accident is worse than not
-        // shipping it. A level that wants vertical authors a vertical ratio, which has always been
-        // legal data (MinAspect* is 1, so ScreenAspect(9, 16) validates).
+        // No orientation metadata, deliberately: LevelSettings.Orientation already says it, and ScreenLimits
+        // is a keyframe track, so it would be animatable. A vertical level authors a vertical ratio.
 
         /// <summary> Width over height, or zero where either is unset. </summary>
         public float GetAspect() => IsValid() ? Width / (float)Height : 0f;

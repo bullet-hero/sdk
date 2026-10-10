@@ -6,6 +6,9 @@ layer-wide conventions. This file is folder-local.
 
 ## Services/
 
+Why the archive, store, crypto, collection and profile code is shaped as it is: `Docs/ARCHIVE.md`; the
+shape catalogue: `Docs/SHAPES.md`.
+
 `SerializationService`-adjacent but SDK-root-level. **Four of its subfolders are
   the level-archive feature and only make sense read together** (design record:
   `docs/issues/ARCHIVE_HISTORY.md` in the consuming project): `Content/` (`IContentStore` - a named
@@ -22,8 +25,8 @@ layer-wide conventions. This file is folder-local.
   `NonSeekableWrite` is what keeps one input producing one output: ZipOutputStream writes a
   different file when it can seek, and a desktop export can while an Android SAF export cannot),
   `Crypto/` (`PgpSymmetricService`, OpenPGP symmetric,
-  SEIPD v1 because GnuPG does not implement RFC 9580 - read its header before touching the
-  `...Utf8` overloads, which are what make a Cyrillic passphrase interoperate with gpg at all), and
+  SEIPD v1 because GnuPG does not implement RFC 9580; the `...Utf8` overloads are what make a Cyrillic
+  passphrase interoperate with gpg at all - `Docs/ARCHIVE.md`), and
   `LevelArchive/` (what a level archive contains, written and read; the reader is also the future
   server's entry point, which is why every refusal is a value rather than an exception).
   **This is where the SDK started reading files**, so any header claiming it reads none is stale.
@@ -33,13 +36,13 @@ layer-wide conventions. This file is folder-local.
   it IS the file. `Serialization/Blob/` is that format; `LevelObjectCodec`, the object tree written
   out by hand, was its worked example and is no longer needed.
   Also `CryptographyService`
-  (AES-256-CBC, and NOT what protects a level any more - see its own header), `TextFormatService` (`{variable}` string templating), `FontCharacterService` (builds
+  (AES-256-CBC, and NOT what protects a level any more - OpenPGP does, `Docs/ARCHIVE.md`), `TextFormatService` (`{variable}` string templating), `FontCharacterService` (builds
   `LevelHints.FontCharacters`, see below), and **`Shapes/ShapeCatalogService`** + `ShapeParameters` -
   the game's own built-in shape library, which lives HERE rather than in the consumer because it
   is what a `ShapeId` means: 497 shapes as the cross product of a form, a sector, a thickness rung
   and an invert flag, an id that IS those parameters packed one axis per nibble
   (`Encode`/`TryDecode`), and `Build` producing the geometry in pure C#. The consuming project only
-  bakes what this enumerates. Read its header before touching the id layout - the six rules there
+  bakes what this enumerates. Read `Docs/SHAPES.md` before touching the id layout - its six rules
   are what make a future axis free and an inserted side count harmless.
   Finally `Controls/` (`ControlDeviceCatalog`/`ControlDeviceInfo`) - the STATIC per-device facts,
   here rather than in the settings tree because they are not the player's to change and **must not

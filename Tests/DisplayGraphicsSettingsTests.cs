@@ -6,31 +6,16 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests
 {
-    // The group is desktop-only, so what these pin is not behaviour but the two claims that let it
-    // ship without a generation bump: the defaults are what the game already does (Windowed is
-    // ProjectSettings.asset's own fullscreenMode, native resolution, no render scaling, vsync off -
-    // which is what SettingsApplier used to write unconditionally), and a settings file written
-    // before the group, or before VSync joined it, reads back as exactly those.
-    //
-    // THE WINDOW DEFAULT MOVED, and this is the second half of that change rather than a test being
-    // repaired around it: it was FullScreenWindow, matching a fullscreenMode of 1, and both went to
-    // Windowed together because the game may never put ITSELF full screen. A fresh install used to
-    // be handed a mode nobody picked. The assert stays worded as "what the project already ships",
-    // because that is still exactly what it checks - the project ships something else now.
-    //
-    // NativeResolution is a zero SENTINEL, not a resolution: HasResolution is the only thing allowed
-    // to ask whether one was authored, the same never-a-literal discipline LevelRules.IsValidSeed
-    // keeps for the seed.
+    // Desktop-only group; pins that the defaults are what the game already does (Windowed, native
+    // resolution, no scaling, vsync off) and that older files read back as them. NativeResolution is a
+    // zero SENTINEL: only HasResolution may ask. The game may never put itself full screen.
 
 
     /// <summary> The desktop display group: that its defaults are what the game already did, that an older
     /// settings file reads back as exactly those, and that a zero resolution is a sentinel rather than a size. </summary>
     public class DisplayGraphicsSettingsTests
     {
-        // EVERY MEMBER HERE DIFFERS FROM ITS DEFAULT, which is the only reason a round trip over this
-        // value proves anything. The mode is FullScreenWindow rather than Windowed for exactly that:
-        // Windowed became the default, and an "authored" value equal to the default cannot tell a
-        // copy that carried it from one that never read it.
+        // Every member differs from its default, or a round trip proves nothing.
         private static DisplayGraphicsSettings Authored() =>
             new(WindowMode.FullScreenWindow, 1080, 1920, 0.75f, VSyncMode.Half);
 

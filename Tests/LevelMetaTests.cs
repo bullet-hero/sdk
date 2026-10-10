@@ -9,20 +9,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests
 {
-    // The three fields the level BROWSER needs and that nothing else on this model could supply.
-    //
-    // All three ride object initializers in Copy() rather than further constructor parameters - the
-    // same call LevelSettings.Seed made - and an initializer is the one shape a copy-paste silently
-    // drops. ModelContractTests cannot catch that: it sweeps REFERENCES on default-constructed
-    // pairs, so a Copy that loses a value field, or one that shares a list instance instead of
-    // copying it, both pass it.
-    //
-    // LevelDuration's zero is UNKNOWN, not "instant". Every level written before the field existed
-    // reads back that way, which is exactly why the browser's duration filter may never hide it.
-    //
-    // MinGeneration says the same kind of thing about a different question - what a client needs to
-    // read this level whole - and answers it WITHOUT opening the level, which is the whole reason it
-    // lives in metadata. Its "unknown" cannot be zero, because zero is a real generation.
+    // The browser's three fields. They ride object initializers in Copy() (ModelContractTests cannot see a
+    // dropped one). LevelDuration zero is UNKNOWN; MinGeneration's unknown cannot be zero.
 
 
     /// <summary> The three fields the level browser needs, all riding object initializers in Copy - the one

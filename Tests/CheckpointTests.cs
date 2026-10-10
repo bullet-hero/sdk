@@ -8,11 +8,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests
 {
-    // Checkpoint grew a respawn position and a space to read it in. Two things are worth pinning:
-    // that a file written before those existed still reads as what it always meant (World at the
-    // origin, hence no migration), and that the hand-written IModel<T> boilerplate actually accounts
-    // for the new fields - that is the exact place in this codebase where a copy-paste omission
-    // compiles and then silently makes two different checkpoints compare equal.
+    // A file written before the respawn position reads as World at the origin (no migration), and the
+    // hand-written IModel boilerplate must account for the new fields.
 
     /// <summary> Checkpoint's respawn position and space: that an older file still reads as World at the origin,
     /// and that the hand-written model boilerplate accounts for both new fields. </summary>
@@ -33,10 +30,7 @@ namespace BH.SDK.Tests
             Assert.AreEqual(0f, position.Y);
         }
 
-        // The whole reason GameEvents never bumped its generation: absent has to mean the same
-        // thing the field's default means. The document is hand-spliced rather than produced by
-        // serializing a current GameEvents, because a current one would carry the new keys - the
-        // same reason Tests/MockData.cs splices its own historical fragments by hand.
+        // Why GameEvents never bumped: absent must mean the field's default. Hand-spliced document.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]

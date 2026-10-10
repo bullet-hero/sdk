@@ -8,14 +8,8 @@ using Microsoft.CodeAnalysis.CSharp;
 
 namespace BH.SDK.Roslyn.Tests
 {
-    // A generator is a pure function from a compilation to sources, so testing one needs a
-    // compilation and nothing else - no Unity, no disk, no project. This builds one from strings.
-    //
-    // THE MODEL API IS STUBBED HERE RATHER THAN REFERENCED FROM BH.SDK, and the reason is when
-    // these tests have to work: the mass refactor that puts `partial`/`sealed`/[GenerateModel] on
-    // 205 files leaves the library uncompilable for long stretches, which is exactly when a broken
-    // generator has to be visible. A stub keeps that signal alive. The cost is drift, and it is
-    // paid for on the other side: BH.SDK.Tests exercises the generator against the REAL types.
+    // Builds a compilation from strings. The model API is STUBBED, not referenced: the library may be
+    // uncompilable mid-refactor, exactly when a broken generator must show (Docs/ROSLYN_GENERATORS.md).
 
 
     /// <summary> Builds a real compilation from strings and runs generators over it - the whole rig, plus the
@@ -85,10 +79,7 @@ namespace BH.SDK.Models
 
 namespace BH.SDK.Versions
 {
-    // WITHOUT THIS STUB THE WHOLE VERSIONED PATH IS UNTESTED, and untestable in a way that looks
-    // like nothing: ModelSpecFactory matches the attribute by its SIMPLE NAME, so a fixture with no
-    // such type in scope resolves to no domain and both emitters quietly take their unversioned
-    // branch. It was absent for as long as the generator existed.
+    // Without this stub the versioned path is untested: the attribute is matched by simple name.
     [System.AttributeUsage(System.AttributeTargets.Class)]
     public class ModelGenerationAttribute : System.Attribute
     {

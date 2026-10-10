@@ -6,18 +6,9 @@ using System.Threading.Tasks;
 
 namespace BH.SDK.Services.Content
 {
-    // The store that IS the test double, and the one the server reads an upload into. Both uses
-    // want the same thing: a level's worth of files with no disk under them, addressed exactly the
-    // way the real one is - so a pipeline proven here is proven, not approximated.
-    //
-    // THE CAP IS NOT TIDINESS. On the server this store is what a tar.gz is unpacked INTO, and a
-    // gzip bomb is a few kilobytes that decompresses to as much as the process will accept. The
-    // archive layer has its own limits; this is the last one, held by the thing actually allocating
-    // the bytes, and it is checked while a blob is being written rather than only when it is
-    // committed - by then the memory is already spent.
-    //
-    // Every operation completes synchronously, always, which is the reason the interface is written
-    // in ValueTask: on this implementation the async machinery allocates nothing at all.
+    // The test double and the store a server reads an upload into. The cap is the LAST defence against a
+    // gzip bomb, held by whatever allocates and checked while a blob is written. Completes
+    // synchronously, always.
 
     /// <summary> An <see cref="IContentStore"/> over blobs held in memory. </summary>
     public sealed class MemoryContentStore : IContentStore
@@ -168,11 +159,8 @@ namespace BH.SDK.Services.Content
             _totalBytes += bytes.Length;
         }
 
-        // MemoryStream's own write path is what enforces the cap: overriding the three entry points
-        // it actually has - a span, an array segment and a single byte - covers WriteAsync and
-        // CopyTo too, since both route through them. Subclassing rather than wrapping means every
-        // other member (seeking, Position, ToArray) stays MemoryStream's, which is what the callers
-        // above expect a writable stream to behave like.
+        // MemoryStream's own write path enforces the cap: the three entry points it has (span, array
+        // segment, byte) also cover WriteAsync and CopyTo. Subclassing keeps seeking and ToArray.
 
         /// <summary> Holds a write in memory and files it under its key only when the stream is closed, so an
         /// abandoned write leaves nothing behind. </summary>

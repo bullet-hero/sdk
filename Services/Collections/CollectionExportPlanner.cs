@@ -41,16 +41,8 @@ namespace BH.SDK.Services.Collections
         public int DependencyCount { get; internal set; }
     }
 
-    // EXPORT IS THE MIRROR OF IMPORT, with one decision made the other way round: a data resource the
-    // collection already holds under the same id is REPLACED, not asked about. The collection being
-    // written to is the author's own - read-only ones are never a target - so a second export of an
-    // edited prefab is an update, which is the whole point of sending it again.
-    //
-    // A file resource gets a collection-local id and a file under media/, whatever kind of source the
-    // level had for it: a LevelPath file and an AbsolutePath file are both bytes on this device and
-    // both are copied in, since a collection has no other device's path to rely on. A URL or a
-    // StreamingAssets source is carried as it is - there are no bytes to copy, and the collection works
-    // wherever the level did.
+    // The mirror of import with one decision reversed: a data resource already held under the same id
+    // is REPLACED, not asked about. A URL or StreamingAssets source is carried as is. Docs/ARCHIVE.md.
 
     /// <summary> Writes part of a level's resources into a collection held in memory. </summary>
     public static class CollectionExportPlanner

@@ -4,12 +4,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Roslyn.Tests
 {
-    // THE STRONGEST ASSERTION HERE IS "IT COMPILES", exactly as in ModelGeneratorTests: a table
-    // whose switch names a member that is not there, or converts to a type the member does not
-    // hold, is a compile error in the generated file rather than a wrong answer at run time. The
-    // text assertions below check the SHAPE decisions - the type test only where it is needed, the
-    // index refused on a scalar, the whole-list and element branches - and every one of them is
-    // checked after the compilation has already been asserted clean.
+    // The strongest assertion is "it compiles", as in ModelGeneratorTests; text checks then pin SHAPE
+    // decisions.
 
     [TestFixture]
     public class ModificationTableGeneratorTests

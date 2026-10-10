@@ -6,27 +6,13 @@ using BH.SDK.Utils;
 
 namespace BH.SDK.Models.Primitives
 {
-    // The single frame-interval type of the whole format. It exists because the old StartFrame +
-    // EndFrame pair carried no convention of its own, and the two halves of the project picked
-    // opposite ones: playback treated [Start, End] as inclusive (the interval tree it feeds is
-    // inclusive on both ends) while the editor treated it as half-open (it drew bars End - Start
-    // wide). Two objects authored back to back therefore both rendered on the frame they shared.
-    //
-    // The convention is half-open, [Start, Start + Duration), and it is expressed by the type
-    // rather than by agreement: nothing here can represent an inclusive end, and the only place in
-    // the codebase allowed to convert to an inclusive last frame is LastFrame below.
-    //
-    // BOTH FIELDS ARE STORED BIASED BY THEIR OWN FLOOR - the start by FrameRules.MinFrame, the
-    // duration by FrameRules.MinFrameDuration - which is what makes the all-zero bit pattern the
-    // smallest LEGAL span rather than an illegal one. That matters more than it looks: default(T),
-    // Reset(), a struct field never assigned and a converter degrading a corrupt file all produce
-    // that pattern, and every one of them has to come back as a span the rest of the code can use.
+    // Half-open [Start, Start + Duration): nothing here can represent an inclusive end, and LastFrame is
+    // the only conversion. Both fields are stored biased by their own floor, so the all-zero pattern
+    // (default, Reset, a degraded corrupt file) is the smallest LEGAL span.
 
     /// <summary>
-    /// Half-open frame interval [StartFrame, StartFrame + FrameDuration) plus the anchor flags
-    /// saying which of its edges follow the parent span's edges. Always satisfies
-    /// StartFrame &gt;= FrameRules.MinFrame and FrameDuration &gt;= 1 - no illegal value is
-    /// representable, and default(FrameSpan) is the one-frame span on the timeline's first frame.
+    /// Half-open frame interval [StartFrame, StartFrame + FrameDuration) plus the anchor flags saying
+    /// which edges follow the parent's. No illegal value is representable; default is one frame at MinFrame.
     /// </summary>
     public struct FrameSpan : IModel<FrameSpan>, IComparable<FrameSpan>
     {
@@ -80,12 +66,8 @@ namespace BH.SDK.Models.Primitives
                            ((anchors & FrameAnchor.End) != 0 ? AnchorFlag : 0);
         }
 
-        // THE START IS CLAMPED BEFORE THE LENGTH IS TAKEN, and that is not a detail. Handing the raw
-        // difference to the constructor lets an out-of-range start silently LENGTHEN the span: a
-        // caller asking for [0, 100) would get a start raised to MinFrame and a duration of 100
-        // anyway, i.e. [1, 101), one frame longer than it asked for and overlapping whatever sits at
-        // 100. Since endFrame is the number the caller actually cares about - it is what "the first
-        // frame NOT covered" means - the end is what survives the clamp.
+        // The START is clamped before the length is taken: a raw difference would let an out-of-range
+        // start silently LENGTHEN the span ([0, 100) becoming [1, 101)). The end is what survives.
 
         /// <summary> Builds from a half-open pair, where endFrame is the first frame NOT covered. </summary>
         public static FrameSpan FromBounds(int startFrame, int endFrame) =>
@@ -109,10 +91,8 @@ namespace BH.SDK.Models.Primitives
         public readonly bool Overlaps(in FrameSpan other) =>
             StartFrame < other.EndFrame && other.StartFrame < EndFrame;
 
-        // A local frame is a FRAME, not an offset, so it counts from FrameRules.MinFrame like every
-        // other frame in the format: the span's own first frame is local frame 1, and the keyframe
-        // inspector shows exactly that. An offset would have been the other reading and would have
-        // put a zero back in front of the author, which is the thing this convention exists to end.
+        // A local frame is a FRAME, not an offset: the span's own first frame is local MinFrame, as the
+        // keyframe inspector shows.
 
         /// <summary> Absolute frame to one local to this span's start (the form keyframes store). </summary>
         public readonly int ToLocalFrame(int globalFrame) => globalFrame - StartFrame + FrameRules.MinFrame;

@@ -9,26 +9,9 @@ using Unity.Mathematics;
 
 namespace BH.SDK.Tests
 {
-    // THREE CONSTANT TABLES, AND THE REASON THEY GET A TEST IS THAT NOTHING ELSE READS THEM AS A
-    // WHOLE. `alignment`, `color` and `color2` are structs in name only - no constructor, no
-    // equality, no behaviour, just a few hundred named values that every screen and every level
-    // reaches into one at a time. A wrong entry is therefore never a compile error and never a
-    // crash; it is one anchor placed slightly off, or one swatch the wrong shade, in one place.
-    //
-    // So what is pinned here is not "these numbers are correct" - a table cannot prove itself - but
-    // the STRUCTURE the numbers have to have, which is checkable without restating them:
-    //
-    //   the nine rectangular anchors are the corners, edges and centre of the unit square;
-    //   the centroid pivots all sit on the vertical midline and climb toward the centre as the
-    //     polygon gains sides, which is what "centre of mass of a regular n-gon" means geometrically
-    //     and is exactly what a transcription error breaks;
-    //   every colour is a real, in-range, opaque RGBA;
-    //   every `color` entry has a `color2` twin holding it twice - the invariant that makes color2 a
-    //     view of color rather than a second table someone has to keep in step.
-    //
-    // The last one is the one worth having. color2 is 150 entries written by hand as
-    // `(color.x, color.x)`, and a pair that names one colour and holds another is invisible in both
-    // the source and the game.
+    // Pins the STRUCTURE of the constant tables, not their values (a table cannot prove itself). Anchors are
+    // the unit square's corners/edges/centre, colours are opaque, and every color has a color2 twin holding
+    // it twice.
 
     /// <summary> The three constant tables in BH.Shared - `alignment`, `color`, `color2` - checked
     /// for the structure their entries have to have rather than for the values themselves. </summary>
@@ -84,11 +67,8 @@ namespace BH.SDK.Tests
             Assert.AreEqual(y, value.y, Tolerance, $"{name}.y");
         }
 
-        // A regular polygon's centre of mass is its circumcentre, which sits above the centre of its
-        // bounding box for an odd side count and exactly ON it for an even one. As sides are added
-        // the shape approaches a circle, so the offset shrinks monotonically toward the box centre -
-        // that ordering is the invariant a mistyped digit breaks, and it needs none of the values
-        // restated to check.
+        // A regular polygon's centre of mass sits above the box centre for odd sides; the offset shrinks as
+        // sides are added - the ordering a mistyped digit breaks.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
@@ -160,11 +140,8 @@ namespace BH.SDK.Tests
                         failures.Add($"color.{field.Name} channel {channel} is {component}, outside [0, 1]");
                 }
 
-                // Every entry is a colour, not a colour-and-a-fade: a preset with a transparent alpha
-                // silently puts whatever uses it on the transparent render path, which is a cost
-                // nobody reaching for a named colour is expecting to pay. `clear` is the deliberate
-                // exception and the only one - it IS the absence of a colour, and naming it here is
-                // what keeps a second one from being added quietly.
+                // No colour is transparent except `clear`: alpha silently puts a user on the transparent
+                // path.
                 if (Transparent.Contains(field.Name))
                 {
                     if (value.w != 0f)
@@ -180,10 +157,8 @@ namespace BH.SDK.Tests
             Assert.IsEmpty(failures, Report(failures));
         }
 
-        // THE ONE THAT EARNS ITS KEEP. color2 is a hand-written mirror of color - same names, each
-        // holding its colour twice - so the two tables can drift in three ways, all of them silent:
-        // a name present in one and not the other, and a pair whose halves disagree with the colour
-        // it is named after in either slot.
+        // color2 is a hand-written mirror of color; it can drift by name or by either half of a pair,
+        // silently.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]

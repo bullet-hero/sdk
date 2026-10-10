@@ -4,14 +4,8 @@ using BH.SDK.Rules;
 
 namespace BH.SDK.Utils
 {
-    // Lives in the SDK rather than in the consumer because both halves need the SAME grid: a
-    // generator resolves beats without a Unity project around it, and the editor draws and snaps to
-    // what that generator will act on. Two implementations of "where the beats are" would drift.
-    //
-    // Every beat frame is rounded from the segment's own start (Start + round(Offset + i * fpb)),
-    // never accumulated step by step. Accumulation drifts by up to half a frame per beat and a
-    // three-minute segment has thousands of them; rounding from the base keeps the error at half a
-    // frame, once, everywhere.
+    // In the SDK because a generator and the editor must share one beat grid. Frames are rounded from the
+    // segment's start, never accumulated (drift): Docs/UTILS_DESIGN.md.
 
     /// <summary> Where a <see cref="BeatSegment"/>'s beats actually fall, in level frames. </summary>
     public static class BeatMath

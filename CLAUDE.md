@@ -113,7 +113,9 @@ alive so `GamePlayer`'s jobs can re-roll randomness every frame instead of freez
 - **Level-wide/track-wide numeric collection caps live in `Rules/LevelRules.cs`/`AudioRules.cs`**
   (max markers/checkpoints/keys/prefabs/audio-layers/...) - check there before hardcoding a magic
   cap elsewhere; `GameLevel.Objects` is capped by `MaxObjects` (2^18) and the id counter
-  separately by `MaxObjectIds` - the comment between them in `LevelRules.cs` says why they differ.
+  separately by `MaxObjectIds`: objects is how many may EXIST (what a loader pays), ids is how many have ever been
+  MINTED and are never reused, so it grows with editing time and a shared cap would fail long-lived levels (details:
+  `Docs/RULES.md`).
 - **A new model is `[GenerateModel] public sealed partial class`, and nothing else.** Write the
   members, the constructors and the `[JsonProperty]` names; the whole `IModel<T>` contract and the
   blob codec are written for you. Leave it non-sealed only if something derives from it - `sealed`

@@ -31,11 +31,8 @@ namespace BH.SDK.Models.Primitives
             value = Guid.Empty;
         }
 
-        // Prefab ids are a stable identifier for a Prefab entry (Level.Resources.Prefabs) - what
-        // PrefabObject.PrefabId references back to. Unlike the int-based ids (AudioId,
-        // TypedResourceId, ...) there is no game-defined/user-defined range split - prefabs are always
-        // per-level authored data, and a Guid has no meaningful "positive/negative" ordering to
-        // split on anyway. Guid.Empty is the only reserved/Null value.
+        // A stable id for a Prefab entry (Level.Resources.Prefabs), what PrefabObject.PrefabId references.
+        // Per-level authored data, so no range split; Guid.Empty is the only reserved value.
 
         /// <summary> The reserved "unset" value. Never a real id. </summary>
         public static readonly Guid NullValue = Guid.Empty;

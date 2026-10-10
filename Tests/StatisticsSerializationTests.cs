@@ -206,10 +206,8 @@ namespace BH.SDK.Tests
             Assert.AreEqual(1, result.Difficulty.DeathsBeforeCheckpoint);
         }
 
-        // MemberSerialization.OptIn does NOT actually filter members in this project - the contract
-        // resolver sets it after CreateProperties has already run - so a public member carrying
-        // neither [JsonProperty] nor [JsonIgnore] silently enters the format under its C# name and
-        // stays part of it forever. This is what catches that.
+        // OptIn does not filter here (the resolver sets it after CreateProperties): an unmarked public
+        // member enters the format under its C# name forever.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]

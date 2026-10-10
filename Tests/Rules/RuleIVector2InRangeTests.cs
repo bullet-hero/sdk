@@ -171,11 +171,7 @@ namespace BH.SDK.Tests.Rules
             Assert.AreEqual(0f, value.X);
         }
 
-        // A negative radius slips past THIS rule - every check here compares the radius against an
-        // upper bound or expands the centre by it, and a negative value quietly shrinks both sides
-        // inward. What catches it is Vector2Circle's own lower bound on Radius, reached when the
-        // analyzer walks into the value. Worth pinning: the guarantee comes from the model, not from
-        // the range rule pointed at it.
+        // A negative radius slips past THIS rule; Vector2Circle's own lower bound catches it.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]

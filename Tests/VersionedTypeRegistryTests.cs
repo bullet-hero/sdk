@@ -8,10 +8,7 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests
 {
-    // THE REGISTRY HAD NO FIXTURE OF ITS OWN until this one, and it is the piece the whole format
-    // rests on: which type a generation names, and how an old instance walks up to today's. It was
-    // covered only indirectly, through a full Level migration - so a wrong refusal or a chain that
-    // stopped one step early looked like a serialization failure somewhere else entirely.
+    // The registry's own fixture: which type a generation names and how an old instance walks up to today's.
 
     /// <summary> That a generation resolves back to its own type, that an unknown one is refused rather than
     /// guessed at, and that the V0 chain still walks the whole way up. </summary>
@@ -47,15 +44,7 @@ namespace BH.SDK.Tests
         [Category(Metadata.Category.Normal)]
         public void Resolve_FallsBackToTodaysShapeForAnOlderGapAndSaysSo()
         {
-            // THIS TEST'S RATIONALE INVERTED, and that is worth writing down rather than deleting.
-            // It used to argue that both mistakes must be refusals "rather than a fallback to the
-            // current shape: reading a payload as a type it was not written in is silent corruption"
-            // - which was correct, and the word carrying it was SILENT. The fallback is back because
-            // a file has to open; the silence is not, and the report below is the difference.
-            //
-            // The fallback now answers an OLDER gap only - a newer generation never reaches it, the
-            // read sites refuse it first (ThrowIfNewer). LevelMeta has no V0 snapshot, so its
-            // generation 0 is exactly such a gap.
+            // The gap fallback answers an OLDER generation only (a newer one is refused first); reported.
             var report = new SerializationReport();
 
             using (SerializationReport.Begin(report))

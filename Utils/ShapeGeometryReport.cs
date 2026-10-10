@@ -3,9 +3,8 @@ using System.Text;
 namespace BH.SDK.Utils
 {
     /// <summary>
-    /// What was wrong with a shape's geometry - produced either as a diagnosis
-    /// (<see cref="ShapeGeometryUtils.Analyze"/>) or as a record of what was repaired
-    /// (<see cref="ShapeGeometryUtils.Sanitize"/>). All zero means the shape is valid as authored.
+    /// What was wrong with a shape's geometry (<see cref="ShapeGeometryUtils.Analyze"/>) or what was repaired
+    /// (<see cref="ShapeGeometryUtils.Sanitize"/>). All zero means valid as authored.
     /// </summary>
     public struct ShapeGeometryReport
     {

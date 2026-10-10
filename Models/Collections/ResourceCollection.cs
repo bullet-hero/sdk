@@ -14,18 +14,8 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models.Collections
 {
-    // WHAT A COLLECTION IS, BESIDES ITS FILES. The data resources - prefabs, themes, shapes, effects -
-    // need no table here: each is an envelope file of its own under the kind's folder, exactly like the
-    // device library, so the folder IS the table. The file resources cannot do that - a texture is
-    // bytes, and the Resource record saying where those bytes are and how to read them has to live
-    // somewhere - so they are listed here, with a LevelPath uri read relative to the collection root.
-    //
-    // THEIR IDS ARE COLLECTION-LOCAL, like a level's: negative ints minted by whoever built the
-    // collection, and renumbered by every import (ResourceRemap). A prefab inside the collection refers
-    // to its textures by those same local ids, which is what keeps the collection self-contained.
-    //
-    // A NEW DOMAIN, NOT A BUMP. Nothing on any disk has this shape before generation 2, and no existing
-    // model refers to it - a level copies what it imports and never points at a collection.
+    // Lists only the file resources; ids are collection-local and renumbered by every import
+    // (ResourceRemap). A new domain, not a generation bump: Models/Resources/CLAUDE.md
 
     /// <summary> A collection's manifest: who made it, under what license, and the file resources it
     /// carries. The data resources are the envelope files beside it. </summary>

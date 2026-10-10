@@ -15,10 +15,8 @@ using Newtonsoft.Json;
 namespace BH.SDK.Models.Objects
 {
     /// <summary>
-    /// The visible workhorse of a level: a rect that draws a shape and can hurt the player.
-    /// Silhouette, image and hitbox are three separate concerns here - ShapeId is what is drawn,
-    /// TextureResourceId is what is painted onto it, ColliderId is what is hit, and none of the
-    /// three have to agree.
+    /// The visible workhorse of a level: a rect that draws a shape and can hurt the player. ShapeId is
+    /// drawn, TextureResourceId painted onto it, ColliderId hit; none of the three have to agree.
     /// </summary>
     [RuleContainer]
     [GenerateModel]
@@ -27,11 +25,8 @@ namespace BH.SDK.Models.Objects
         /// <summary> Which concrete form this is - the discriminator a converter writes and reads back. </summary>
         public override ObjectType GetModelType() => ObjectType.ShapeObject;
 
-        // Two ShapeId fields, not one, and neither derives from the other. They answer different
-        // questions - what the player SEES and what the player HITS - and a level routinely wants
-        // them to disagree: a telegraph beam that is drawn but harmless, a hitbox simpler than the
-        // art it guards, an invisible wall. Deriving one from the other would take that away and
-        // buy nothing, since both are the same kind of data.
+        // Two ids, neither deriving from the other: what the player SEES and what they HIT.
+        // Models/Objects/CLAUDE.md
 
         /// <summary> Shape to draw, from the shared library. Null draws nothing at all - which,
         /// combined with a real ColliderId, is how an invisible hitbox is authored. </summary>

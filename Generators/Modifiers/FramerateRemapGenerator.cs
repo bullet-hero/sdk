@@ -7,25 +7,9 @@ using BH.SDK.Rules;
 
 namespace BH.SDK.Generators.Modifiers
 {
-    // Changing Framerate alone reinterprets every frame number in the level: at 30 fps a key on frame
-    // 60 is two seconds in, at 60 fps it is one. So this remaps the numbers instead - frame * to / from
-    // - and the level plays the same as before at a different sampling rate. FrameDuration is remapped
-    // unconditionally, with no switch of its own, because it is the same statement as Framerate: a
-    // timeline keeping its old length while its framerate doubles is a level that got twice as short,
-    // which nobody asks for by changing a framerate.
-    //
-    // The three switches are about REACH, not about correctness: an author lowering the framerate to
-    // fit a device usually wants the objects moved and is not ready to lose keys off audio automation
-    // or camera events in the same click. Leaving one off means that part keeps its old frame numbers
-    // and therefore its old timing shifts - which is a deliberate, visible outcome, not a silent one.
-    //
-    // Shrinking is lossy and there is no way around it: two frames that were distinct at 60 fps can
-    // land on the same frame at 30, and a track's frames must stay unique ([RuleCollectionUnique]).
-    // MaxKeyShift is the whole policy - how far a key may be nudged off its sampled frame to find a
-    // free slot before it is dropped instead. Zero means "never nudge, drop on the first collision";
-    // the default 1 keeps the common 2:1 downsample lossless for keys that were at least two frames
-    // apart. Nudging is tried forward first because keys are packed in ascending order, so the slots
-    // below the ideal one are the ones already taken.
+    // Remaps the frame NUMBERS (frame * to / from) so the level plays the same at another rate;
+    // FrameDuration always. The switches are about REACH. Shrinking is lossy: MaxKeyShift is the whole
+    // collision policy ([RuleCollectionUnique]), forward first. Docs/GENERATORS.md.
 
     /// <summary>
     /// Retimes the whole level to a different framerate: frame numbers are resampled so the content
@@ -186,10 +170,8 @@ namespace BH.SDK.Generators.Modifiers
                     track.RemoveAt(i);
         }
 
-        // A level-global (or audio) track has no owning object to snapshot, so it goes through the
-        // context's own remove/add pair. The survivors are re-added as COPIES on purpose: the removal
-        // entries in the journal hold the original instances, and moving a key that undo is holding
-        // onto would restore it at its new frame instead of its old one.
+        // Level-global and audio tracks go through the context's remove/add pair; survivors are re-added
+        // as COPIES, since the journal's removal entries hold the originals.
 
         /// <summary> An ownerless keyframe list: rebuilt through the journal rather than mutated. </summary>
         private static void RemapKeyList<TKey>(GeneratorContext context, List<TKey> track,
@@ -277,12 +259,8 @@ namespace BH.SDK.Generators.Modifiers
             return (int)Math.Round(value, MidpointRounding.AwayFromZero);
         }
 
-        // A FRAME IS NOT A COUNT HERE EITHER, and this is the one place where confusing them is not
-        // an off-by-one but a stretch: scaling a frame number directly would multiply the origin too,
-        // sending the level's first frame to to/from instead of leaving it where it is. What scales
-        // is the DISTANCE from the first frame, which the origin then goes back onto. An exclusive
-        // end boundary takes the same path on purpose - it is the instant after its last frame, and
-        // (b - MinFrame) is exactly the count of frames before it.
+        // A frame is not a count here either: scale the DISTANCE from the first frame and add the origin
+        // back, or the origin scales too. An exclusive end boundary takes the same path on purpose.
 
         /// <summary> The same frame (or exclusive boundary), sampled at the new rate. </summary>
         private static int RemapFrame(int frame, int from, int to)
@@ -291,10 +269,8 @@ namespace BH.SDK.Generators.Modifiers
             return Remap(frame - FrameRules.MinFrame, from, to) + FrameRules.MinFrame;
         }
 
-        // Both edges are remapped and the result rebuilt, rather than remapping the start and
-        // scaling the duration: rounding then happens once per edge, exactly as it did when the two
-        // were separate fields, so no object drifts by a frame relative to its own keyframes. The
-        // end is clamped one higher than the start because it is an exclusive boundary.
+        // Both edges are remapped and the span rebuilt, so rounding happens once per edge and no object
+        // drifts against its keyframes. The end is clamped one above the start (exclusive).
         private static FrameSpan RemapSpan(in FrameSpan span, int from, int to, int last)
         {
             var start = ClampFrame(RemapFrame(span.StartFrame, from, to), last);

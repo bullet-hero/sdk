@@ -5,16 +5,9 @@ using System.Text;
 
 namespace BH.SDK.Services
 {
-    // NOT WHAT PROTECTS A LEVEL. Level protection - a password-protected archive, and a level whose
-    // document sits encrypted on disk - is OpenPGP, and it lives in Services/Crypto. The reason is
-    // not strength but reach: the artifacts this project writes have to open in tools people already
-    // have (gpg, and every archiver that reads what gpg wrote), and an AES blob of our own opens in
-    // nothing. What stays here is a raw AES-256-CBC primitive for whatever inside the SDK needs one.
-    //
-    // It also has no integrity check, deliberately left as it is: adding a MAC here would make a
-    // second half-format that still opens in nothing, which is exactly the direction this class is
-    // no longer taking. A caller that needs to tell a wrong password from a damaged file wants
-    // PgpSymmetricService, whose MDC answers that question.
+    // NOT WHAT PROTECTS A LEVEL (that is OpenPGP, Services/Crypto): a raw AES-256-CBC primitive with no
+    // integrity check, deliberately. A caller that must tell a wrong password from damage wants
+    // PgpSymmetricService.
 
     /// <summary> Raw AES-256-CBC over bytes, keyed by a password through PBKDF2-SHA256. </summary>
     public class CryptographyService
@@ -104,10 +97,8 @@ namespace BH.SDK.Services
         {
             if (bytes == null) throw new ArgumentNullException(nameof(bytes));
 
-            // The guard is not defensive tidiness: without it a short input computes a NEGATIVE
-            // array length below and throws OverflowException from inside the crypto path, which
-            // reads as "the cipher broke" rather than "this file is not one of ours". Anything
-            // shorter than the header alone cannot be ciphertext this class wrote.
+            // Without the guard a short input computes a NEGATIVE array length and throws
+            // OverflowException from inside the crypto path.
             if (bytes.Length < SaltSize + IvSize)
                 throw new ArgumentException(
                     $"Ciphertext is {bytes.Length} bytes, shorter than the {SaltSize + IvSize} byte header.",
@@ -147,11 +138,8 @@ namespace BH.SDK.Services
             return aes;
         }
 
-        // System.Random, seeded with a constant, is what this used to be - so every installation
-        // produced the SAME salt and the SAME IV, in the same order. Under AES-CBC that makes the
-        // same password over the same plaintext yield byte-identical ciphertext, and the IV was
-        // readable by anyone who opened this repository, which is everyone: the SDK is open source.
-        // Nothing here may draw key material from a PRNG that is not the platform's own.
+        // Key material comes from the platform's own random source only: a constant-seeded PRNG gives
+        // every installation the same salt and IV, and the SDK is open source.
         private static byte[] GetRandomBytes(int length)
         {
             var bytes = new byte[length];

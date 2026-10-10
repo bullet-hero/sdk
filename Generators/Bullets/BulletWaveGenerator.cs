@@ -6,11 +6,8 @@ using BH.SDK.Rules;
 
 namespace BH.SDK.Generators.Bullets
 {
-    // The first of the animated generators, and the one that sets the pattern for the rest: an
-    // object's lifetime is [spawn, spawn + travel] rather than the whole context range, so a wave
-    // that fires over two seconds does not leave 60 permanently-alive objects sitting on the
-    // timeline. Frames are clamped to the context window by Spawn, so a stagger overshooting the
-    // range is truncated rather than leaking outside it.
+    // The pattern for the animated generators: an object lives [spawn, spawn + travel], not the whole
+    // window, and Spawn clamps frames to the context window so a stagger cannot overshoot it.
 
     /// <summary>
     /// A line of bullets travelling from one point to another, optionally staggered so they arrive

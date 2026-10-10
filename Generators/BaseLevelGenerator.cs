@@ -60,12 +60,9 @@ namespace BH.SDK.Generators
         /// <summary> Override where the run's size is knowable in advance. </summary>
         protected virtual GeneratorCost EstimateTyped(TParams parameters) => GeneratorCost.Zero;
 
-        // A level with no screen limit plays at whatever aspect the device has, so a pattern authored
-        // on 16:9 shows what its author left outside the frame on an ultrawide and loses its edges on
-        // a phone. A level built from nothing therefore offers a pin to 16:9 on its first frame, on by
-        // default - a KEYFRAME rather than a runtime default, so the author sees it on the Events
-        // timeline and can change or delete it. An import generator does not offer it: an import
-        // keeps whatever limit its source had (an archive carries the file's own).
+        // A level with no screen limit plays at the device's aspect, so a level built from nothing offers
+        // a 16:9 pin on its first frame as a KEYFRAME (visible on the Events timeline, deletable). An
+        // import offers none: it keeps its source's limit.
 
         /// <summary> Pins a level built from nothing to the default aspect (16:9) from its first
         /// frame, unless it already has a limit of its own. </summary>

@@ -25,11 +25,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests.Services
 {
-    // THE WHOLE COLLECTION PIPELINE WITH NO DISK: a level's prefab exported into a collection, the
-    // collection written, archived, unpacked and read back, then imported into a second level whose ids
-    // are already taken. The critical case is the last one - a prefab that nests a template and draws a
-    // custom shape with a texture, arriving where texture -1 exists and the prefab's own id holds
-    // something different. Every id the import moves must be moved everywhere it is referenced.
+    // The whole collection pipeline with no disk, ending on an import where ids are already taken: every id
+    // the import moves must move everywhere it is referenced.
     public class CollectionTests
     {
         private static readonly SerializationService Serialization = new();

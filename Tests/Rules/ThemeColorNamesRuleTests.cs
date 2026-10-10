@@ -7,11 +7,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests.Rules
 {
-    // ThemeData.ColorNames is the first member in the format that is BOTH a collection and legally
-    // null, so it is the first place [RuleOptional] and [RuleCollectionCount] meet. RuleWalk returns
-    // on the optional check BEFORE the rule loop runs, which means optional suppresses every rule on
-    // the property rather than only the null safety net - these fixtures are what pins that reading,
-    // since getting it backwards turns an unnamed palette into an issue on every load of a fine level.
+    // ColorNames is a collection that is legally null: RuleOptional suppresses EVERY rule on the property,
+    // not only the null safety net.
 
     /// <summary> ThemeData.ColorNames: null is legal, a non-null list is exactly 64 long. </summary>
     public class ThemeColorNamesRuleTests : BaseRuleTests

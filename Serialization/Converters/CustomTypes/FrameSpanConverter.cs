@@ -6,20 +6,9 @@ using Newtonsoft.Json.Linq;
 
 namespace BH.SDK.Serialization.Converters.CustomTypes
 {
-    // FrameSpan packs its anchor flags into the sign bits of its two backing ints, and the wire
-    // format does the same thing for the same reason - two numbers say everything a span is. The
-    // in-memory packing itself must never reach the file though: a level is an open format read by
-    // third party tools, and a start frame surfacing as -2147483548 would be unreadable to all of
-    // them. So this writes the two LOGICAL numbers, sign-flipped when that edge is anchored.
-    //
-    // Neither number carries an offset, and that is a property of the timeline counting from one:
-    // FrameDuration >= 1 and StartFrame >= FrameRules.MinFrame, so neither can be zero and both
-    // signs are free. While frames started at zero the start had to be written as -(start + 1),
-    // because -0 exists in no format - that was the single off-by-one of the whole wire format, and
-    // it is gone.
-    //
-    // The array form (rather than an object with named keys) matches the rest of the wire format,
-    // which is deliberately compact, and works identically under BSON.
+    // Writes the two LOGICAL numbers, each negated when its edge is anchored; the in-memory sign-bit
+    // packing must never reach the file (open format). No offset: neither number can be zero, since
+    // frames count from FrameRules.MinFrame. A two-number array, so the same under BSON.
 
     /// <summary> Writes FrameSpan as [start, duration], each negated when its own edge is anchored. </summary>
     public class FrameSpanConverter : JsonConverter<FrameSpan>

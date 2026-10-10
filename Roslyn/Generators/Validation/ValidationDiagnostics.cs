@@ -2,30 +2,9 @@ using Microsoft.CodeAnalysis;
 
 namespace BH.SDK.Roslyn.Validation
 {
-    // EVERY REFUSAL IS LOUD, for the same reason the model generator's are: the defect this replaces
-    // is silent. A walk that visits a different set of properties, or the same set in a different
-    // order, reports the same findings under the wrong paths and hands RuleFixer a different repair
-    // order - and repairs are not commutative. Nothing about that shows up as a compile error, so
-    // the constructs that could cause it are compile errors instead.
-    //
-    // NONE OF THESE IS VIOLATED TODAY: measured across all 200 [RuleContainer] types there are zero
-    // new-hidden properties, zero non-public accessors, zero indexers and zero rules on properties
-    // the walk cannot reach. They exist to keep it that way, not to clean anything up.
-    //
-    // TWO REFUSALS WERE TRIED AND WITHDRAWN, and what they ran into is worth stating so nobody adds
-    // them back. "A [RuleContainer] must be partial" (BHS1101) and "IValidatable is the generator's
-    // to implement" (BHS1107) both describe LEGAL states rather than defects: a non-partial
-    // container is exactly what RuleWalk.Node's reflective branch is for, and the two of them
-    // together errored on dozens of the private nested fixtures in Tests/Rules - which are the only
-    // coverage that fallback has. Making a test fixture partial to satisfy a generator would delete
-    // the very path it was written to exercise.
-    //
-    // What those two were protecting is real, so it moved to where it can be said precisely:
-    // BH.SDK.Tests' RuleContainerCoverageTests asserts that every [RuleContainer] IN THE SDK
-    // ASSEMBLY has a generated walk. That is scoped to the format's own models, which is what the
-    // claim was always about, and a test assembly's fixtures are none of its business.
-    //
-    // The numbering keeps the gaps: 1101 and 1107 are retired, never reissued.
+    // Every refusal is loud: a different walk order or property set reports the same findings under wrong
+    // paths. BHS1101 and BHS1107 are RETIRED, never reissued - they described legal states
+    // (Docs/ROSLYN_GENERATORS.md).
 
     /// <summary> Diagnostics the validation generator reports. </summary>
     internal static class ValidationDiagnostics

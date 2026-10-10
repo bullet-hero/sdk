@@ -5,23 +5,9 @@ using BH.SDK.Models.Primitives.Resources;
 
 namespace BH.SDK.Rules.Attributes
 {
-    // Catches the dangling reference: a texture, font or clip id that no entry in the level's own
-    // Resources answers to. Until now nothing did - a reference was checked for being non-zero and
-    // in the right numeric range, never for pointing at anything.
-    //
-    // Scope, and why it is narrower than the name suggests:
-    //
-    // - Only the int-backed id family (TypedResourceId and its typed wrappers) can be checked here,
-    //   because only there does the id's own sign say where it must resolve: negative = defined by
-    //   this level, positive = defined by the game and baked into its registries, which the SDK
-    //   cannot see and must therefore accept.
-    // - The Guid-backed ids (ShapeId, ThemeId, EffectId, PrefabId) carry no such split - a Guid
-    //   has no sign - so "does it exist" can only be answered against the game's own registry PLUS
-    //   the level's, and the SDK has half the answer. Checking them here would report every
-    //   game-defined collider preset as dangling. They belong to the graph pass, where a consumer
-    //   can supply its registry.
-    // - With no level in context (a standalone Prefab, a LevelMeta) there is nothing to resolve
-    //   against, so the rule stands down rather than reporting everything as missing.
+    // Catches a dangling texture/font/clip id. Only the int-backed id family is checked (negative =
+    // this level's own, positive = the game's registries, which the SDK cannot see); Guid-backed ids
+    // belong to the graph pass. No level in context: stands down. Scope: BH.SDK/Docs/RULES.md.
 
     /// <summary>
     /// A user-defined resource id must have a matching entry in the level's own resource dictionary.
@@ -32,10 +18,8 @@ namespace BH.SDK.Rules.Attributes
         /// <summary> <c>"rule_reference_exists"</c>, the key its message is looked up under. </summary>
         public override string RuleNameKey => "rule_reference_exists";
 
-        // Warning, not Error, and Fix has nothing to do with it: a dangling reference is UNREPAIRABLE by
-        // design - inventing an id would point the object at some other resource - so reporting it as
-        // Error would mean a level that can never stop being an error. The consumer substitutes its
-        // fallback and the level plays; what it loses is one texture, font or clip.
+        // Warning, not Error, and no Fix: a dangling reference is unrepairable by design, so Error would
+        // be a level that can never stop being one.
 
         /// <summary> A warning: the level still plays, but this is not what the author meant. </summary>
         public override RuleGroup Group => RuleGroup.Warning;
@@ -89,10 +73,7 @@ namespace BH.SDK.Rules.Attributes
             };
         }
 
-        // Not repairable. Every candidate repair invents content: pointing the reference at some
-        // other resource shows the wrong asset, and clearing it to Null either hides an object
-        // entirely or - where Null is a real state - changes what the object means. A dangling
-        // reference is a decision for whoever is editing the level, so this reports and stops.
+        // Not repairable: every candidate repair invents content. Reports and stops.
 
         /// <summary> Off: which resource was meant is not knowable here, so a dangling reference is reported and left alone. </summary>
         public override bool HasFix => false;

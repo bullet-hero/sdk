@@ -5,9 +5,7 @@ using Microsoft.CodeAnalysis.Diagnostics;
 namespace BH.SDK.Roslyn
 {
     /// <summary>
-    /// Probe analyzer: reports BHS0001 on every type whose name ends with "RoslynProbe".
-    /// Existence of the warning in the Unity console is the proof that Unity loaded this assembly
-    /// as an analyzer at all - it says nothing about whether analyzers are useful yet.
+    /// Probe: reports BHS0001 on every type named "*RoslynProbe", proving Unity loaded this as an analyzer.
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public sealed class SandboxProbeAnalyzer : DiagnosticAnalyzer

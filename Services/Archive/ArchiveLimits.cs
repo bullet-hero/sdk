@@ -2,17 +2,8 @@ using System;
 
 namespace BH.SDK.Services.Archive
 {
-    // What stands between an upload and the disk. A gzip bomb is a few kilobytes that expands to as
-    // much as the reader will accept, and a tar of a million empty entries costs nothing to make -
-    // neither is caught by validating names, because both are made of perfectly legal ones.
-    //
-    // The caps are checked WHILE UNPACKING, entry by entry, and the unpack aborts the moment one is
-    // passed. Checking afterwards would mean the damage is already done, which is the whole of what
-    // these exist to prevent. The store underneath has its own cap for the same reason; this one is
-    // what reports the failure in the archive's own terms.
-    //
-    // Defaults are sized for a LEVEL, not for an arbitrary archive: a level's own folder is a
-    // handful of documents and a song, and anything that needs a thousand times that is not one.
+    // What stands between an upload and the disk (a gzip bomb or a million empty entries are made of
+    // legal names). Checked WHILE unpacking, aborting at the first cap passed. Sized for a LEVEL.
 
     /// <summary> Bounds an unpack refuses to exceed. </summary>
     public sealed class ArchiveLimits

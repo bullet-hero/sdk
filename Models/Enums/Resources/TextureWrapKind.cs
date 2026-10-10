@@ -1,13 +1,7 @@
 namespace BH.SDK.Models.Enums.Resources
 {
-    // What happens outside [0, 1], which is a question a level could always ASK and never answer:
-    // TextureResource.TextureResourceUV's tiling half has always reached the shader as _BaseMap_ST,
-    // so an author could tile an image by data - and the consumer hard-coded Clamp, so tiling only
-    // ever stretched one row of pixels across whatever it was supposed to repeat over.
-    //
-    // It belongs to the author rather than to the device for the same reason the sub-rect does: it
-    // describes the picture's own composition, not what this machine can afford. There is no player
-    // setting it composes with, and none would mean anything.
+    // The author's, like the sub-rect: it describes the picture's composition and no player setting composes
+    // with it. Docs/ENUMS.md
 
     /// <summary> How an image continues past its own edges. </summary>
     public enum TextureWrapKind : byte

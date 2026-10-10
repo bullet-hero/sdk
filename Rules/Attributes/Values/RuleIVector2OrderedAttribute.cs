@@ -6,18 +6,8 @@ using BH.SDK.Models.Values;
 
 namespace BH.SDK.Rules.Attributes
 {
-    // Several IVector2 properties are not points at all - they are ranges packed into one value,
-    // where X is the low end and Y the high one: EffectObjectCore.LifetimeBounds, every
-    // *CurvesBySpeed.SpeedRange, ShadowsMidtonesHighlightsKey's two limit pairs. Nothing checked
-    // that the low end was actually below the high one, so an inverted pair authored by hand (or
-    // produced by dragging a slider past its partner) describes an empty range that every consumer
-    // interprets differently - some clamp, some produce nothing, some divide by its zero width.
-    //
-    // The random variants are handled strictly: the rule holds only if EVERY value the range can
-    // roll is ordered, which means comparing the highest possible X against the lowest possible Y.
-    // A rect whose X and Y spans overlap can roll an inverted pair, so it fails - being lenient
-    // there would mean the rule guarantees nothing for exactly the authored data that is hardest to
-    // eyeball.
+    // For IVector2 properties that are ranges (X low, Y high). Random variants are checked strictly:
+    // every rollable value must be ordered, so a rect whose X and Y spans overlap fails.
 
     /// <summary> An IVector2 used as a [X..Y] range must have X &lt;= Y, for every value it can
     /// produce. </summary>
@@ -53,11 +43,7 @@ namespace BH.SDK.Rules.Attributes
                     var rect = (Vector2RectStep)value;
                     return rect.MaxX <= rect.MinY;
                 }
-                // A segment is EXACTLY checkable where a rect is not: both components are linear
-                // in the one shared roll, so x - y is linear too and its largest value sits at an
-                // end. Checking the two ends is therefore the whole condition, not an approximation
-                // of it, and a segment that stays ordered all the way across passes even when the
-                // two axis spans overlap - which the rect arms above have to refuse.
+                // A segment is checked EXACTLY by its two ends: x - y is linear in the one shared roll.
                 case VectorType.RandomLerp:
                 {
                     var lerp = (Vector2Lerp)value;

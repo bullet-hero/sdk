@@ -5,15 +5,9 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Serialization.Json
 {
-    // THE THIRD CONTRACT A MODEL CARRIES, beside IModel<T> (what it is to the program) and
-    // IBinaryModel (what it is to a .blob). Keeping them apart is what lets a model be copied
-    // without knowing about bytes, and written to a file without knowing about Copy.
-    //
-    // Reading is deliberately NOT the mirror of writing. A writer knows every member; a reader
-    // meets a document that may be hand-edited, written by another tool, or written by a build that
-    // knew members this one does not - so it switches on the property NAME and skips what it does
-    // not recognise, in whatever order the document happens to carry. That is also what makes an
-    // added member free: an older file simply leaves it at what the constructor built.
+    // The third contract beside IModel<T> and IBinaryModel. Reading is NOT the mirror of writing: a
+    // reader switches on the property NAME and skips what it does not know, in any order, which also
+    // makes an added member free for an older file. Docs/SERIALIZATION.md.
 
     /// <summary> A model that can write and read itself as JSON, without a JsonSerializer. </summary>
     public interface IJsonModel
@@ -75,28 +69,9 @@ namespace BH.SDK.Serialization.Json
             writer.WriteEndObject();
         }
 
-        // A KNOWN GENERATION MIGRATES, AN UNKNOWN ONE DEGRADES, and this reads a nested domain exactly
-        // as VersionedEnvelopeConverter reads the top-level one. It became able to because a frozen
-        // snapshot carries [GenerateModel] now: it reads ITSELF with its own generated codec, so this
-        // path still holds a bare JsonReader and no serializer, which is the whole of what makes it
-        // fast and is what IJsonModel's identity rests on.
-        //
-        // WHAT MUST NOT COME BACK IS THE SILENCE. Before the refusal this stood on, the generation was
-        // Skip()ed, the payload was read by property name into whatever type this build has, and a
-        // domain that had moved came back as CONSTRUCTOR DEFAULTS with nothing thrown and nothing
-        // logged. Measured, then: a nested LevelSettings written at generation 0 read back fps=60
-        // through the generated codec and fps=61 through the reflective one - the same file, two
-        // answers, and the quiet one was the default path. The tolerant read is back; the silence is
-        // not, and BOTH codec stacks must degrade to the same value or useGeneratedCodecs stops being
-        // a switch that changes nothing.
-        //
-        // MIGRATION NEEDS THE GENERATION BEFORE THE PAYLOAD, which every writer this format has ever
-        // had provides - WriteEnvelope emits `g` first. A document that carries `v` first (hand-edited,
-        // or written by another tool) takes the lossy half instead of a buffered JToken, because
-        // nothing on this read path materializes a token tree; that is a rule of the format, and
-        // VersionedEnvelopeConverter is its single documented exception.
-        //
-        // AN ABSENT TAG IS NO LONGER A REFUSAL EITHER. It is reported, and the payload is read as-is.
+        // A known generation migrates, an unknown one degrades WITH a report, as VersionedEnvelopeConverter
+        // does: both stacks must degrade alike. Migration needs `g` before the payload; a `v`-first
+        // document takes the lossy half. An absent tag is reported and read as-is.
 
         /// <summary> The other side of it: reads a nested domain, migrating a generation that resolves and
         /// degrading one that does not. </summary>
@@ -160,14 +135,9 @@ namespace BH.SDK.Serialization.Json
             return value;
         }
 
-        // A KNOWN GENERATION MIGRATES, AN UNKNOWN ONE DEGRADES, and only the second half is lossy.
-        // Migration needs a type that is not this one, which is exactly what a snapshot carrying
-        // [GenerateModel] now is: it reads itself with its own generated codec, so this path still
-        // holds a bare reader and no serializer.
-        //
-        // Activator.CreateInstance once per out-of-date envelope is free at this scale - envelopes are
-        // ~1.4% of a level's nodes (266 of 19 341 in volcano) and this branch runs only when a file is
-        // actually old. The ordinary read never reaches it.
+        // A known generation migrates (a snapshot reads itself with its own codec, so no serializer is
+        // held), an unknown one degrades. The branch runs only for an old file, so its one
+        // Activator.CreateInstance per envelope is free.
 
         private static T ReadOtherGeneration<T>(JsonReader reader, string domain, int generation, int expected)
             where T : class, IJsonModel, new()

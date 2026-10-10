@@ -4,14 +4,8 @@ using System.Runtime.CompilerServices;
 
 namespace BH.SDK.Generators
 {
-    // One-time reflection scan in a static constructor, the same shape as VersionedTypeRegistry's -
-    // already proven to survive IL2CPP stripping in the consuming project, so it needs no new
-    // link.xml entry of its own beyond the SDK-assembly-wide preserve.
-    //
-    // Only this assembly is scanned. A generator living in a host assembly would not be found, and
-    // that is intentional for now: generators are format-level content, they belong next to the
-    // format. Widening this to other assemblies means deciding which ones, and there is no consumer
-    // asking for it yet.
+    // A one-time reflection scan in a static constructor, the shape VersionedTypeRegistry proved under
+    // IL2CPP. Only THIS assembly is scanned: generators are format-level content (Docs/GENERATORS.md).
 
     /// <summary>
     /// Every generator the SDK ships, discovered by reflection so adding one means adding a class

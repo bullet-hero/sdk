@@ -14,12 +14,7 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests
 {
-    // EVERY CASE HERE IS A DEFECT THAT WAS MEASURED, not a shape imagined for completeness. An int
-    // override never applied at all, and an enum and an id stopped applying once they had been
-    // through the serializer, because Modification.Value widens an int to a long on assignment and
-    // the old apply path guarded its write with IsAssignableFrom. The values below are taken the
-    // way production takes them - out of a Modification that has been serialized and read back -
-    // rather than hand-built, so a case cannot pass for a shape the format never actually produces.
+    // Every case is a measured defect; values are taken from a serialized-and-read-back Modification.
 
     /// <summary> ModificationValues.TryConvert against the shapes an override arrives in after the serializer. </summary>
     public class ModificationValuesTests

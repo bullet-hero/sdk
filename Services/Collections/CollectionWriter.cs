@@ -13,15 +13,8 @@ using BH.SDK.Services.Content;
 
 namespace BH.SDK.Services.Collections
 {
-    // A WRITE IS A WHOLE SNAPSHOT. What the content holds is what the store holds afterwards: every
-    // data resource as its own envelope, the manifest, the media files the manifest names - and any
-    // document or media file left over from an earlier write that the content no longer holds is
-    // removed. Anything else in the store (a cover, a readme an author dropped in) is not this
-    // writer's to touch.
-    //
-    // THE MANIFEST GOES LAST. A reader decides "is this a collection" by the manifest alone, so a write
-    // interrupted half way leaves either the previous collection with some new files beside it, or
-    // no manifest at all on a fresh one - never a manifest pointing at files that were not written.
+    // A write is a whole snapshot (owned leftovers removed, anything else untouched). The manifest goes
+    // LAST, so an interrupted write never leaves a manifest pointing at unwritten files.
 
     /// <summary> Writes a collection into a store. </summary>
     public static class CollectionWriter

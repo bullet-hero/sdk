@@ -3,17 +3,9 @@ using Unity.Mathematics;
 
 namespace BH.SDK.UnityExtensions.Tests
 {
-    // Component-wise approximate equality for the vector types, and NOT a test itself - the same kind
-    // of shared fixture support MockData.cs and AsyncAssert.cs are in the core test assembly.
-    //
-    // IT DELEGATES RATHER THAN RESTATES. The consumer's BH.Shared.BHMath has these overloads and these
-    // tests used to call them, which they cannot any more: Shared references this assembly, so this
-    // assembly may not reference Shared. The scalar comparison still comes from one place - the SDK's
-    // own BHSDKMath - so a tolerance change reaches both halves of the project at once.
-    //
-    // It lives here rather than in production code because nothing shipping needs it: BHSDKMath cannot
-    // take a float2 (the core assembly has no Unity.Mathematics) and no type in UnityExtensions
-    // compares vectors. Move it up the moment one does.
+    // Component-wise approximate equality for vectors; shared fixture support, not a test. Scalars delegate
+    // to BHSDKMath so a tolerance change reaches both halves. Not production code: nothing shipping compares
+    // vectors.
 
     /// <summary> Component-wise <see cref="BHSDKMath.Approximately"/> for the vector types. </summary>
     internal static class Approx

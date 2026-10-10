@@ -34,3 +34,14 @@ millions of lines. It lives here rather than in the consumer because both halves
 a generator resolves beats with no Unity around it, the editor draws and snaps with the result.
 Non-overlap is `LevelGraphAnalyzer`'s (`GraphRule.BeatSegmentsOverlap`), not a `[RuleXxx]`'s - an
 attribute sees one property at a time - and like every graph finding it carries no repair.
+
+`PlayerEvents`: the two force tracks (`Velocities`/`VelocityPoints`) are carried by the format and applied by
+nobody yet, so a level converted from another engine does not lose them on import; the domain stays at 1.0
+because both are additive and default to empty. `Sizes`/`Speeds` are MULTIPLIERS of what the avatar already
+has (its own scale is a device/skin setting), neutral and empty-track both 1, `Speeds` scaling walking, dashing
+and knockback alike. `ValueRules.MinPlayerSize` is 0 and there is no maximum; the floor is enforced where the
+value is read, not by an attribute, since `FloatKey` is shared by every float track. `Checkpoint.RestoreHealth`
+is the mid-run heal on crossing (off by default), distinct from a respawn, which always refills the lives.
+`CameraEvents` against `RectObject`: `Layers` and `Anchors` dropped (no parent, not rendered), `Scales` dropped
+(always (1, 1) because of the aspect), `Sizes` became `Zooms` (one value applied to both axes; the aspect is
+locked by the screen or `Level.Settings`' `IScreenLimit`).

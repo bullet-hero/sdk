@@ -8,15 +8,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests
 {
-    // Reading a level is the slowest thing a player or an editor does on the way into one, and the
-    // envelope layer is where most of it was decided: every [ModelGeneration] domain resolves its own
-    // concrete type from its own version, and how that lookup is done is the difference between one
-    // streaming pass and one materialized JToken tree per domain. A Level nests ten domains and holds
-    // one more per Prefab, so a tree per domain was a tree per prefab too.
-    //
-    // Both formats are measured because the choice between them is an authoring setting
-    // (GameEditorSettings.Serialization.LevelMode), and "which is faster on a big level" should be a
-    // number somebody can read rather than an assumption.
+    // Reading a level is the slowest step into one; both formats are measured (LevelMode is an authoring
+    // setting). Envelope resolution is one streaming pass, not a JToken tree per domain.
 
     /// <summary> Guards envelope read/write cost on a level the size of a real, heavy one. </summary>
     [TestFixture]
@@ -30,11 +23,7 @@ namespace BH.SDK.Tests
         private const double JsonReadBudgetMs = 5000d;
         private const double BlobReadBudgetMs = 5000d;
 
-        // The claim the whole binary format makes, stated as a RATIO rather than a wall clock: a
-        // number of milliseconds says as much about the machine as about the code, while "the
-        // generated codec is several times faster than binding members by reflection" is the thing
-        // that is actually true and stays true on a phone. Three is deliberately far below what is
-        // measured, so this fails when something structural breaks and not when a laptop throttles.
+        // A RATIO, not a wall clock; 3 is far below measured, so only a structural break fails it.
         private const double MinimumBlobSpeedup = 3d;
 
         /// <summary> Timed passes per format in the ratio test - see MeasureRead. </summary>
@@ -72,12 +61,7 @@ namespace BH.SDK.Tests
                 + "point of a generated codec is that it is not in the same class as reflection");
         }
 
-        // THE MINIMUM OF SEVERAL PASSES, NEVER ONE, and this is the difference between a tripwire and
-        // a flaky test: one timed call catches whatever else the machine was doing during it, and a
-        // ratio of two single samples catches it twice. A minimum is the right statistic here because
-        // the thing being measured has a floor and no ceiling - every millisecond above the fastest
-        // run is something other than the code. It ran as one pass each and failed roughly one run in
-        // four on a busy machine, always on the ratio and never on the budgets.
+        // The MINIMUM of several passes, never one: a single sample failed about one run in four.
 
         /// <summary> Milliseconds for the fastest of several warmed reads of one level in one
         /// format. </summary>

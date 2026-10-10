@@ -15,9 +15,8 @@ using Newtonsoft.Json;
 namespace BH.SDK.Models.Game
 {
     /// <summary>
-    /// Level-global event tracks that belong to no single object: annotations, respawn points, screen
-    /// framing, background color and the active theme. Mixed in kind on purpose - Markers/Checkpoints
-    /// are one-shot flat lists, ScreenLimits/Backgrounds/Themes are real interpolated keyframe tracks.
+    /// Level-global event tracks that belong to no single object. Mixed in kind on purpose: Markers and
+    /// Checkpoints are one-shot flat lists, ScreenLimits/Backgrounds/Themes are interpolated tracks.
     /// </summary>
     [RuleContainer]
     [ModelGeneration(ModelDomains.GameEvents, ModelGenerations.V1_AlphaRelease)]

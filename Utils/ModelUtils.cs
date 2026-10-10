@@ -29,10 +29,7 @@ namespace BH.SDK.Utils
             (byte)(color4Value.B * ByteMaxValue),
             (byte)(color4Value.A * ByteMaxValue));
 
-        // RESET KEEPS THE COLLECTION INSTANCE, and that is not a detail: a reset object is the same
-        // object, so whatever holds its lists still holds them. Every hand-written Reset here
-        // cleared in place for exactly that reason. The defaults come from a freshly constructed
-        // instance, which is thrown away afterwards - so sharing its items costs nothing.
+        // Reset keeps the collection INSTANCE: whatever holds the lists must still hold them.
 
         /// <summary> Empties target and refills it from defaults, keeping target's own instance. </summary>
         public static List<T> ResetTo<T>(this List<T> target, List<T> defaults)
@@ -64,14 +61,8 @@ namespace BH.SDK.Utils
             return target;
         }
 
-        // TWO ARRAY COPIES, FOR THE REASON THERE ARE THREE DICTIONARY COPIES: what an element is
-        // decides whether copying the array is enough. This used to be one method constrained
-        // `where T : ICopyable<T>` that then blitted with CopyTo, which honours the constraint for a
-        // struct element and silently breaks it for a class one - ThemeData.Matrix is
-        // Color4Value[64] and Color4Value is a class, so a copied theme shared all sixty-four
-        // colours with the theme it came from, and editing either edited both. Undo snapshots,
-        // autosave and prefab materialization all copy. `class` in the constraint is what makes the
-        // wrong call a compile error instead of a shared instance.
+        // Two array copies, like three dictionary copies: a class element needs a deep copy, and `class` in
+        // the constraint makes the wrong call a compile error (Docs/UTILS_DESIGN.md).
 
         /// <summary> Deep copy: every element is copied too. </summary>
         public static T[] CopyArray<T>(this T[] array) where T : class, ICopyable<T>
@@ -136,12 +127,8 @@ namespace BH.SDK.Utils
             return copyDictionary;
         }
 
-        // The one place a POLYMORPHIC model field is merged, and the reason it exists rather than
-        // a bare target.Pull(source): a Vector2Value cannot become a RandomVector2, so the instance
-        // is keepable only while the two concrete types agree. Pulling blindly would silently keep
-        // the old value - every interface-level Pull here is a no-op on a sibling implementation -
-        // which is the failure this returns a replacement for instead. A field whose declared type
-        // is a concrete model needs none of it and calls Pull directly.
+        // The one place a POLYMORPHIC field is merged: an interface-level Pull is a no-op on a sibling type,
+        // so this returns a replacement instead. A concrete model field calls Pull directly.
 
         /// <summary> Merges source into target in place while their concrete types allow it, and
         /// returns what the field must now hold - the same instance, or a fresh copy of source. </summary>
@@ -153,18 +140,9 @@ namespace BH.SDK.Utils
             return target;
         }
 
-        // The keyed counterpart of PullFrom, and it exists for the collections something HOLDS INTO.
-        // Every other collection here is replaced wholesale by Pull on purpose - an element is
-        // addressed by its index or key, so keeping the instance buys nothing - but in an object scope
-        // (GameLevel, Prefab) the reference IS what everything else holds: the editor's selection, its
-        // operation buffer and every materialized prefab child point at RectObjects. A ClipboardData's
-        // five sections are the same case one level up, each held as its own timeline's buffer.
-        //
-        // pullValue is a delegate rather than a constraint because the value type may be a polymorphic
-        // BASE, and target.Pull(source) through a base reference writes the base half and stops
-        // (CLAUDE.md, "IModel<T> pattern"). Who dispatches to the concrete overload cannot live in a
-        // generic method - the generated <Base>ModelPull.PullValue is what the object scopes pass; a concretely
-        // typed value like LevelTrack needs no callback and takes the overload below.
+        // Keyed counterpart of PullFrom, for collections something HOLDS INTO (selection, op buffer, prefab
+        // children). pullValue is a delegate: a base-typed Pull writes the base half only
+        // (Docs/UTILS_DESIGN.md).
 
         /// <summary> Merges source into target key by key: keys source no longer has are dropped,
         /// and every remaining value is whatever pullValue returns for the pair (a null target means
@@ -264,11 +242,8 @@ namespace BH.SDK.Utils
                 return hash;
             }
         }
-        // Order-INDEPENDENT by construction, never by sorting the keys first. Sorting demanded an
-        // IComparable key, which most id structs here are not (ObjectId, every TypedResourceId,
-        // every Guid-based id) - so PrefabObject.GetHashCode threw the moment anything put a
-        // placement in a HashSet. Entry hashes are summed instead: a Dictionary's enumeration order
-        // is not part of its value, and the keys are unique, so no two entries can trade places.
+        // Order-INDEPENDENT by summing entry hashes, never by sorting keys: most id structs are not
+        // IComparable.
 
         /// <summary> A hash over the entries, order-independent to match <see cref="DictionaryEquals"/>. </summary>
         public static int GetDictionaryHashCode<TKey, TValue>(this Dictionary<TKey, TValue> dictionary)

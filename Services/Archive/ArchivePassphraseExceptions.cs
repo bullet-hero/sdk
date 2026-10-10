@@ -2,15 +2,8 @@ using System;
 
 namespace BH.SDK.Services.Archive
 {
-    // TWO EXCEPTIONS RATHER THAN ONE, because "not given yet" and "given and wrong" are different
-    // situations for whoever is looking at the screen: the first means ask, the second means say
-    // the password was wrong. Collapsing them tells a player they got a password wrong before they
-    // have typed one, which is the defect this split exists to prevent - the same split
-    // PgpSymmetricService already makes with PgpOpenResult.
-    //
-    // They are exceptions rather than values because this is the FORMAT layer, where a refusal is
-    // already an InvalidDataException; the level layer above turns all three into the values its
-    // own callers read.
+    // Two exceptions because "not given yet" (ask) and "given and wrong" (say so) differ; PgpOpenResult
+    // splits the same way. Exceptions because this is the FORMAT layer; the level layer makes values.
 
     /// <summary> An archive is encrypted and nobody has supplied a passphrase. </summary>
     public sealed class ArchivePassphraseRequiredException : Exception

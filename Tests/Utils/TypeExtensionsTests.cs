@@ -6,14 +6,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests.Utils
 {
-    // THE TWO QUESTIONS THE RULE WALK AND THE MODIFICATION WALK BOTH ASK, and both of them answer
-    // NO for everything that merely resembles the thing being asked about. That is the whole
-    // content of this type and the whole risk in it: `IsList` matching an `IList`, an array or a
-    // `List<T>`-derived class would send the walk down a collection branch for a member that is not
-    // one, and the walk's failure mode is a rule silently never running rather than an exception.
-    //
-    // So what is pinned is as much what these refuse as what they accept - an open generic, an
-    // interface, an array, and a Dictionary asked whether it is a List.
+    // IsList and friends answer NO for anything that merely resembles the type (IList, array, subclass):
+    // the walk's failure mode is a rule silently never running.
 
     /// <summary> TypeExtensions: closed List and Dictionary are recognised, everything that merely
     /// looks like one is not, and the element accessors answer null rather than throwing. </summary>
@@ -28,10 +22,7 @@ namespace BH.SDK.Tests.Utils
             Assert.IsTrue(typeof(List<int>).IsList());
             Assert.IsTrue(typeof(List<RectObject>).IsList());
 
-            // An OPEN generic answers TRUE, and that is worth writing down rather than asserting
-            // away: the check is "is this the List<> shape", and List<> is trivially its own generic
-            // definition. It is unreachable in practice - both walks read PROPERTY types, which are
-            // always closed - so this is documenting the answer, not endorsing it as useful.
+            // An OPEN generic answers TRUE (the List<> shape); unreachable, as property types are closed.
             Assert.IsTrue(typeof(List<>).IsList());
 
             Assert.IsFalse(typeof(IList<int>).IsList(), "the interface is not the type");

@@ -8,20 +8,8 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models.Statistics
 {
-    // WHERE A LEVEL KILLS PEOPLE. This is the half of the statistics aimed at the AUTHOR rather than
-    // at the player: a level is content someone is still editing, and "which passage do players
-    // actually die in" is a question the game can answer and a playtest cannot.
-    //
-    // Buckets are a fixed COUNT, not a fixed duration (StatisticsRules.BucketCount): a bucket is a
-    // percentage of the level, so two levels of different lengths produce histograms that can be
-    // read side by side, and a short array stays readable in a file a person may open.
-    //
-    // BucketFrameDuration IS WHAT KEEPS THE DATA HONEST. A histogram means "deaths at this fraction
-    // of the level", and that claim silently becomes false the moment the level changes length -
-    // every bucket then names a different moment of the music. So the length the buckets were built
-    // against is stored beside them, and a change clears both histograms rather than letting them go
-    // on quietly lying. What it cannot catch is content REARRANGED inside the same length; that is
-    // the known limit of the cheap version of this.
+    // The half aimed at the AUTHOR. Buckets are a fixed COUNT (a percentage of the level), and a length
+    // change clears both histograms via BucketFrameDuration. Docs/STATISTICS.md
 
     /// <summary> Where in a level the player loses, accumulated across every run. </summary>
     [RuleContainer]
@@ -45,11 +33,7 @@ namespace BH.SDK.Models.Statistics
         [JsonProperty(Names.BucketFrameDuration)]
         public int BucketFrameDuration { get; set; }
 
-        // ITS OWN FIELD RATHER THAN A SENTINEL KEY IN THE MAP BELOW. The map is keyed by a
-        // checkpoint's FRAME, and the format has exactly one number meaning "no frame at all" -
-        // FrameRules.NoFrame, which is zero and which a dictionary would accept as an ordinary key
-        // without a word. Giving any digit a second meaning here is the exact class of mistake
-        // FrameSpan's own header exists to prevent.
+        // Its own field, not a sentinel key: FrameRules.NoFrame is zero and a dictionary would accept it.
 
         /// <summary> Deaths that happened before any checkpoint was reached. </summary>
         [RuleMinValue(StatisticsRules.MinCount)]

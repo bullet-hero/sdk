@@ -54,3 +54,9 @@ like `Game`/`Audio`: a hint describes the file a player loads, and a template is
 to an all-empty `Hints`, which is precisely "no hint"; one whose hints were written under the old
 layout simply loses them at the next save. That is what advisory means, and it is why the move needed
 nothing else.
+
+`LimitHints` counts shapes in two buckets because a consumer draws them through two pools (opaque writes depth,
+transparent blends) and neither borrows capacity from the other, so the sum exceeds a single "shapes" number
+and that is correct. `ShaderType.Auto` belongs to whichever bucket the consumer resolves it into (it needs
+texture opacity, outside this library): `GetPeakUsage` takes an optional resolver, and with none Auto counts as
+transparent - the consumer's own fallback and the safe direction to be wrong in.

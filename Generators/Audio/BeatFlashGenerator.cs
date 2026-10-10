@@ -7,11 +7,8 @@ using BH.SDK.Rules;
 
 namespace BH.SDK.Generators.Audio
 {
-    // The first LevelScope generator, and the first destructive one - which makes it the proof that
-    // both halves of the contract work. It touches only GameLevel.CameraEvents (null inside a Prefab
-    // template, hence LevelScope), and its ClearRange wipes existing keys THROUGH the context, so
-    // undo restores what it removed alongside what it added. Wiping a List directly would compile,
-    // run, look correct, and quietly make the run un-undoable.
+    // The first LevelScope and destructive generator: ClearRange wipes THROUGH the context so undo
+    // restores what it removed (wiping a List directly compiles, runs, and breaks undo).
 
     /// <summary>
     /// Punches the camera on every beat: a quick zoom in and back out, optionally with a shake.
@@ -81,13 +78,8 @@ namespace BH.SDK.Generators.Audio
             }
         }
 
-        // Replays exactly what Generate would write, counting instead of adding: the key count
-        // depends on how beats collide with each other and with keys already on the track, so
-        // multiplying beats by four would be wrong the moment two beats sit a decay apart.
-        //
-        // GeneratorCost counts what a run ADDS. Keys that ClearRange removes are not subtracted -
-        // an estimate is what the author is about to gain, and "8 keys, and by the way 5 disappear"
-        // is two different questions.
+        // Replays Generate counting instead of adding: the key count depends on how beats collide with
+        // each other and with existing keys. Keys ClearRange removes are not subtracted from the cost.
 
         /// <summary> What this run would add, answered before it runs. </summary>
         protected override GeneratorCost EstimateTyped(GeneratorContext context, Parameters parameters)

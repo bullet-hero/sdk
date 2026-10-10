@@ -4,17 +4,8 @@ using BH.SDK.Models.Resources;
 
 namespace BH.SDK.Utils
 {
-    // WHAT A SELECTION NEEDS TO STAND ON ITS OWN. A prefab picked out of a level or a collection is
-    // useless without the custom shapes it draws, the textures and fonts they use, the effects it
-    // emits and the templates it nests - and until this existed, every one of those was left behind
-    // and discovered as an unresolved reference after the import. The closure is transitive over
-    // ResourceGraph's edges; only prefabs and effects have outgoing edges, so it is shallow except
-    // through nested templates.
-    //
-    // ONLY WHAT THE SOURCE OWNS IS COLLECTED. A reference the source has no entry for is either
-    // game-defined (every build ships it, nothing to carry) or already dangling (nothing to carry
-    // either); in both cases the answer is to leave it out, and the caller's validation reports the
-    // dangling kind the same way it always has.
+    // What a selection needs to stand alone, transitive over ResourceGraph. Only what the SOURCE OWNS is
+    // collected: game-defined and dangling references are left out (Docs/RESOURCE_GRAPH.md).
 
     /// <summary> The user resources a set of roots reaches, across every family. </summary>
     public static class ResourceClosure

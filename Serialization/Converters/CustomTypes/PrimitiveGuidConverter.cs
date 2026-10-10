@@ -20,11 +20,8 @@ namespace BH.SDK.Serialization.Converters.CustomTypes
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue,
             JsonSerializer serializer)
         {
-            // JsonDataSerializer writes a Guid as a plain string token (reader.Value surfaces as
-            // string); a binary format can hand back an already-boxed Guid (reader.Value
-            // surfaces as an already-boxed Guid) - see BaseNewtonsoftDataSerializer's doc comment on
-            // why the same converter chain has to work for both. WriteJson below only ever needs the
-            // Guid overload since IPrimitiveGuid.Value already hands back a Guid.
+            // A Guid is a string under the JSON reader and an already-boxed Guid under a binary one;
+            // the same converter chain has to serve both.
             var value = reader.Value switch
             {
                 Guid guid => guid,

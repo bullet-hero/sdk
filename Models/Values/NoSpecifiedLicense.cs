@@ -8,16 +8,12 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models.Values
 {
-    // Two records that both say "terms unknown" are no longer interchangeable, and that is the point
-    // of Source: this type used to be fieldless, so Equals returned true for any pair of them. It
-    // still means "nothing was declared", never "anything is permitted" - naming where the file came
-    // from says nothing about what may be done with it, it only tells a moderator which conversation
-    // to have.
+    // Source makes two "terms unknown" records distinct. Still means "nothing declared", never "anything
+    // is permitted": it tells a moderator which conversation to have.
 
     /// <summary>
-    /// "Terms unknown" - the ILicense variant meaning nothing was declared, optionally naming the
-    /// platform the work came from. The escape hatch of the ILicense family (NoSpecified / Typical /
-    /// Custom); a resource carrying it is the one a takedown request lands on.
+    /// "Terms unknown": nothing was declared, optionally naming the platform the work came from. The
+    /// resource a takedown request lands on.
     /// </summary>
     [RuleContainer]
     [GenerateModel]

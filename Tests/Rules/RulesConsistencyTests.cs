@@ -8,11 +8,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests.Rules
 {
-    // The limit tables are ~400 hand-written constants across eight classes, most of them in
-    // Min/Max/Default triples transcribed from Unity's own audio and URP parameter ranges. A
-    // transposed pair or an out-of-range default there is invisible - the code compiles, the level
-    // validates, and the value is simply wrong. These tests read the tables reflectively and check
-    // the relationships the naming already implies.
+    // Hundreds of hand-written Min/Max/Default constants: a transposed pair compiles and validates. Read
+    // reflectively against the naming.
 
     /// <summary>
     /// Cross-checks inside Rules/: every Min/Max pair is ordered and every Default sits inside its

@@ -3,27 +3,13 @@ using System.Collections.Generic;
 namespace BH.SDK.Interop
 {
     /// <summary>
-    /// One thing a conversion could not carry across intact, aggregated over every place it
-    /// happened. Deliberately not a <see cref="Validations.RuleIssue"/>: nothing here is wrong with
-    /// the data, it is the two formats disagreeing.
+    /// One thing a conversion could not carry across, aggregated over every place it happened. Not a
+    /// <see cref="Validations.RuleIssue"/>: nothing is wrong with the data, the two formats disagree.
     /// </summary>
     public class InteropIssue
     {
-        // An issue used to keep ONE path and a count, and that is what made a report unusable at
-        // the size a real level produces: a code firing on eight thousand objects surfaced a single
-        // example and a number, so an author could not tell "this happened once, harmlessly" from
-        // "this is most of my level", and could reach exactly one of the objects it named.
-        //
-        // WHY PATHS RATHER THAN OBJECT IDS. An id would have to be threaded through every call site
-        // in the converter, and it would be the WRONG address twice over: the ids are minted per
-        // scope, so the same number means different objects inside a prefab template and at level
-        // scope, and an id is not what an author is looking at. A path is the source document's own
-        // address, it is already passed to every report call, and it names the thing the author can
-        // go and open.
-        //
-        // The list is BOUNDED and says when it was cut. An unbounded one is the wall of text this
-        // aggregation exists to avoid, and it would grow with the level rather than with the
-        // finding.
+        // Paths, not object ids (ids are per scope), in a BOUNDED list that says when it was cut
+        // (Docs/UTILS_DESIGN.md).
 
         /// <summary> How many distinct places one finding names before it stops collecting them. </summary>
         public const int MaxTrackedPaths = 32;

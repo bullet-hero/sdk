@@ -3,13 +3,8 @@ using BH.SDK.Services.Archive;
 
 namespace BH.SDK.Services.LevelArchive
 {
-    // WHAT A HOST CAN SAY ABOUT A FILE BEFORE COMMITTING TO IT. An import control that has been
-    // handed a path can now name the container and the level inside it, which is the difference
-    // between "12 file(s)" and "ZIP - <the level's name> - 12 files" on the one screen where an
-    // author finds out whether they picked the file they meant to.
-    //
-    // It carries a RESULT rather than throwing, like everything else on this reader, and the result
-    // is the same enum a full read answers with - so a host maps one set of outcomes, not two.
+    // What a host can say about a file before committing: container and level name. A RESULT using the
+    // same enum a full read answers with, so a host maps one set of outcomes.
 
     /// <summary> What a cheap look at an archive could tell. </summary>
     public readonly struct LevelArchivePeek

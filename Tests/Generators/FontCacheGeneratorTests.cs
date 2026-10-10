@@ -10,11 +10,7 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests.Generators
 {
-    // The property worth pinning here is undo, not the character sets - those are
-    // FontCharacterServiceTests' job. FontCharacters is a resource dictionary, so it has a journal
-    // entry shape and a run of this generator has no excuse to be irreversible. Writing to the
-    // dictionary directly compiles and runs identically right up until someone presses Undo, which
-    // is exactly the failure the reverting tests below exist to catch.
+    // Undo is the property here (FontCharacters is a resource dictionary with a journal entry shape).
 
     /// <summary> Undo, not the character sets - writing to the resource dictionary directly runs identically
     /// right up until someone presses Undo. </summary>
@@ -40,10 +36,7 @@ namespace BH.SDK.Tests.Generators
                 ObjectId = level.Settings.GetNextObjectId(),
                 Text = new StringValue(text),
                 FontResourceId = fontResourceId,
-                // Mask cleared so a test about TEXT is about text: TextObject's default mask is
-                // "X", and it legitimately lands in every font's set (pinned by
-                // Build_DefaultMaskIsIncluded), which would otherwise show up in every expectation
-                // here as a stray leading character.
+                // Mask cleared: TextObject's default "X" would land in every expectation.
                 AppearingMask = string.Empty,
             };
             level.Game.Objects.Add(obj.ObjectId, obj);

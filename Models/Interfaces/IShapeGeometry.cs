@@ -4,9 +4,8 @@ using BH.SDK.Models.Values;
 namespace BH.SDK.Models.Interfaces
 {
     /// <summary>
-    /// Indexed triangle geometry: shared corners plus the triples that build triangles out of them.
-    /// The contract RuleShapeGeometry validates against, so the rule reads a typed pair rather than
-    /// two properties found by name.
+    /// Indexed triangle geometry: shared corners plus the triples building triangles from them. The
+    /// contract RuleShapeGeometry validates against, as a typed pair rather than two named properties.
     /// </summary>
     public interface IShapeGeometry
     {

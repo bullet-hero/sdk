@@ -8,10 +8,8 @@ namespace BH.SDK.Versions.V1
 {
     // ReSharper disable once InconsistentNaming
 
-    // Intentionally doesn't have ModelGeneration: a nested leaf of ControlsSettingsV1, frozen because
-    // generation 2 gave the live class cursor_return (a per-device answer to what letting go does).
-    // Flat rather than derived from BaseDeviceControlsSettings, so nothing the live base does later can
-    // reach it.
+    // No ModelGeneration: a nested leaf of ControlsSettingsV1, frozen because generation 2 gave the
+    // live class cursor_return. Flat, not derived from BaseDeviceControlsSettings.
 
     /// <summary> The keyboard and mouse group as generation 1 (Release) of the user-settings domain
     /// wrote it - without <c>cursor_return</c>. A frozen snapshot - never edit it to match today's

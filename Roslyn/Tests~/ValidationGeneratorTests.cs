@@ -4,16 +4,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Roslyn.Tests
 {
-    // WHAT THE VALIDATION GENERATOR EMITS, and - more to the point - what it REFUSES. The generated
-    // walk itself is proven far more strongly elsewhere: BH.SDK.Tests and Core.Tests run a real
-    // 19 341-object level through both walks and compare a hundred thousand findings, which no
-    // assertion about emitted text could match. What that cannot reach is the diagnostics, because
-    // every one of them describes a construct nobody has written yet.
-    //
-    // So this file is mostly refusals. Each names a way the generated property list could stop
-    // being Type.GetProperties' list, in its order - and every one of those is silent: the same
-    // findings under the wrong paths, in the wrong order, handed to a RuleFixer whose repairs are
-    // not commutative.
+    // Mostly REFUSALS: the walk is proven against the real corpus elsewhere, but every diagnostic describes
+    // a construct nobody has written yet, and each could silently reorder the report.
 
     /// <summary> The generated rule walk: that every <c>[RuleContainer]</c> gets one, and that it descends the
     /// same way the reflective walk it replaced did. </summary>
@@ -112,10 +104,8 @@ namespace Sample
                 "an abstract type is never a runtime type, so the walk never reaches one");
         }
 
-        // NOT A REFUSAL, AND DELIBERATELY SO. A container that is not partial keeps the reflective
-        // walk, which is exactly what RuleWalk.Node's fallback is for - and BHS1101 was withdrawn
-        // after erroring on dozens of the private nested fixtures in Tests/Rules, which are that
-        // fallback's only coverage.
+        // NOT a refusal on purpose: a non-partial container keeps the reflective walk (BHS1101 was
+        // withdrawn).
 
         [Test]
         [Author(Metadata.Author.Vertoker)]
@@ -259,10 +249,7 @@ namespace Sample
         private static string Ids(GeneratorRun run)
             => string.Join(",", run.GeneratorDiagnostics.Select(diagnostic => diagnostic.Id));
 
-        // Only as much of the validation API as the generator NAMES. It reasons about attributes,
-        // property shapes and one interface; the walk it emits calls into RuleWalk, so the members
-        // it calls have to exist for the emitted code to compile, but none of them has to do
-        // anything - what the walk DOES is asserted against the real corpus, not here.
+        // Only as much API as the generator NAMES; the walk's behaviour is asserted on the real corpus.
         private const string ValidationApiStub = @"
 namespace BH.SDK.Rules
 {

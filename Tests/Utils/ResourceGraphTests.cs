@@ -14,10 +14,7 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests.Utils
 {
-    // ONE LEVEL TOUCHING EVERY REFERENCE FIELD THE FORMAT HAS, each with its own id, so a field the
-    // walk forgets is a missing entry and a field it visits twice is a duplicate. The count, the
-    // closure and the remap all ride on this walk, which is why it is pinned from both directions:
-    // what it reads, and what it writes when told to move everything.
+    // One level touching every reference field with its own id: a forgotten field is a missing entry.
     public class ResourceGraphTests
     {
         private sealed class Fixture

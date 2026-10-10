@@ -5,12 +5,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests.Rules
 {
-    // WHAT THIS FIXTURE ASKS CHANGED WITH THE ADDRESS, and the change is the point rather than a
-    // side effect. A dotted path could only be asked whether it was non-empty and under a length
-    // ceiling - questions about a string, answerable without the model. A field id is asked whether
-    // it is a field of anything at all, which is the real question, because ModificationTable
-    // answers it at compile time. The length cases below are gone with the string, and the fix
-    // cases with them: an unregistered id cannot be repaired into a registered one.
+    // Asks whether the field id is a field of anything and an index is legal (ModificationTable answers at
+    // compile time); there is no length case and no fix, since an unregistered id cannot be repaired.
 
     /// <summary>
     /// RuleModificationKeyValid: the only reach the property-level rules have into ModificationKey,
@@ -66,12 +62,8 @@ namespace BH.SDK.Tests.Rules
                 new Model { Key = new ModificationKey(ObjectId.LocalPlayer, ModificationFields.Layer) });
         }
 
-        // THE TEMPLATE ROOT IS ADDRESSABLE AND USED TO NOT BE, and the half that stayed invalid is
-        // the point rather than a leftover. Prefab.Root is a real object now (see Prefab.Root), so
-        // an override may name it - but it materializes AS the placement, so it may only name what
-        // the template owns. Span, Active and Layer are the placement's own authored fields; an
-        // override on one of them would say a second time what the author already said directly,
-        // and would win, ApplyModifications running last.
+        // The template root is addressable only for template-owned fields: Span/Active/Layer are the
+        // placement's own, and an override would say it a second time and win.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]

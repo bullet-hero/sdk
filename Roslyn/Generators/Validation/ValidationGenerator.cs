@@ -7,26 +7,9 @@ using Microsoft.CodeAnalysis.Text;
 
 namespace BH.SDK.Roslyn.Validation
 {
-    // WHY A GENERATOR. RuleAnalyzer walks a level by reflection: per node it asks three dictionaries
-    // (is this a container, what are its object rules, what are its properties) and then calls
-    // PropertyInfo.GetValue once per property, boxing every value type it reads. On the real corpus
-    // that is 1.6 s of the 3.8 s it costs to open volcano in the editor - measured, three passes,
-    // 2026-09-03 - and none of it is the rule evaluation itself.
-    //
-    // A COMPILED-ACCESSOR CACHE IS NOT AN OPTION, which is why generation rather than convenience:
-    // System.Reflection.Emit is unavailable on IL2CPP and Expression.Compile degrades to
-    // interpretation under AOT, so any "cache a Func<object, object> per property" scheme is fast in
-    // the Editor and worthless on the two platforms where a slow validation is actually felt.
-    //
-    // WHAT IT DELIBERATELY DOES NOT GENERATE is the rules themselves. RuleTable builds the
-    // PropertyInfo array and the attribute arrays by the same reflection the analyzer uses, once per
-    // type; this only supplies the values and the shape. That keeps RulePath.Property the same
-    // object, RuleIssue.Rule the same instance, and both rule arrays in reflection's own order -
-    // which decides WHICH finding is reported when a property carries several rules.
-    //
-    // EXPECT 3-6x, NOT 50x. The .blob codec's 49x came from reflection being the whole cost of
-    // reading; here it is part of it. What survives is the virtual rule.IsValid(object, RuleContext)
-    // and the boxing at that boundary, and removing those is a different piece of work.
+    // Replaces a reflective walk (boxing GetValue per property) because Reflection.Emit and
+    // Expression.Compile are no use on IL2CPP. It generates the walk only, never the rules
+    // (Docs/ROSLYN_GENERATORS.md).
 
     /// <summary> Writes the walk for every [RuleContainer] type. </summary>
     [Generator]
@@ -50,11 +33,8 @@ namespace BH.SDK.Roslyn.Validation
             });
         }
 
-        // [RuleContainer] IS INHERITED, and ForAttributeWithMetadataName matches DECLARED attributes
-        // only - so a type that is a container purely by inheritance is invisible here and keeps the
-        // reflective walk. That is correct rather than a gap, and it is bounded: measured, exactly
-        // two types in the SDK were in that state, and BH.SDK.Tests' RuleContainerCoverageTests is
-        // what keeps the number at zero now that both declare it.
+        // [RuleContainer] is inherited but this matches DECLARED attributes: a container by inheritance
+        // alone keeps the reflective walk. RuleContainerCoverageTests keeps that at zero.
 
         private static ValidationResult Transform(GeneratorAttributeSyntaxContext context)
         {

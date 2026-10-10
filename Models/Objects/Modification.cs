@@ -22,21 +22,12 @@ namespace BH.SDK.Models.Objects
     // 3. Modification works only for prefab scope where it's located.
     // No deep inheritance of changes
 
-    // ONE OF THE THREE MODELS THE GENERATOR DOES NOT COVER, and the reason is Value. Copying it is
-    // not an assignment (a whole-track override stores a List<TKeyframe>, which would alias) and
-    // comparing it is not object.Equals (a List has no value equality), so both bodies below are
-    // real decisions rather than boilerplate. FrameSpan and ModificationKey are the other two, for
-    // the different reason that a struct has no constructor body to read defaults from.
-    //
-    // It is `partial` anyway, and for a different generator: ValidationGenerator writes a walk for
-    // every [RuleContainer], and opting out of ModelGenerator says nothing about that one. There is
-    // no third state - a container either gets a generated walk or stays the slowest kind of node on
-    // a level's load path - so BHS1101 is an error and this word is how it is answered.
+    // One of the three models the generator does not cover (Value is untyped), yet `partial` for
+    // ValidationGenerator: BHS1101 is an error otherwise. Models/Objects/CLAUDE.md
 
     /// <summary>
-    /// One per-placement field override: "in this PrefabObject, that object's that field is this
-    /// value instead". Re-applied on top of a fresh template copy after every materialize/resync,
-    /// which is what lets a placement diverge from its template without breaking the link.
+    /// One per-placement field override: "in this PrefabObject, that object's that field is this value
+    /// instead". Re-applied on a fresh template copy after every materialize/resync.
     /// </summary>
     [RuleContainer]
     public sealed partial class Modification : IModel<Modification>, Serialization.Blob.IBinaryModel, Serialization.Json.IJsonModel
@@ -58,11 +49,8 @@ namespace BH.SDK.Models.Objects
         public object Value
         {
             get => _value;
-            // Widened to the same CLR types Newtonsoft always produces when deserializing a raw
-            // JSON number into an `object` property (long for any integral, double for any
-            // floating-point) - without this, a Modification built in code with e.g. a plain `int`
-            // stops Equals-ing itself after a serialize/deserialize round trip, since the
-            // deserialized copy always comes back as long/double regardless of the original width.
+            // Widened to the CLR types Newtonsoft produces for a raw JSON number (long, double), or a plain
+            // `int` stops Equals-ing itself after a round trip.
             set => _value = NormalizeValue(value);
         }
 
@@ -110,12 +98,8 @@ namespace BH.SDK.Models.Objects
         {
             if (Value == null) return null;
             if (Value.GetType().IsValueType) return Value;
-            // A whole-track override (see ModificationUtils.Apply's PropertyCategory.List branch)
-            // stores a List<TKeyframe> here - List<T> itself isn't ICloneable, so without this the
-            // copy would alias the SAME list instance as the original (a real bug for
-            // PrefabObject.CopyImpl/Update). Reconstruct a same-concrete-type list and clone each
-            // element through its own ICloneable.Clone() - every keyframe type already implements
-            // this transitively via IModel<T> : ICopyable<T> : ICloneable.
+            // A whole-track override stores a List<TKeyframe>: List<T> is not ICloneable, so Copy rebuilds
+            // a same-type list and clones each element, or the copy would alias the original's list.
             if (Value is IList list)
             {
                 var copy = (IList)Activator.CreateInstance(list.GetType());
@@ -153,16 +137,8 @@ namespace BH.SDK.Models.Objects
             if (ReferenceEquals(this, other)) return true;
             if (!Key.Equals(other.Key)) return false;
 
-            // A NON-SCALAR VALUE COMES BACK AS A JToken, by design (see the Blob region's header),
-            // and JContainer does not override Equals - so two structurally identical JArrays
-            // compare by REFERENCE and a level stopped equalling a second reading of itself. Not
-            // hypothetical: it is what CorpusLoadCostTests reported the moment the corpus first
-            // carried whole-track overrides, both between the two JSON readers and between JSON and
-            // blob. DeepEquals is the value comparison Newtonsoft does have.
-            //
-            // It does NOT make an in-memory List<TKeyframe> equal to the JArray a reading of it
-            // produces, and that is the documented boundary rather than an omission: the setter's
-            // "equals itself after a round trip" promise is about the scalars it widens.
+            // A non-scalar Value comes back as a JToken and JContainer compares by REFERENCE, hence
+            // DeepEquals. It does NOT equal an in-memory List<TKeyframe>: the promise is about scalars.
             if (Value is JToken token && other.Value is JToken otherToken)
                 return JToken.DeepEquals(token, otherToken);
 
@@ -176,17 +152,8 @@ namespace BH.SDK.Models.Objects
 
         #region Blob
 
-        // THE ONE MEMBER IN THIS FORMAT WITH NO TYPE, so it is the one the generator refuses and
-        // this is the hand-written answer. Value is written as JSON TEXT rather than as a tagged
-        // union of the five scalars it usually holds, and that is not laziness - it is what makes
-        // the two formats agree. A whole-track override stores a List<TKeyframe> here, whose
-        // elements are polymorphic values that only this project's converters know how to write;
-        // and reading a .json back always yields a JToken for anything that is not a scalar. Text
-        // produced by the same serializer, parsed by the same rules, lands on exactly what a .json
-        // round trip lands on - including the long/double widening the setter above applies.
-        //
-        // It costs a few bytes on a member a level carries a handful of. Anything cleverer would be
-        // a second definition of what Value means.
+        // The one member with no type, so the one the generator refuses. Value is written as JSON TEXT:
+        // that is what makes .json and .blob agree. Models/Objects/CLAUDE.md
 
         private static readonly Serialization.SerializationService JsonForValue = new();
 
@@ -220,10 +187,8 @@ namespace BH.SDK.Models.Objects
 
         #region Json
 
-        // The same reason the blob half is hand-written: Value has no type, so nothing mechanical
-        // can encode it. It goes through the very serializer the rest of the format uses, which is
-        // what makes it identical to what the reflective path wrote - including the JToken a
-        // non-scalar comes back as.
+        // Hand-written for the same reason as the blob half: Value has no type. It goes through the
+        // format's own serializer, so it matches what the reflective path wrote (a JToken for non-scalars).
 
         /// <summary> Writes this override as JSON. </summary>
         public void WriteJson(JsonWriter writer)

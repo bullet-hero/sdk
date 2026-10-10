@@ -9,9 +9,8 @@ using NUnit.Framework;
 namespace BH.SDK.Tests.Rules
 {
     /// <summary>
-    /// RuleReferenceExists: catches a texture/font/clip id no entry in the level answers to. Bounded
-    /// to the int-backed id family, where the sign alone says whether the level or the game owns the
-    /// resource.
+    /// RuleReferenceExists: a texture/font/clip id no entry in the level answers to; only the int-backed id
+    /// family, where the sign says who owns the resource.
     /// </summary>
     public class RuleReferenceExistsTests : BaseRuleTests
     {

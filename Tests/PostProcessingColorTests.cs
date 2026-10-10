@@ -9,19 +9,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests
 {
-    // THE GRADING COLOURS CARRY THREE CHANNELS, and these pin both halves of why. URP reads the
-    // fourth component of lift/gamma/gain and shadows/midtones/highlights as a signed OFFSET, not as
-    // opacity - PrepareLiftGammaGain adds it to every channel, PrepareShadowsMidtonesHighlights
-    // weights it x4 when positive and adds that - so a model storing it as an alpha defaulting to 1
-    // pushed a whole tonal band four stops up the moment its range was switched on.
-    //
-    // The vignette's is three channels for a different reason and it is URP's own: the component
-    // declares its colour with hdr false and showAlpha false, so there is no fourth component to
-    // read and nothing above 1 changes anything.
-    //
-    // NO VERSION MOVED WITH THIS, which is the claim the round trip below is here to check rather
-    // than assert: a level written when these were four-channel carries one property more than the
-    // type now has, and Newtonsoft drops it.
+    // Grading colours carry THREE channels: URP reads the fourth as a signed offset, not opacity. An older
+    // four-channel payload drops the extra property. BH.SDK/Docs/TESTING.md, "Other fixtures".
 
     /// <summary> Why the grading colours carry three channels: URP reads a fourth as a signed offset, so an
     /// alpha defaulting to 1 pushed a whole tonal band four stops the moment its range was switched on. </summary>
@@ -45,10 +34,7 @@ namespace BH.SDK.Tests
             Assert.AreEqual(1f, white.B);
         }
 
-        // ShadowsMidtonesHighlights went further than LiftGammaGain: its three colours and two limit
-        // pairs are born ABSENT, 180 of the key's 238 default bytes, and read back as the neutrals
-        // PostProcessingRules names. The fourth component is still gone - what a set colour is, is
-        // pinned by the round trip below.
+        // SMH colours and limits are born ABSENT and read back as the neutrals PostProcessingRules names.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
@@ -98,11 +84,7 @@ namespace BH.SDK.Tests
         [Category(Metadata.Category.Easy)]
         public void AFourComponentColour_WrittenBeforeThis_StillReadsBack()
         {
-            // What this pins is the PAYLOAD carrying one component too many - the colour is three
-            // components now and the fourth was doing real damage (it reached URP as a signed
-            // offset, not an alpha). The key names come from the constants: which spelling the
-            // format uses is not what is under test, and pre-release there is no file on disk to
-            // preserve anyway (root CLAUDE.md Rule 11).
+            // The payload carrying one component too many; key names come from the constants.
             var written = $"{{\"{Names.Lift}\":true,\"{Names.LiftColor}\":[0,{{\"r\":0.25,\"g\":0.5,\"b\":0.75,\"a\":0.9}}],"
                           + $"\"{Names.Gamma}\":false,\"{Names.Gain}\":false,\"{Names.ActiveShort}\":true,\"{Names.FrameShort}\":7}}";
 

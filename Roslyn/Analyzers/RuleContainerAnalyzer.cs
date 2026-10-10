@@ -91,12 +91,8 @@ namespace BH.SDK.Roslyn
                 return;
             }
 
-            // Abstract is allowed, and has to be: [RuleContainer] is inherited, so putting it on a
-            // base class is how a whole family opts in at once (Resource, BaseGraphicsSettings both
-            // do). Nothing ever instantiates the container itself - the Activator calls live in
-            // RuleNotNull and the RuleIPrimitiveXxx family, and they construct the *property's* type,
-            // which is always a concrete one. Flagging abstract here used to make two shipped classes
-            // an error the moment this analyzer was switched on.
+            // Abstract is allowed: [RuleContainer] is inherited, so a base class is how a whole family opts
+            // in.
             if (classSymbol.IsAbstract) return;
 
             var hasParameterlessConstructor = classSymbol.Constructors

@@ -10,17 +10,9 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Serialization.Json
 {
-    // THE FOUR STRUCTS AND ONE CLASS A GENERATED WRITER CANNOT WRITE FOR ITSELF, and every one of
-    // them reproduces an encoding that already exists on disk rather than inventing a new one.
-    // FrameSpan's is the only clever one: an anchored edge is the number NEGATED, which works
-    // because neither number can be zero (the timeline counts frames from FrameRules.MinFrame and a
-    // duration is at least one) and -0 exists in no format. The other three are plain objects
-    // Newtonsoft's own contract would have written, spelled out here because a struct with get-only
-    // properties has nothing a member-driven generator can assign.
-    //
-    // The reads are deliberately as LENIENT as the converters they replace. FrameSpanConverter's
-    // header says why: a corrupt file should cost the author one wrong object rather than a level
-    // that refuses to open.
+    // The structs and class a generated writer cannot write; each reproduces an encoding already on
+    // disk (FrameSpan: an anchored edge is the number negated, neither being zero). Reads are as
+    // LENIENT as the converters replaced: a corrupt file costs one wrong object, not the level.
 
     /// <summary> JSON encodings for the values the generator hands off. </summary>
     public static class JsonPrimitives

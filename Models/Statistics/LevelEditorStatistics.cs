@@ -7,14 +7,8 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models.Statistics
 {
-    // HOW MUCH WORK WENT INTO THIS LEVEL, as opposed to how well it was played. It lives in the same
-    // file as the play statistics because it is the same subject - one level, one document - but it
-    // is the only part of that file a run launched from the editor may write to.
-    //
-    // That split is the whole reason this is a separate aggregate: an author testing a ten-second
-    // passage will start it hundreds of times in an evening, and folding those into Attempts would
-    // make the level's clear rate meaningless for everyone, the author included. Time spent editing,
-    // saves and operations are the honest measure of that same evening, and they are here.
+    // Authoring effort on this level, the only part of the file a run launched from the editor may write
+    // (testing a passage hundreds of times would wreck Attempts). Docs/STATISTICS.md
 
     /// <summary> What the author did to a level, as opposed to how it was played. </summary>
     [RuleContainer]

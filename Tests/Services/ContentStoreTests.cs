@@ -8,15 +8,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests.Services
 {
-    // ONE CASE SET, BOTH IMPLEMENTATIONS, and that is the whole point of the fixture rather than a
-    // way to write fewer lines. MemoryContentStore is what every pipeline test above this runs on,
-    // so anything it answers differently from a real directory is a test suite agreeing with itself
-    // about a product that behaves otherwise. Running the same asserts through both is what makes
-    // "the test double IS a store" a checked claim.
-    //
-    // The escape case is the load-bearing one. "Rooted by construction" is the property the archive
-    // layer's tar-slip defence rests on: it validates entry names, but what actually stops a
-    // traversal is that no store can address anything outside its root, whatever name it is handed.
+    // One case set, both implementations (MemoryContentStore backs every pipeline test). The escape case is
+    // load-bearing: tar-slip defence rests on a store being rooted by construction.
 
     /// <summary> One case set run through BOTH stores, so "the test double IS a store" is a checked claim - and
     /// the escape case, which is what the archive layer's traversal defence actually rests on. </summary>
@@ -220,10 +213,7 @@ namespace BH.SDK.Tests.Services
 
         #region MemoryContentStore
 
-        // The reason the interface is written in ValueTask at all: on this implementation every
-        // operation is already finished when it is handed back, so awaiting one allocates nothing.
-        // A change that makes any of these genuinely asynchronous is a change to that bargain, and
-        // it should have to edit this test to happen.
+        // The ValueTask bargain: the memory store completes synchronously, so awaiting allocates nothing.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]

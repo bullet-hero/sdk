@@ -5,20 +5,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests.Utils
 {
-    // FLATTENING A GRID IS ONE MULTIPLICATION AND ONE ADDITION, AND THIS TYPE SPELLS IT SEVEN TIMES.
-    // GetIndex and GetIndexes each exist as an instance method, a static method taking the width, a
-    // tuple-taking overload and an out-parameter one - so the defect available here is not "the
-    // arithmetic is wrong" but "two of the seven disagree", which is invisible until one caller
-    // reads a cell another wrote.
-    //
-    // So the test that matters is the ROUND TRIP over every cell of a non-square grid, checked
-    // through every overload at once: width and height are different numbers on purpose, because a
-    // square grid makes a transposed formula indistinguishable from a correct one, and it is
-    // precisely the row-major-versus-column-major slip that a hand-written index invites.
-    //
-    // The enumerators are checked against the same arithmetic rather than against a hand-written
-    // sequence, for the same reason: a list of expected pairs is a second implementation, and a test
-    // that restates the thing it checks passes whenever both copies are wrong the same way.
+    // Seven spellings of one flatten: the defect is two disagreeing. Round trip over a NON-square grid (a
+    // square one hides a transposed formula) through every overload.
 
     /// <summary> DimensionalIndexer2: every overload flattens and unflattens the same way, and the
     /// enumerators visit every cell exactly once in row-major order. </summary>

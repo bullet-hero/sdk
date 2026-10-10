@@ -6,11 +6,8 @@ using BH.SDK.Services.Content;
 
 namespace BH.SDK.Services.Collections
 {
-    // ONE COLLECTION IN MEMORY, SHAPED LIKE A LEVEL'S RESOURCES. Its data resources and the file
-    // resources its manifest lists are gathered into a LevelResources, and that is the whole trick:
-    // ResourceClosure, ResourceRemap and every planner above them already speak LevelResources, so a
-    // collection is walked by exactly the code that walks a level. The three file dictionaries ARE the
-    // manifest's (shared instances, not copies), so an edit through either reaches both.
+    // One collection in memory, shaped like a level's resources so every planner speaks it. The three
+    // file dictionaries ARE the manifest's (shared instances, not copies).
 
     /// <summary> Why one file of a collection was left out of what was read. </summary>
     public enum CollectionEntryProblem

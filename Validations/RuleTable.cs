@@ -7,27 +7,9 @@ using BH.SDK.Rules.Attributes;
 
 namespace BH.SDK.Validations
 {
-    // WHAT THE GENERATOR DELIBERATELY DOES NOT PRODUCE. A generated Validate supplies the VALUES and
-    // the shape of the walk; the properties and the rules sitting on them are built here, by the
-    // same expression RuleAnalyzer uses, once per type. Four things that buys, none of which a
-    // generated table would:
-    //
-    // - RulePath.Property is the SAME PropertyInfo object the reflective path hands out, so a trace
-    //   compares equal either way and RuleFixer writes through it unchanged.
-    // - RuleIssue.Rule is the same attribute INSTANCE for every node of a type, as it has always
-    //   been. Emitting `new RuleInRangeAttribute(0, 10)` per node would change both the allocation
-    //   count and reference identity, which nothing currently forbids and something may rely on.
-    // - The rule ARRAY keeps reflection's order. Under the default analyzeAllPropertyRules = false
-    //   the first FAILING rule wins and the loop breaks, so a different order reports a different
-    //   finding - not a reordered one. 145 properties carry two to five rules.
-    // - Repeated AllowMultiple attributes keep reflection's order too (Color4MinMax carries four
-    //   [RulePropertyOrder]), and that order is not contractually source order.
-    //
-    // THE ORDINAL CONTRACT IS CHECKED, LOUDLY, ONCE. The generator's whole correctness rests on its
-    // property list being GetProperties' list in GetProperties' order; a silent divergence would
-    // report the same findings under the wrong paths, in the wrong order, and RuleFixer repairs in
-    // reverse. So the expected names travel with the ordinals and a mismatch throws at class-init
-    // rather than at some node halfway through a level.
+    // What the generator deliberately does NOT produce: the properties and rule arrays, built once per
+    // type by the expression RuleAnalyzer uses, so PropertyInfo, rule instances and reflection ORDER are
+    // identical on both paths (order decides which finding wins). Ordinals are checked at class init.
 
     /// <summary> One type's walked properties and their rules, resolved once. </summary>
     public sealed class RuleTable
@@ -41,16 +23,9 @@ namespace BH.SDK.Validations
         /// <summary> The whole-object rules written on this type. </summary>
         public readonly BaseObjectRuleAttribute[] ObjectRules;
 
-        // WHETHER EVERY RULE ON A PROPERTY ANSWERED IsValidType ONCE, AT BUILD. That check is a
-        // reflective type test (typeof(ICollection).IsAssignableFrom(...), and so on) and it used to
-        // run per rule, per node - millions of times for one level, to ask a question whose answer
-        // is a property of the TYPE and cannot change. Where every rule passed it, Check skips it,
-        // and skipping it is unobservable precisely because it would never have fired.
-        //
-        // Per property rather than per table: one misapplied rule must not slow every other
-        // property down. Where one did fail, Check takes the original loop verbatim - the same
-        // throw, at the same node, with the same path in the message, and with the same subtlety
-        // that an earlier failing rule breaks the loop before a later misapplied one is reached.
+        // Whether every rule on a property passed IsValidType once, at build: a reflective test that used
+        // to run per rule per node. Per property so one misapplied rule slows nobody else; where one
+        // failed, Check runs the original loop verbatim (same throw, node and path).
 
         /// <summary> Whether each property rule may sit where it does - asked once per type, not per value. </summary>
         public readonly bool[] RulesTypeChecked;

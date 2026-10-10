@@ -10,10 +10,7 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests.Generators
 {
-    // The journal is the whole undo story (see GeneratorChangeLog's header), so these tests are less
-    // about "does Create add an object" and more about "does Revert put the model back exactly, and
-    // does Reapply put it forward exactly" - the two properties every future generator inherits for
-    // free and none of them can test for itself.
+    // The journal is the undo story: Revert restores the model exactly, Reapply moves it forward exactly.
 
     /// <summary> The journal every generator inherits and none can test for itself: that Revert puts the model
     /// back exactly, and Reapply puts it forward exactly. </summary>

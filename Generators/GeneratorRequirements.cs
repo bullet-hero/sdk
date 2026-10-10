@@ -2,11 +2,8 @@ using System;
 
 namespace BH.SDK.Generators
 {
-    /// <summary>
-    /// What a generator needs from its host before it can run at all. A host checks these to decide
-    /// whether to offer, disable or pre-fill - never the generator itself, which may assume every
-    /// requirement it declared was satisfied.
-    /// </summary>
+    /// <summary> What a generator needs from its host before it can run. A host checks these to offer,
+    /// disable or pre-fill; the generator may assume every requirement it declared was met. </summary>
     [Flags]
     public enum GeneratorRequirements
     {

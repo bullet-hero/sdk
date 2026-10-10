@@ -6,24 +6,9 @@ using BH.SDK.Utils;
 
 namespace BH.SDK.Rules.Attributes
 {
-    // What this can and cannot check is the same split the whole keybindings design rests on. It
-    // checks SHAPE - every key is a plausible shortcut id, every value is a legal binding in its one
-    // canonical form - and it deliberately checks neither that the id names a shortcut the game has
-    // nor that the key name is one a keyboard reports. Both of those live in the consumer's catalog
-    // and in the engine's key table, neither of which the SDK may see (see ShortcutSyntax's header).
-    //
-    // Canonical form rather than merely parseable form, because equality downstream is string
-    // equality: a file carrying "Shift+Ctrl+P" would resolve correctly and still fail to match the
-    // "ctrl+shift+p" a conflict finder compares it against. Reporting it is what keeps the two from
-    // ever disagreeing.
-    //
-    // Fix DROPS an offending entry rather than repairing it, and that is the safe direction: a
-    // dropped override falls back to the shipped default, so the shortcut keeps working. Rewriting a
-    // garbled value into some nearby legal one would hand the player a binding they never chose.
-    //
-    // allowModifierOnly is true here on purpose. The rule cannot tell a held shortcut from a pressed
-    // one - only the catalog knows - so it accepts the wider shape and lets the resolver reject a
-    // modifiers-only binding on a shortcut that cannot use one.
+    // Checks SHAPE only (plausible id, legal binding in canonical form); the catalog and the key table
+    // live in consumers. Fix DROPS an offending entry, so the shortcut falls back to its default.
+    // Why canonical and why modifier-only is allowed: BH.SDK/Docs/RULES.md, "RuleShortcutBindings".
 
     /// <summary>
     /// A keybindings map must hold canonical binding strings under non-empty ids. Fix removes every

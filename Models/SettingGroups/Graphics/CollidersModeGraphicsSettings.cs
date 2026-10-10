@@ -6,23 +6,8 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models.SettingGroups.Graphics
 {
-    // Joined the unshipped generation V2_SimplifyEntrance, like InterfaceSettings.LevelsLayout: a V1
-    // file reads back without the group, i.e. the mode off and every colour at its default.
-    //
-    // NOT a BaseGraphicsSettings, for AntiAliasingGraphicsSettings' reason: an inherited Render would
-    // read as "is this drawn", which is the opposite of what switching a MODE on means. Active is the
-    // one switch, and it is off by default.
-    //
-    // THE HUE USED TO BE A HARD-CODED CONSTANT ON PURPOSE ("a colour field is a way for it to end up
-    // invisible"), on the editor's collider overlay. It is a setting now at the author's request,
-    // shared by that overlay and this mode. The guard against an invisible fill is the consumer's
-    // CollidersOnlyMath.MinAlpha plus the settings Reset, not the absence of the field.
-    //
-    // THE ALPHA IS READ ONLY WHILE UseAlpha IS ON. Off, the fill is opaque and the stored alpha is kept
-    // untouched for when it is turned back on.
-    //
-    // THE BACKGROUND IS NOT BLACK on purpose: the letterbox around the camera's rect is black, and a
-    // black clear colour would hide where the level's own frame ends.
+    // Not a BaseGraphicsSettings (Render would read opposite to switching a MODE on); Active is the one
+    // switch. The alpha is read only while UseAlpha is on; the background is not black (the letterbox is).
 
     /// <summary>
     /// Colliders Only - a practice mode for the game screen: every level shape is drawn as its

@@ -12,24 +12,9 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models.Hints
 {
-    // The level's fifth aggregate, and the only one that carries nothing authored. Everything here
-    // is DERIVED from Settings/Game/Audio/Resources, written by whoever saves the level, and safe to
-    // throw away: a consumer that ignores this whole object plays the exact same level, only paying
-    // at load or mid-playback for work a hint would have front-loaded. That is the membership test -
-    // a field belongs here when it can be recomputed from the rest of the level and nothing looks
-    // different when it is missing, wrong or stale.
-    //
-    // It exists as its own aggregate rather than as fields on the aggregates the hints describe
-    // (Limits used to sit on LevelSettings, FontCharacters on LevelResources) because those two
-    // neighbourhoods are authoritative: a reader there cannot tell "the author decided this" from
-    // "a tool measured this last save". Everything advisory living behind one property makes the
-    // distinction structural - and makes "recompute every hint" and "drop every hint" one call each
-    // rather than a list someone has to keep current.
-    //
-    // Consequence for the format: a level written before this existed deserializes to an all-empty
-    // Hints, which is exactly "no hint", so the move needed no migration and the Level domain stays
-    // at (1, 0). A level whose hints were written by an older layout simply loses them at the next
-    // save, which is what advisory means.
+    // The only aggregate carrying nothing authored: everything is DERIVED, safe to throw away, and a
+    // missing, wrong or stale field changes nothing visible. Kept apart from the aggregates it
+    // describes so "authored" vs "measured" is structural. Models/Hints/CLAUDE.md
 
     /// <summary>
     /// Everything measured ABOUT the level rather than authored in it: preallocation sizes, warm-up

@@ -2,16 +2,11 @@ using BH.SDK.Models.Primitives;
 
 namespace BH.SDK.Models.Interfaces
 {
-    // Implemented by whichever model owns an ObjectId namespace of its own (LevelSettings for a
-    // level's own objects, Prefab for a template's objects) - lets BH.Core.Services.PrefabMaterializer
-    // mint fresh, permanent object ids for a materialized prefab instance without caring whether the
-    // instance is hosted directly by a level or nested inside another prefab's template.
+    // Implemented by whichever model owns an ObjectId namespace (LevelSettings, Prefab), so
+    // PrefabMaterializer can mint permanent ids wherever the instance is hosted.
 
-    // The two questions below the mint are what a BULK create needs. A generator, a paste and a
-    // prefab materialize all produce many objects from one gesture, and a mint that refused halfway
-    // through would leave the scope holding half a run - the one failure worse than refusing at all.
-    // So they ask first and write nothing when the answer is no; GetNextObjectId's own assert is the
-    // net under that, not the mechanism. See LevelRules.MaxObjectIds.
+    // The two questions below ask first and write nothing on "no": a bulk create (generator, paste,
+    // prefab) that failed halfway would leave half a run. GetNextObjectId's assert is only the net.
 
     /// <summary> Mints object ids for one scope's own id namespace. </summary>
     public interface IObjectIdCounter

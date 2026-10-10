@@ -8,15 +8,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests
 {
-    // ONE FIXTURE FOR THE WHOLE CONVENTION, because the convention is spread across four types that
-    // have no reason to know about each other - FrameRules holds the constants, FrameSpan holds the
-    // packing, Keyframe holds the default and FrameSpanConverter holds the wire form - and a change
-    // to any one of them can leave the other three describing a timeline that no longer exists.
-    //
-    // Every other fixture in this repo speaks in OFFSETS from the first frame on purpose, so that a
-    // test says what a generator or an importer DOES rather than where the timeline happens to
-    // start. This is the one place that pins where it starts, and it is deliberately the only one:
-    // moving the origin again should be a handful of failures here, not a thousand everywhere else.
+    // The one fixture that pins where the timeline starts (spans four types); every other fixture speaks
+    // in OFFSETS, so moving the origin is a handful of failures here.
 
     /// <summary> That the timeline counts frames from one, and that every type carrying a piece of that
     /// convention agrees on it. </summary>

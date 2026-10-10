@@ -9,19 +9,13 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models.Values
 {
-    // A segment, not a box, and that is the whole difference from its Rect sibling. One roll picks
-    // a position along it and every component is read at that same position, so the components are
-    // perfectly correlated: the value travels the straight line from `From` to `To` and never
-    // leaves it. Pinning one axis is therefore a degenerate range on that axis alone - give it the
-    // same number in both ends and it stops moving while the rest still roll. NO RulePropertyOrder
-    // here, deliberately: a segment has no smaller end, and ordering the pair would swap `From` and
-    // `To` on the way in, making a line that falls as it advances (x up, y down) unrepresentable -
-    // which is the case correlation exists for.
+    // A segment, not a box: ONE roll is read by every component, so the value never leaves the line From-To.
+    // No RulePropertyOrder, deliberately: ordering the pair would swap From and To and make a line that
+    // falls as it advances (x up, y down) unrepresentable. Models/Values/CLAUDE.md
 
     /// <summary>
-    /// Vector3Lerp snapped to a grid: the shared roll picks the point on the segment,
-    /// then each axis is quantized to its own grid, so one step means the same distance
-    /// on all of them.
+    /// Vector3Lerp snapped to a grid: the shared roll picks the point, then each axis is quantized to
+    /// its own grid.
     /// </summary>
     [RuleContainer]
     [GenerateModel]

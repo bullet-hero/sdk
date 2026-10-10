@@ -4,24 +4,12 @@ using System.Linq;
 
 namespace BH.SDK.Generators
 {
-    // A parameters class carries NO attributes: the SDK core would otherwise have to define UI
-    // vocabulary it can't render, and every generator author would have to learn it. Everything a
-    // host can work out from the field's own type (which editor to show, what to serialize) it works
-    // out by reflection; everything it can't comes from here, as plain data.
-    //
-    // Order is mandatory rather than optional. Type.GetFields() order is explicitly unspecified by
-    // the CLI - it happens to be declaration order on today's runtimes and is free to stop being
-    // that after a recompile - so without Order the form's field order is a coin flip.
-    //
-    // Section is Order plus a header: it lists fields exactly like Order does and additionally says
-    // which group they belong to, so grouping can never disagree with ordering the way two separate
-    // mechanisms would. A generator states its sections in the order a form shows them, Main first.
+    // A parameters class carries NO attributes. What a host can derive from a field's type it reflects;
+    // the rest is plain data here. Order is mandatory (GetFields() order is unspecified by the CLI);
+    // Section is Order plus a header, so grouping cannot disagree with ordering. Docs/GENERATORS.md.
 
-    /// <summary>
-    /// Presentation facts about a generator's parameter fields that the fields' own types can't
-    /// carry. Keys are field names, always written through nameof so a rename is a compile error
-    /// instead of a silently ignored hint.
-    /// </summary>
+    /// <summary> Presentation facts about parameter fields that their types cannot carry. Keys are field
+    /// names, always through nameof, so a rename is a compile error and not an ignored hint. </summary>
     public sealed class GeneratorHints
     {
         /// <summary> Field names in the order a form shows them. Fields missing from here are shown

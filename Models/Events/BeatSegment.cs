@@ -10,18 +10,8 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models.Events
 {
-    // A span rather than a keyframe track, and that is the whole design decision. A track of tempo
-    // points has no way to express a HOLE - an intro with no percussion, a break, the tail after the
-    // song ends - because its last point reaches to the end of the level no matter what. A list of
-    // spans says "here the grid exists, at this tempo" and stays silent everywhere else.
-    //
-    // Segments must not overlap, and that is a relational invariant no property attribute can see
-    // (an attribute is handed one property at a time), so it lives in LevelGraphAnalyzer as
-    // GraphRule.BeatSegmentsOverlap. Like every graph finding it carries no repair: clipping the
-    // left one and moving the right one are both content decisions the author has to make.
-    //
-    // Editor-only, exactly like Marker: it is saved, read back and used by generators/snapping, and
-    // playback never looks at it.
+    // A span, not a keyframe track: a track of tempo points cannot express a HOLE (an intro, a break).
+    // Non-overlap is LevelGraphAnalyzer's (GraphRule.BeatSegmentsOverlap). Editor-only, like Marker.
 
     /// <summary>
     /// One stretch of constant tempo on the level timeline: where the beat grid exists, how fast it
@@ -31,10 +21,8 @@ namespace BH.SDK.Models.Events
     [GenerateModel]
     public sealed partial class BeatSegment : IFrameBounds, INameable, IModel<BeatSegment>
     {
-        // Anchors mean "this edge follows the parent span's edge" and a segment has no parent, so
-        // the flags are stripped on the way in rather than validated after the fact. FrameSpan
-        // carries them in its sign bits either way, and an anchored one would serialize as a
-        // negative number nothing here would ever resolve.
+        // A segment has no parent span, so the anchor flags are stripped on the way in: an anchored one
+        // would serialize as a negative number nothing here resolves.
 
         /// <summary> Half-open stretch of level frames the grid covers. Anchors are always None. </summary>
         [JsonProperty(Names.SpanShort)]

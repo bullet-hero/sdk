@@ -36,10 +36,7 @@ namespace BH.SDK.Tests.Services
                 ObjectId = level.Settings.GetNextObjectId(),
                 Text = new StringValue(text),
                 FontResourceId = fontResourceId,
-                // Mask cleared so a test about TEXT is about text: TextObject's default mask is
-                // "X", and it legitimately lands in every font's set (pinned by
-                // Build_DefaultMaskIsIncluded), which would otherwise show up in every expectation
-                // here as a stray leading character.
+                // Mask cleared: TextObject's default "X" would land in every expectation.
                 AppearingMask = string.Empty,
             };
             level.Game.Objects.Add(obj.ObjectId, obj);
@@ -54,10 +51,7 @@ namespace BH.SDK.Tests.Services
                 ObjectId = level.Settings.GetNextObjectId(),
                 Text = new StringLocalized(strings),
                 FontResourceId = fontResourceId,
-                // Mask cleared so a test about TEXT is about text: TextObject's default mask is
-                // "X", and it legitimately lands in every font's set (pinned by
-                // Build_DefaultMaskIsIncluded), which would otherwise show up in every expectation
-                // here as a stray leading character.
+                // Mask cleared: TextObject's default "X" would land in every expectation.
                 AppearingMask = string.Empty,
             };
             level.Game.Objects.Add(obj.ObjectId, obj);
@@ -383,10 +377,7 @@ namespace BH.SDK.Tests.Services
 
         // ==================== Astral characters ====================
 
-        // This set is WRITTEN INTO level.json, so a surrogate half in it is a broken character in the
-        // file rather than a rendering artifact. An astral character reaches here by both doors - a
-        // text object's own string, and an appearing mask, which may legitimately carry one since
-        // TextComposeJob picks whole characters out of it.
+        // The set is written INTO level.json, so a surrogate half is a broken character in the file.
 
         /// <summary> U+1F44D THUMBS UP - one character, two code units, escaped so the fixture never
         /// depends on this file's own encoding. </summary>

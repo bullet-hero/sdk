@@ -2,12 +2,9 @@ using BH.SDK.Services.Archive;
 
 namespace BH.SDK.Services.Profile
 {
-    // A PROFILE IS NOT A LEVEL, so neither of the level archive's defaults fits it. Its names are the
-    // player's own paths and cannot be renamed (a level's media are referenced by name), so the policy
-    // lifts the shared 100-byte cap - zip only, which is the only container a profile is written as.
-    // And its size is the player's whole history, so the unpack limits are not a fixed number at all:
-    // they are what the archive's own directory declared, which the import has already shown to the
-    // player and checked against the disk, capped by a ceiling nothing real reaches.
+    // A profile is not a level: its names are the player's own and cannot be renamed (the policy lifts
+    // the 100-byte cap, zip only), and its unpack limits are what the archive's own directory declared,
+    // checked by the import against the disk. Docs/ARCHIVE.md.
 
     /// <summary> The constants a profile archive is written and read under. </summary>
     public static class ProfileArchive

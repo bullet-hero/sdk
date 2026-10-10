@@ -7,23 +7,9 @@ using BH.SDK.Versions.V1;
 
 namespace BH.SDK.Serialization.Blob
 {
-    // THE FOUR STRUCTS THE GENERATOR CANNOT WRITE FOR ITSELF, and each is here for its own reason
-    // rather than as an oversight:
-    //
-    //   FrameSpan packs two ints with the anchor flags in their sign bits, so writing "its fields"
-    //   would write the packing rather than the meaning. It is written out honestly - start,
-    //   duration, anchors - exactly as the level cache's codec wrote it, and for the same stated
-    //   reason: nothing here has to be clever, so it says what it means. (The JSON side DOES pack,
-    //   because a JSON array of two numbers is the format it already shipped.)
-    //
-    //   ModificationKey and RunProfile are readonly structs with get-only properties: real state,
-    //   no setters, so a member-driven generator has nothing to assign on the way back in.
-    //
-    //   Pixel is four bytes seen as one int by design, and writing it any other way would cost four
-    //   times the calls on an image-sized array.
-    //
-    // An id wrapper (ObjectId, ShapeId, every TypedResourceId) is NOT here: it is one int or one
-    // Guid behind a public single-argument constructor, which the generator emits directly.
+    // The structs the generator cannot write for itself: FrameSpan (written as start, duration, anchors,
+    // not as its packing), ModificationKey and RunProfile (get-only), Pixel (four bytes as one int).
+    // An id wrapper is not here: the generator emits its public single-argument constructor.
 
     /// <summary> Blob encodings for the model structs that write themselves by hand. </summary>
     public static class BlobPrimitives
@@ -52,10 +38,8 @@ namespace BH.SDK.Serialization.Blob
 
         #region ModificationKey
 
-        // THE INDEX IS WRITTEN LAST AND NEVER MOVES, per NAMING.md's positional rule: the blob
-        // writes no names, so inserting a member anywhere but the end makes every trailing byte
-        // mean something else. Field took the place the path held rather than being appended,
-        // which is legal only because nothing on disk predates it.
+        // The index is written LAST and never moves (NAMING.md's positional rule): the blob writes no
+        // names, so inserting a member anywhere but the end shifts every trailing byte.
 
         /// <summary> The template object it addresses, the field, and which element of it. </summary>
         public static void Write(ref BlobWriter writer, ModificationKey value)

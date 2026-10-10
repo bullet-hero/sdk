@@ -5,10 +5,8 @@ namespace BH.SDK.Versions.V1
 {
     // ReSharper disable once InconsistentNaming
 
-    // Intentionally doesn't have ModelGeneration: the key of LevelStatisticsV1.Records, frozen
-    // because generation 2 added NoCollision to the live RunProfile. Like the live one it is a struct
-    // BlobPrimitives and JsonPrimitives write by hand (Write/ReadRunProfileV1 there), so the
-    // generator treats it as ValueKind.Struct and needs nothing more.
+    // No ModelGeneration: the key of LevelStatisticsV1.Records, frozen because generation 2 added
+    // NoCollision to the live RunProfile. Hand-written in BlobPrimitives/JsonPrimitives (a Struct).
 
     /// <summary> A record's launch conditions as LevelStatistics generation 1 (Release) filed them -
     /// lives, speed, checkpoints and bot, before the collision switch. A frozen snapshot - never edit

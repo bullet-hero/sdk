@@ -13,25 +13,8 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models.Statistics
 {
-    // ONE LEVEL, AS THE PLAYER HAS EXPERIENCED IT: stats/<LevelId>.json, its own serialization root.
-    // A fourth top-level document beside a level, its metadata and the player's settings, and the
-    // only one of the four describing the relationship between a player and a level rather than
-    // either of them alone.
-    //
-    // NOT A FIELD OF THE LEVEL, and that is what the whole file turns on. A level is a portable
-    // document - zipped, shared, unzipped, played by someone else - and progress that travelled with
-    // it would arrive already won. It also has to survive the level being deleted, which is why this
-    // lives under stats/ next to backups/ rather than inside the level folder.
-    //
-    // KEYED BY LevelId, the identifier LevelMeta itself declares scores and progress attach to: a
-    // title is edited, translated and duplicated, an id is not. The known cost is that copying a
-    // level folder produces two levels sharing one id and therefore one statistics file; that is
-    // this identifier's contract ("the same id is the same level") rather than a defect here.
-    //
-    // EVERY TIMESTAMP IS UTC. A statistics file outlives time zones, travels between machines and is
-    // read by a person - so it stores an absolute instant in a readable form, and every writer uses
-    // DateTime.UtcNow. Unix seconds were the alternative and were rejected for the reason the file
-    // is JSON at all: a number nobody can read is worse than a longer string.
+    // stats/<LevelId>.json, its own root: NOT a field of the level (progress would arrive already won), keyed
+    // by LevelId, every timestamp UTC. Docs/STATISTICS.md
 
     /// <summary> Everything one player has done with one level. </summary>
     [RuleContainer]
@@ -68,10 +51,7 @@ namespace BH.SDK.Models.Statistics
         [JsonProperty(Names.LastPlayedUtc)]
         public DateTime LastPlayedUtc { get; set; }
 
-        // REAL seconds, measured on the wall clock rather than on the level clock: the level clock
-        // is bent by the launch speed and by the checkpoint ramp, so it answers "how much level was
-        // played" and not "how long the player sat there". The second question is the one a
-        // playtime number is asked.
+        // REAL seconds on the wall clock, not the level clock (bent by launch speed and the checkpoint ramp).
 
         /// <summary> Real seconds spent playing this level. </summary>
         [RuleInRange(StatisticsRules.MinSeconds, StatisticsRules.MaxSeconds)]

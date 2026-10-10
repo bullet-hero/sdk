@@ -7,11 +7,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests
 {
-    // FrameSpan is the type that replaced the old StartFrame + EndFrame pair, and the whole point of
-    // it is that the two invariants (Start >= MinFrame, Duration >= 1) and the half-open convention
-    // cannot be violated by any representable value. Most of what follows tests exactly that: the
-    // packing of the anchor flags into the sign bits and the bias-by-their-floor fields are internal
-    // details, so they are checked through the public surface only.
+    // The invariants and the half-open convention hold for every representable value; packing is checked
+    // through the public surface only.
 
 
     /// <summary> That no representable FrameSpan can violate its two invariants or the half-open convention.
@@ -220,11 +217,7 @@ namespace BH.SDK.Tests
             Assert.AreEqual(new FrameSpan(), span);
         }
 
-        // The in-memory packing (bias-by-one duration, flags in the sign bits) must never reach the
-        // file - a start frame surfacing as -2147483548 would be unreadable to third party tools.
-        // The wire form carries its own, separate sign convention: the two logical numbers, negated
-        // per anchored edge, so a span is always exactly two numbers and an unanchored one reads as
-        // its own plain frame count.
+        // The in-memory packing never reaches the file; the wire form is two numbers, negated per anchor.
 
         [Test]
         [Author(Metadata.Author.Vertoker)]
@@ -250,11 +243,7 @@ namespace BH.SDK.Tests
             Assert.AreEqual(anchored, JsonConvert.DeserializeObject<FrameSpan>(anchoredJson, converter));
         }
 
-        // A child starting together with its parent at the very beginning of the level is the case
-        // the sign convention used to be unable to express, because -0 exists in neither JSON nor
-        // BSON and the start could legitimately BE zero. It cannot any more - the timeline counts
-        // from FrameRules.MinFrame - so the negated number stands on its own with no offset, and
-        // this pins that the simplification did not cost the case its round trip.
+        // A child starting with its parent at the very beginning round trips (the origin move made -0 moot).
 
         [Test]
         [Author(Metadata.Author.Vertoker)]

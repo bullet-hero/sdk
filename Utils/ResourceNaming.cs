@@ -7,10 +7,7 @@ using BH.SDK.Models.Resources;
 
 namespace BH.SDK.Utils
 {
-    // THE TWO THINGS EVERY MOVE OF A FILE RESOURCE HAS TO INVENT: a fresh level-local id, and a file
-    // name nothing in the destination already uses. Both rules were private to the editor's
-    // LevelResourcesService; an import planner running in the SDK (and one day on a server) needs the
-    // same answers, so they live here and the editor's copy stays a caller of the same arithmetic.
+    // A fresh level-local id and a file name nothing in the destination uses, shared with the editor.
 
     /// <summary> Fresh ids and free file names for file resources. </summary>
     public static class ResourceNaming

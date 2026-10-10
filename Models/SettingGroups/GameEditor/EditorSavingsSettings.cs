@@ -6,10 +6,7 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models.SettingGroups.GameEditor
 {
-    // The three autosave numbers and the history depth are one group because they answer one
-    // question - how much work is an author willing to lose - and they trade against the same
-    // resource from two directions: autosaves cost disk, the history costs memory. An author who
-    // turns one of them up has usually just lost something and wants the other up too.
+    // One group: the autosave numbers and the history depth answer how much work an author will lose.
 
     /// <summary>
     /// How far back the editor can take an author: its autosave policy and the depth of its
@@ -43,21 +40,8 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
         [JsonProperty(Names.HistoryLength)]
         public int HistoryLength { get; set; }
 
-        // THE SECOND CEILING, AND IT IS NOT THE SAME QUESTION. HistoryLength counts nodes, and a node
-        // costs whatever its operation cached - deleting a selection of fifty thousand objects is ONE
-        // node holding fifty thousand of them. So a history obeying its node budget exactly can still
-        // be the largest thing in the process, and this is what stops that. It is a guard against
-        // outright overload, not a tuning knob: at its resolved value an ordinary session of 512
-        // operations never reaches it, and what it catches is a run of mass edits on a huge level.
-        //
-        // THREE VALUES, AND THE NEGATIVE ONE IS WHY THIS IS AN INT RATHER THAN A PAIR. Zero is no
-        // limit at all; a positive number is that many objects; NEGATIVE means "let the device
-        // decide", which is the default and resolves to no limit on a desktop and to a real ceiling
-        // on a phone - see Core's HistoryBudgetPlanner. That is the shape TexturesGraphicsSettings
-        // and AudioLoadPlanner already use ("Auto, resolved per platform") rather than a per-platform
-        // value SEEDED into a fresh file, which this project tried once for the editor's preview
-        // avatar and removed: a seeded default is indistinguishable from a choice the author made,
-        // so it can never be revised.
+        // A second ceiling, in OBJECTS (a node costs what it cached). 0 = no limit, positive = that many,
+        // negative = let the device decide (HistoryBudgetPlanner). Docs/SETTING_GROUPS.md
 
         /// <summary> Cached level objects the whole history may hold. 0 = no limit, negative =
         /// resolved per device. </summary>

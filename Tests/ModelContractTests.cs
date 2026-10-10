@@ -8,20 +8,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests
 {
-    // A sweep rather than a file per model, because the thing being checked is the CONTRACT and
-    // there are 180-odd implementations of it: one forgotten field in one Pull is exactly the kind
-    // of defect a per-class test never gets written for. Two invariants are checkable without
-    // knowing what any given model holds, and between them they cover what the two operations
-    // actually promise:
-    //
-    //   Update leaves NOTHING aliased to its source - a nested model of the receiver may never be
-    //   the same instance as the source's, or editing one silently edits the other.
-    //   Pull keeps every nested instance it already had, which is the entire reason it exists
-    //   beside Update.
-    //
-    // Both run over default-constructed pairs, which is enough: they ask about references, not
-    // values. The aggregate round trips below are the other half - those DO need real data, so they
-    // go through MockData and check the values instead.
+    // A sweep over every implementation: Update leaves nothing aliased, Pull keeps nested instances.
+    // Default-constructed pairs suffice (references, not values).
 
 
     /// <summary> Update and Pull swept over every model: that Update leaves nothing aliased to its source, and

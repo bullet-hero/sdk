@@ -34,3 +34,18 @@ carrying `GetModelType()`, exactly like the value system above:
 *unique* within a track's `List<TKeyframe>` - it does not enforce them being sorted. Consumers must
 sort/search themselves (Unity's `LevelPlayerMath.FindBoundIndexes` assumes sorted input at that
 layer, converted once at load via `LevelStateBuilder`).
+
+**Per-key design facts.** `AutoFontSizeKey` only ever SHRINKS: `MaxValue` is the authored size and the renderer
+steps down until the text fits the object's rect (the `Sizes` track), so switching from `FontSizeKey` with
+`MaxValue` = the old value cannot change a text that already fitted. Word wrap changes what "fits" means. Neither
+bound is checked against the other: min > max is legal authored data, and a graph finding would report it
+forever since findings carry no repair. `FillmentKey` and `AppearingKey` hold a plain bounded fraction, not
+`IFloat` (a random draw would make the text write itself to a different length every key), and their direction
+or mode travels WITH the key like `Ease`: between two keys the LATER one wins, so one track can change mode
+without being split. A fresh `ShakeKey` does nothing and snaps (zero intensity, Constant ease): a shake is
+authored by raising it from nothing, and easing into a procedural offset would ramp the screen for the whole
+segment before a key meant to hit ON a beat. `Velocity` is the directional force (`VelocityPoint` the radial
+one); zero is neutral and the default, so a key with no value lets the player move normally. `AngleKey` is
+bounded in whole turns (`ValueRules.MaxRotationTurns`) and not wrapped: 0 -> 4pi spins twice. `UVKey` holds
+concrete `Vector2Value`, not `IVector2`: a random UV would tear the image every frame. A track is a plain list,
+frames unique but not necessarily sorted - sorting is the consumer's job.

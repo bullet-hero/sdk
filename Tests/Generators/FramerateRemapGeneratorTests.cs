@@ -15,18 +15,9 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests.Generators
 {
-    // Retiming is the one generator whose correctness is arithmetic rather than placement, and whose
-    // failure mode is silent: a level that still opens, still validates, and plays at the wrong
-    // speed or has quietly lost a key. So the bulk of this file is the packing policy - what happens
-    // when two frames resample onto one - because that is where content is actually destroyed, and
-    // the numbers are chosen so every branch of FindSlot is reached by name:
-    //
-    //   60 -> 30 : frames 3 and 4 both sample to 2      (the plain collision)
-    //   60 -> 10 : frames 0,1,2 all sample to 0         (a collision with no room below)
-    //   60 -> 10 : frames 3,4,5 all sample to 1         (room below, so the backward nudge fires)
-    //
-    // Rounding is away-from-zero, which is why 3 -> 1.5 lands on 1 rather than 0 and why 4/60 and
-    // 3/60 collide at 30 while 4 and 6 do not.
+    // Arithmetic, silent failure: the packing policy when frames collide. Numbers reach every FindSlot
+    // branch (60 to 30; 60 to 10 with no room below; 60 to 10 with room, backward nudge). Rounding is
+    // away from zero. BH.SDK/Docs/TESTING.md, "Generators".
 
     /// <summary> The one generator whose correctness is arithmetic, and whose failure is silent: a level that
     /// still opens, still validates, and plays at the wrong speed. Mostly the packing policy for collided keys. </summary>
@@ -426,11 +417,8 @@ namespace BH.SDK.Tests.Generators
             }
         }
 
-        // Checked as "every surviving frame sits within the allowance of SOME original's sampled
-        // frame" rather than by rebuilding the original -> survivor mapping: the mapping is exactly
-        // what the packer decides, so reconstructing it here would be re-implementing the thing under
-        // test and would pass for the same reason it is wrong. This phrasing still catches the
-        // failure that matters - a key flung somewhere it was never allowed to go.
+        // "Within the allowance of SOME original's sampled frame": rebuilding the mapping re-implements
+        // the packer.
 
         /// <summary> A key is only ever moved as far as it was allowed to be, measured from its
         /// sampled frame - which is what MaxKeyShift is defined against, not where the key started. </summary>

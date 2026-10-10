@@ -5,10 +5,8 @@ using BH.SDK.Models.Interfaces.Primitives;
 namespace BH.SDK.Models.Primitives.Resources
 {
     /// <summary>
-    /// Category-agnostic resource id: the shared numeric convention (0 = null, positive = shipped
-    /// with the game, negative = defined by this level) that every per-type id below reuses.
-    /// Exists so code that doesn't care which kind of resource it holds - UGC metadata, validation -
-    /// can still speak about one.
+    /// Category-agnostic resource id: the shared convention (0 = null, positive = shipped with the game,
+    /// negative = defined by this level) every per-type id reuses, for code that does not care which kind.
     /// </summary>
     [Serializable]
     public struct TypedResourceId : IEquatable<TypedResourceId>, IPrimitiveInt
@@ -57,14 +55,8 @@ namespace BH.SDK.Models.Primitives.Resources
         // TypedResourceId
         // ------------------------------------------------------------------------------------------------------------
 
-        // TypedResourceId (AudioResourceId, TextureResourceId, ...) is a stable identifier for saving,
-        // unique per resource type (audio, textures, ...). What each number means:
-        // 0 => Null / not-set, reserved value, never a valid resource id
-        // (1 - int.MaxValue) => game-space resources, defaults for whole game, stored in game, each resource has permanent id
-        // (int.MinValue - -1) => user-space resources, unique for each level, stored externally: level folder, url...
-        //
-        // Each per-type struct below (AudioResourceId, TextureResourceId, ...) shares this exact
-        // range semantics, just narrowed to its own resource type.
+        // 0 is Null, never valid; positive is game-space (permanent, stored in the game); negative is
+        // user-space (unique per level, stored externally). Each per-type id below narrows this.
         
         /// <summary> The reserved "unset" number. Never a real id. </summary>
         public const int NullValue = 0;

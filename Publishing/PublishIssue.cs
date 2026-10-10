@@ -3,20 +3,8 @@ using BH.SDK.Rules;
 
 namespace BH.SDK.Publishing
 {
-    // Shaped like GraphIssue and for the same reason: there is no single property to point at or to
-    // repair. "This resource has no metadata record" spans two files, and the repair - stating who
-    // made the work and under what terms - is knowledge only the author has.
-    //
-    // It reuses RuleGroup rather than defining a severity of its own, because the two levels that
-    // matter here already exist there and carry exactly the meaning needed: Error is refusal, and
-    // Warning is "publish, but a human has to look" - the split that lets one analyzer serve both
-    // the automatic check in the client and the moderation queue on a server. Advice is neither and
-    // never gates anything.
-    //
-    // THE FACTS TRAVEL AS DATA, NOT ONLY INSIDE THE SENTENCE. Message is English prose for a log and
-    // a server; a client that shows the finding in another language needs the same facts - which
-    // resource, which license, what the service accepts instead - as values it can word itself. An
-    // enum stays an enum there, so the caller names it through its own string table.
+    // Shaped like GraphIssue (nothing to point at or repair) and reuses RuleGroup for its severity.
+    // The facts travel as Args, not only inside the English Message: Docs/PUBLISHING.md.
 
     /// <summary> One reason a level is not ready to be published, and how badly. </summary>
     public readonly struct PublishIssue

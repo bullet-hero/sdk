@@ -11,23 +11,9 @@ using BH.SDK.Services.Crypto;
 
 namespace BH.SDK.Services.LevelArchive
 {
-    // THIS IS ALSO THE BACKEND'S ENTRY POINT, and saying so changes what it may do. A client reads a
-    // file the author picked; a server reads whatever an upload contained, which is to say whatever
-    // somebody chose to send. So nothing here trusts a name, a length or a header: the archive layer
-    // is handed limits, the store it unpacks into cannot address anything outside itself, and every
-    // failure has an answer rather than an exception - a hostile upload is an ordinary Tuesday, not
-    // an incident.
-    //
-    // WHAT IT IS IS SNIFFED FROM THE BYTES, NOT THE EXTENSION. A file arrives named .tar.gz.gpg, or
-    // .zip, or .gpg, or nothing at all, and the name is the one part of it anybody can write.
-    // ArchiveFormatSniffer answers instead, and a PROTECTED archive is asked TWICE: the outer layer
-    // is an OpenPGP message either way, and only its plaintext says whether a tar.gz or a zip was
-    // inside. 7z is recognised for one purpose - so a refusal can name the format rather than call
-    // a perfectly good file corrupt.
-    //
-    // THE PASSPHRASE HAS THREE ANSWERS, not two. "Not given" is a different situation from "wrong":
-    // the first means the host should ask, the second means the person already answered and was
-    // wrong. Collapsing them tells a player they got a password wrong before they typed one.
+    // Also the BACKEND's entry point: nothing trusts a name, a length or a header, and every failure is
+    // a value. The format is SNIFFED, a protected archive TWICE; the passphrase has THREE answers (not
+    // given, wrong, ok). Docs/ARCHIVE.md.
 
     /// <summary> Reads a level archive back, from an archive or from a folder. </summary>
     public static class LevelArchiveReader
@@ -70,20 +56,15 @@ namespace BH.SDK.Services.LevelArchive
 
             source.Position = origin;
 
-            // Decrypted into memory rather than streamed onward, because what comes out has to be
-            // read from its start by the tar reader and an OpenPGP stream cannot be rewound. The
-            // decompression limit is what bounds this, the same way ArchiveLimits bounds the unpack
-            // that follows.
+            // Decrypted into memory: the tar reader reads from the start and an OpenPGP stream cannot be
+            // rewound. The decompression limit bounds it.
             using var plaintext = new MemoryStream();
             var outcome = await PgpSymmetricService.TryDecryptAsync(source, plaintext, passphrase,
                 limits.MaxTotalBytes, token);
 
             if (!outcome.IsOk) return LevelArchiveContent.Failed(Translate(outcome.Result), format);
 
-            // SNIFFED AGAIN, because what comes out of the message is a container in its own right
-            // and it is not always the same one: a .tar.gz.gpg and a .zip.gpg are both ordinary
-            // OpenPGP messages, and only the plaintext says which. Asking once and assuming gzip is
-            // what made a protected zip read as "not an archive".
+            // Sniffed AGAIN: only the plaintext says whether a tar.gz or a zip was inside the message.
             plaintext.Position = 0;
             var inner = ArchiveFormatSniffer.Detect(await PeekAsync(plaintext, 0, token));
 
@@ -137,11 +118,8 @@ namespace BH.SDK.Services.LevelArchive
                 metaBytes, meta.Format, source, await ResourcesAsync(source, token));
         }
 
-        // WHAT AN ARCHIVE IS, WITHOUT OPENING IT. Both halves of the answer are cheap for different
-        // reasons: a zip is read out of its central directory, so the song is never touched at all,
-        // and a tar.gz is read from the front, which works only because the writer puts the two
-        // documents first. A protected archive answers PassphraseRequired without being decrypted -
-        // the metadata of a .gpg is inside the encryption, by design.
+        // An archive without opening it: a zip from its central directory, a tar.gz from the front
+        // (documents first). A protected one answers PassphraseRequired undecrypted.
 
         /// <summary> Just the metadata document, for a host that wants to name what it is about to
         /// import. Null bytes when the archive carries none. </summary>
@@ -278,10 +256,8 @@ namespace BH.SDK.Services.LevelArchive
             }
         }
 
-        // Which format a document is in is decided by the NAME it was stored under, exactly as a
-        // level folder on disk decides it - nothing inside the bytes says. The encrypted twin keeps
-        // the inner extension for that reason (level.json.gpg), so the same probe answers both
-        // questions at once.
+        // A document's format is decided by the NAME it was stored under; the encrypted twin keeps the
+        // inner extension (level.json.gpg) so one probe answers both questions.
         private static async Task<DocumentLocation> LocateAsync(IContentStore store, string baseName,
             CancellationToken token)
         {

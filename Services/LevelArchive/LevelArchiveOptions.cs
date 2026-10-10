@@ -19,10 +19,8 @@ namespace BH.SDK.Services.LevelArchive
         /// <summary> Format the metadata document is written in. </summary>
         public SerializationType MetaFormat { get; set; } = SerializationType.Json;
 
-        // WHICH CONTAINER AND WHICH PASSPHRASE SCHEME LIVE HERE rather than in WriteArchiveAsync's
-        // signature, because this class is already the one place a host turns a LevelExportMode
-        // into what the writer needs. A second pair of parameters would give the same fact two
-        // homes, and the two would eventually disagree.
+        // Container and passphrase scheme live here, not in WriteArchiveAsync's signature: this is
+        // already the one place a LevelExportMode becomes writer input, so the fact has one home.
 
         /// <summary> Which container an archive export writes. </summary>
         public ArchiveFormat Format { get; set; } = ArchiveFormat.TarGz;

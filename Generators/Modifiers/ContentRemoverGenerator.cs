@@ -6,25 +6,9 @@ using BH.SDK.Rules;
 
 namespace BH.SDK.Generators.Modifiers
 {
-    // The one generator that only ever DELETES, and the only one for which the context window is an
-    // instruction rather than a boundary. Everywhere else the context span says where new
-    // content may be written; here it says which content is being talked about - which is what makes
-    // "clean up everything the level can no longer play" (window = whole level, Invert on) and "wipe
-    // this section" (window = the section, Invert off) the same operation with one flag between them.
-    // A host that offers a whole-level switch on its window - the in-game editor does - gets the
-    // first for free without this generator knowing anything about a level's own FrameDuration.
-    //
-    // Partial overlap survives BOTH modes on purpose, and the asymmetry in WindowSelection.Selects
-    // is what implements it: Invert deletes what shares NO frame with the window, and its opposite
-    // deletes only what lies WHOLLY inside it. Making both tests "overlaps" would mean an object
-    // hanging over the edge is deleted whichever way the flag is set, which is not a mode - it is a
-    // trap. mod_span_fit selects the objects it fits through the very same helper.
-    //
-    // Deleting is never per-object: an object being removed may still PARENT one that is staying,
-    // and dropping it alone leaves a dangling ParentObjectId that LevelGraphAnalyzer then reports -
-    // a cleanup pass that breaks the level it cleaned. Hence keep-marking (a surviving object marks
-    // its whole ancestor chain) instead of a per-object test, plus the same for a surviving
-    // PrefabObject's materialized children, which its own ObjectIds table points at.
+    // The one generator that only DELETES, and the window is an INSTRUCTION here, not a boundary.
+    // Partial overlap survives BOTH modes (WindowSelection.Selects is asymmetric on purpose). Deletion is
+    // never per-object: survivors keep their ancestor chain and a placement's children. Docs/GENERATORS.md.
 
     /// <summary>
     /// Deletes level content by frame range: everything outside the run's window, or everything
@@ -35,20 +19,14 @@ namespace BH.SDK.Generators.Modifiers
         /// <summary> <c>"mod_content_remover"</c>, the key a host lists this generator under. </summary>
         public override string NameKey => "mod_content_remover";
 
-        // Whole-scope rather than the selection: "everything in/outside this range" is a statement
-        // about the scope, and quietly limiting it to what happens to be selected would leave the
-        // rest behind while reporting success. Not LevelScope either, even though Audio/EventFrames
-        // need Game/Audio - the window comes from the context, so removing objects is just as
-        // meaningful inside a Prefab template, and declaring LevelScope would make a host disable the
-        // whole generator there for the sake of two switches that default to off.
+        // Whole-scope, not the selection (a selection-limited cleanup leaves the rest while reporting
+        // success). Not LevelScope: the window comes from the context, so it works in a Prefab too.
 
         /// <summary> Nothing beyond a scope to run against. </summary>
         public override GeneratorRequirements Requirements => GeneratorRequirements.None;
 
-        // One section for four switches: splitting them would put a header above each half of a form
-        // short enough to read at a glance, and a host renders no header at all while there is only
-        // one section (Section is still what every field is listed through - see
-        // HintsSections_CoverEveryParameterField).
+        // One section for four switches: a host renders no header while there is a single section
+        // (HintsSections_CoverEveryParameterField checks every field is listed through Section).
 
         /// <summary> The order, labels and ranges a host lays its form out with. </summary>
         public override GeneratorHints Hints { get; } = new GeneratorHints.Builder()
@@ -73,20 +51,15 @@ namespace BH.SDK.Generators.Modifiers
         protected override GeneratorCost EstimateTyped(GeneratorContext context, Parameters parameters)
             => GeneratorCost.Zero;
 
-        // The two configurations whose reach is larger than the window the author is looking at:
-        // Invert deletes everything the window does NOT cover (so the smaller the window, the more
-        // it takes), and a window spanning the whole timeline covers all of it either way. Both are
-        // legitimate - they are the generator's two headline use cases - which is exactly why they
-        // get a confirmation instead of a refusal.
+        // The configurations whose reach exceeds the window the author sees (Invert; a whole-timeline
+        // window) are legitimate headline uses, so they get a confirmation, not a refusal.
 
         /// <summary> True where these parameters would destroy or rewrite content the author did not point at. </summary>
         protected override bool IsDangerousTyped(GeneratorContext context, Parameters parameters)
             => parameters.Invert || CoversWholeTimeline(context);
 
-        // The active timeline, not always the level's: inside Prefab Mode the window is bounded by
-        // the template's own length, which is its root's span (Prefab.Root) - the same rule the
-        // editor's own window clamp uses. Matched on the concrete Prefab rather than on an
-        // interface: a scope no longer declares a timeline, it holds a root that has one.
+        // The active timeline: in Prefab Mode the window is bounded by Prefab.Root's span, as the
+        // editor's window clamp does. Matched on the concrete Prefab: a scope holds a root, not a timeline.
         private static bool CoversWholeTimeline(GeneratorContext context)
         {
             if (context == null) return false;
@@ -202,11 +175,8 @@ namespace BH.SDK.Generators.Modifiers
             }
         }
 
-        // A materialized child is an ordinary object in every other respect, but its placement's
-        // ObjectIds table points straight at it - deleting one while the placement survives is a
-        // broken remap table, which is a validation error rather than a tidier level. A placement
-        // that is itself doomed is not kept in the first place, and then neither are its children,
-        // so this only ever rescues the mixed case.
+        // A placement's ObjectIds table points at its materialized children: deleting one while the
+        // placement survives is a broken remap table. A doomed placement is not kept, nor its children.
 
         /// <summary> Extends the keep set through every surviving PrefabObject's own materialized
         /// children, nested placements included. </summary>

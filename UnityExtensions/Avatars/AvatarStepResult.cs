@@ -2,10 +2,7 @@ using Unity.Mathematics;
 
 namespace BH.SDK.Avatars
 {
-    // IT RETURNS MORE THAN THE POSITION because the animation half of AvatarController needs exactly
-    // these four and must not recompute any of them: the direction it turns towards, the squish it
-    // picks, and the move/stop edges every effect and tween is driven off all come from here. Two
-    // copies of "was it moving this frame" is how the squish and the trail start disagreeing.
+    // Carries what the animation half needs so it never recomputes "was it moving this frame".
 
     /// <summary> What one <see cref="AvatarMovement.Step"/> produced. </summary>
     public readonly struct AvatarStepResult
@@ -28,13 +25,8 @@ namespace BH.SDK.Avatars
         /// <see cref="Rules.AvatarRules.ArrivedDistance"/>. </summary>
         public readonly bool Arrived;
 
-        // THERE IS NO MoveAngle HERE, AND THAT IS THE POINT. It existed - `atan2(TargetDirection.y,
-        // TargetDirection.x)` - and a zero direction turned into 0 radians, i.e. "facing +X" rather
-        // than "nothing is driving this avatar". A consumer that lerps its heading towards it swings
-        // the avatar to the right on every arrival; that is exactly what happened, on a followed
-        // route and on a released key alike (docs/issues/MOVEMENT_HISTORY.md 16). The direction is
-        // handed over raw so the decision about a zero one is made where the alternative is known -
-        // `AvatarController.ResolveHeading`.
+        // No MoveAngle on purpose: a zero direction would read as "facing +X". The raw direction is handed
+        // over; the consumer decides (AvatarController.ResolveHeading).
 
         /// <summary> Everything one simulated step produced; nothing mutates it afterwards. </summary>
         public AvatarStepResult(float2 position, float2 targetDirection, float targetSpeed,

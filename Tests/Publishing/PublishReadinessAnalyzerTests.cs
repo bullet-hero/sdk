@@ -21,9 +21,8 @@ using ResourceMeta = BH.SDK.Models.Meta.ResourceMeta;
 namespace BH.SDK.Tests.Publishing
 {
     /// <summary>
-    /// PublishReadinessAnalyzer: whether a level may be handed to a service. Every case here is one
-    /// the licensing policy names in prose, so a change in what these assert is a change of policy,
-    /// not of implementation.
+    /// PublishReadinessAnalyzer: every case is one the licensing policy names in prose, so a change in what
+    /// these assert is a change of policy.
     /// </summary>
     public class PublishReadinessAnalyzerTests
     {

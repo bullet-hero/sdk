@@ -11,16 +11,8 @@ using BH.SDK.Utils;
 
 namespace BH.SDK.Generators.Textures
 {
-    // Replaces the original TextureToObjectsGenerator, which was broken in three separate ways: its
-    // pixel objects were never added to the scope (only re-parented), the parent's Layer was
-    // assigned inside the per-pixel loop, and its DimensionalIndexer2 was built from the TARGET size
-    // while indexing the SOURCE pixels. All three are the kind of bug that a per-object estimate and
-    // a validation test catch immediately, which is why this rewrite has both.
-    //
-    // The other lesson from the original: one object per pixel is unusable. A 512x512 image is
-    // 262 144 objects - exactly LevelRules.MaxObjects, from one click. Downsampling bounds the
-    // input, and run-length merging collapses flat areas into single wide rects, which is what makes
-    // pixel art actually affordable.
+    // One object per pixel is unusable (512x512 is exactly LevelRules.MaxObjects): downsample bounds the
+    // input and run-length merging collapses flat areas into wide rects.
 
     /// <summary>
     /// Turns an image into level objects: downsampled, transparent pixels skipped, and horizontal
@@ -28,11 +20,8 @@ namespace BH.SDK.Generators.Textures
     /// </summary>
     public class ShapeObjectsGenerator : BaseSpawnGenerator<ShapeObjectsGenerator.Parameters>
     {
-        // The key deliberately still says "texture" while the class says "shape". It is a PERSISTED
-        // id, not a display name: GeneratorRegistry resolves stored generator references through it,
-        // Generators/README.md lists it, and AudioTextureGeneratorsTests keys a region on it. The
-        // TextureObject -> ShapeObject rename left it alone on purpose, since renaming it would
-        // silently break every saved reference for no gain. Do not "fix" it to match the class.
+        // The key still says "texture": it is a PERSISTED id (GeneratorRegistry, README, tests), and the
+        // rename left it alone on purpose. Do not "fix" it to match the class.
 
         /// <summary> <c>"gen_texture_objects"</c>, the key a host lists this generator under. </summary>
         public override string NameKey => "gen_texture_objects";
@@ -165,10 +154,8 @@ namespace BH.SDK.Generators.Textures
             return runs;
         }
 
-        // Box-average downsample: every target pixel is the mean of the source block behind it, so
-        // shrinking an image blurs it rather than dropping three quarters of it. Averaging happens
-        // in premultiplied alpha, otherwise a transparent pixel's (arbitrary) colour bleeds into
-        // its visible neighbours.
+        // Box-average downsample in PREMULTIPLIED alpha, or a transparent pixel's colour bleeds into its
+        // visible neighbours.
         private static Pixel Sample(PixelTexture source, Parameters parameters, int width, int height,
             int x, int y)
         {

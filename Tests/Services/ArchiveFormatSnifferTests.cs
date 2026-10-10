@@ -4,11 +4,7 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests.Services
 {
-    // THE ORDER OF THE CHECKS IS WHAT THESE PIN. Three magic numbers are exact; the OpenPGP test is
-    // a packet tag, which is loose enough to match a byte from anything, so it has to be asked
-    // last. A case that begins with a gzip magic AND could pass the packet-tag test must still come
-    // back TarGz - that is the whole reason the order is written down rather than left to
-    // whichever branch happens to be first.
+    // The ORDER of the checks: three exact magic numbers first, the loose OpenPGP packet tag last.
 
     /// <summary> Which container the leading bytes say a stream is. </summary>
     public class ArchiveFormatSnifferTests

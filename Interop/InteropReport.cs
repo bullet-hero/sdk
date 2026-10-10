@@ -3,16 +3,11 @@ using System.Text;
 
 namespace BH.SDK.Interop
 {
-    // Issues aggregate by Code rather than accumulating, and that is the difference between a
-    // usable report and a wall of text: a level whose every object uses a feature this format has
-    // no equivalent for produces one line saying so, with a count, not one line per object. The
-    // first path is kept because an author needs somewhere to go and look; the rest are noise once
-    // the first has been seen.
+    // Issues aggregate by Code: one line with a count, the first path kept as somewhere to go and look.
 
     /// <summary>
-    /// Everything a conversion had to give up, in one object. Produced by both directions and
-    /// meant to be shown to the author - a silent lossy import is the failure mode this exists to
-    /// prevent.
+    /// Everything a conversion had to give up, from both directions, meant to be SHOWN to the author: a
+    /// silent lossy import is the failure this prevents.
     /// </summary>
     public class InteropReport
     {
@@ -82,11 +77,8 @@ namespace BH.SDK.Interop
         {
             if (other == null) return;
 
-            // The counts and the PATHS both have to survive a merge, and they are different
-            // lengths: an issue hit 4000 times keeps at most MaxTrackedPaths of them, so replaying
-            // one path per count would either lose paths or invent them. Each is replayed from the
-            // half that actually holds it - the paths from the list, the remaining count as bare
-            // increments carrying no path at all.
+            // Counts and PATHS survive a merge from the half that holds each: paths from the list, the
+            // remaining count as bare increments.
             foreach (var issue in other._issues)
             {
                 if (!_byCode.TryGetValue(issue.Code, out var existing))

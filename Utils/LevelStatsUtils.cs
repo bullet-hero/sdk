@@ -99,19 +99,13 @@ namespace BH.SDK.Utils
         }
     }
 
-    // Counts what a level HOLDS, which is a different question from what it plays: LevelCapacityUtils
-    // answers "how many objects are alive at the heaviest single frame" with a sweep over every span,
-    // and is O(n log n) because of it. Everything here is one O(n) pass over the same dictionary with
-    // no allocation, so a caller polling several times a second (a diagnostics readout) can afford it
-    // and a caller sizing buffers still has to use LevelCapacityUtils instead.
-    //
-    // Null tolerance is deliberate throughout: this measures a level for display, and a half-built or
-    // hand-edited one must produce a number rather than an exception.
+    // What a level HOLDS, not what it plays: one O(n) pass with no allocation, cheap enough to poll
+    // (LevelCapacityUtils is the O(n log n) sweep for sizing). Null-tolerant on purpose: a half-built level
+    // must produce a number.
 
     /// <summary>
-    /// Measures how much a level (or one object scope inside it) actually contains - objects by kind,
-    /// keyframes, audio tracks, resources. Advisory in the same sense LevelHints is: nothing decides
-    /// anything from these numbers, they exist to be shown.
+    /// How much a level (or one object scope) contains: objects by kind, keyframes, audio, resources.
+    /// Advisory like LevelHints: nothing decides from these numbers.
     /// </summary>
     public static class LevelStatsUtils
     {

@@ -22,20 +22,17 @@ namespace BH.SDK.Versions.V0
         [JsonProperty("test_game_events")]
         public GameEvents GameEvents { get; set; }
 
-        // Objects holds per-instance polymorphic RectObject variants (ObjectConverter's job, not
-        // domain versioning) - never independently versioned, same type on both sides. The keyed
-        // attribute is what keeps the generated writer spelling the collection the way the
-        // reflective one does; the two have to agree byte for byte here as everywhere else.
+        // Objects holds polymorphic RectObject variants (ObjectConverter's job), never versioned on
+        // their own. The keyed attribute keeps the generated writer byte for byte equal to the
+        // reflective one.
 
         /// <summary> Never independently versioned, so the type is the same on both sides. </summary>
         [GenerateModelKeyed(nameof(RectObject.ObjectId))]
         [JsonProperty("test_objects")]
         public Dictionary<ObjectId, RectObject> Objects { get; set; }
 
-        // A SNAPSHOT NEEDS ITS DEFAULTS CONSTRUCTED NOW THAT IT IS A GENERATED MODEL. The constructor
-        // is the single source of every default the generated Reset/Copy/Update read from, so a
-        // member left null here is a NullReferenceException in bodies a free-form deserialization
-        // target never had. That is the price of carrying codecs, and it is the whole of it.
+        // A generated snapshot needs its defaults constructed: the constructor feeds the generated
+        // Reset/Copy/Update, so a member left null here throws inside them.
 
         /// <summary> Every member at the value generation 0 would have read into it. </summary>
         public GameLevelV0()

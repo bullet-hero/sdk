@@ -4,18 +4,9 @@ using BH.SDK.Models.Objects;
 
 namespace BH.SDK.Rules
 {
-    // Replaces the bare "object context" every rule used to receive, which in practice meant "the
-    // analysis root, and you had better hope it is a Level". Two things were wrong with that:
-    //
-    // - Validating anything other than a Level (a Prefab, a LevelMeta, a UserSettings) made every
-    //   contextual rule report false failures that no Fix could ever clear, because they all began
-    //   with `context is Level`.
-    // - Descending into a Prefab never changed the context, so a template's own frames were measured
-    //   against the LEVEL's FrameDuration instead of the template's own.
-    //
-    // Instances are immutable: entering a nested scope produces a new context rather than mutating
-    // this one, so a RuleIssue can hold on to the exact context its rule saw and RuleFixer can
-    // replay the fix against it later.
+    // What a rule sees of its surroundings: the root Level plus the resolved object scope, so a Prefab,
+    // LevelMeta or UserSettings validates standalone and a template's frames are measured against its
+    // own timeline. Immutable: a nested scope is a new context, so RuleFixer can replay a fix against it.
 
     /// <summary>
     /// What a rule is allowed to know about its surroundings: the analysis root, the level it
@@ -66,11 +57,8 @@ namespace BH.SDK.Rules
                     return new RuleContext(level, level, level.Game,
                         level.Settings.FrameDuration, false, true);
 
-                // A standalone template validates against its own timeline, with no level around
-                // it. Matched on the CONCRETE type, not on an interface: a template's timeline is
-                // its root's span now (see Prefab.Root), so "an object scope that also carries a
-                // timeline" stopped being something a type could declare - and there was only ever
-                // one such type.
+                // A standalone template validates against its own timeline. Matched on the concrete type:
+                // its timeline is its root's span, which no interface can declare.
                 case Prefab prefab:
                     return new RuleContext(root, null, prefab, TimelineOf(prefab), true, true);
 

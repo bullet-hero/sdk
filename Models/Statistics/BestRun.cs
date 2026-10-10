@@ -7,16 +7,8 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models.Statistics
 {
-    // THE BEST RUN UNDER ONE SET OF CONDITIONS, AND IT CARRIES NONE OF THOSE CONDITIONS. Lives,
-    // speed, checkpoints and bot live in the RunProfile this is filed under; repeating them here
-    // would be a second copy of the same four numbers with nothing keeping the two in agreement.
-    // LivesLeft is not one of them - the key says how many lives the run was GIVEN, this says how
-    // many it ended with, and those are different numbers.
-    //
-    // LevelVersion is the author's own version at the moment the record was set, and deliberately
-    // not part of the key: a record does not become void because the level was edited, but a player
-    // comparing two numbers deserves to see they were set on different content. The level screen
-    // shows it beside the record for exactly that reason.
+    // The best run under one RunProfile and it carries none of its conditions (LivesLeft is not one of them).
+    // LevelVersion is deliberately not in the key. Docs/STATISTICS.md
 
     /// <summary> The best run recorded under one <see cref="RunProfile"/>. </summary>
     [RuleContainer]

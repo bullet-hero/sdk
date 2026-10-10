@@ -7,23 +7,8 @@ using BH.SDK.Models.Primitives.Resources;
 
 namespace BH.SDK.Utils
 {
-    // EVERY PLACE THE FORMAT POINTS AT A RESOURCE, WRITTEN ONCE. Three questions walk the same edges -
-    // "what still uses this" (ResourceReferenceUtils, the delete confirmation), "what does this need"
-    // (ResourceClosure, a collection export or import) and "point these somewhere else" (ResourceRemap,
-    // an import into a level whose ids are taken) - and three hand-written walks would drift exactly
-    // where it hurts: a field one of them forgot is a dependency left behind, or a reference that
-    // survives an import still pointing at the old id. So the walk is one method per owner, and each
-    // edge is a read AND a write: the callback returns the reference to store, the walk writes it back
-    // only when it changed, and a reader simply returns what it was given.
-    //
-    // A NULL ID IS NEVER VISITED - it is how an object says it draws no texture - and a game-defined
-    // id is visited like any other: whether it names something the level owns is the CALLER's
-    // question, answered by looking it up, because an id's value cannot say which tier it is in.
-    //
-    // MODIFICATIONS ARE OPTIONAL. A placement's id overrides are real references - a closure that
-    // skipped them would ship a prefab whose placement swaps in a shape nobody packed - but in a live
-    // level they are also already applied to the materialized copies, so a COUNT that walked both
-    // would report every overridden reference twice.
+    // Every place the format points at a resource, written ONCE for usage, closure and remap; each edge is a
+    // read AND a write. A null id is never visited; Modifications are optional (Docs/RESOURCE_GRAPH.md).
 
     /// <summary> Visits one resource reference and returns the reference to store in its place. </summary>
     public delegate ResourceRef ResourceEdge(ResourceRef reference);

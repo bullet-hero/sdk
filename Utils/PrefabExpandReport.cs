@@ -42,10 +42,7 @@ namespace BH.SDK.Utils
         public override string ToString() => $"[{Problem}] {Scope}/{Placement.value}: {Message}";
     }
 
-    // THE ENTRY LIST IS CAPPED AND THE COUNTS ARE NOT, for the reason LevelLoaderService caps its
-    // own substitution log: one broken template is one finding per PLACEMENT of it, and a template
-    // placed 340 times would otherwise hand the Editor 340 stack captures for a single authoring
-    // mistake. The counts still say how big the problem really is.
+        // The entry list is capped, the counts are not: one broken template is one finding per PLACEMENT.
 
     /// <summary> What a load-time prefab expansion did, and everything it could not do. </summary>
     public sealed class PrefabExpandReport

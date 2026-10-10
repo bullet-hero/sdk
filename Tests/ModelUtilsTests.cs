@@ -10,9 +10,8 @@ using NUnit.Framework;
 namespace BH.SDK.Tests
 {
     /// <summary>
-    /// ModelUtils' collection hash/equality helpers. The dictionary hash is the one worth pinning:
-    /// almost every key type in this format is a non-comparable id struct, so anything that sorts
-    /// the keys throws instead of hashing.
+    /// ModelUtils' collection hash/equality helpers. The dictionary hash is the one worth pinning: key
+    /// types are non-comparable id structs, so anything that sorts keys throws instead of hashing.
     /// </summary>
     [TestFixture]
     public class ModelUtilsTests
@@ -97,12 +96,7 @@ namespace BH.SDK.Tests
             Assert.DoesNotThrow(() => new HashSet<PrefabObject> { placement, other }.Add(placement));
         }
 
-        // CopyArray is constrained `where T : ICopyable<T>`, and that constraint is a PROMISE: the
-        // only reason to demand it is to call Copy() on every element. An implementation that
-        // CopyTo's instead honours it for a struct element and silently breaks it for a class one,
-        // which is not a hypothetical - ThemeData.Matrix is Color4Value[64] and Color4Value is a
-        // class, so a copied theme shared all sixty-four colours with the theme it came from and
-        // editing either edited both. Undo snapshots, autosave and prefab materialization all copy.
+        // CopyArray must Copy() reference elements too (ThemeData.Matrix shared all 64 colours once).
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]

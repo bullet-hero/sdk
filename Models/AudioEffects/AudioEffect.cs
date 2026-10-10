@@ -15,10 +15,8 @@ namespace BH.SDK.Models.AudioEffects
     [GenerateModel]
     public partial class AudioEffect : IModel<AudioEffect>
     {
-        // MIXLEVEL ANSWERS "HOW LOUD", NOT "IS THIS EFFECT HERE" - those are two questions and were
-        // one field until the slots on LevelTrackEffects started being born null. An effect an
-        // author dialled in and then turned down to the floor still exists, with its settings; one
-        // never touched is absent from the chain entirely.
+        // MixLevel answers "how loud", not "is this effect here": an effect turned down to the floor
+        // keeps its settings, one never touched is null on LevelTrackEffects.
 
         /// <summary> Wet-signal level in dB. At the floor the effect is silent but still in the
         /// chain, which is what AudioRules.IsActiveMixLevel asks about. </summary>

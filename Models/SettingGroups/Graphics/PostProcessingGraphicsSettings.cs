@@ -7,9 +7,8 @@ using Newtonsoft.Json;
 namespace BH.SDK.Models.SettingGroups.Graphics
 {
     /// <summary>
-    /// One switch per post-processing effect, mirroring PostProcessingEvents field for field - so a
-    /// player can disable exactly the effects that cost them frames (or that they find unreadable)
-    /// while keeping the rest of the level's look. Inherited Render kills the whole stack.
+    /// One switch per post-processing effect, mirroring PostProcessingEvents field for field, so a player
+    /// can disable just the effects that cost frames. Inherited Render kills the whole stack.
     /// </summary>
     [RuleContainer]
     [GenerateModel]

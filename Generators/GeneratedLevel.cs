@@ -2,10 +2,8 @@ using BH.SDK.Models;
 
 namespace BH.SDK.Generators
 {
-    // Returned as one value rather than through two separate calls (the old GenerateLevel/
-    // GenerateMeta pair), because Level and LevelMeta are two independent serialization roots
-    // describing the same thing - a generator that computes them in two passes can quietly let them
-    // disagree about, say, how long the level is.
+    // One value, not two calls: Level and LevelMeta are independent roots describing one thing, and
+    // two passes can disagree about, say, its length.
 
     /// <summary>
     /// Both halves of a newly generated level: the level itself and its separate metadata file.

@@ -16,10 +16,8 @@ namespace BH.SDK.Rules
         /// <summary> The default for has stop local frame, read by EffectData. </summary>
         public const bool HasStopLocalFrame_Default = false;
 
-        // A frame counted from the emitter's own start, NOT a frame on the level timeline - an
-        // effect placed near the end of a level may legitimately stop 300 of its own frames later.
-        // It used to be validated as a level frame, which tied an effect's internal duration to
-        // wherever it happened to be placed.
+        // A frame counted from the emitter's own start, NOT a level frame: an effect placed near the end
+        // of a level may stop 300 of its own frames later.
 
         /// <summary> Lower bound of EffectData.StopLocalFrame - it is a LOCAL FRAME, so it counts from
         /// the emitter's own first frame like every other frame in the format. </summary>
@@ -41,18 +39,8 @@ namespace BH.SDK.Rules
         /// <summary> Upper bound of EffectAngleCurvesBySpeed.SpeedRange, EffectColorGradientBySpeed.SpeedRange, EffectScaleCurvesBySpeed.SpeedRange. </summary>
         public const float SpeedRange_Max = 1000f;
 
-        // The two below are the odd ones out in this file: they bound a DEVICE setting
-        // (EffectsGraphicsSettings), not authored level data, and they live here because that is the
-        // one place a consumer already looks for what an effect number may be. Both count simulation
-        // steps, i.e. GPU dispatches, and they bound different things - the first is per effect and
-        // decides how one replay LOOKS, the second is per frame across the whole pool and decides
-        // what the worst frame COSTS.
-        //
-        // A replay rebuilds a graph from an empty state, so each of its steps is one particle spawn
-        // cohort: too few and a continuous stream comes back as that many visible packets. The floor
-        // is therefore low enough to be a real emergency setting on a weak device and not so low
-        // that an effect stops resembling itself; the ceiling is where a single effect would eat a
-        // whole default frame budget on its own.
+        // These two bound a DEVICE setting (EffectsGraphicsSettings), not level data: simulation steps per
+        // effect (how a replay LOOKS) and per frame across the pool (worst-frame COST). See RULES.md.
 
         /// <summary> Lower bound of EffectsGraphicsSettings.ReplayStepBudget. </summary>
         public const int ReplayStepBudget_Min = 4;
@@ -80,36 +68,18 @@ namespace BH.SDK.Rules
 
             /// <summary> The default for loop, read by EffectObjectCore. </summary>
             public const bool Loop_Default = true;
-            // Not authored, and there is no field for it in EffectObjectCore: a level's effect is
-            // always local. This is the value the host starts its runtime state at, and the reason
-            // it is a rule constant rather than a host-side literal is that it names the format's
-            // guarantee - see EffectObjectCore's header.
+            // Not authored: a level's effect is always local. The host's initial runtime state; see
+            // EffectObjectCore's header for the format guarantee it names.
 
             /// <summary> The default for is local. </summary>
             public const bool IsLocal_Default = true;
 
-            // THE MAXIMUM IS THE GRAPH'S CAPACITY, and it is one number living in two files. Every
-            // effect plays through UniversalVFX_Local/UniversalVFX_World, whose `capacity` is the
-            // most particles a system can hold; a count above it is clamped by the graph with
-            // nothing reported. Raising this without raising `capacity` in BOTH .vfx assets
-            // therefore promises what the runtime silently refuses to deliver.
-            //
-            // It was 32 768 against a capacity of 32 768, and that pairing is where the cost came
-            // from rather than the promise: a VFX graph's per-frame passes dispatch over CAPACITY,
-            // not over the live particle count, so every instance was a 32 768-particle system
-            // whatever it actually held. Authored content is nowhere near - the heaviest effect in
-            // the corpus asks 500, medians are in the tens, and the default below is 10. Both
-            // numbers moved to 1024 together; GamePlayer's CLAUDE.md carries the measurement.
-            //
-            // Lowering a bound cannot corrupt a level that exceeded it: RuleInRange repairs itself
-            // by clamping, so ValidateAndFix brings an older level down to the new ceiling.
+            // THE MAXIMUM IS THE VFX GRAPH'S `capacity`, one number in two files: raise it only together with
+            // `capacity` in BOTH UniversalVFX_Local/World assets, or the graph clamps silently above it.
+            // Why 1024 and not 32 768 (passes dispatch over capacity): BH.SDK/Docs/RULES.md, "EffectRules".
 
             //
-            // THE TWO NUMBERS ARE NOT IN THE SAME UNIT, which is why `capacity` has to be checked
-            // against this one rather than derived from it. ParticleCount is a spawn RATE (see
-            // EffectObjectCore.ParticleCount); `capacity` is a population. They are equal here by
-            // decision, not by arithmetic - the product a rate reaches over its lifetime exceeds
-            // the cap long before the rate does, and nothing bounds that product at all.
+            // ParticleCount is a spawn RATE, `capacity` a population: equal by decision, not arithmetic.
 
             /// <summary> Lower bound of EffectObjectCore.ParticleCount, in particles per second. </summary>
             public const uint ParticleCount_Min = 0;
@@ -120,10 +90,8 @@ namespace BH.SDK.Rules
             /// <summary> The spawn rate used when nothing says otherwise, read by EffectObjectCore. </summary>
             public const uint ParticleCount_Default = 10;
 
-            // Particle lifetime range, in seconds. The upper bound is what keeps ParticleCount
-            // meaningful: emitter cost is roughly rate x lifetime, so an unbounded lifetime makes
-            // a legal spawn rate unboundedly expensive. It is also what a one-shot's burst is
-            // multiplied by, so it decides the size of that single batch outright.
+            // Particle lifetime range, in seconds. Bounded because emitter cost is about rate x lifetime
+            // and a one-shot burst scales with it.
 
             /// <summary> Lower bound of EffectObjectCore.LifetimeBounds. </summary>
             public const float LifetimeBounds_Min = 0f;
@@ -247,10 +215,8 @@ namespace BH.SDK.Rules
             /// <summary> The circle radius used when nothing says otherwise, read by EffectShapeCircle. </summary>
             public const float CircleRadius_Default = 1f;
 
-            // The vertical semi-axis as a multiple of the horizontal one - a RATIO rather than a
-            // second radius, so an unauthored value is a CIRCLE. The default has to be the neutral
-            // one, or every file written before this existed - and every consumer-side asset
-            // holding the same slot - reads back as an ellipse.
+            // Vertical semi-axis as a RATIO of the horizontal one, so an unauthored value is a CIRCLE
+            // (older files and consumer assets holding the slot must not read back as ellipses).
 
             /// <summary> Lower bound of EffectShapeCircle.Aspect. </summary>
             public const float CircleAspect_Min = 0f;

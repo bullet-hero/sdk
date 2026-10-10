@@ -10,10 +10,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests.Rules
 {
-    // The contexts are still built and still handed to the rule, and that is the point of half this
-    // fixture: the answer must not depend on them any more. A level, a template with a ten-frame
-    // timeline and a root with no timeline at all are asked the same question and give the same
-    // answer, because the only bound left is the origin every scope shares.
+    // Contexts are still handed to the rule, but the answer must not depend on them: a level, a template and
+    // a timeline-less root all give the same answer.
 
     /// <summary>
     /// RuleLevelFrame: a frame must be on the timeline at all - <see cref="FrameRules.MinFrame"/> or

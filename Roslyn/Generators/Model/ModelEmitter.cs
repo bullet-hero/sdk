@@ -2,17 +2,9 @@ using System.Text;
 
 namespace BH.SDK.Roslyn.Model
 {
-    // WHAT THIS WRITES IS WHAT 205 FILES USED TO WRITE BY HAND, shape for shape. It is deliberately
-    // not a tidier design: Update and Pull stay OVERLOADS rather than overrides, Copy stays virtual,
-    // a polymorphic variant's interface-typed Update stays a no-op on a sibling. All three are
-    // documented behaviour that ModelHierarchyTests pins, so reproducing them exactly is the whole
-    // acceptance criterion - a "better" shape here would be a silent behaviour change in 205 types
-    // at once.
-    //
-    // THREE CHAIN HELPERS ARE WHY THIS WORKS AT ANY DEPTH. A generator sees a type's DIRECT base and
-    // nothing above it, so every helper covers its own members and calls its base's first:
-    // ResetFromX, CopyToX, EqualsX. Reset() then allocates exactly one defaults instance no matter
-    // how deep the hierarchy is, instead of one per level.
+    // Reproduces the hand-written shapes exactly (overloads, virtual Copy), pinned by ModelHierarchyTests; a
+    // "better" shape is a silent change in every model. Chain helpers call the base first
+    // (Docs/ROSLYN_GENERATORS.md).
 
     /// <summary> Writes one model's generated half. </summary>
     internal static class ModelEmitter
@@ -354,11 +346,8 @@ namespace BH.SDK.Roslyn.Model
 
         #region Member expressions
 
-        // RESET RESTORES A VALUE WITHOUT REPLACING AN INSTANCE, which is what the hand-written
-        // bodies did member by member: a nested model was Reset() in place, a collection was
-        // Clear()ed in place, and only a POLYMORPHIC field was replaced - a Vector2Rect cannot be
-        // reset into the Vector2Value the constructor wanted. PullFrom answers both at once, since
-        // it keeps the instance exactly while the concrete types allow it.
+        // Reset restores a value WITHOUT replacing an instance; only a polymorphic field is replaced
+        // (PullFrom).
         private static string ResetMember(MemberSpec member)
         {
             var access = "defaults." + member.Name;

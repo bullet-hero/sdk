@@ -9,24 +9,9 @@ using BH.SDK.Rules;
 
 namespace BH.SDK.Generators.Spawn
 {
-    // What every geometry/bullet generator has in common is not the shape - it is the bookkeeping
-    // around each spawned object: mint it, parent it, bound it to the context's frame range, give it
-    // the template's texture/size/colour/collider, and only then place it. Concentrating that here
-    // leaves a concrete generator as pure placement math, which is the part worth reading.
-    //
-    // Placement math is written in DEGREES here because that is what the maths reads like, but the
-    // format STORES RADIANS: every hand-authored rotation in a real level is a multiple of PI (a
-    // full turn is 6.2831855, not 360), and the Unity project converts to degrees only at its
-    // inspector boundary. AddRotation is the single place that conversion happens - a generator
-    // writing an AngleKey by hand must convert too, or a 45 comes out as 45 RADIANS, i.e. ~2578
-    // degrees, and the object spins wildly.
-    //
-    // Frames come into these helpers ABSOLUTE (a generator thinks in the context's window) and are
-    // stored LOCAL, because that is what a keyframe's Frame means in this format: the runtime reads
-    // it back as obj.Span.StartFrame + key.Frame (Unity side: FrameMath/FrameUtils.ToGlobalFrame). Storing
-    // an absolute frame is not a visible error - the object simply never reaches its own keys, so it
-    // spawns correctly and then never moves. Every Add*/SetSize below converts; a generator writing
-    // obj.Positions.Add itself has to do the same, and the sweep test checks the result.
+    // The shared bookkeeping (mint, parent, bound, template) so a concrete generator is pure placement
+    // math. Math is in DEGREES, the format STORES RADIANS: AddRotation is the one conversion. Frames come in
+    // ABSOLUTE and are stored LOCAL: every Add*/SetSize converts, a hand-written key must too.
 
     /// <summary>
     /// Base for content generators that spawn objects from a shared template.
@@ -148,14 +133,8 @@ namespace BH.SDK.Generators.Spawn
             => value < ValueRules.MinLayer ? ValueRules.MinLayer
                 : value > ValueRules.MaxLayer ? ValueRules.MaxLayer : value;
 
-        // Frames are clamped to the context's own window, not to the level's: a generator asked to
-        // fill [100, 200] must not write outside it even when its own math overshoots, or an author
-        // who scoped a run to one section finds objects in another.
-        //
-        // protected because an animated generator has to apply the SAME clamp inside its Estimate:
-        // a bullet whose lifetime got truncated to a single frame carries one position key instead
-        // of two, and an estimate that ignored that would drift from reality by exactly the amount
-        // the clamp removed.
+        // Frames clamp to the context's window, not the level's. protected, so an animated generator
+        // applies the SAME clamp in Estimate (a one-frame bullet carries one position key, not two).
 
         /// <summary> A frame held inside the run's own window. </summary>
         protected static int ClampFrame(GeneratorContext context, int frame)
@@ -172,12 +151,8 @@ namespace BH.SDK.Generators.Spawn
         /// ONE key per track - two on the same frame violates RuleCollectionUnique. </summary>
         protected static bool CanAnimate(in FrameSpan span) => span.FrameDuration > FrameRules.MinFrameDuration;
 
-        /// <summary> Whether a MOVING object that would start at this frame belongs in the run at
-        /// all. A staggered generator asked for more objects than its window has room for used to
-        /// clamp the overflow onto the last frame, which spawned a pile of one-frame ghosts flashing
-        /// after the pattern was over - not spawning them is what the author meant. Strictly before
-        /// the end, because a bullet with no frame to travel in is one of those ghosts. Estimate
-        /// must apply the same check, or it counts objects the run never creates. </summary>
+        /// <summary> Whether a MOVING object starting at this frame belongs in the run: strictly before the
+        /// window's end, or it is a one-frame ghost. Estimate must apply the same check. </summary>
         protected static bool CanSpawn(GeneratorContext context, int startFrame)
             => startFrame < context.Span.EndFrame;
 

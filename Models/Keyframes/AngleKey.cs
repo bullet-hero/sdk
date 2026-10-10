@@ -12,9 +12,8 @@ using Newtonsoft.Json;
 namespace BH.SDK.Models.Keyframes
 {
     /// <summary>
-    /// Rotation key. Bounded but deliberately not wrapped: a full turn is meaningful, since
-    /// interpolating 0 -> 4pi spins twice while wrapping it to 0 would not move at all. The bound
-    /// is therefore stated in whole turns (ValueRules.MaxRotationTurns), not in one revolution.
+    /// Rotation key. Bounded in whole turns (ValueRules.MaxRotationTurns) but not wrapped: 0 -> 4pi
+    /// spins twice, wrapping it to 0 would not move at all.
     /// </summary>
     [RuleContainer]
     [GenerateModel]

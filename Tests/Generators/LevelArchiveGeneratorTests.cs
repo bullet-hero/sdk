@@ -17,17 +17,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests.Generators
 {
-    // THE IMPORT'S OWN HALF, fed by the writer rather than by hand-built bytes: what is under test
-    // is that an archive this project WROTE comes back as the level that went in, so producing the
-    // input any other way would only prove the generator agrees with a fixture.
-    //
-    // Two of the three parameters are about not damaging what the author already has. An archive is
-    // usually a copy of a level they may well hold already, so importing under the same id would
-    // point two entries at one folder - which is why NewLevelId defaults ON, and why the case that
-    // needs testing is the one where it is turned off.
-    //
-    // Everything the generator cannot read still has to produce a level the author can see is empty,
-    // never a plausible-looking one.
+    // Fed by the writer, not by hand-built bytes. NewLevelId defaults ON (same id would point two entries
+    // at one folder), so the case to test is OFF. Unreadable content yields a visibly empty level.
 
     /// <summary> The import half, fed by this project's own writer - so what is proven is that an archive we WROTE
     /// comes back as the level that went in, rather than that the reader agrees with a fixture. </summary>

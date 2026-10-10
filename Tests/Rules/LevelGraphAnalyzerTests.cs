@@ -38,10 +38,7 @@ namespace BH.SDK.Tests.Rules
         private static RectObject Obj(int id, int parent = ObjectId.NullValue)
             => new() { ObjectId = new ObjectId(id), ParentObjectId = new ObjectId(parent) };
 
-        // A child reaching outside its parent is legal authored data, not a finding: the overhang is
-        // resolved away on read and simply never plays. This used to be reported as advice, which
-        // meant a level behaving exactly as designed logged an issue on every single load - fitting
-        // the lifetimes is now an edit the author asks for (mod_span_fit).
+        // A child outside its parent is legal data, resolved on read; fitting is an edit (mod_span_fit).
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
@@ -325,10 +322,8 @@ namespace BH.SDK.Tests.Rules
             AssertReports(level, GraphRule.ModificationTargetMissing);
         }
 
-        // A MATERIALIZED COPY IS NOT A PLACEMENT, even when it is PrefabObject-typed: its own
-        // ObjectIds names ids in the INNER template's scope (see PrefabMaterializer.FindPlacements),
-        // so reading it as one reported every remap it carries as broken - 38736 findings on the
-        // level that found this, none of them true.
+        // A materialized COPY is not a placement: its ObjectIds name ids in the INNER template's scope
+        // (PrefabMaterializer.FindPlacements); read as one, it reported 38736 false findings.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]

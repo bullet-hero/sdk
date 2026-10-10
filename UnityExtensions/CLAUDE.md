@@ -17,7 +17,7 @@ everything that genuinely needs Unity, in four groups. Own asmdef,
     struct`, plus `TimePoint`, `AvatarStepSpeeds` and `AvatarStepResult`. **It touches no Unity
     RUNTIME** - no `Time`, `Transform`, `Camera`, `Screen` or `UnityEngine.Random`; the clock arrives
     as a `float` and every direction arrives resolved. It is here rather than in the core assembly
-    only because it reasons in `float2`. Its own header carries the design; the consuming project's
+    only because it reasons in `float2`. `Docs/AVATAR_MOVEMENT.md` carries the design; the consuming project's
     `docs/issues/MOVEMENT_HISTORY.md` is the record of why it moved.
   - **`Transforms/`** - `Transform2D` and `RectTransform2D`, the project's 2D local-transform structs.
     They arrived from the consumer's `BH.Shared.Transforms`, and their `ApplyTo(Transform/

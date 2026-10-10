@@ -9,28 +9,9 @@ using BH.SDK.Utils;
 
 namespace BH.SDK.Validations
 {
-    // ONE ANALYZE CALL'S MUTABLE HALF: the trace, the findings and the settings, plus the one place
-    // a child node is reached from. Everything that decides once per TYPE - which properties exist,
-    // which rules sit on them, whether a type is a container at all - stays on RuleAnalyzer, which
-    // is what makes this safe to allocate per call.
-    //
-    // A CLASS, NOT A ref struct, and the reason is the dispatch rather than taste: Node has to reach
-    // a value's runtime walk through IValidatable, and a ref struct parameter on an interface method
-    // would force `ref RuleWalk` through every generated signature, the reflective recursion and
-    // every helper - ref plumbing everywhere to save ONE object per Analyze, not per node. Passed by
-    // value a struct would copy several words across ~150k nodes; passed by ref it costs exactly
-    // what a class reference costs.
-    //
-    // THE CONTEXT IS A PARAMETER, NEVER A FIELD. It changes per subtree - a prefab template rebases
-    // frames and parent ids for everything below it - while everything else here lives for the whole
-    // call. Holding it would mean saving and restoring it around every descent, which is the bug
-    // that shape invites.
-    //
-    // TWO PHASES, AND THEY ARE NOT ONE. A node checks EVERY property's own rules first (Check), and
-    // only then descends into every walkable one (Descend). Fusing them - checking a property and
-    // immediately walking into it - is the natural refactor and it reorders the report for every
-    // object with more than one walkable property, i.e. every RectObject. Issue order is RuleFixer's
-    // input and its repairs are not commutative, so a reordering is a different repair.
+    // One Analyze call's mutable half and the only place a child is reached from. A class, not a ref struct.
+    // The context is a parameter, never a field. TWO PHASES, NOT FUSED: Check every property, then Descend -
+    // fusing reorders the report and RuleFixer's repairs do not commute. BH.SDK/Docs/VALIDATIONS.md.
 
     /// <summary> The state of one <see cref="RuleAnalyzer.Analyze"/> call, and the single point every
     /// child node is reached through. </summary>
@@ -116,39 +97,27 @@ namespace BH.SDK.Validations
         }
 
         /// <summary>
-        /// Run one property's own rules, under the trace segment they are reported at. Returns
-        /// whether the descent phase may walk into this value - a failing rule suppresses it, since
-        /// what is below a value the rule already rejected is rarely worth reporting twice.
+        /// Run one property's own rules under the trace segment they are reported at. Returns whether the
+        /// descent phase may walk into this value; a failing rule suppresses it.
         /// </summary>
         public bool Check(PropertyInfo property, BasePropertyRuleAttribute[] rules, object value,
             RuleContext context, bool typeChecked = false)
         {
-            // AN ABSENT VALUE BREAKS NO BOUND. Only a property the model marked [RuleOptional] takes
-            // this branch; everywhere else a null still reports, which is the safety net for a
-            // forgotten RuleNotNull. Asked only when the value IS null, so the ordinary path pays a
-            // reference comparison and nothing more.
+            // An absent value breaks no bound, but only for a property marked [RuleOptional]; asked only when
+            // the value IS null, so the ordinary path pays one reference comparison.
             if (value is null && IsOptional(property)) return true;
 
             if (rules.Length == 0) return value != null;
 
-            // THE TRACE SEGMENT IS PUSHED LAZILY, and on a real level that is most of what this
-            // method costs. A finding needs the property on the trace; a rule that passes needs
-            // nothing, and nearly every rule passes - volcano's 19 341 objects report zero. Pushing
-            // unconditionally cost one List.Add and one RemoveAt per property per node, on the order
-            // of five million pairs for one level, to build a path nobody read.
-            //
-            // The throw path pushes first and never pops, exactly as before: the walk is abandoned,
-            // and the walk object dies with the Analyze call that made it.
+            // The trace segment is pushed LAZILY: nearly every rule passes, and pushing per property per node
+            // cost about five million push/pop pairs for one level. The throw path pushes and never pops.
             var pushed = false;
             var hasInvalidRule = false;
 
             foreach (var rule in rules)
             {
-                // ASKED ONCE PER TYPE, NOT PER NODE. Whether a rule may sit on a property is a fact
-                // about the TYPE, and RuleTable (or PropertyEntry, on the reflective path) settles
-                // it at build; typeChecked means every rule here already answered yes. It is not
-                // hoisted out of the loop entirely, and must not be: an earlier FAILING rule breaks
-                // this loop, so a later misapplied one is never reached and must not throw.
+                // Asked once per type, NOT per node - and NOT hoisted out of the loop: an earlier failing
+                // rule breaks it, so a later misapplied rule is never reached and must not throw.
                 if (!typeChecked && !rule.IsValidType(property))
                 {
                     if (!pushed) _trace.Add(new RulePath(property));
@@ -199,10 +168,7 @@ namespace BH.SDK.Validations
                 case null:
                     return;
 
-                // An array is an IList too, and a rank-1 one lands here rather than in the array
-                // branch below. That is not an accident to tidy up: both index the same way, so the
-                // paths come out identical, and the array branch is what a multi-dimensional or
-                // non-generic array would take.
+                // A rank-1 array is an IList too and lands here; the paths are identical either way.
                 case IList list:
                     DescendList(property, list, context);
                     return;
@@ -216,10 +182,8 @@ namespace BH.SDK.Validations
             else DescendOne(property, value, context);
         }
 
-        // A NULL COLLECTION IS A LEGAL STATE, so every Descend below starts by answering it. The
-        // generated walk calls these INSTEAD of Check rather than after it, so [RuleOptional]'s own
-        // short-circuit never reaches them - ThemeData.ColorNames is the first member to be both a
-        // collection and legally absent, and it arrived here as a NullReferenceException.
+        // A NULL COLLECTION IS LEGAL. The generated walk calls these INSTEAD of Check, so RuleOptional's
+        // short-circuit never reaches them (ThemeData.ColorNames threw here).
 
         /// <summary> Walks into a list, recording the index in the trace. </summary>
         public void DescendList(PropertyInfo property, IList list, RuleContext context)
@@ -234,13 +198,8 @@ namespace BH.SDK.Validations
             }
         }
 
-        // VALUES ONLY, DELIBERATELY. A RulePath addresses "this property, at this key", which is how
-        // RuleFixer finds its way back to a value - there is no way to express "the key itself", so
-        // an issue raised on a key would be repaired into the value instead. Keys stay safe without
-        // the walk: every key in the format is an id struct, and a struct can never be a
-        // [RuleContainer] anyway (it is boxed on the way in, so any Fix would write into a copy and
-        // vanish). Anything a key needs checking for - above all whether it agrees with its value's
-        // own id - is relational, and belongs to the graph pass rather than here.
+        // VALUES ONLY: a RulePath cannot say "the key itself", so an issue on a key would be repaired into
+        // the value. Keys are id structs, never a [RuleContainer]; key/value agreement is the graph pass's.
 
         /// <summary> Walks into a dictionary, recording the key in the trace. </summary>
         public void DescendDictionary(PropertyInfo property, IDictionary dictionary, RuleContext context)

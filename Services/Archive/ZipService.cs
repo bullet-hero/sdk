@@ -9,46 +9,9 @@ using ICSharpCode.SharpZipLib.Zip;
 
 namespace BH.SDK.Services.Archive
 {
-    // THE SECOND CONTAINER, AND THE ONE A PLAYER'S COMPUTER ALREADY OPENS. tar.gz is what a shell
-    // opens; a zip is what Windows Explorer opens on a double click, with no tool installed and
-    // nothing explained. Both are written here, neither is the "real" one, and what a file IS is
-    // decided by ArchiveFormatSniffer rather than by which of them wrote it.
-    //
-    // WHAT ZIP BRINGS BACK is the central directory. tar.gz is a stream, so reading metadata.json
-    // out of a 50 MB archive means decompressing until it appears and the writer putting documents
-    // first is the whole mitigation; a zip is seekable by construction, so ReadEntriesAsync takes
-    // an entry from anywhere for the cost of the directory. That is the one capability the format
-    // choice gave up, and it is back for archives written this way.
-    //
-    // THE FOUR UNPACK CHECKS ARE THE SAME FOUR, AND TWO OF THEM ARE HARDER HERE than they were for
-    // tar. Names are validated, the store cannot address outside its root, sizes are capped, and an
-    // entry that is not a plain file or a directory is refused - but:
-    //
-    //   * A ZIP'S DECLARED SIZE IS A CLAIM, NOT A FACT. In tar the header length IS the payload
-    //     length, so honouring it bounds the read. Here the central directory can say 1 KB and the
-    //     deflate stream can inflate to ten gigabytes, so the limit is enforced TWICE: once from
-    //     the directory, cheaply, before anything is unpacked, and once as a hard byte counter
-    //     while copying, which is the one that actually stops a bomb.
-    //   * TWO ENTRIES MAY SHARE A NAME. A scanner reads the first, an extractor writes the second,
-    //     and the file on disk is not the file that was inspected. tar has the same shape but it
-    //     degrades into a silent overwrite; here it is refused by name.
-    //
-    // Symlinks live in the high 16 bits of ExternalFileAttributes - the unix mode - rather than in
-    // a type flag, and they are refused for exactly the reason tar's are: an innocent name pointing
-    // outward is a traversal no name check sees.
-    //
-    // TWO READERS, ON PURPOSE. ZipFile is the main one: it needs a seekable stream (which the level
-    // reader already requires), reads the central directory, cross-checks each local header against
-    // it, and decrypts AES. ZipInputStream is used only where a forward-only pass is genuinely
-    // wanted, and it CANNOT read an AES entry at all - CanDecompressEntry drops WinZipAES - which
-    // is why it is not the default rather than a matter of taste.
-    //
-    // Legacy ZipCrypto is READ, because ZipFile does it for free and somebody's old archive should
-    // open, and never WRITTEN: it is broken, and offering it would be offering a protection that
-    // is not there.
-    //
-    // The codec is synchronous inside, like TarGzService and for the same reason: deflate is CPU
-    // work, and this library never decides which thread it runs on.
+    // The container Explorer opens on a double click, with a central directory (ReadEntriesAsync).
+    // The four unpack checks are tar's, two harder: a declared size is a CLAIM (enforced twice), and
+    // duplicate names are refused. Two readers on purpose; ZipCrypto read, never written. Docs/ARCHIVE.md.
 
     /// <summary> Packing and unpacking the zip a level archive can be made of. </summary>
     public static class ZipService
@@ -66,21 +29,9 @@ namespace BH.SDK.Services.Archive
         // is not a suspicious entry - it is every archive Explorer has ever made.
         private const int NoUnixMode = 0;
 
-        // THE PASSPHRASE IS UTF-8, AND SAYING SO IS NOT OPTIONAL. SharpZipLib encodes a password
-        // with ZipCryptoEncoding, which defaults to the machine's ANSI code page - what the ancient
-        // ZipCrypto scheme specified - while 7-Zip, WinZip and every other AE-2 implementation
-        // derive the key from the password's UTF-8 bytes. For an ASCII password the two agree and
-        // nothing is visible; for "пароль" they do not, and the archive this game writes cannot be
-        // opened by the tool the option exists for, on the machine of an audience that is
-        // Russian-speaking by default.
-        //
-        // MEASURED, not assumed: 7-Zip opened an ASCII-passworded archive from here and reported
-        // "Wrong password" for a Cyrillic one, until this codec was passed in. It is the same
-        // defect PgpSymmetricService's ...Utf8 overloads exist for, in a second library.
-        //
-        // Only the CRYPTO encoding is overridden. Entry names keep their own path - they are
-        // written UTF-8 already, flagged per entry by IsUnicodeText - and changing the name
-        // encoding here would rewrite what the archive calls its files.
+        // The passphrase is UTF-8: SharpZipLib defaults to the ANSI code page, 7-Zip and every AE-2
+        // implementation use UTF-8, so a Cyrillic password only opens with this codec (measured with
+        // 7-Zip). Only the crypto encoding is overridden; entry names keep their own (Docs/ARCHIVE.md).
         private static readonly StringCodec PassphraseCodec =
             StringCodec.Default.WithZipCryptoEncoding(new UTF8Encoding(false));
 
@@ -117,10 +68,8 @@ namespace BH.SDK.Services.Archive
             {
                 zip.SetLevel(DeflateLevelOf(policy.CompressionLevel));
 
-                // SharpZipLib takes the passphrase as a string, which cannot be zeroed the way the
-                // char[] every other path here carries can. Built as late as possible and dropped
-                // as soon as the archive is finished - a mitigation, not a fix, and the one cost
-                // this scheme carries that the OpenPGP layer does not.
+                // SharpZipLib takes a string, which cannot be zeroed like the char[] elsewhere: built
+                // as late as possible, dropped as soon as the archive is finished. A mitigation only.
                 if (passphrase != null) zip.Password = new string(passphrase);
 
                 try
@@ -158,11 +107,8 @@ namespace BH.SDK.Services.Archive
             ArchiveLimits limits = null, char[] passphrase = null, CancellationToken token = default) =>
             UnpackAsync(source, destination, include: null, limits, passphrase, token);
 
-        // AN ENTRY LEFT OUT IS STILL JUDGED, and only its inflating is skipped. Its name, its type and
-        // the duplicate check run exactly as they do for a kept one: an archive that would be refused
-        // whole is refused whatever part of it the caller asked for, so a filter can never be the way
-        // a hostile entry gets past the checks. The size limits count the KEPT entries only - those
-        // are the bytes that reach the store.
+        // An entry left out is still JUDGED (name, type, duplicates); only its inflating is skipped.
+        // The size limits count the KEPT entries only: those are the bytes that reach the store.
 
         /// <summary> Reads only the entries <paramref name="include"/> accepts into a store; every
         /// entry is still checked. A null filter keeps everything. </summary>
@@ -440,10 +386,8 @@ namespace BH.SDK.Services.Archive
             return entry;
         }
 
-        // The check tar spells with a TypeFlag. A zip entry's kind lives in the unix mode inside
-        // ExternalFileAttributes, and a zero there means the writer had no unix modes to record -
-        // every archive Windows Explorer makes looks like that, and refusing them would refuse the
-        // most ordinary zip there is.
+        // A zip entry's kind lives in the unix mode of ExternalFileAttributes; zero there (every Explorer
+        // archive) means none recorded and must be accepted.
         private static void RequireCarryableType(ZipEntry entry)
         {
             if (entry.CompressionMethod != CompressionMethod.Stored &&

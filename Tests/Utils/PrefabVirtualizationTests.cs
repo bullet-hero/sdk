@@ -10,16 +10,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests.Utils
 {
-    // The file stopped carrying a placement's materialized copies, so everything here is about the
-    // two halves that replaced them agreeing: Thin drops exactly the objects Expand can rebuild, and
-    // Expand rebuilds exactly what the edit-time materializer would have written. The Unity project's
-    // PrefabExpandParityTests is what pins the second claim against the real materializer; this is
-    // the pure half, and it is also where every refusal is pinned, because a refusal is the case
-    // nobody looks at until a level opens short.
-    //
-    // A LEVEL IS BUILT THIN HERE AND EXPANDED, which is the direction a file travels. The one test
-    // that starts from a flat level is the pre-virtualization file, and it is the only reason
-    // Expand writes by indexer.
+    // Thin drops exactly what Expand can rebuild, and Expand rebuilds what the materializer writes (the
+    // Unity project's PrefabExpandParityTests pins that). Every refusal is pinned here. Built thin first.
 
     /// <summary> Dropping a placement's copies for a write and rebuilding them after a read. </summary>
     public class PrefabVirtualizationTests
@@ -128,10 +120,7 @@ namespace BH.SDK.Tests.Utils
 
             var copy = level.Game.Objects[placement.ObjectIds[inner.ObjectId]];
 
-            // A LOCAL FRAME IS A FRAME, NOT AN OFFSET: the template object sits at its own
-            // timeline's FIRST frame, so its copy sits on the placement's first frame - the same
-            // number, not one past it. Adding the two positions outright counts the origin twice,
-            // which is exactly the bug this pins (see ApplyPlacementFrameOffset's own note).
+            // A local frame is a frame, not an offset: the copy sits on the placement's first frame.
             Assert.AreEqual(FrameRules.MinFrame, inner.Span.StartFrame, "guard: the fixture is local frame 1");
             Assert.AreEqual(PlacementStart, copy.Span.StartFrame);
             Assert.AreEqual(inner.Span.FrameDuration, copy.Span.FrameDuration);
@@ -262,10 +251,7 @@ namespace BH.SDK.Tests.Utils
             Assert.AreEqual(1, level.Game.Objects.Count);
         }
 
-        // What a placement the editor never materialized looks like on disk - an import before its
-        // host resynced, or one the materializer refused on depth. One finding for the
-        // whole placement rather than one per template object, or a 300-object template would file
-        // 300 findings for a single authoring state.
+        // A placement never materialized: ONE finding for the placement, not one per template object.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
@@ -454,12 +440,8 @@ namespace BH.SDK.Tests.Utils
             var placement = AddPlacement(level, template.PrefabId);
             Remap(level, placement, parent.ObjectId, child.ObjectId);
 
-            // THE PLACEMENT AGREES WITH THE TEMPLATE'S ROOT, which is what every file this game
-            // saves looks like: the editor resyncs a root edit onto every placement before the save
-            // (PrefabRootUtils.ApplyRoot). The next test is the other case - a file whose placement
-            // DISAGREES is normalized rather than preserved, so it is the agreeing one that round
-            // trips byte for byte. The LENGTH has to agree too, for the same reason and by the same
-            // rule - the start is the placement's own and is left where it is.
+            // The placement agrees with the template's root (what the editor saves); a disagreeing one is
+            // normalized. The LENGTH agrees too; the start is the placement's own.
             placement.Name = template.Root.Name;
             placement.Span = placement.Span.WithDuration(template.Root.Span.FrameDuration);
 
@@ -502,10 +484,7 @@ namespace BH.SDK.Tests.Utils
                 "but not where it starts - that is the placement's own, and the anchor every copy is offset by");
         }
 
-        // A Modification keyed to the root is the only way a placement keeps a value of its own for
-        // a template-owned field, and it applies to the PLACEMENT rather than to any copy - the root
-        // has no outer id, being the placement. Without PrefabRootUtils.TryGetModificationTarget it
-        // would be recorded, saved, listed as present and never applied.
+        // A root-keyed Modification lands on the PLACEMENT; without TryGetModificationTarget it never lands.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
@@ -578,12 +557,7 @@ namespace BH.SDK.Tests.Utils
 
         #region Capacity hints
 
-        // THE HINT DESCRIBES WHAT PLAYS, NEVER WHAT IS WRITTEN, and the order it is computed in is
-        // what enforces that: Level.Hints.Limits is swept on the LIVE, expanded level inside the
-        // editor's frozen window, and the writer thins a level only afterwards. Computing it on the
-        // thinned one instead would under-report by every prefab copy - and the consumer
-        // (PlayerService.EnsureLevelCapacity) treats the hint as a lower bound, so the error would
-        // show up as a reallocation on load rather than as anything anyone could trace back.
+        // The Limits hint describes what PLAYS: swept on the live expanded level, before the writer thins it.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
@@ -638,10 +612,7 @@ namespace BH.SDK.Tests.Utils
 
         #region Nesting
 
-        // No corpus level has a template holding a placement of its own, so this path has never been
-        // exercised by real content. The ordering it pins is correctness, not tidiness: the outer
-        // placement copies the template WHOLE, so the template has to be expanded first or the outer
-        // copy is short by everything the nested placement owns.
+        // A nested template is expanded before the placement copying it (no corpus level has one).
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]

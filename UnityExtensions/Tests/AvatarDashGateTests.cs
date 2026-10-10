@@ -5,26 +5,8 @@ using Unity.Mathematics;
 
 namespace BH.SDK.UnityExtensions.Tests
 {
-    // WHAT KEEPS DASH SPAM FROM BEING IMMUNITY, AND IT IS NOW ENTIRELY THE SAMPLED GATE. The
-    // i-frames and the cooldown are the SAME duration (DashInvulnerabilityTime equals DashCooldown,
-    // and DashFraction scales both), so there is no window in seconds between them at all - what a
-    // spamming player gets is exactly one touchable FRAME per cycle, and Observe is the whole of why
-    // it exists.
-    //
-    // THAT FRAME IS PRODUCED BY THE ORDER, NOT BY THE CLOCK. The collision pass is a per-frame POINT
-    // SAMPLE, and an invulnerable frame does not merely discard its result, it never runs the
-    // narrowphase at all (GameAvatarService zeroes the radius). So the frame the i-frames lapse is
-    // refused a dash (ExposedSinceDash is still false), counted here, and sampled real by the
-    // narrowphase; the dash goes on the next frame. One frame of exposure at 240 fps and one at 3.
-    //
-    // IT USED TO BE A DURATION, AND THAT IS WHY THE SWEEP BELOW IS WORTH ITS RUNTIME. At the old 0.25
-    // cooldown against 0.20 i-frames - a window of 0.05 s - there were 3 exposed samples per dash at
-    // 60 fps, 1 at 20 fps, and at 15 fps 43% of dash cycles had NONE, which on a phone under a heavy
-    // level is not a corner case. A timed window cannot survive a frame longer than itself; a counted
-    // one cannot fail to.
-    //
-    // THE SWEEP IS THE POINT OF THIS FILE. The single-window cases pin the mechanism; the sweep is
-    // what actually asserts the game rule, at frame rates no test rig can otherwise reach.
+    // Dash spam is never immunity: the sampled gate (Observe) leaves exactly one touchable FRAME per cycle,
+    // and the sweep asserts that at frame rates no rig reaches. Measurements: Docs/AVATAR_MOVEMENT.md.
 
     /// <summary> <see cref="AvatarMovement.CanDash"/> and <see cref="AvatarMovement.Observe"/> -
     /// the vulnerability window between two dashes. </summary>
@@ -187,16 +169,8 @@ namespace BH.SDK.UnityExtensions.Tests
             }
         }
 
-        // ONE FRAME OF A DASH-SPAMMING RUN, IN THE ORDER THE GAME RUNS IT: BaseAvatarService.
-        // DriveAvatar launches the dash first, then AvatarController.UpdateAvatar steps and observes,
-        // and only then does the avatar service size the collider off the same window at the same
-        // instant. So a launch frame is invulnerable when it is observed and cannot count as its own
-        // exposure - which is why the order here is the assertion rather than an implementation
-        // detail of the harness.
-        //
-        // THE PERIOD IS MEASURED BETWEEN THE FIRST AND LAST DASH, not as a run length over a count:
-        // the first dash lands on frame one and the last one somewhere short of the end, so dividing
-        // the whole run by the tally reports a period up to two cooldowns short of the real one.
+        // One frame in the order the game runs it: launch, step and Observe, then the collider off the same
+        // window. The period is measured between the first and last dash, not as run length over a count.
         private static SpamRun Spam(float fps, int frames)
         {
             var h = 1f / fps;
@@ -239,10 +213,7 @@ namespace BH.SDK.UnityExtensions.Tests
             return new SpamRun(dashes, exposed, cyclesWithoutExposure, frames, period);
         }
 
-        // THE GAME RULE, ASSERTED AT FRAME RATES NOTHING ELSE CAN REACH. Constant dashing is meant to
-        // buy speed at the price of control, never safety, so between any two dashes there must be at
-        // least one frame on which the avatar could actually have been hit - on a gaming monitor, on
-        // a phone holding 30, and on a phone that has stopped holding anything.
+        // The game rule: between any two dashes at least one frame could have been hit, at any frame rate.
         [TestCase(240f)]
         [TestCase(144f)]
         [TestCase(120f)]
@@ -274,10 +245,7 @@ namespace BH.SDK.UnityExtensions.Tests
                 "sampled while touchable - dash spam is immunity there");
         }
 
-        // AND THE OTHER HALF: the gate may not cost anything at a frame rate that never needed it.
-        // Above about 7 fps the timed window is wider than a frame, so a touchable sample always
-        // lands inside it and the dash comes back on the cooldown alone - one dash per DashCooldown,
-        // to within the one frame a launch waits for the next tick.
+        // The other half: above about 7 fps the gate costs nothing and the cooldown alone paces the dash.
         [TestCase(240f)]
         [TestCase(120f)]
         [TestCase(60f)]
@@ -291,19 +259,13 @@ namespace BH.SDK.UnityExtensions.Tests
             var run = Spam(fps, (int)math.ceil(fps * 20f));
 
             Assert.GreaterOrEqual(run.DashPeriod, Cooldown - 1e-4f);
-            // TWO FRAMES RATHER THAN ONE, and the second is the whole cost of the sampled gate: one
-            // frame to be observed touchable after the i-frames lapse, and the dash on the frame
-            // after that. It is a cost paid in frames rather than in seconds, so a slow device waits
-            // longer in wall time - which costs the player rather than paying them, the only
-            // direction this may fail in.
+            // Two frames: one to be observed touchable, one for the dash. Paid in frames, so slow devices
+            // lose.
             Assert.LessOrEqual(run.DashPeriod, Cooldown + 2f / fps + 1e-4f);
         }
 
-        // The exposure is a SHARE of every cycle rather than one frame scraped in at the end, and
-        // that share is what the balance promises: the cooldown minus the i-frames, over the whole
-        // cooldown - three sevenths at the shipped numbers. It is measured on samples, so it reads
-        // one frame per cycle low (the sample landing exactly on the closing edge of the i-frames is
-        // still covered by them), which is what the frame-shaped half of the tolerance allows for.
+        // Exposure is a share of every cycle (cooldown minus i-frames over cooldown); sampled, so one frame
+        // low.
         [TestCase(240f)]
         [TestCase(120f)]
         [TestCase(60f)]
@@ -319,10 +281,7 @@ namespace BH.SDK.UnityExtensions.Tests
 
             Assert.AreEqual(expected, share, 2f / (fps * Cooldown) + 0.01f);
 
-            // AND THE SHAPE OF IT, which the share alone stopped being able to say once the expected
-            // value became zero: the exposure is ONE FRAME PER DASH, not a stretch of them and not a
-            // frame scraped in every few cycles. A tolerance of one covers the final cycle, which the
-            // run may end in the middle of.
+            // The shape: ONE frame per dash; a tolerance of one covers a run ending mid-cycle.
             Assert.AreEqual(run.Dashes, run.ExposedSamples, 1,
                 "a spamming run is touchable exactly once per dash");
         }

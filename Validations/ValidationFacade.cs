@@ -6,15 +6,9 @@ using BH.SDK.Validations.Graph;
 
 namespace BH.SDK.Validations
 {
-    // Until now the rule engine was library code nothing called: analyzer, fixer and rules all
-    // existed, no consumer ever ran them, and "the format guarantees X" meant "the format documents
-    // X". This is the entry point that makes the standard enforceable - one call a loader, an editor
-    // or an external tool can make without knowing that validation has two halves, that the graph
-    // pass only applies to a Level, or that repairs need several passes to settle.
-    //
-    // It deliberately does not decide what to DO about a report. A player's game refuses to start on
-    // HasErrors; an editor shows everything and lets the author choose; an importer repairs first and
-    // reports what it could not. Those are different policies over the same facts.
+    // The entry point a loader, editor or tool can call without knowing validation has two halves. It does
+    // not decide what to DO about a report: a game refuses on HasErrors, an editor shows all, an importer
+    // repairs first.
 
     /// <summary>
     /// The single entry point for validating and repairing save-format data.
@@ -42,9 +36,8 @@ namespace BH.SDK.Validations
         }
 
         /// <summary>
-        /// Repair what can be repaired, then report what is left. Graph findings are never repaired -
-        /// every fix for one is a content decision (which of two colliding objects keeps its id,
-        /// where a broken parent chain should reattach) and guessing would rewrite the level.
+        /// Repair what can be repaired, then report what is left. Graph findings are never repaired: every
+        /// fix for one is a content decision.
         /// </summary>
         public ValidationReport ValidateAndFix(object root,
             RuleAnalyzerSettings analyzerSettings = null, RuleFixerSettings fixerSettings = null)
@@ -64,17 +57,9 @@ namespace BH.SDK.Validations
             return new ValidationReport(ruleIssues, graphIssues);
         }
 
-        // WHY THIS IS ONE CALL AND NOT THREE. Publishing is the only caller that needs all three
-        // passes, and it is also the only one that would get them wrong by hand: the metadata is its
-        // own aggregate root, so validating the level alone silently skips every rule on LevelMeta -
-        // which is precisely the half a publish check cares about. Passing the level is OPTIONAL for
-        // the same reason PublishReadinessAnalyzer makes it optional: metadata.json exists so a
-        // catalogue can grade thousands of levels without opening one, and the report says which
-        // kind of pass it was.
-        //
-        // Nothing is repaired here, deliberately. ValidateAndFix exists for content an author owns;
-        // a publish check is asked about content on its way out, where a silent repair is the last
-        // thing anyone wants.
+        // One call, not three: the metadata is its own aggregate root, so validating only the level skips
+        // every LevelMeta rule. The level is optional (a catalogue grades metadata alone). Nothing is
+        // repaired.
 
         /// <summary>
         /// Everything all three passes think of a level about to be published: the declarative

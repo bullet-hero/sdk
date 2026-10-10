@@ -8,11 +8,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests.Services
 {
-    // THE DROPDOWN IS THE ONLY PLACE THE SEVEN MODES ARE A LIST, and until this file existed that
-    // list lived in the UI layer keyed by position - so a mode could be dropped, duplicated or
-    // silently swapped for its neighbour and nothing would say so. The order is a product decision
-    // and is expected to move again; what may not move is the number a mode carries, because a
-    // value read back by position turns one export into another the day the order changes.
+    // The dropdown is the one place the modes are a list; the order may move, the number a mode carries
+    // may not.
 
     /// <summary> What each export mode implies, and the order an author reads them in. </summary>
     public class LevelExportModeTests
@@ -53,10 +50,7 @@ namespace BH.SDK.Tests.Services
                 LevelExportModeExtensions.FromIndex(LevelExportModeExtensions.DisplayOrder.Count));
         }
 
-        // THE RANKING THE AUTHOR ASKED FOR, written down where it can fail. A password on a level
-        // means the zip's own AES first, then the .tar.gz.gpg that predates it, then the .zip.gpg
-        // that exists for somebody who wants both a zip and gpg - and they sit together, so the
-        // three read as one choice rather than as three scattered ones.
+        // The ranking: AES zip first, then .tar.gz.gpg, then .zip.gpg, together as one choice.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
@@ -92,10 +86,7 @@ namespace BH.SDK.Tests.Services
             Assert.AreEqual(extension, mode.Extension());
         }
 
-        // The two predicates the UI reads, checked against the table above rather than restated:
-        // IsProtected is what shows the passphrase row, and a mode needing a passphrase while
-        // claiming no scheme - or the reverse - is a row that asks for nothing or drops what it was
-        // given. IsArchive is what decides whether a file or a folder is picked.
+        // Predicates agree with the table: IsProtected shows the passphrase row, IsArchive picks file/folder.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]

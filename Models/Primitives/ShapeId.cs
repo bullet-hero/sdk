@@ -7,9 +7,8 @@ using BH.SDK.Utils;
 namespace BH.SDK.Models.Primitives
 {
     /// <summary>
-    /// Identity of a reusable shape (CompositeShape). The only Guid id here with a large set of
-    /// well-known constants - the built-in shape library, which lives in the generated half of this
-    /// type (ShapeId.g.cs) as one nested class per form: ShapeId.Hexagon.S4_2_T8_I and so on.
+    /// Identity of a reusable shape (CompositeShape). The only Guid id with well-known constants: the
+    /// built-in library, in the generated half (ShapeId.g.cs), one nested class per form.
     /// </summary>
     public partial struct ShapeId : IEquatable<ShapeId>, IPrimitiveGuid
     {
@@ -35,30 +34,11 @@ namespace BH.SDK.Models.Primitives
             value = Guid.Empty;
         }
 
-        // One id type serves BOTH of ShapeObject's shape fields - ShapeId (what is drawn) and
-        // ColliderId (what is hit) - because a shape and a hitbox are the same thing described the
-        // same way: triangles inside [-0.5, 0.5]. Nothing distinguishes "a shape you can render"
-        // from "a shape you can collide against", so a second id type would only be able to
-        // disagree with this one.
-        //
-        // Shape ids are a stable identifier for a CompositeShape/CompositeShapeScriptable entry,
-        // same role ThemeId/EffectId play for Theme/Effect - a ShapeObject references a shared,
-        // reusable shape by id instead of embedding its own copy. There is no game-defined/
-        // user-defined range split - a Guid has no meaningful "positive/negative" ordering to split
-        // on (see ThemeId/EffectId/PrefabId/LevelId for the same reasoning); "game-defined" vs
-        // "user-defined" is determined by which collection an id is found in
-        // (GameResources.CompositeShapes vs Level.Resources.CompositeShapes), not by the id's own
-        // value. Guid.Empty is the only reserved/Null value.
+        // One id type serves BOTH ShapeObject fields (ShapeId drawn, ColliderId hit): a second type could
+        // only disagree. A Guid has no range to split: game vs user is decided by WHICH collection holds it.
 
-        // THE BUILT-IN IDS ARE PACKED PARAMETERS, one axis per nibble, and ShapeCatalogService owns
-        // the layout (see its header for the six rules that keep it extensible). What matters here
-        // is that they are NOT a dense sequence: the library this replaced numbered its shapes
-        // 1..78 by their position in an array, so inserting a form renumbered every shape after it.
-        // A packed id is derived from what the shape IS, so a new side count, a new thickness rung
-        // or a whole new axis leaves every id already written alone.
-        //
-        // Form code 0 is reserved and never issued, which is what makes the retired 1..78 ids
-        // undecodable rather than silently resolving to some other shape.
+        // Built-in ids are packed parameters, one axis per nibble (ShapeCatalogService owns the layout), not
+        // a dense sequence; form code 0 is never issued. Docs/IDENTIFIERS.md
 
         /// <summary> The reserved "unset" value. Never a real id. </summary>
         public static readonly Guid NullValue = Guid.Empty;

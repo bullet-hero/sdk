@@ -11,26 +11,12 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models.PostProcessing
 {
-    // THE EIGHT CURVES ARE URP'S OWN EIGHT, AND WHAT EACH ONE MEANS IS THE LutBuilder'S FORMULA:
-    // `satMult *= curve(x) * 2` for the three saturation curves (neutral 0.5, i.e. a multiply by
-    // one), `hue += curve(hue) - 0.5` for HueVsHue (neutral 0.5, the full 0..1 range being a whole
-    // turn), and `c = curve(c)` for the four YRGB ones, which are an absolute mapping and are
-    // therefore neutral at IDENTITY rather than at any constant. Every axis is 0..1 on both sides,
-    // and every value outside that is what the 128x1 curve texture clamps away.
-    //
-    // This used to be two floats - a HueVsHue and a SatVsSat - and they could not be kept beside
-    // the curves, because a scalar IS a flat curve and two answers for one knob is what the rest of
-    // this format refuses. They could not be extended either: the formula above is why three
-    // constants multiplying satMult are one constant, and why a constant YRGB curve maps every
-    // input to a single output, i.e. paints the frame one colour. Only a curve reshapes anything.
-    // A global hue/saturation SLIDER is a real authoring want and remains unserved here on purpose
-    // - it is what URP's ColorAdjustments component is for, and this project has not wired that
-    // track up yet. It belongs there, not as a second answer on this one.
+    // The eight curves are URP's own; each one's meaning is LutBuilder's formula, and a scalar beside a
+    // curve is two answers for one knob. Docs/POST_PROCESSING.md
 
     /// <summary>
-    /// The level's colour grading curves - URP's ColorCurves, all eight of them. Each is null when
-    /// the author never touched it, which is a real state and not missing data: null means neutral,
-    /// and neutral is identity for the four YRGB curves and a flat 0.5 for the other four.
+    /// The level's colour grading curves - URP's ColorCurves, all eight. Null means the author never touched
+    /// it, which is neutral: identity for the four YRGB curves, a flat 0.5 for the other four.
     /// </summary>
     [RuleContainer]
     [GenerateModel]
@@ -99,13 +85,8 @@ namespace BH.SDK.Models.PostProcessing
             LumVsSat = lumVsSat;
         }
 
-        // BOTH ENDS CLAMP, AND THAT IS NOT A PREFERENCE. A colour curve is sampled on exactly 0..1
-        // - both of URP's axes are - so nothing ever asks what lies outside it, and the wrap mode is
-        // the one field on a CurveValue that means nothing here. It is still load bearing:
-        // CurveWrapMode.Default maps to UnityEngine.WrapMode.Default, which behaves as Once, and
-        // Once answers a sample at EXACTLY the last key time by wrapping back to the first - so an
-        // identity curve read 0 at x = 1 and painted the top of the ramp black. Core's
-        // ColorCurvesGroup forces the same two modes onto an AUTHORED curve for the same reason.
+        // Both ends ClampForever, load bearing: WrapMode.Default behaves as Once, which wraps a sample at
+        // exactly the last key time. Core's ColorCurvesGroup forces the same. Docs/POST_PROCESSING.md
 
         /// <summary> What a null YRGB curve means, as data - the identity mapping, tangents included,
         /// so it reads back as the straight line it is rather than as an S curve through two points. </summary>

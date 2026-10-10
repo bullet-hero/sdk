@@ -100,10 +100,7 @@ namespace BH.SDK.Tests.Rules
             CollectionAssert.AreEqual(new[] { 7, 0, 0 }, model.Value);
         }
 
-        // Padding a reference-typed collection inserts nulls: the count rule is then satisfied while
-        // the collection holds unusable entries, and the analyzer walks straight past them (it skips
-        // null elements). Anything relying on this rule to guarantee usable slots - ThemeData.Matrix
-        // above all - needs a not-null-elements check too, which no rule provides today.
+        // Padding reference types inserts nulls the analyzer walks past (ThemeData.Matrix needs NoNullItems).
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]

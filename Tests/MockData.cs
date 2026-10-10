@@ -33,17 +33,8 @@ using Newtonsoft.Json.Linq;
 
 namespace BH.SDK.Tests
 {
-    // Mock/fixture construction for the test suite (moved out of SerializationTests so every test
-    // file can share it - see ValidatorTests for the other consumer). "Valid" fixtures
-    // (CreateTest*/CreateValid*) are meant to touch as much of each aggregate's field surface as
-    // possible, so round-trip/serialization tests exercise real data instead of constructor
-    // defaults - but they must stay rule-valid, since ValidatorTests asserts zero RuleAnalyzer
-    // issues against several of them (CreateTestLevel, CreateTestLevelMeta, CreateValidTestSettings).
-    // "Invalid" fixtures (CreateInvalid*) are deliberately left minimal and untouched here - each
-    // encodes one specific, deliberately-chosen rule violation that TestFixerXxx (ValidatorTests)
-    // asserts is both detected and auto-fixable by RuleFixer; broadening them risks introducing an
-    // issue RuleFixer can't resolve, which isn't worth the coverage gain for a fixture whose whole
-    // point is to be minimal and wrong in one specific way.
+    // Shared fixtures. CreateTest*/CreateValid* touch much of the surface and must stay rule-valid
+    // (ValidatorTests asserts zero issues); CreateInvalid* stay minimal, one violation each.
 
     /// <summary> The shared fixture factory for the whole suite. Read the header above before adding one: the
     /// valid fixtures must stay rule-clean and the invalid ones must each encode exactly one repairable violation. </summary>
@@ -217,10 +208,7 @@ namespace BH.SDK.Tests
             shapeObject.Colors.Add(new Color4X4Key());
             shapeObject.UVs.Add(new UVKey());
 
-            // THE UNIFORM VARIANTS RIDE HERE, one per family, because every whole-Level round trip
-            // in the suite goes through this factory and a tag no fixture carries is a tag no codec
-            // is ever checked on. They are structurally identical to their per-component siblings,
-            // which is exactly why only the tag can tell them apart on the wire.
+            // One uniform variant per family, so no tag is left unchecked by a whole-Level round trip.
             shapeObject.Positions.Add(new PosKey(
                 new Vector2Lerp(-1f, -1f, 1f, 1f), FrameRules.MinFrame + 1));
             shapeObject.Scales.Add(new ScaKey(
@@ -259,11 +247,7 @@ namespace BH.SDK.Tests
             };
             level.Game.Objects.Add(new ObjectId(3), effectObject);
 
-            // Every prefab reference here resolves to a template that actually exists in this level,
-            // and every id counter sits past the highest id its scope uses. Both are invariants only
-            // LevelGraphAnalyzer sees - the declarative rules judge one property at a time and pass
-            // on a randomly-minted PrefabId or a stale counter either way. A "valid level" fixture
-            // has to satisfy both halves of the standard, not just the one that walks properties.
+            // Prefab references resolve and id counters sit past the highest id (graph invariants).
             var innerPrefab = new Prefab()
             {
                 PrefabId = PrefabId.NewGuid(),
@@ -297,12 +281,7 @@ namespace BH.SDK.Tests
             prefab.Objects.Add(innerPrefabObject.ObjectId, innerPrefabObject);
             level.Resources.Prefabs.Add(prefab.PrefabId, prefab);
 
-            // EVERY REMAP TABLE HERE DESCRIBES A REAL COPY, which it did not have to before and now
-            // does: a placement's children are rebuilt from this table on every read
-            // (PrefabVirtualizationUtils), so a table naming an object that is not a copy of that
-            // template object is not a quirk of a fixture any more - it is a level that changes
-            // shape when it is written and read back. One entry per object of the template it
-            // places, including the one the template's own nested placement contributes.
+            // Every remap table describes a real copy: a placement's children are rebuilt from it on read.
             var prefabObject = new PrefabObject { ObjectId = new ObjectId(4), PrefabId = prefab.PrefabId };
             prefabObject.ObjectIds.Add(new ObjectId(1), new ObjectId(5));
             prefabObject.ObjectIds.Add(new ObjectId(2), new ObjectId(6));
@@ -347,10 +326,7 @@ namespace BH.SDK.Tests
                         "https://upload.wikimedia.org/wikipedia/commons/7/7a/%22six-seven%22.ogg"),
                 }));
 
-            // Both IString shapes and both id ranges, so the whole-Level round trip covers the
-            // FontCharacters converter without a test of its own: a game-defined font (positive id,
-            // which no other dictionary here can hold) and a user-defined one, one plain set and one
-            // per-language.
+            // Both IString shapes and both id ranges, so the whole-Level round trip covers FontCharacters.
             level.Hints.FontCharacters.Add(new FontResourceId(1),
                 new CachedFontText(new FontResourceId(1), new StringValue(" ABCabc")));
             level.Hints.FontCharacters.Add(new FontResourceId(-1),
@@ -460,20 +436,14 @@ namespace BH.SDK.Tests
             };
             level.Game.Objects.Add(new ObjectId(3), effectObject);
 
-            // The template's own id is valid here even though this is the "invalid" fixture: an
-            // unset PrefabId would be fixed to a fresh Guid, which then no longer matches the key it
-            // is filed under - one repair creating a different violation, in a fixture whose whole
-            // point is that a single pass of RuleFixer clears everything.
+            // Real id: an unset PrefabId is fixed to a fresh Guid that disagrees with its key.
             var prefab = new Prefab { PrefabId = PrefabId.NewGuid() };
             prefab.Objects.Add(new ObjectId(4), new ShapeObject() { ObjectId = new ObjectId(4), });
             prefab.Objects.Add(new ObjectId(5), new TextObject() { ObjectId = new ObjectId(5), });
             prefab.Objects.Add(new ObjectId(6), new EffectObject() { ObjectId = new ObjectId(6), });
             level.Resources.Prefabs.Add(prefab.PrefabId, prefab);
 
-            // Given a real id for the same reason the template above is: an unset one is fixed to
-            // ObjectId 1, which then collides with the texture object already filed under that key,
-            // and re-keying collapses the two into one. That is correct behaviour, but it is not the
-            // violation this fixture is here to exercise.
+            // Real id, or the fix lands on ObjectId 1, collides with the texture, re-keying collapses both.
             var prefabObject = new PrefabObject { ObjectId = new ObjectId(4) };
             level.Game.Objects.Add(prefabObject.ObjectId, prefabObject);
 
@@ -653,10 +623,7 @@ namespace BH.SDK.Tests
             return new CompositeShape(shapeId, shapeName, vertices, indices);
         }
 
-        // Sized off a real imported level (~4.7k objects, ~30k keyframes, 33 prefab templates) so
-        // the performance fixtures measure something the format actually meets. Deliberately
-        // rule-valid and deliberately monotonous: what is being measured is cost per node, so every
-        // object being the same shape is a feature, not a shortcut.
+        // Sized off a real imported level (~4.7k objects) so performance fixtures meet real shape.
 
         /// <summary> A level of realistic heavy-level magnitude, for the performance fixtures. </summary>
         public static Level CreateLargeTestLevel(int objectCount, int prefabCount, int prefabObjectCount)
@@ -881,32 +848,17 @@ namespace BH.SDK.Tests
 
         #region Generation 0
 
-        // THE FUTURE IS FABRICATED FROM FILES, NEVER FROM TYPES, and the number is DERIVED rather
-        // than written down. A literal 2 would quietly turn every forward fixture into a backward one
-        // the day a domain takes generation 2 - the tests would still pass, and they would have
-        // stopped testing the thing they were written for. ModelGenerationsTests pins that nothing
-        // is registered here.
+        // Derived, not written down: a literal would turn forward fixtures backward when a domain reaches it.
 
         /// <summary> A generation no build has ever written, for the forward-compatibility fixtures. </summary>
         public const int FabricatedGeneration = ModelGenerations.Current + 1000;
 
-        // THE TAG CANNOT BE DERIVED THE SAME WAY, because a tag is not free to be any number: the
-        // blob writes it as ONE BYTE with 0xFF reserved for null, and the generator refuses anything
-        // above 0xFE. So the fabricated tag is the highest a family may legally reach, which is the
-        // furthest a real one can be from it - and a number that big arriving as an int would be
-        // TRUNCATED to a byte by the reflective path and not by the generated one, which is the
-        // divergence the parity fixtures exist to catch rather than to create.
+        // The highest tag a family may reach (one byte, 0xFF is null, generator refuses above 0xFE).
 
         /// <summary> A polymorphic tag no family claims, for the forward-compatibility fixtures. </summary>
         public const int FabricatedTag = byte.MaxValue - 1;
 
-        // Mock data for the Versions/V0 migration-test generation (see Docs/VERSIONING.md, "a real
-        // (test) generation exists", and TestLevelV0Migration in SerializationTests.cs). Built from
-        // the actual LevelSettingsV0/GameEventsV0/GameLevelV0/LevelResourcesV0 snapshot
-        // classes and serialized through the real SerializationService rather than a hand-typed JSON
-        // literal, so the fixture stays honest against those classes' own [JsonProperty] names (e.g.
-        // "test_fps") instead of silently drifting out of sync with a copy-pasted string if they ever
-        // change.
+        // Built from the real V0 snapshot classes, not a typed literal, so names cannot drift.
         public static LevelSettingsV0 CreateTestLevelSettingsV0() => new() { Framerate = 61 };
 
         public static GameEventsV0 CreateTestGameEventsV0() => new();
@@ -938,16 +890,8 @@ namespace BH.SDK.Tests
             Resources = new LevelResources(),
         };
 
-        // GameEvents/LevelSettings/LevelResources are independently-versioned domains (see
-        // Docs/VERSIONING.md) - VersionedEnvelopeConverter always writes a nested envelope using the
-        // runtime instance's OWN [ModelGeneration] attribute, so serializing LevelV0/GameLevelV0 as a
-        // whole tags every nested envelope with the domain's CURRENT generation (1), never 0 - there
-        // is no way to make a LevelV0/GameLevelV0 field actually hold a LevelSettingsV0/
-        // GameEventsV0 instance, since their declared property types are the CURRENT classes by
-        // design (see the "gotcha" in Docs/VERSIONING.md). So each independently-versioned fragment is
-        // serialized standalone from its own VX snapshot type instead (which DOES carry the old
-        // [ModelGeneration]) and spliced into the current-shape envelope produced from the outer object -
-        // a genuine generation 0 tag can only ever come from a real VX instance's own attribute.
+        // Each independently versioned fragment is serialized standalone from its V<n> snapshot and
+        // spliced in (VersionedEnvelopeConverter tags a whole object with the CURRENT generation).
         public static string CreateTestLevelV0Json(SerializationService serializationService)
         {
             var settingsFragment = JObject.Parse(serializationService.SerializeData(CreateTestLevelSettingsV0()));

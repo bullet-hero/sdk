@@ -6,19 +6,9 @@ using BH.SDK.Rules;
 
 namespace BH.SDK.Utils
 {
-    // The whole grammar of a keybinding, and the only place it exists. A binding is stored as a
-    // STRING rather than as a packed struct because it is the one form every consumer of the file
-    // already reads: a person hand-editing settings.json, a diff, a bug report screenshot.
-    //
-    // What this file deliberately does NOT know is which keys a keyboard has. A full key enum here
-    // would be exactly what KeyBindingMask's own header argues against - a second source of truth
-    // against the engine's - and it would need maintaining against every key Unity adds. So the SDK
-    // validates SHAPE (lowercase, canonical modifier order, alternate count, length) and the engine
-    // side resolves the key name against UnityEngine.InputSystem.Key. A name nothing recognizes is
-    // shape-valid here and resolves to the catalog default there, with one warning.
-    //
-    // That split is also why "mouse.middle" and "gamepad.south" parse: reserving the token shape now
-    // means adding pointer or pad bindings later is a consumer change, not a format change.
+    // The whole grammar of a keybinding, stored as a STRING. It validates SHAPE only (lowercase, canonical
+    // modifier order); the engine side resolves key names, so unknown ones are shape-valid here.
+    // Docs/UTILS_DESIGN.md.
 
     /// <summary>
     /// Parses and canonicalizes a keybinding string: <c>alternate ("|" alternate)*</c>, where an
@@ -41,10 +31,8 @@ namespace BH.SDK.Utils
         /// <summary> The value meaning "this shortcut answers to nothing". </summary>
         public const string Unbound = "";
 
-        // Canonical order is fixed rather than "as authored" so that equality is string equality:
-        // "Shift+Ctrl+P" and "ctrl+shift+p" are the same binding, and the map must not be able to
-        // hold both. Everything downstream - conflict detection, the settings row's own display -
-        // then compares strings instead of parsing twice.
+        // Canonical order is fixed so equality is string equality: "Shift+Ctrl+P" and "ctrl+shift+p" are one
+        // binding.
 
         /// <summary>
         /// Rewrites <paramref name="value"/> into its one canonical form. Returns false when the

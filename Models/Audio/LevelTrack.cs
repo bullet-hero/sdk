@@ -10,18 +10,15 @@ using Newtonsoft.Json;
 namespace BH.SDK.Models.Audio
 {
     /// <summary>
-    /// One scheduled playback of an audio resource inside a level - the audio counterpart of a
-    /// RectObject: the clip lives in Level.Resources.Audios, this only says when/where/how it plays.
-    /// Stored in AudioLevel.Tracks; several tracks may overlap, separated by AudioLayer.
+    /// One scheduled playback of an audio resource: the clip lives in Level.Resources.Audios, this
+    /// says when/where/how it plays. Tracks may overlap, separated by AudioLayer.
     /// </summary>
     [RuleContainer]
     [GenerateModel]
     public sealed partial class LevelTrack : IFrameBounds, INameable, IModel<LevelTrack>
     {
-        // Same logic as RectObject.ObjectId, but only for audio and much simpler
-        // 0 - undefined
-        // 1, 2, 3... - user-defined audio
-        // negative space IS BANNED for consistency
+        // Like RectObject.ObjectId but audio only: 0 is undefined, positive is user-defined,
+        // negative is banned.
 
         /// <summary> Identity of this track inside the level, handed out by LevelSettings.GetNextAudioId
         /// and used as the key of AudioLevel.Tracks. </summary>
@@ -57,21 +54,15 @@ namespace BH.SDK.Models.Audio
         // the integral of that curve, which nothing downstream (BuildAudioJob, the waveform drawer,
         // AudioSource.pitch) can evaluate from a single frame's worth of data.
 
-        /// <summary> How many seconds of the clip are consumed per second of level time, i.e. a
-        /// resample - faster is also higher-pitched (nightcore), slower is also lower (slowed).
-        /// Negative reverses the track: it starts at the clip's END and plays back to its start,
-        /// with OffsetTime skipping the tail instead of the head. 0 freezes it (silent).
-        /// Multiplies with the level's own play speed. </summary>
+        /// <summary> Clip seconds consumed per level second (a resample: faster is higher-pitched).
+        /// Negative reverses the track (starts at the clip's END, OffsetTime skips the tail); 0 freezes
+        /// it silent. Multiplies with the level's own play speed. </summary>
         [RuleInRange(AudioRules.MinSpeed, AudioRules.MaxSpeed)]
         [JsonProperty(Names.Speed)]
         public float Speed { get; set; }
 
-        // The track's own level, and the SECOND thing called Volume on it - the first being
-        // Effects.Volumes, the keyframed one. They multiply rather than compete: this is the fader
-        // the whole track sits behind (set once, never animated), the keyframes are what fades it in
-        // and out over the level, and an author who only wants "this track a bit quieter" should not
-        // have to author a flat curve to say so. A general fader is also the one thing a keyframed
-        // track cannot express without rewriting every key it has.
+        // The SECOND Volume on a track (the first is the keyframed Effects.Volumes): they multiply.
+        // This one is a fader set once, never animated.
 
         /// <summary> Constant level multiplied into everything this track plays, keyframed volume
         /// included. </summary>

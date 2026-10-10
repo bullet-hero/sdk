@@ -8,18 +8,8 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models.Statistics
 {
-    // WHICH DEVICE ACTUALLY STEERS, measured rather than assumed. This game treats four control
-    // devices as equals and switches between them on the first press with no menu, so the honest
-    // answer to "how do people play this" is not a setting anyone chose - it is the time each device
-    // spent leading. That makes this the one group here whose value is to the project rather than to
-    // the player.
-    //
-    // FOUR FIELDS RATHER THAN A DICTIONARY. The enum is closed at four, a value-type key would need
-    // a converter for nothing, and a field per device means a build that stops supporting one leaves
-    // its number readable in the file rather than dropping it.
-    //
-    // Only the LEADING device is charged. Every active driver is sampled every frame and exactly one
-    // steers, so charging all of them would count one second of play four times.
+    // Which device actually STEERS, measured. Four fields, not a dictionary; only the LEADING device is
+    // charged (one second of play must not count four times). Docs/STATISTICS.md
 
     /// <summary> Real seconds each control device spent steering the avatar. </summary>
     [RuleContainer]

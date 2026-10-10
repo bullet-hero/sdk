@@ -14,11 +14,9 @@ namespace BH.SDK.Validations
         {
             // Cat.Meow("Fix");
 
-            // inverse fixing is same variant because some fixes invalidate data for next deeper issues
-            // Especially if you using RuleAnalyzerSettings.analyzeAllRecursiveRules
-            // Each issue applies its own repair: it carries both the context it was found in - a fix
-            // inside a prefab template must clamp against that template's timeline, which is what
-            // the check used - and the knowledge of whether it addresses a property or a whole object.
+            // Reverse order: a fix can invalidate deeper issues (especially with analyzeAllRecursiveRules).
+            // Each issue carries its own context (a fix in a template clamps against that template's
+            // timeline) and whether it addresses a property or a whole object.
             for (var i = issues.Count - 1; i >= 0; i--)
             {
                 issues[i].ApplyFix();

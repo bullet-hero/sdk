@@ -6,10 +6,8 @@ using BH.SDK.Rules;
 
 namespace BH.SDK.Generators.Bullets
 {
-    // Two objects, not one, and that is the whole design decision here. A laser is a telegraph
-    // followed by a hit, and ColliderId is a static field - it cannot be animated from "harmless"
-    // to "lethal" partway through an object's life. So the warning beam is its own collider-less
-    // object that dies exactly when the firing beam is born.
+    // Two objects: ColliderId is a static field and cannot go harmless to lethal mid-life, so the
+    // collider-less warning beam dies exactly when the firing beam is born.
 
     /// <summary>
     /// A sweeping laser: a thin harmless warning beam, then a full-width beam that carries the

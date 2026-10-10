@@ -16,3 +16,6 @@ layer-wide conventions. This file is folder-local.
   `dashTime` 0.15 against a field initializer of 0.2, `knockoutSpeed` 50 against 2). `AvatarRulesTests`
   spells every value out a second time, so changing one fails there rather than in a level. Plus
   `Rules/Attributes/` (declarative `[RuleXxx]` property attributes consumed by `Validations/`).
+
+Why each limit and each `[RuleXxx]` is shaped as it is (the reasoning code comments no longer carry):
+`Docs/RULES.md`.

@@ -15,9 +15,8 @@ using ResourceMeta = BH.SDK.Models.Meta.ResourceMeta;
 namespace BH.SDK.Tests
 {
     /// <summary>
-    /// The ILicense family, and NoSpecifiedLicense in particular. It stopped being fieldless when it
-    /// gained NoLicenseSourceType, which changes its equality from "always true" to "same origin" -
-    /// the kind of change that breaks dictionaries and dirty checks silently if it is not pinned.
+    /// The ILicense family; NoSpecifiedLicense gained NoLicenseSourceType, so its equality is "same
+    /// origin", not "always true" - a change that breaks dictionaries and dirty checks silently.
     /// </summary>
     public class LicenseTests
     {

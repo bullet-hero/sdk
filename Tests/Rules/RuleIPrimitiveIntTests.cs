@@ -4,10 +4,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests.Rules
 {
-    // The three IPrimitiveInt rules share one file: they operate on the same struct family through
-    // the same one-line comparison, and each one's Fix rebuilds the whole struct through
-    // Activator.CreateInstance(type, value) - which is the part actually worth proving, since it is
-    // what forces every id wrapper to keep a public single-arg constructor.
+    // The three rules share a file; what needs proving is that Fix rebuilds the struct through
+    // Activator.CreateInstance(type, value), forcing a public single-arg constructor on every id wrapper.
 
     /// <summary>
     /// RuleIPrimitiveIntNotNull / RuleIPrimitiveIntMin / RuleIPrimitiveIntMax over the int-backed id

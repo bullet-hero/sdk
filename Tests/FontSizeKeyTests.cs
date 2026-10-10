@@ -17,14 +17,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests
 {
-    // THE FONT-SIZE TRACK IS THE ONLY PER-OBJECT TRACK WHOSE KEY CLASS IS POLYMORPHIC, so it is the
-    // only one where a round trip can lose the KIND while preserving every number and still look
-    // like it worked. Level.Equals does catch that - the two classes are not equal to each other -
-    // but only if the fixture actually carries both, which is why MockData does.
-    //
-    // The wire shape is asserted separately from the round trip on purpose: a codec that writes an
-    // untagged key and reads it back as the plain kind round-trips perfectly and has silently made
-    // auto sizing unrepresentable.
+    // The only polymorphic per-object key class: a round trip can lose the KIND and keep every number, so
+    // the wire shape is asserted separately and MockData carries both kinds.
 
 
     /// <summary> The one per-object track whose key class is polymorphic - so the only one where a round trip

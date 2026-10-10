@@ -127,10 +127,7 @@ namespace BH.SDK.Tests
             Assert.AreEqual("a" + Thumb, SurrogateUtils.Truncate("a" + Thumb + "b", 3));
         }
 
-        // The ceiling this guards is ValueRules.MaxGameString / TextRules.MaxAppearingMask, and both
-        // are constants somebody will raise or lower one day. Enumerating every cut is what keeps the
-        // guarantee independent of the number: whatever the ceiling becomes, no cut can produce a
-        // lone half.
+        // Enumerating every cut keeps the guarantee independent of the ceiling (MaxGameString etc.).
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]

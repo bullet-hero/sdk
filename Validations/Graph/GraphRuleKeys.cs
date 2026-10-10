@@ -2,15 +2,8 @@ using System;
 
 namespace BH.SDK.Validations.Graph
 {
-    // The graph half of what BaseRuleAttribute.RuleNameKey does for declarative rules: a stable,
-    // translatable identifier per finding, so a consumer can list rule and graph issues side by side
-    // without switching on which kind it is holding. It lives as an extension on the enum rather than
-    // as a field on GraphIssue because the mapping is per-rule, not per-occurrence.
-    //
-    // Deliberately throws on an unmapped value instead of falling back to ToString(): a new GraphRule
-    // that nobody named would otherwise reach a player's screen as a raw CLR identifier, and the
-    // throw surfaces it in the very first test run that exercises it. Same policy as
-    // ObjectConverter.GetType's unknown-ObjectType case.
+    // The graph twin of BaseRuleAttribute.RuleNameKey: a stable translatable key per finding. Throws on an
+    // unmapped value rather than ToString(), so an unnamed rule is caught by the first test that hits it.
 
     /// <summary> Localization-key names for every <see cref="GraphRule"/>. </summary>
     public static class GraphRuleKeys

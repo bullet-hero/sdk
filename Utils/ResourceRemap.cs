@@ -5,12 +5,8 @@ using BH.SDK.Models.Resources;
 
 namespace BH.SDK.Utils
 {
-    // RENUMBERING ON THE WAY IN. A texture, font or audio clip is addressed by a level-local int, so
-    // two sources will both have a `-1` and an import has to give the incoming one a fresh number. A
-    // guid resource travels as-is - except when the author answers a conflict with "import as a copy",
-    // which mints a fresh guid for the same reason. Either way every reference to the moved resource
-    // has to follow it, and ResourceGraph is the list of where those references are; this only
-    // decides what they become.
+    // Renumbering on the way in: level-local ints collide, guids only on "import as a copy"; ResourceGraph
+    // lists where the references are, this decides what they become.
 
     /// <summary> A set of id moves, applied to resources and to everything that points at them. </summary>
     public sealed class ResourceRemap

@@ -7,19 +7,8 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models.Statistics
 {
-    // THE PLAYER, ACROSS EVERYTHING: stats/statistics.json, read once at launch and written back on
-    // a slow cadence. The per-level files answer "this level"; this answers "this person", and it
-    // exists as its own document rather than as a sum computed on demand because deriving it would
-    // mean opening every file in stats/ to draw one screen.
-    //
-    // EIGHT GROUPS, none of them carrying its own [ModelGeneration] - one envelope per FILE, exactly as
-    // UserSettings does with its own sub-groups. A group is a heading on a screen and a place to add
-    // a field without touching the root, not an independently versioned document.
-    //
-    // Every group builds its own defaults in its constructor, so a file written before a group
-    // existed reads back as zeroes for it - but since 1.0.0 a new group is still a bump with a
-    // snapshot and a migrator (root CLAUDE.md, Rule 11). Generation 2 added Tutorial
-    // (Versions/V1/GameStatisticsV1).
+    // The player across everything (stats/statistics.json), its own document so one screen does not open
+    // every file in stats/. One envelope per FILE, groups carry no generation. Docs/STATISTICS.md
 
     /// <summary> Everything one player has done, across every level and every screen. </summary>
     [RuleContainer]
@@ -84,9 +73,6 @@ namespace BH.SDK.Models.Statistics
             Tutorial = new TutorialStatistics();
         }
 
-        // Every group instance is kept, unlike Update above. This is the object the whole app holds
-        // a reference to and hands out one group at a time, so replacing a group here would leave
-        // every holder pointing at a copy nothing writes to any more - the same contract the
-        // UserSettings groups have, and the reason IMoveable exists at all.
+        // Every group instance is kept, unlike Update: the app holds a reference to each (IMoveable).
     }
 }

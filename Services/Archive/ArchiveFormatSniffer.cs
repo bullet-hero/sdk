@@ -2,15 +2,9 @@ using BH.SDK.Services.Crypto;
 
 namespace BH.SDK.Services.Archive
 {
-    // THE ORDER OF THE CHECKS IS THE WHOLE FILE. Three of the four formats begin with a magic
-    // number - a constant somebody would have to write deliberately - while OpenPGP has none: its
-    // first byte is a PACKET TAG, and the test for one is "the high bit is set and the tag is one
-    // of six". That is loose enough to accept a byte from an unrelated binary, so it is asked LAST,
-    // after every exact answer has already failed.
-    //
-    // MagicBytes is how much a caller has to peek. Six, for the 7z signature - the longest of the
-    // three - and a shorter buffer is not an error: a two-byte read can still answer TarGz, and a
-    // file too short to be any of them is Unknown, which is the truth about it.
+    // The order of the checks is the whole file: OpenPGP has no magic number, only a loose packet-tag
+    // test, so it is asked LAST. A buffer shorter than MagicBytes is not an error; too short for any
+    // format is Unknown.
 
     /// <summary> Deciding which container a stream holds by looking at its first bytes. </summary>
     public static class ArchiveFormatSniffer
@@ -35,12 +29,8 @@ namespace BH.SDK.Services.Archive
                 : ArchiveFormat.Unknown;
         }
 
-        // FOUR ZIP SIGNATURES, NOT ONE. "PK\x03\x04" begins the ordinary case, an archive that
-        // holds something. The other three are real files a person can hand over: "PK\x05\x06" is
-        // an empty zip - nothing but an end-of-central-directory record - and "PK\x07\x08" and
-        // "PK00" begin the spanned forms. Recognising all four is what lets the LEVEL layer answer
-        // "this zip holds no level" instead of "this is not an archive", which are different facts
-        // and deserve different words.
+        // Four zip signatures, not one (ordinary, empty, two spanned forms), so the level layer can say
+        // "this zip holds no level" instead of "not an archive".
         private static bool IsZip(byte[] leading)
         {
             if (leading.Length < 4 || leading[0] != 0x50 || leading[1] != 0x4b) return false;

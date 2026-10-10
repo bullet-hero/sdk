@@ -4,17 +4,9 @@ using BH.SDK.Models.Resources;
 
 namespace BH.SDK.Generators.External
 {
-    // GeneratorRequirements.ExternalAnalysis says "some of my parameters come from the host". These
-    // interfaces say WHICH ones, in a way a host can act on: it checks whether a parameters object
-    // implements one, and if so offers the matching control (a file picker, a "detect beats" button)
-    // and writes the result back before Run.
-    //
-    // The alternative - a host matching parameter fields by name - would make renaming a field a
-    // silent breakage across an assembly boundary. An interface makes it a compile error.
-    //
-    // The SDK deliberately implements none of the analysis itself: it has no audio decoder, no FFT
-    // and no image loader, and adding any of those would drag a platform dependency into a library
-    // whose whole point is not having one.
+    // ExternalAnalysis says "some parameters come from the host"; these interfaces say WHICH, so a host
+    // can offer the matching control and write the result back before Run. By interface, not field name:
+    // a rename is a compile error. The SDK implements none of the analysis (no decoder, FFT, loader).
 
     /// <summary> A generator that needs an audio file chosen and measured by the host. </summary>
     public interface IAudioFileInput
@@ -49,12 +41,9 @@ namespace BH.SDK.Generators.External
         int[] BeatFrames { get; set; }
     }
 
-    // The odd one out, and deliberately not part of ExternalAnalysis: a generator can read the
-    // framerate off GeneratorContext.Settings whenever it runs, so nothing about the RUN needs this.
-    // It exists so a FORM can show the number next to the target the author is typing, which is the
-    // only place a "what am I changing it from" reading belongs. A generator implementing it must
-    // still take its own math from the context, never from this field - a host that never filled it
-    // in has to produce a correct run, not a run against a zero.
+    // Not part of ExternalAnalysis: it exists so a FORM can show the framerate beside the target. A
+    // generator takes its math from GeneratorContext.Settings, never from this field, which a host may
+    // leave unfilled.
 
     /// <summary> A generator whose form wants the current framerate on display beside its own. </summary>
     public interface ICurrentFramerateInput

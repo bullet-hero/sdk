@@ -5,12 +5,8 @@ using BH.SDK.Models.Interfaces.Primitives;
 
 namespace BH.SDK.Models.Primitives.Resources
 {
-    // The 78 named preset ids that used to live here (Square, Circle, Circle_T32, ...) are GONE, and
-    // with them the whole game-defined tier of this family in practice: those were the built-in
-    // shapes painted into one atlas, and a shape is real geometry now (ShapeId), so keeping a second
-    // way to say "a circle" meant two sources of truth for the same 80 forms. The RANGE stays -
-    // IsGameDefined and MinGameDefinedValue are still the format's contract, and nothing stops a
-    // future build from shipping images again - it is only that the game currently ships none.
+    // The game-defined RANGE stays the format's contract (IsGameDefined, MinGameDefinedValue) although the
+    // game ships no images: built-in shapes are real geometry (ShapeId), not a second source of "a circle".
 
     /// <summary>
     /// Points at an image - a TextureResource of Level.Resources.Textures or a game-shipped one.

@@ -5,20 +5,12 @@ using BH.SDK.Models.Primitives.Resources;
 
 namespace BH.SDK.Rules.Attributes
 {
-    // TWO ID SLOTS, AND THE TYPE SAYS WHICH ONE IS USED. A record describes either a file resource
-    // (texture, font, audio, bytes, text), addressed by a level-local negative int, or a data resource
-    // (theme, effect, shape, prefab), addressed by a guid. Before generation 2 only the first kind
-    // existed and the int slot carried a plain property rule capping it to the user range; that rule
-    // would now reject every guid record, whose int slot is Null by design. So the invariant moved up
-    // to the object, where both slots and the type are visible at once.
-    //
-    // A THIRD CASE USES NEITHER: the level's cover (ResourceType.LevelLogo) is no resource and has no
-    // id of either kind, and a level has exactly one, so its type is the whole address.
+    // Lives on the object because both id slots and the type are visible there. The level cover
+    // (ResourceType.LevelLogo) is no resource and has neither id: its type is the whole address.
 
     /// <summary>
     /// A resource record fills exactly the id slot its <see cref="ResourceMeta.ResourceType"/> uses:
-    /// a user-range int for a file resource, a non-empty guid for a data resource, and neither for
-    /// the level's cover.
+    /// a user-range int for a file resource, a guid for a data resource, neither for the level cover.
     /// </summary>
     [AttributeUsage(ClassTarget)]
     public class RuleResourceMetaIdAttribute : BaseObjectRuleAttribute

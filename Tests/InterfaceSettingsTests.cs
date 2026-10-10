@@ -6,14 +6,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests
 {
-    // OpenMenuOnLose defaults to FALSE, and that default is the behaviour rather than a preference
-    // about it: off, a lost run rewinds itself to the last checkpoint it reached, which is what a
-    // player retrying a hard section wants and what the result window used to stand between them
-    // and. On is for reading the outcome, changing a setting or leaving.
-    //
-    // It was added after UserSettings was already at 2.0 and deliberately does not bump it - a file
-    // written before it simply has no key, and Newtonsoft leaves the constructor's false in place.
-    // That claim is what the deserialization case below pins.
+    // OpenMenuOnLose defaults FALSE (a lost run rewinds to the last checkpoint); no bump, an old file has
+    // no key and the constructor's false stays.
 
 
     /// <summary> The interface group, and chiefly that OpenMenuOnLose's false default survives a settings file
@@ -121,19 +115,8 @@ namespace BH.SDK.Tests
             Assert.IsFalse(settings.Interface.OpenMenuOnLose);
         }
 
-        // The three HUD switches. Two things about them are worth a test each and neither is
-        // caught by anything already here.
-        //
-        // TRUE IS THE DEFAULT AND FALSE IS THE ZERO VALUE, so an older settings.json - which
-        // carries none of the three keys - has to read back with the HUD SHOWN. That is the same
-        // mechanism MenuBackgroundKind.Bot relies on one block down, and it is what makes all
-        // three additive with no generation bump.
-        //
-        // AND THEY RIDE AN OBJECT INITIALIZER IN Copy() rather than the constructor, because a
-        // seventh parameter would break every caller. An initializer is the one shape a
-        // copy-paste silently drops, and CopyAndPull_CarryEveryField above cannot catch it: it
-        // builds its source through the constructor, which defaults all three to true, so a Copy
-        // that lost them would still compare equal.
+        // The three HUD switches default TRUE with zero FALSE, so an older file reads with the HUD SHOWN.
+        // They ride an object initializer in Copy(), which CopyAndPull_CarryEveryField cannot catch.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
@@ -227,11 +210,8 @@ namespace BH.SDK.Tests
             Assert.AreEqual(MenuBackgroundKind.Bot, new InterfaceSettings().MenuBackground);
         }
 
-        // MenuBackgroundKind's zero value is None while its default is Bot, which looks like it should
-        // cost an older file its background - and does not. An absent key is never written at all, so
-        // the constructor's Bot survives; nothing here ever sees a zero. This is the same mechanism
-        // OpenMenuOnLose relies on, and it is what makes ordering the members the way the three modes
-        // are OFFERED free rather than a trade.
+        // MenuBackgroundKind's zero is None but its default is Bot; an absent key is never written, so
+        // the constructor's Bot survives.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
@@ -246,12 +226,7 @@ namespace BH.SDK.Tests
             Assert.IsTrue(settings.StatsActive);
         }
 
-        // THE THREE OVERLAY BLOCKS. Their default is the zero value, which is what makes them
-        // additive with neither a generation bump nor a migrator. For two of them it is also the
-        // behaviour the overlay already had; the memory block is the exception and is asserted as
-        // one below, because it used to be drawn unconditionally. What is worth a test of its own
-        // is that they are three SEPARATE answers: one flag standing in for another is exactly the
-        // shape a copy-paste produces.
+        // The three overlay blocks default to zero (additive); they are three SEPARATE answers.
 
         [Test]
         [Author(Metadata.Author.Vertoker)]
@@ -341,19 +316,12 @@ namespace BH.SDK.Tests
             Assert.IsFalse(settings.StatsFrameObjects);
             Assert.IsFalse(settings.StatsLevelObjects);
 
-            // THE ONE BLOCK THAT USED TO BE DRAWN WHATEVER THE FILE SAID. Rule 11 is what makes
-            // that affordable - there is no settings.json on a player's disk yet - and asserting
-            // it here is what keeps the loss deliberate rather than something noticed later on a
-            // screen that stopped showing a number.
+            // The one block that used to be drawn whatever the file said; the loss is deliberate.
             Assert.IsFalse(settings.StatsMemory);
         }
 
-        // THE DEFAULT REVERSED, and this pair is what pins it. It was Horizontal, because Unlock
-        // meant free rotation on screens with no portrait layout; screens lay themselves out from
-        // `.portrait` now, so a phone the player turns over is expected to follow. What did NOT
-        // move is which side wins while a level runs - LevelOrientation still defaults to
-        // Horizontal and still outranks this - so freeing it frees the menu, the browser and the
-        // settings screens alone.
+        // The default is Unlock: screens lay out from `.portrait`. LevelOrientation still outranks it
+        // while a level runs, so freeing it frees the menu, the browser and settings alone.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
@@ -364,10 +332,7 @@ namespace BH.SDK.Tests
                 new InterfaceSettings().ScreenOrientation);
         }
 
-        // Unlock is also the zero value now, so this can no longer prove the absent-key mechanism on
-        // its own - a missing key and a constructor default are the same answer here. It is kept
-        // because the OTHER field in the same document still proves it: StatsActive is present and
-        // true, so the object really was deserialized rather than left at its defaults wholesale.
+        // Unlock is the zero value now, so this proves the mechanism only via the present StatsActive key.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]

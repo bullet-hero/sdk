@@ -163,15 +163,7 @@ namespace BH.SDK.UnityExtensions.Tests
             Assert.AreEqual(math.radians(90), tr2.rotation);
             Assert.AreEqual(30, tr2.layer);
 
-            // tr3 by tr2: parent has rotation=90°, fullSize=(3,3), half=(1.5,1.5)
-            // pivotParent=0.5 -> parentCenterPoint = tr2.position - 0 = (0,2)
-            // anchorNorm = (0,0) (since anchorMin=anchorMax=0)
-            // anchorLocal = lerp(-1.5,1.5, 0) = (-1.5, -1.5) -> rotate 90°: (1.5, -1.5)
-            // selfOffset = (0*parent.scale(1,1)=(0,1)) -> rotate 90°: (-1,0)
-            // child.position = (-1,0)+(1.5,-1.5)+(0,2) = (0.5, 0.5)
-            // rotation child = -90 + 90 = 0
-            // scale child = (2,2)
-            // size child = 1 + 3*(0) = 1
+            // Parent rotated 90 deg, full size (3,3): expected position (0.5, 0.5), rotation 0, scale (2,2).
             Assert.IsTrue(Approx.Equal(new float2(0.5f, 0.5f), tr3.position));
             Assert.AreEqual(new float2(1, 1), tr3.size);
             Assert.AreEqual(new float2(2, 2), tr3.scale);
@@ -204,28 +196,14 @@ namespace BH.SDK.UnityExtensions.Tests
             Assert.AreEqual(math.radians(90), child1.rotation);
             Assert.AreEqual(30, child1.layer); // 20 + 10
 
-            // child2: parent=child1 (rotation=90°, fullSize=(11,11), half=5.5)
-            // parentCenterPoint = (0,0) (pivot 0.5)
-            // anchorNorm = (0.5,0.5) => anchorLocal = (0,0) -> rotate doesn't change
-            // selfOffset = (0,0) * parent.scale (1,1) = (0,0)
-            // child2.position = (0,0)
-            // size = 1 + 11*(0.5,0.5) = (6.5,6.5)
-            // scale = (2,2)*1 = (2,2)
-            // rotation = 0+90=90
+            // Parent rotated 90 deg, full size (11,11): expected size (6.5,6.5), scale (2,2), rotation 90.
             Assert.AreEqual(new float2(6.5f, 6.5f), child2.size);
             Assert.AreEqual(new float2(0, 0), child2.position);
             Assert.AreEqual(new float2(2, 2), child2.scale);
             Assert.AreEqual(math.radians(90), child2.rotation);
             Assert.AreEqual(60, child2.layer); // 30 + 30
 
-            // child3: parent=child2 (rotation=90°, fullSize=(13,13), half=6.5)
-            // pivotParent=0.5 => parentCenterPoint = (0,0)
-            // anchorNorm = (0,0) => anchorLocal = (-6.5,-6.5) -> rotate 90°: (6.5, -6.5)
-            // selfOffset = (5,5)*parent.scale(2,2) = (10,10) -> rotate 90°: (-10,10)
-            // child3.position = (-10,10)+(6.5,-6.5)+(0,0) = (-3.5, 3.5)
-            // rotation = -90+90=0
-            // scale = (1,1)*(2,2) = (2,2)
-            // size = 2 + 13*(0,0) = 2
+            // Parent rotated 90 deg, full size (13,13), self offset (5,5): expected position (-3.5, 3.5).
             Assert.IsTrue(Approx.Equal(new float2(-3.5f, 3.5f), child3.position));
             Assert.AreEqual(new float2(2, 2), child3.size);
             Assert.AreEqual(new float2(2, 2), child3.scale);
@@ -246,15 +224,8 @@ namespace BH.SDK.UnityExtensions.Tests
 
             child.Apply(root);
 
-            // parent.fullSize = (3,3), half=1.5, sin180=0, cos180=-1
-            // parentCenterPoint = root.position - lerp(-1.5,1.5,0.5) = (5,5) - (0,0) = (5,5)
-            // anchorNorm = lerp(0,0.5, 0.5) = (0.25,0.25)
-            // anchorLocal = lerp(-1.5,1.5, 0.25) = (-0.75, -0.75) -> rotate 180°: (0.75, 0.75) (since (-0.75)*(-1) - (-0.75)*0 = 0.75; x*0+y*(-1)=0.75)
-            // selfOffset = (1,2) * parent.scale (1,1) = (1,2) -> rotate 180°: (-1,-2)
-            // position = (-1,-2)+(0.75,0.75)+(5,5) = (4.75, 3.75)
-            // rotation = 0+180=180
-            // scale = (-1,1)*(1,1)=(-1,1)
-            // size = 2 + 3*(0.5,0.5) = (3.5,3.5)
+            // Parent rotated 180 deg, mirrored child (scale (-1,1)): expected position (4.75, 3.75), size
+            // (3.5,3.5).
             Assert.AreEqual(new float2(4.75f, 3.75f), child.position);
             Assert.AreEqual(new float2(3.5f, 3.5f), child.size);
             Assert.AreEqual(new float2(-1, 1), child.scale);
@@ -285,19 +256,11 @@ namespace BH.SDK.UnityExtensions.Tests
             Assert.AreEqual(new float2(4, 4), l2.size);
             Assert.AreEqual(new float2(0, 0), l2.position);
             Assert.AreEqual(30, l2.layer); // 20 + 10
-            // l3: parent=l2 (fullSize=4, half=2, rotation=90°)
-            // parentCenterPoint = (0,0)
-            // anchorNorm=(0.5,0.5) -> anchorLocal=(0,0)
-            // selfOffset=(0,0) -> position=(0,0)
-            // size = 0 + 4*1 = 4, rotation = -90+90=0
+            // l3: parent l2 (full size 4, rotation 90): size 0 + 4 = 4, rotation back to 0.
             Assert.AreEqual(new float2(4, 4), l3.size);
             Assert.AreEqual(0f, l3.rotation);
             Assert.AreEqual(60, l3.layer); // 30 + 30
-            // l4: parent=l3 (fullSize=4, rotation=0)
-            // anchorNorm = 0, anchorLocal = lerp(-2,2,0)=(-2,-2), with rotation
-            // selfOffset = (0,0)
-            // position = (0,0)+(-2,-2)+(0,0)=(-2,-2)
-            // size = 2 + 4*0 = 2
+            // l4: parent l3 (full size 4, rotation 0): anchored at the corner, position (-2,-2), size 2.
             Assert.AreEqual(new float2(-2, -2), l4.position);
             Assert.AreEqual(new float2(2, 2), l4.size);
             Assert.AreEqual(100, l4.layer); // 40 + 60
@@ -341,10 +304,8 @@ namespace BH.SDK.UnityExtensions.Tests
         {
             var rt = new RectTransform2D(new float2(0, 0), 0, math.radians(90), new float2(2, 2), new float2(1, 1),
                 anchorMin: float2.zero, anchorMax: float2.zero, pivot: new float2(0, 0));
-            // halfFullSize = (2,2)*1*0.5 = (1,1)
-            // pivotPoint local: lerp(-1,1, (0,0)) = (-1,-1)
-            // rotate 90°: (-1,-1).RotateVectorFast(90°) -> (1, -1) (sin=1,cos=0: x' = -1*0 - (-1)*1 = 1; y' = -1*1 + (-1)*0 = -1)
-            // position = (0,0) - (1,-1) = (-1, 1)
+            // Pivot at the corner of a rotated (2,2) rect: the centre is the pivot offset rotated 90 deg,
+            // (-1, 1).
             float2 center = rt.GetCenterPoint();
             Assert.IsTrue(Approx.Equal(new float2(-1, 1), center));
         }
@@ -384,11 +345,8 @@ namespace BH.SDK.UnityExtensions.Tests
         public static void GetAlignmentPoint_BottomLeft_NoRotation()
         {
             var rt = new RectTransform2D(new float2(5, 5), 0, 0, new float2(4, 4), new float2(1, 1));
-            // halfFullSize = (2,2)
-            // pivotPoint = (0,0) -> center = (5,5)
-            // alignment = (0,0) -> lerp(-2,2, 0) = (-2,-2)
-            // rotate (0) -> (-2,-2)
-            // result = position - pivotPoint + alignmentPoint = 5 - 0 + (-2) = 3 on x, identical y=3
+            // Unrotated, pivot (0,0), alignment (0,0): the alignment point is the corner, (3,3) from
+            // position (5,5).
             float2 p = rt.GetAlignmentPoint(float2.zero);
             Assert.AreEqual(new float2(3, 3), p);
         }
@@ -400,11 +358,7 @@ namespace BH.SDK.UnityExtensions.Tests
         public static void GetAlignmentPoint_TopRight_Rotated90()
         {
             var rt = new RectTransform2D(new float2(0, 0), 0, math.radians(90), new float2(2, 2), new float2(1, 1));
-            // halfFullSize = (1,1)
-            // pivotPoint = (0,0) -> center = (0,0)
-            // alignment = (1,1) -> lerp(-1,1,1) = (1,1)
-            // rotate 90° -> (1,1) -> (-1,1) (since x'=1*0 - 1*1 = -1, y'=1*1 + 1*0 = 1)
-            // result = (0,0) - (0,0) + (-1,1) = (-1,1)
+            // Rotated 90 deg, alignment (1,1): the point (1,1) rotates to (-1,1).
             float2 p = rt.GetAlignmentPoint(new float2(1, 1));
             Assert.IsTrue(Approx.Equal(new float2(-1, 1), p));
         }
@@ -418,12 +372,8 @@ namespace BH.SDK.UnityExtensions.Tests
             var rt = new RectTransform2D(new float2(10, 10), 0, 0, new float2(6, 4), new float2(2, 2));
             rt.pivot = new float2(0f, 0.5f);
             
-            // fullSize = (12,8), half = (6,4)
-            // pivotPoint = lerp(-6,6, 0) on x = -6; lerp(-4,4, 0.5) on y = 0 -> (-6,0)
-            // center = (10,10) - (-6,0) = (16,10)
-            // alignment = (0,0.5) -> lerp(-6,6,0) = -6 on x; lerp(-4,4,0.5)=0 -> (-6,0)
-            // rotate 0 -> (-6,0)
-            // result = (16,10) + (-6,0) = (10,10)
+            // Size (12,8), pivot (0,0.5), alignment (0,0.5): the alignment point coincides with the position
+            // (10,10).
             float2 p = rt.GetAlignmentPoint(new float2(0, 0.5f));
             Assert.AreEqual(new float2(10, 10), p);
         }
@@ -504,11 +454,8 @@ namespace BH.SDK.UnityExtensions.Tests
             }
         }
 
-        // The overload effects ride: their graph draws its own particles, so the object's rect must
-        // not multiply into the scale - only where it sits may come from the rect. Both halves are
-        // pinned here because getting either wrong is silent, and in opposite directions: taking the
-        // size collapses a zero-sized effect to a point, and dropping the pivot offset would move
-        // every effect that has a size.
+        // Effects ride this overload: scale only, position as ApplyTo. Taking the size collapses a
+        // zero-sized effect.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]

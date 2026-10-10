@@ -40,20 +40,8 @@ namespace BH.SDK.Services.Collections
         WrongPassphrase = 7,
     }
 
-    // THE SAME TWO CONTAINERS A LEVEL USES, AND NOTHING ELSE. A collection is a folder, so its archive is
-    // that folder packed by TarGzService or ZipService - which a player can open with any archiver, and
-    // which is what Android and iOS move collections with, having no Workshop. The level archive's rules
-    // hold unchanged: the format is sniffed from the bytes, the unpack is bounded by ArchiveLimits into
-    // a store that cannot address outside itself, and every refusal is a value.
-    //
-    // ENCRYPTION IS THE LEVEL ARCHIVE'S TWO SCHEMES, for any content: the whole archive wrapped in an
-    // OpenPGP symmetric message (a .tar.gz.gpg or a .zip.gpg, which gpg opens), or a zip whose entries are
-    // AES-256 (which 7-Zip opens). What comes out of an OpenPGP message is sniffed again, since only the
-    // plaintext says which container it holds. A missing or wrong passphrase is a value the host answers
-    // by asking, never an exception.
-    //
-    // THE MANIFEST IS PACKED FIRST, for the reason the level archive packs its metadata first - a tar
-    // reader can stop early - even though nothing peeks a collection archive yet.
+    // The same two containers and rules as a level archive, any content, the level archive's two
+    // protections. The manifest is packed FIRST (a tar reader can stop early). Docs/ARCHIVE.md.
 
     /// <summary> Packs a collection folder into an archive, and reads one back. </summary>
     public static class CollectionArchive

@@ -14,10 +14,8 @@ using Newtonsoft.Json;
 namespace BH.SDK.Models
 {
     /// <summary>
-    /// The level itself - the root of level.json/.blob. Five independent aggregates, each its own
-    /// versioned domain: four authored, plus Hints, which is measured from them. Note what is NOT
-    /// here: the level's name, authors and licensing live in a separate LevelMeta file, so listing
-    /// levels never means loading them.
+    /// The level itself - the root of level.json/.blob: five versioned aggregates, four authored plus Hints
+    /// (measured from them). Name, authors and licensing are in LevelMeta, so listing never loads levels.
     /// </summary>
     [RuleContainer]
     [ModelGeneration(ModelDomains.Level, ModelGenerations.V1_AlphaRelease)]
@@ -47,10 +45,8 @@ namespace BH.SDK.Models
         [JsonProperty(Names.Resources)]
         public LevelResources Resources { get; set; }
 
-        // The only aggregate here that holds nothing an author wrote, which is why it is separate
-        // from the four above rather than a few fields spread across them: everything inside is
-        // measured from those four and may be dropped without changing what the level is. See
-        // LevelHints' own header for the membership test.
+        // The only aggregate holding nothing an author wrote: measured from the four above and droppable.
+        // Membership test: LevelHints.
 
         /// <summary> Advisory measurements about the four above - preallocation sizes, warm-up sets.
         /// Never authoritative: a hint may be stale, foreign or absent. </summary>
@@ -85,15 +81,8 @@ namespace BH.SDK.Models
             Hints = hints;
         }
 
-        // A REFERENCE-SHARING COPY, AND THE ONLY CALLER IS PrefabVirtualizationUtils.Thin. Thinning
-        // a level for a write has to replace exactly two collections (a scope's Objects, and the
-        // prefab table holding scopes of their own) without touching the level anyone else is
-        // holding - the editor keeps editing straight through a save. Copy() is the wrong tool: it
-        // walks the whole graph, which is 124 ms on the largest level here and would be paid on
-        // every autosave. MemberwiseClone is used rather than a hand-written member list precisely
-        // because a member added later joins it by itself; a hand-written one would silently drop
-        // the new member from every written file. Shared instances are safe here because the writer
-        // only reads - it is NOT a substitute for the snapshot a save already takes.
+        // A reference-sharing copy for PrefabVirtualizationUtils.Thin only: Copy() walks the whole graph,
+        // too slow per autosave. MemberwiseClone so a later member joins by itself; the writer only reads.
 
         /// <summary> A copy sharing every member instance, for replacing one or two of them. </summary>
         internal Level ShallowClone() => (Level)MemberwiseClone();

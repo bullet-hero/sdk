@@ -13,30 +13,16 @@ using BH.SDK.Utils;
 
 namespace BH.SDK.Publishing
 {
-    // The third validation pass, and the only one that asks a question about the outside world.
-    // RuleAnalyzer asks whether a value is in range; LevelGraphAnalyzer asks whether the objects
-    // agree with each other; this asks whether the level may be handed to strangers - which nothing
-    // in the file can answer alone, only the file plus a service's policy.
-    //
-    // Nothing here repairs anything, for the same reason graph findings never do: every fix is a
-    // fact the author has to supply. Naming a license nobody read, or crediting an author nobody
-    // identified, would be the analyzer inventing the very paperwork it exists to demand.
-    //
-    // The level file is optional and that is a designed capability, not a convenience. metadata.json
-    // is its own serialization root so a catalogue can grade thousands of levels without opening one
-    // of them, and the meta-only pass really does cover most of the policy. Exactly two findings need
-    // level.json - a resource with no record at all (ResourceMetaMissing) and where a resource is
-    // fetched from (ResourceUriTypeNotAllowed) - and the report says which pass it was, so a clean
-    // meta-only result is never mistaken for a clean full one.
+    // The third validation pass, the only one that asks about the outside world: the file plus a
+    // service's policy. Repairs nothing; the level file is optional (two findings need it, and the
+    // report says which pass ran). Docs/PUBLISHING.md.
 
     /// <summary> Checks a level against one service's publishing conditions. </summary>
     public class PublishReadinessAnalyzer
     {
         /// <summary>
-        /// Grade a level for one service. Pass the level file whenever it is available - without it
-        /// resource coverage and fetch locations cannot be checked, and the report says so.
-        /// `now` (UTC) decides whether permissions have lapsed; leaving it unset means "no clock",
-        /// under which no permission ever expires.
+        /// Grades a level for one service. Pass the level file when available, or resource coverage
+        /// and fetch locations go unchecked. `now` (UTC) unset means no clock: no permission expires.
         /// </summary>
         public PublishReadinessReport Analyze(LevelMeta meta, PublishProfile profile,
             Level level = null, DateTime now = default, PublishPayload payload = null)
@@ -75,10 +61,8 @@ namespace BH.SDK.Publishing
 
         #region Level meta
 
-        // A SERVICE THAT LISTS LICENSES AND STILL TOLERATES AN UNKNOWN ONE WANTS TO HEAR ABOUT IT. For
-        // such a profile a missing license or a missing credits record is a warning rather than silence:
-        // it passes, and somebody looks. A profile that lists none (the local one) cares about no
-        // license at all and stays silent, and one that does not tolerate an unknown license refuses.
+        // A service that lists licenses yet tolerates an unknown one wants to hear about it: warning.
+        // A profile that lists none stays silent; one that does not tolerate an unknown refuses.
         private static bool AsksAboutUnknowns(PublishProfile profile)
             => profile.AllowUnknownLicense && profile.AllowedLicenses.Count > 0;
 
@@ -159,10 +143,8 @@ namespace BH.SDK.Publishing
             AnalyzeSourceTrust(resourceMeta, name, profile, path, issues);
         }
 
-        // A permission does not make a refused license acceptable - it makes it a question for a
-        // person. Option B is a claim about a private exchange, and the whole reason the grant
-        // carries proof is that somebody is expected to open it, so this path always produces a
-        // review rather than a pass.
+        // A permission makes a refused license a question for a person, never a pass: this path
+        // always produces a review.
 
         private static void AnalyzeResourceLicense(ResourceMeta resourceMeta, string name, PublishProfile profile,
             DateTime now, string path, List<PublishIssue> issues)
@@ -232,13 +214,8 @@ namespace BH.SDK.Publishing
             }
         }
 
-        // THE PROFILE IS NOW THE ONLY REASON TO DEMAND A CREDIT. A custom license used to state its
-        // own RequiresAttribution, and that bool is gone along with the other six - it was the
-        // author's own grading of their own wording, which is exactly the claim this analyzer cannot
-        // verify. Typical licenses are still deliberately not decoded: whether CC BY "requires
-        // attribution" is a fact, but which typical licenses a service accepts at all is already the
-        // profile's decision, and hard-coding a rights table next to it would put the same policy in
-        // two places.
+        // The profile is the only reason to demand a credit; typical licenses are not decoded here,
+        // since a rights table would put the profile's policy in two places.
 
         private static void AnalyzeAttribution(ResourceMeta resourceMeta, string name, PublishProfile profile,
             string path, List<PublishIssue> issues)
@@ -259,10 +236,8 @@ namespace BH.SDK.Publishing
             if (profile.Sources.Count == 0) return;
             if (string.IsNullOrWhiteSpace(resourceMeta.ResourceUrl)) return;
 
-            // A rostered site and an unrostered one can carry the very same grade - most profiles map
-            // "never heard of it" onto RequiresLicenseCheck - so the grade alone cannot decide which
-            // finding this is. The rule comes from whether an entry was found, and only the severity
-            // comes from the grade.
+            // The grade alone cannot decide which finding this is (an unrostered site can carry the same
+            // grade): the rule comes from whether an entry was found, the severity from the grade.
 
             var known = profile.TryGetSource(resourceMeta.ResourceUrl, out var source);
             var trust = known ? source.Trust : profile.UnknownSourceTrust;
@@ -438,13 +413,8 @@ namespace BH.SDK.Publishing
 
         #region Shared
 
-        // A CUSTOM LICENSE IS NEVER ACCEPTABLE AUTOMATICALLY, and that is the honest answer rather
-        // than a strict one. It used to be judged by its own AllowsDistribution bool, i.e. by the
-        // author's own reading of their own wording; the profile's list knows the typical licenses
-        // and nothing else, and no rule can grade prose it has never seen. So it lands as "not
-        // accepted", which the permission path below still downgrades to a review when a rights
-        // holder's grant stands behind it - a person reading the terms, which was the only thing
-        // that ever really happened here.
+        // A custom license is NEVER acceptable automatically: no rule can grade prose it has never
+        // seen. A rights holder's grant downgrades it to a review (the path below).
 
         private static bool IsLicenseAcceptable(ILicense license, PublishProfile profile,
             out bool unspecified)

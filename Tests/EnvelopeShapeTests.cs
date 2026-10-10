@@ -10,14 +10,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests
 {
-    // THE ENVELOPE IS THE ONE PART OF THE FORMAT NO MODEL OWNS, so nothing else pins its shape.
-    // Two keys, both one character, and the generation is a NUMBER - it used to be the string
-    // "1.0" under the same key the author's own level version uses, which is what this replaced.
-    //
-    // ZERO IS THE CASE WORTH A TEST OF ITS OWN. Every reader here asks "did we read a generation"
-    // with a flag rather than by comparing the value, because the frozen snapshots are written at
-    // generation 0 - a reader that treated zero as absent would refuse exactly the files the
-    // migration path exists for, and would do it only for those.
+    // The envelope is the one part no model owns: two one-character keys, generation a NUMBER. Zero is
+    // read with a presence flag because frozen snapshots are generation 0.
 
     /// <summary> That the envelope on disk is <c>{"g": int, "v": ...}</c>, and that generation zero is read as a
     /// value rather than as an absent one. </summary>
@@ -69,27 +63,15 @@ namespace BH.SDK.Tests
             var json = service.SerializeData(MockData.CreateTestLevelSettingsV0());
             Assert.AreEqual(ModelGenerations.Test, JObject.Parse(json)[Names.Generation]!.Value<int>());
 
-            // READ BACK AS THE CURRENT TYPE, never as the snapshot: the converter resolves the
-            // generation to LevelSettingsV0, reads that, and hands back what the migration chain
-            // produced. Asking for the snapshot type is what throws - it is a deserialization
-            // target, not something a caller ever holds.
+            // Read back as the CURRENT type: the snapshot type is a deserialization target only.
             var read = service.DeserializeData<LevelSettings>(json);
 
             Assert.IsNotNull(read, "generation 0 resolves to the V0 snapshot and migrates, rather than being refused");
             Assert.AreEqual(61, read.Fps, "the value the V0 fixture carries, walked up by LevelSettingsV0ToV1");
         }
 
-        // A NESTED domain at another generation is REFUSED, and this is the fixture that exists
-        // because it used to be read silently: the payload was matched by property name against
-        // today's class, every field missed, and the object came back as constructor defaults with
-        // nothing thrown. The two read paths gave two different answers for the same file and the
-        // quiet one was the default.
-        //
-        // THESE TWO USED TO BE REFUSALS AND THE REASONING INVERTED, which is worth saying rather
-        // than quietly rewriting. The refusal replaced a Skip() that read an old payload into
-        // today's class and returned constructor defaults in SILENCE, and it was the silence that
-        // was the defect - not the tolerance. Both are back, both report, and the report is what
-        // these now assert. Docs/Issues/FORWARD_COMPATIBILITY_HISTORY.md is the record.
+        // A NESTED domain at another generation is reported, not read silently into today's class
+        // (Docs/Issues/FORWARD_COMPATIBILITY_HISTORY.md).
 
         [Test]
         [Author(Metadata.Author.Vertoker)]

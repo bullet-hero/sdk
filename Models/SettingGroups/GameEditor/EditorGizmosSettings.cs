@@ -6,11 +6,7 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models.SettingGroups.GameEditor
 {
-    // One property, and it stays its own group rather than joining Selection: a gizmo is what an
-    // author DRAGS, a selection is what they PICK, and the numbers that will join this one (grab
-    // margins, arrow reach) all describe the former. Everything else about a gizmo - its colours,
-    // its snap steps, the shapes themselves - is either the UI's theme or tuning nobody edits per
-    // session, and stays in the project's own asset.
+    // Its own group: a gizmo is what an author DRAGS, a selection is what they PICK.
 
     /// <summary>
     /// The editor's viewport drag handles.

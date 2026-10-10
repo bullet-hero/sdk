@@ -6,6 +6,8 @@ layer-wide conventions. This file is folder-local.
 
 ## Generators/
 
+Why the contract, the journal and each shipped generator are shaped as they are: `Docs/GENERATORS.md`.
+
 authoring automation: a generator produces level content from a few parameters.
   Non-generic `IGenerator` root (so `GeneratorRegistry`'s reflection scan and a reflection-built
   form are possible) split into `ILevelGenerator` (builds a whole `Level`+`LevelMeta`) and

@@ -5,16 +5,9 @@ using BH.SDK.Rules;
 
 namespace BH.SDK.Generators.Bullets
 {
-    // Homing is a runtime behaviour, and this format has no runtime behaviours - a level is data, so
-    // the curve has to be BAKED into position keys at author time. That is why Steps exists and why
-    // it is capped.
-    //
-    // The cap is this generator's OWN number and must stay that way. It was LevelRules.MaxObjectKeys
-    // minus two, which read as the same thing while that cap was 32; it is not. The format ceiling
-    // says how many keyframes a track may STORE, while this says how many a single bullet should
-    // COST - a burst multiplies it by every bullet in it - and the two answers only ever coincided
-    // by accident. Raising the ceiling to 512 would otherwise have made every homing bullet an
-    // order of magnitude heavier with nothing said about it.
+    // Homing is BAKED into position keys at author time (a level is data), hence Steps and its cap.
+    // The cap is this generator's OWN number, not the format ceiling: that says how many keys a track may
+    // STORE, this how many a bullet should COST (a burst multiplies it). Docs/GENERATORS.md.
 
     /// <summary>
     /// A burst of bullets that curve toward a target, their pursuit curve baked into position
@@ -97,10 +90,8 @@ namespace BH.SDK.Generators.Bullets
                     if (frame <= obj.Span.StartFrame) continue; // collapsed onto the spawn frame - skip
                     if (frame > obj.Span.LastFrame) frame = obj.Span.LastFrame;
 
-                    // Rounding can land two consecutive steps on the same frame when the lifetime is
-                    // shorter than the step count; Frame must stay unique within a track. The stored
-                    // frame is object-LOCAL (see BaseSpawnGenerator's header), so the comparison has
-                    // to happen in that same space rather than against the absolute one.
+                    // Rounding can put two steps on one frame, and Frame is unique within a track. The
+                    // stored frame is object-LOCAL (BaseSpawnGenerator), so compare in that space.
                     if (obj.Positions[obj.Positions.Count - 1].Frame == LocalFrame(obj, frame)) continue;
 
                     AddPosition(obj, x, y, frame);

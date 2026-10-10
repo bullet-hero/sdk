@@ -4,14 +4,8 @@ using BH.SDK.Models;
 
 namespace BH.SDK.Services.LevelArchive
 {
-    // What an export WILL do, decided before a single byte is written. Separating the decision from
-    // the writing is what makes the whole thing testable without a disk and reportable before the
-    // author commits to it: the same plan drives a folder, an archive, and either of them encrypted.
-    //
-    // THE LEVEL AND META HERE ARE COPIES, ALWAYS. An export collects a resource that lives outside
-    // the level folder and rewrites its key to point inside the archive instead - and the author
-    // asked for an export, not for an edit of the level they are working on. Rewriting the live
-    // model would silently change the open document.
+    // What an export WILL do, decided before a byte is written. The level and meta are COPIES, always:
+    // collecting rewrites keys, and rewriting the live model would change the open document.
 
     /// <summary> One file the archive will carry, and where its bytes come from. </summary>
     public readonly struct ArchiveFile

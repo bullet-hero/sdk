@@ -5,14 +5,8 @@ using BH.SDK.Rules;
 
 namespace BH.SDK.Utils
 {
-    // The single implementation of "what a valid shape is" and "how to make an invalid one valid".
-    // Two callers share it and must not drift apart: RuleShapeGeometryAttribute.Fix (validation) and
-    // the in-game shape editor's Save (authoring). A second copy of these rules would let a shape
-    // pass the editor and fail validation, or the reverse.
-    //
-    // Everything here is Unity-independent on purpose - the consuming project's ShapeMeshUtils owns
-    // the float2/Mesh side, this owns the model side. The one duplicated line is SignedDoubleArea,
-    // which cannot be shared without dragging Unity.Mathematics into this assembly.
+    // The single implementation of a valid shape, shared by RuleShapeGeometryAttribute.Fix and the shape
+    // editor's Save so they cannot drift. Unity-independent: the model side only (Docs/SHAPES.md).
 
     /// <summary>
     /// Geometry checks and repairs for a CompositeShape's indexed triangle data.
@@ -40,18 +34,8 @@ namespace BH.SDK.Utils
             return area < DegenerateEpsilon && area > -DegenerateEpsilon;
         }
 
-        // WEIGHTED BY AREA, not by corner count, and that is what makes this the general form of
-        // ShapeCatalogService.GetCentroidPivot. That one averages a form's RIM corners, which is the
-        // centre of mass only because every form it sees is a triangle or a regular polygon; a
-        // triangle soup an author drew has no rim to read and no such guarantee. The two agree on
-        // every built-in form, which is the contract ShapeGeometryUtilsTests pins.
-        //
-        // The weight is the ABSOLUTE area. A back-facing triangle is a defect Sanitize repairs, not
-        // a hole to subtract, and letting a signed weight cancel one would answer a shape that is
-        // merely wound wrong with a point outside itself.
-        //
-        // The result is a PIVOT, i.e. in [0, 1] against the object's rect, while the geometry lives
-        // in [-0.5, 0.5] - hence the 0.5 offset, exactly as the per-form version applies it.
+        // Weighted by ABSOLUTE area (a back-facing triangle is a defect, not a hole), the general form of
+        // GetCentroidPivot. The result is a PIVOT in [0, 1] while geometry lives in [-0.5, 0.5].
 
         /// <summary> Where this geometry balances, as a pivot. Returns the box centre for anything
         /// with no area at all, since nothing else is a more honest answer and a caller offering it
@@ -155,10 +139,7 @@ namespace BH.SDK.Utils
 
             if (indices.Count % 3 != 0) report.MalformedIndices = indices.Count % 3;
 
-            // Duplicates are reported, not just repaired. Sanitize welds them either way, but a rule
-            // that called a weldable shape clean would mean Fix changes data validation swore was
-            // fine - and the duplicate is exactly the defect indexed storage exists to prevent: two
-            // corners at the same place look like one until the author drags it and only one moves.
+            // Duplicates are reported, not just repaired: Fix must not change data validation called clean.
             var seen = new HashSet<long>(vertices.Count);
             foreach (var vertex in vertices)
             {
@@ -202,15 +183,12 @@ namespace BH.SDK.Utils
             return report;
         }
 
-        // The order below is not the order the problems are listed in - it is the order in which
-        // fixing one cannot reintroduce another. Clamping runs FIRST because it moves points and can
-        // collapse a triangle; welding runs before the degenerate check for the same reason; winding
-        // runs LAST, once the triangle set can no longer change.
+        // The order is the one in which fixing one problem cannot reintroduce another: clamp, weld, then
+        // degenerate, then winding last.
 
         /// <summary>
-        /// Repairs a shape in place and reports what it had to change. Never throws and never leaves
-        /// the data half-repaired; an empty result means nothing survived and the caller should
-        /// refuse to store it.
+        /// Repairs a shape in place and reports what changed. Never throws, never half-repairs; an empty
+        /// result means nothing survived and the caller refuses to store it.
         /// </summary>
         public static ShapeGeometryReport Sanitize(List<Vector2Value> vertices, List<int> indices)
         {

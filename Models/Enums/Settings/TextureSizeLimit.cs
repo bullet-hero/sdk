@@ -1,15 +1,7 @@
 namespace BH.SDK.Models.Enums.Settings
 {
-    // A cap rather than a target: an image already under the limit is never touched, and one over
-    // it is halved until it fits. That is what makes this the cheapest lever of the three - memory
-    // falls with the SQUARE of the side, so one step down saves more than compression does, and it
-    // is also the only one that bounds the worst case a level can inflict on a device at all.
-    //
-    // A MEMBER'S NUMBER IS WHAT A SETTINGS FILE STORES, so a rung is APPENDED and never renumbered -
-    // the rule RandomTracks states for its own track ids. The numbering is therefore not the ladder's
-    // order, and nothing may present these by Enum.GetValues: the settings screen hands
-    // LocalizedEnumDropdown an explicit ordered array, which is also what its index-based read back
-    // depends on.
+    // A cap: an image over it is halved until it fits; memory falls with the SQUARE of the side.
+    // Numbers are appended, not in ladder order: present via an explicit array, never Enum.GetValues.
 
     /// <summary>
     /// The largest side, in pixels, a level's image is allowed to occupy in memory on this device.

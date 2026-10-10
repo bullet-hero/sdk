@@ -5,13 +5,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests.Rules
 {
-    // The I*-family rules switch over the concrete variant of a polymorphic value, so a missing
-    // switch arm is invisible until that exact variant is authored. Every variant of the interface
-    // therefore gets its own case here, not just the common Value one.
-    //
-    // Fixture bounds are kept narrow (0..1) and test values well inside +/-ValueRules.MaxFloatValue,
-    // so the only rule that can fire is the one under test - the concrete value models carry their
-    // own RuleInRange on top.
+    // The I* rules switch over the concrete variant, so every variant of the interface gets a case. Bounds
+    // are narrow (0..1) so only the rule under test fires.
 
     /// <summary>
     /// RuleIFloatInRange over all three IFloat variants: FloatValue, FloatMinMax, FloatMinMaxStep.
@@ -90,10 +85,7 @@ namespace BH.SDK.Tests.Rules
             AssertValid(new Model { Value = new FloatMinMax(0.2f, 0.8f) });
         }
 
-        // Only the outer edges are checked here - Min against the lower bound, Max against the upper
-        // one. Ordering is not this rule's job: an inverted pair inside the range is caught by
-        // FloatMinMax's own RulePropertyOrder when the analyzer walks into the value. The two rules
-        // are complementary, and neither alone is enough.
+        // Only the outer edges: ordering is FloatMinMax's own RulePropertyOrder.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]

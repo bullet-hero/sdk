@@ -2,16 +2,8 @@ using Microsoft.CodeAnalysis;
 
 namespace BH.SDK.Roslyn.Modification
 {
-    // THE NUMBER IS WRITTEN BY HAND, so every way of writing it wrongly has to be an error here.
-    // That is the whole trade: declaration order would renumber itself on a member reorder, a hash
-    // of the JSON key would re-couple the id to the spelling this mechanism exists to decouple
-    // from, and a hash of the C# name would make a rename the breaking change instead. A hand-
-    // written number is the only one nothing can change behind the author's back - and it is safe
-    // only because a collision, an unserialized member and a stray band are all refused below.
-    //
-    // Errors, never warnings. A duplicated id means one override addresses two fields and reaches
-    // whichever the switch answers first, which is exactly the silent failure the whole item exists
-    // to end.
+    // The id number is written by hand (nothing can change it behind the author's back), so every wrong way
+    // of writing it is an ERROR, never a warning: a duplicate gives one override two fields.
 
     /// <summary> Diagnostics the modification table generator reports. </summary>
     internal static class ModificationTableDiagnostics

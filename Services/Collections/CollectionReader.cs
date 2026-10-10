@@ -31,11 +31,8 @@ namespace BH.SDK.Services.Collections
         Damaged = 3,
     }
 
-    // A COLLECTION ARRIVES FROM ANYWHERE - a subscribed Workshop folder, an archive somebody sent, a
-    // folder a player dropped in by hand - so this reads the way LevelArchiveReader does: every failure
-    // is a value, and nothing is trusted to be what its name says. The MANIFEST decides whether there is
-    // a collection at all; a single bad entry below it only costs that entry, reported in Skipped, the
-    // same way the device library leaves out one file it cannot read rather than the whole library.
+    // A collection arrives from anywhere: every failure is a value, the MANIFEST decides whether there is
+    // one, and a bad entry below it costs only that entry (Skipped).
 
     /// <summary> Reads a collection out of a store - a folder on disk, an unpacked archive, memory. </summary>
     public static class CollectionReader

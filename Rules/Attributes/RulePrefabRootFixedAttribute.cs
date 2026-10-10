@@ -5,35 +5,13 @@ using BH.SDK.Models.Primitives;
 
 namespace BH.SDK.Rules.Attributes
 {
-    // A class rule rather than two property ones, and not by preference: the fields it pins live on
-    // RectObject, shared by every object in the format, so a property rule would have to be true of
-    // every object rather than of this one slot. Prefab.Root is the only RectObject in the model
-    // whose Active and Layer are not the author's to set.
-    //
-    // WHY THEY ARE PINNED AT ALL: a placement owns both. Active gates rendering and collision down
-    // the whole hierarchy and a template that could switch its own root off would switch off every
-    // placement of itself; Layer is parent-relative and summed up the chain, so a non-zero one on
-    // the root would shift every placement's draw order by a number the author set somewhere else
-    // entirely. PrefabRootUtils never copies either, so a value here reaches nothing - which is
-    // exactly why it is worth reporting rather than tolerating.
-    //
-    // THE IDENTITY IS HERE rather than left to RuleObjectIdValid, because that rule can only say
-    // "PrefabRoot is legal as an identity inside a template" - it sees one value and no path, so it
-    // cannot say "and this particular slot must hold exactly that". This can.
-    //
-    // ROOT.SPAN IS HALF PINNED AND HALF AUTHORED, which is why it is checked here rather than left
-    // to a property rule on RectObject.Span. Its DURATION is the template's whole timeline and the
-    // one number an author sets; its START is FrameRules.MinFrame because the timeline counts from
-    // one and a template has nothing to start later than, and its ANCHORS are none because an
-    // anchor means "this edge follows the parent's" and the root has no parent inside the template.
-    // A start of 40 here would read as "the template begins on frame 40", which nothing implements:
-    // PrefabRootUtils.ApplyRoot copies the duration and nothing else, so the number would reach no
-    // placement at all.
+    // A class rule: the pinned fields live on RectObject, shared by every object. A placement owns
+    // Active and Layer; PrefabRootUtils copies neither and ApplyRoot copies only the duration.
+    // Why each field is pinned: BH.SDK/Docs/RULES.md, "RulePrefabRootFixed".
 
     /// <summary>
-    /// A template's root is itself, is always active, is always on layer zero, and begins on the
-    /// first frame with neither edge anchored - its identity plus every field of
-    /// <see cref="Prefab.Root"/> that belongs to a placement rather than to the template.
+    /// A template's root is itself, always active, on layer zero, begins on the first frame with
+    /// neither edge anchored: every field of <see cref="Prefab.Root"/> that belongs to a placement.
     /// </summary>
     [AttributeUsage(ClassTarget)]
     public class RulePrefabRootFixedAttribute : BaseObjectRuleAttribute

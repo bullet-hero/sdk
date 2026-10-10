@@ -3,27 +3,9 @@ using BH.SDK.Versions;
 
 namespace BH.SDK.Serialization.Blob
 {
-    // DEGRADING AT DOMAIN GRANULARITY IS FREE, AND THAT IS WHY IT IS WHERE THE LINE IS DRAWN. A root
-    // already writes `domain + generation + length + content`, so the framing that makes a skip safe
-    // is paid for at every root whether or not anything skips. A root this build cannot parse
-    // is stepped over whole, leaving its siblings intact.
-    //
-    // A ROOT FROM THE FUTURE IS NOT SKIPPED - IT IS REFUSED. Since 1.0.0 every model change is a
-    // generation bump, so a generation above this build's latest throws NewerGenerationException
-    // before a byte of its content is read, and the whole file with it.
-    //
-    // ANYTHING THAT THROWS INSIDE A ROOT'S CONTENT IS A VERSION PROBLEM, NOT DAMAGE, and that is what
-    // lets one catch site stand in for a per-value fallback the binary format cannot have. Damage is
-    // already answered before the payload is parsed at all: BlobFormat.ReadHeader checks the magic,
-    // the codec generation, the declared length against the real one and an xxHash64 of the whole
-    // payload, in that order. A byte that survived all four and then fails to parse is a shape this
-    // build does not know - an unknown polymorphic tag, an enum member added later - and the honest
-    // answer to it is the same skip an unknown generation gets.
-    //
-    // CONTENT THAT DOES NOT END EXACTLY AT ITS DECLARED LENGTH IS DAMAGE, in either direction. Short
-    // content used to be a future build's appended members and was skipped; a newer build now bumps
-    // the generation for an appended member too, so no build this one can read ever writes it. A
-    // reader that ran past the end it was handed, or stopped short of it, lost its place.
+    // A root this build cannot parse is stepped over whole by its declared length; a root from the
+    // FUTURE is refused (NewerGenerationException); a throw INSIDE content is a version problem, not
+    // damage (the header answered that); content not ending at its length is damage. Docs/SERIALIZATION.md.
 
     /// <summary> The runtime half of a generated root's envelope read: settle the declared length,
     /// skip what this build cannot read, and migrate what it can. </summary>
@@ -56,12 +38,8 @@ namespace BH.SDK.Serialization.Blob
                 ModelGenerations.Invalid, SubstitutionKind.UnreadableContent);
         }
 
-        // A SNAPSHOT IS READ THROUGH IBinaryEnvelope RATHER THAN IBinaryModel, and the reason is one
-        // line up: the envelope this method is answering has already been consumed, so the snapshot's
-        // own Read would look for a second one. See IBinaryEnvelope's header.
-        //
-        // A ref struct may be passed BY REF to an interface method; what it may not do is be captured
-        // or boxed, and nothing here does either.
+        // A snapshot is read through IBinaryEnvelope, not IBinaryModel: the envelope this method is
+        // answering is already consumed, so the snapshot's own Read would look for a second one.
 
         /// <summary> Reads a root written at another generation: refuses a newer one, migrates an older one when
         /// the chain reaches today's shape, and otherwise skips the root whole. Null means the caller resets itself. </summary>

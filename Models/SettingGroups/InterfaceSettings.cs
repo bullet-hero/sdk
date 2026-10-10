@@ -7,12 +7,8 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models.SettingGroups
 {
-    // The alignment pair is stored as two free floats rather than as a nine-value enum, because it is
-    // the same alignment convention level content itself is authored in (0,0 is the lower-left corner,
-    // 1,1 the upper-right one) - the settings screen only offers the nine corner/edge/centre presets,
-    // but a hand-edited settings.json placing the readout at 0.25,0.9 is legal data, not a value to
-    // repair. Anything outside [0,1] would park the overlay off screen, which is what the range rule
-    // is for.
+    // Two free floats in level-content convention (0,0 lower left, 1,1 upper right): a hand-edited 0.25,0.9
+    // is legal data; outside [0,1] would park the overlay off screen.
 
     /// <summary>
     /// Device-wide options for the game's own interface overlays - today the diagnostics readout that
@@ -22,11 +18,7 @@ namespace BH.SDK.Models.SettingGroups
     [GenerateModel]
     public sealed partial class InterfaceSettings : IModel<InterfaceSettings>, IMoveable<InterfaceSettings>
     {
-        // FALSE BY DEFAULT, and that is the whole reason this exists: a death used to be an
-        // unconditional stop into the result window, which is four clicks of chrome between a player
-        // and the retry they already decided on. Off, a lost run rewinds itself to the last
-        // checkpoint (Services.Game's CheckpointService); on, the window is what a player who wants
-        // to read the outcome, change a setting or leave gets.
+        // False: a lost run rewinds to the last checkpoint (CheckpointService); on, the result window.
 
         /// <summary> Whether losing a run opens the result window instead of respawning. </summary>
         [JsonProperty(Names.OpenMenuOnLose)]
@@ -36,23 +28,8 @@ namespace BH.SDK.Models.SettingGroups
         [JsonProperty(Names.StatsActive)]
         public bool StatsActive { get; set; }
 
-        // FALSE BY DEFAULT, all three, and unlike the HUD flags above that IS the zero value - so
-        // they are additive in the cheapest way there is and neither the generation nor a migrator
-        // moves. The default is also the honest one: the overlay is opened to read a frame time,
-        // and these three blocks are the ones that answer a different question - what this level
-        // is made of, whether a buffer ran out, and what the process is holding. An overlay that
-        // starts by covering a third of the screen with them is one a player turns back off.
-        //
-        // THE MEMORY FLAG IS THE ONE THAT CHANGES AN EXISTING BEHAVIOUR: that block used to be
-        // drawn unconditionally, so its default is a removal rather than an addition and a
-        // settings file written before this key loses it. That is the same call the other two
-        // made and is why it is worth stating rather than defaulting the other way for symmetry
-        // with the HUD flags: the overlay is a diagnostics readout, and its shortest useful form
-        // is the frame line alone.
-        //
-        // THE LEVEL FLAG GATES A WALK, NOT ONLY A LABEL. StatsOverlayView's level block costs an
-        // O(objects) pass once a second and the editor routinely holds tens of thousands of them,
-        // so off it collects nothing at all rather than collecting and hiding.
+        // The three diagnostics blocks default off. The level flag gates an O(objects) walk, so off
+        // collects nothing; the memory block was always drawn. Docs/SETTING_GROUPS.md
 
         /// <summary> Whether the overlay draws the per-frame buffer usage block. </summary>
         [JsonProperty(Names.StatsFrameObjects)]
@@ -66,11 +43,7 @@ namespace BH.SDK.Models.SettingGroups
         [JsonProperty(Names.StatsMemory)]
         public bool StatsMemory { get; set; }
 
-        // GATES A WALK TOO, and a heavier one than the level flag's: the census counts every element
-        // in the UI Toolkit panel, which on the editor screen is eighteen thousand of them. Off, it
-        // is not collected at all. It also has no effect whatsoever in a release build - every
-        // profiler marker in the project compiles out there, so the block has nothing to draw and
-        // the service that feeds it is never registered.
+        // Gates a heavier walk (every UI element); nothing in a release build, where the markers compile out.
 
         /// <summary> Whether the overlay draws the profiling block: pipeline stage timings and how
         /// many elements the UI panel holds. </summary>
@@ -94,31 +67,16 @@ namespace BH.SDK.Models.SettingGroups
         [RuleEnumValid]
         public MenuBackgroundKind MenuBackground { get; set; }
 
-        // THE SHELL'S ORIENTATION, NOT THE GAME'S. A running level's own LevelSettings.Orientation
-        // outranks this for as long as it is running, so a player who finds their setting apparently
-        // ignored inside a level is seeing the level win, which is by design. Core's OrientationMath
-        // is the only place that ladder is written down.
-        //
-        // Honoured on phones only. On desktop nothing rotates, so the setting is not applied and the
-        // settings screen shows the window's MEASURED orientation there instead - the stored value
-        // below is left untouched rather than overwritten, so a value chosen on a phone survives the
-        // same account opening the game on a PC.
+        // The SHELL's orientation: a running level's LevelSettings.Orientation outranks it (OrientationMath).
+        // Phones only; on desktop the stored value is left untouched.
 
         /// <summary> Which way round the player asked the device to hold this game. </summary>
         [JsonProperty(Names.ScreenOrientation)]
         [RuleEnumValid]
         public ScreenOrientationLock ScreenOrientation { get; set; }
 
-        // WHAT IS DRAWN, NEVER WHAT IS THERE. All three hide the HUD visually and leave it exactly
-        // as functional: the pause button still takes a press where it always sat, so a player who
-        // hid it for a clean screen or for a recording has not also lost the way out of a run. That
-        // is the whole contract, and it decides the implementation on the other side - opacity, not
-        // display or visibility, since both of those stop an element being picked at all.
-        //
-        // TRUE BY DEFAULT, all three, so a settings file written before them reads back as the HUD
-        // the game already had. Like MenuBackgroundKind.Bot and ScreenOrientationLock.Horizontal,
-        // the default is the behaviour rather than the zero value - which is what makes them
-        // additive with no generation bump and no migrator.
+        // Hides what is DRAWN, never what is there (the pause button still takes a press): opacity, not
+        // display or visibility. True by default, the behaviour the game already had.
 
         /// <summary> Whether the run progress bar is drawn. </summary>
         [JsonProperty(Names.ShowGameProgress)]
@@ -133,38 +91,15 @@ namespace BH.SDK.Models.SettingGroups
         [JsonProperty(Names.ShowGameInterface)]
         public bool ShowGameInterface { get; set; }
 
-        // A SLIDER RATHER THAN A FLAG, and the one HUD element that is not on the screen edge at
-        // all: the hitbox ring is drawn on the avatar, at the collision radius, and it is ON by
-        // default because the picture without it LIES - the drawn body is 1x1 against a collision
-        // radius of AvatarRules.CollisionScale, so a player reading the silhouette as the hitbox
-        // overestimates it by more than half its area. Levels are balanced for someone who can see
-        // it.
-        //
-        // WHAT THE SLIDER IS FOR is how loud it is over whatever the level draws, which is a taste
-        // and legibility call rather than a difficulty one - 0 turns it off for a player who wants
-        // the clean picture, and that is the only sense in which it is optional. It mirrors
-        // EditorSelectionSettings.ColliderOpacityView, which does the same job for the editor's
-        // collider overlay.
-        //
-        // DEFAULTED ABOVE ZERO, so a settings file written before this key reads back as a visible
-        // ring rather than as a hidden one - the same additive shape the four flags above have, and
-        // the reason neither the generation nor a migrator moves.
+        // A slider, ON by default: the drawn 1x1 body overstates the AvatarRules.CollisionScale hitbox.
+        // 0 turns it off. Mirrors EditorSelectionSettings.ColliderOpacityView. Docs/SETTING_GROUPS.md
 
         /// <summary> How visible the avatar's hitbox ring is. 0 hides it entirely. </summary>
         [JsonProperty(Names.HitboxRingOpacity)]
         [RuleInRange(0f, 1f)]
         public float HitboxRingOpacity { get; set; }
 
-        // TRUE BY DEFAULT, like the three flags above and for the same reason: it names the
-        // behaviour the game already had, so a settings file written before it reads back
-        // unchanged and neither the generation nor a migrator moves.
-        //
-        // IT GATES THE WINDOW, NEVER THE REPORT. Services.Root's ErrorReportService goes on
-        // catching, building and publishing every report whatever this says - what the flag decides
-        // is only whether ErrorView raises itself over the screen. So the player log, the report
-        // text and the rolling log buffer are identical either way, and turning it off cannot hide
-        // an error from a bug report. It is a setting because the alternative to a modal is not
-        // "no error" but "an error a player who is mid-run does not have to answer".
+        // True by default. Gates the WINDOW, never the report: ErrorReportService publishes every report.
 
         /// <summary> Whether an uncaught exception opens the error window. The report is built and
         /// logged either way. </summary>
@@ -172,9 +107,6 @@ namespace BH.SDK.Models.SettingGroups
         public bool AlertOnException { get; set; }
 
         // Where the MENU's level browser starts; the editor's is EditorInterfaceSettings.LevelsLayout.
-        // The toggle beside the search field still switches it for the session. Joined the unshipped
-        // generation V2_SimplifyEntrance: a V1 file reads back without the key, i.e. on the grid,
-        // which is what the browser always opened on.
 
         /// <summary> How the menu's level browser lays its results out when it opens. </summary>
         [JsonProperty(Names.LevelsLayout)]
@@ -205,11 +137,8 @@ namespace BH.SDK.Models.SettingGroups
             LevelsLayout = LevelBrowserLayout.Grid;
         }
 
-        // THE FOUR TRUE-BY-DEFAULT FLAGS ARE NOT PARAMETERS, and that is deliberate: adding one here is a
-        // source break for every caller, and LevelSettings.Seed already set the precedent of
-        // taking the object-initializer route in Copy instead. They are defaulted here as well as
-        // in the parameterless constructor, so the two agree - a value built through this one and
-        // a freshly defaulted one have to compare equal.
+        // The four true-by-default flags are not parameters (a source break for every caller); they are
+        // defaulted here too, so a built value and a freshly defaulted one compare equal.
 
         /// <summary> Every member at once, in declaration order. </summary>
         public InterfaceSettings(bool openMenuOnLose, bool statsActive,

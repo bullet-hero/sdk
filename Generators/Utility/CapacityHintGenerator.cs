@@ -2,15 +2,8 @@ using BH.SDK.Utils;
 
 namespace BH.SDK.Generators.Utility
 {
-    // LevelHints.Limits is peak simultaneous objects per type, written so a player can preallocate
-    // its per-frame buffers instead of growing them mid-level. The editor already refreshes it on
-    // every save (EditorService.Save), so this is not
-    // about correctness - it is about being able to SEE the number, on demand, while deciding
-    // whether a section is too heavy. That is why it is a generator rather than a hidden step: the
-    // estimate line reports what the level currently peaks at, before anything is written.
-    //
-    // The one generator that neither creates nor edits objects. It exists partly to prove the
-    // contract stretches that far.
+    // LevelHints.Limits is peak simultaneous objects per type, for a player to preallocate. The editor
+    // refreshes it on every save; this makes the number visible on demand. Neither creates nor edits.
 
     /// <summary>
     /// Recomputes the level's advisory capacity hint from what the level currently contains.
@@ -26,10 +19,8 @@ namespace BH.SDK.Generators.Utility
         /// <summary> No hints - the form takes the fields in declaration order. </summary>
         public override GeneratorHints Hints => GeneratorHints.Empty;
 
-        // Limits is a bare field on LevelHints, so there is nothing here for GeneratorCost to
-        // count and the estimate is permanently Zero. Without this the host's "a run that would add
-        // nothing is refused" rule leaves the button disabled forever - the one generator whose whole
-        // job is invisible to the cost model.
+        // Limits is a bare field, nothing for GeneratorCost to count: the estimate is permanently Zero and
+        // the host's zero-estimate refusal must not apply.
 
         /// <summary> True: this run writes something GeneratorCost cannot measure, so a zero estimate is not an empty run. </summary>
         public override bool AllowsEmptyRun => true;
@@ -42,11 +33,8 @@ namespace BH.SDK.Generators.Utility
             var level = LevelOf(context);
             if (level == null) return;
 
-            // Written straight onto Hints rather than through the context: Limits is not an
-            // object, a resource or a level-global track, so there is no journal entry shape for it.
-            // The consequence is deliberate and bounded - undoing this run leaves the refreshed
-            // hint in place, which is harmless because the value is advisory and is recomputed on
-            // every save anyway.
+            // Written straight onto Hints: no journal entry shape for a bare field. Undo leaves the
+            // refreshed hint, harmless because it is advisory and recomputed on every save.
             context.Hints.Limits = LevelCapacityUtils.GetPeakUsage(level);
         }
 

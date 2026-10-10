@@ -3,15 +3,8 @@ using System.Text;
 
 namespace BH.SDK.Tests.Services
 {
-    // AN ARCHIVE BUILT FIELD BY FIELD, because a hostile zip is one no writer here will produce -
-    // asking ZipService for a traversal name proves only that it refuses twice. It is also the only
-    // way this assembly can write a zip at all: BH.SDK.Tests.asmdef sets overrideReferences and
-    // lists nunit and Newtonsoft, so SharpZipLib is not visible here and a fixture built on
-    // ZipEntry would compile under `dotnet test` and then fail to compile inside Unity.
-    //
-    // It stands in for a foreign writer as well as a hostile one - Explorer, `zip -r`, a server -
-    // which is what the import direction needs: bytes this project did not produce, read by the
-    // reader a player's file actually goes through.
+    // An archive built field by field: a hostile or foreign zip no writer here produces, and the only way
+    // this assembly writes a zip (SharpZipLib is not visible to the test asmdef). BH.SDK/Docs/TESTING.md.
 
     /// <summary> A zip written by hand, so a test can claim anything about it that an arriving file
     /// could claim about itself. </summary>

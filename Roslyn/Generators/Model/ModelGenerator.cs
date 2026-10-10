@@ -8,17 +8,8 @@ using Microsoft.CodeAnalysis.Text;
 
 namespace BH.SDK.Roslyn.Model
 {
-    // WHY A GENERATOR AT ALL. Every model here carried Copy/Clone/Reset/Update/Pull/Equals/
-    // GetHashCode by hand - 208 Copy bodies, 279 typed Equals, 206 Update, 206 Pull - and the
-    // failure mode is not a compile error but a member quietly missing from one of them. The SDK's
-    // own CLAUDE.md names `Equals(object obj) => obj is T value && Equals(value)` the single
-    // easiest place in this codebase to introduce a silent bug, because pasting it from a sibling
-    // class compiles and only makes the boxed comparison always false.
-    //
-    // IT REACHES FURTHER THAN THE WHOLE PROJECT AND DECLINES ANYWAY. Unity scopes an analyzer to
-    // the asmdef owning its folder plus every assembly referencing it, and BH.SDK is
-    // autoReferenced - so this runs on essentially everything. [GenerateModel] is what bounds it:
-    // a compilation holding none is one the incremental predicate never matches, at no cost.
+    // Replaces hand-written Copy/Equals/Update/Pull, whose failure mode is a member silently missing from
+    // one. Scoped to nearly every assembly; [GenerateModel] is what bounds it (Docs/ROSLYN_GENERATORS.md).
 
     /// <summary> Writes the IModel contract for every [GenerateModel] type. </summary>
     [Generator]
@@ -121,11 +112,8 @@ namespace BH.SDK.Roslyn.Model
 
             if (roots.Count == 0) return;
 
-            // A DISPATCHER IS ONLY NEEDED WHERE SOMETHING IS ACTUALLY READ THROUGH A BASE. Most of
-            // these hierarchies are never met polymorphically: every keyframe member is a
-            // List<PosKey>, every audio effect is its own concrete field, every resource dictionary
-            // is typed by its subtype. Only RectObject and the value-family interfaces are, and
-            // demanding a discriminator from the rest would be demanding it for nothing.
+            // A dispatcher is needed only where something is read through a base (RectObject, value
+            // families).
             var needed = new HashSet<string>();
             foreach (var spec in specs)
             foreach (var member in spec.Members)
@@ -204,17 +192,12 @@ namespace BH.SDK.Roslyn.Model
             builder.AppendLine();
         }
 
-        // WHAT MAKES A POLYMORPHIC VALUE READABLE. The writer knows the concrete type and the
-        // reader does not, so a tag goes first - and the tag is the model's OWN GetModelType(),
-        // read out of the enum member that method names, never a second numbering invented here.
-        // 0xFF is null, which is why no discriminator in this format may reach 255.
+        // The tag is the model's OWN GetModelType(), never a second numbering; 0xFF is null, so none may
+        // reach 255.
         private static void EmitBlobDispatcher(SourceProductionContext production, StringBuilder builder,
             string root, string name, List<ModelSpec> derived, ModelSpec rootSpec)
         {
-            // EVERY candidate needs a tag or NONE of them can be read back, so an untagged one
-            // is an error naming it rather than a dispatcher quietly missing a case. Without this
-            // the emission compiles everywhere except at the one member that reaches the missing
-            // class, which is a confusing way to say "this type has no discriminator".
+            // Every candidate needs a tag or none can be read back: an untagged one is an error naming it.
             var untagged = derived.Where(s => s.TypeTag < 0).ToList();
             if (rootSpec != null && !rootSpec.IsAbstract && rootSpec.TypeTag < 0) untagged.Add(rootSpec);
 
@@ -274,10 +257,8 @@ namespace BH.SDK.Roslyn.Model
             builder.AppendLine("            var tag = reader.ReadByte();");
             builder.AppendLine("            if (tag == NullTag) return null;");
             builder.AppendLine();
-            // Declared as IBinaryModel rather than as the root: a FAMILY root is an interface
-            // that knows nothing about bytes, and it must not - IModel is what a model is to the
-            // program, IBinaryModel is what it is to a file, and the whole point of the split is
-            // that neither drags the other in.
+            // IBinaryModel, not the family root: IModel is what a model is to the program, this is to a
+            // file.
             builder.AppendLine("            global::BH.SDK.Serialization.Blob.IBinaryModel value;");
             builder.AppendLine("            switch (tag)");
             builder.AppendLine("            {");
@@ -298,11 +279,8 @@ namespace BH.SDK.Roslyn.Model
             builder.AppendLine();
         }
 
-        // THE SAME QUESTION THE BLOB ASKS, IN THE FORMAT THAT ALREADY SHIPPED. A polymorphic value
-        // is a two-element ARRAY - the tag then the payload - which is what every level file on
-        // disk carries (`"clr":[0,{...}]`), and the tag is the same GetModelType() the blob uses.
-        // The reader accepts the tag as a NAME as well as a number, because the converter this
-        // replaces went through Deserialize and would have taken either.
+        // The same question in the shipped format: a two-element ARRAY [tag, payload]; the tag may be a name
+        // too.
         private static void EmitJsonDispatcher(StringBuilder builder, string root, string name,
             List<ModelSpec> derived, ModelSpec rootSpec)
         {
@@ -310,11 +288,8 @@ namespace BH.SDK.Roslyn.Model
             if (rootSpec != null && !rootSpec.IsAbstract) cases.Add(rootSpec);
             if (cases.Count == 0) return;
 
-            // THE FALLBACK IS THE FAMILY'S LOWEST TAG, and it is a fallback rather than an invention
-            // because every family already puts its plain literal form there: FloatType.Value is
-            // FloatValue, ObjectType.RectObject is RectObject. Nothing had to be declared for it, and
-            // the reflective converters take the same one - the two stacks must agree about a
-            // degraded read exactly as they agree about an ordinary one.
+            // The fallback is the family's LOWEST tag (its plain literal form), as the reflective converters
+            // do.
             var fallback = cases.OrderBy(s => s.TypeTag).First();
 
             builder.AppendLine("    /// <summary> The [tag, payload] encoding of a " + name + ". </summary>");

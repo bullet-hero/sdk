@@ -1,17 +1,7 @@
 namespace BH.SDK.Models.Enums.Settings
 {
-    // How the GPU samples a level's images, and ONLY that. It used to be derived from the author's
-    // TextureKind alone (pixel art point-sampled, everything else smoothed), which is right about
-    // pixel art and wrong as a general rule: smoothing is what a device does when it draws, not what
-    // a picture is, and a player wanting crisp texels everywhere was asking a question nothing here
-    // could hear.
-    //
-    // The kind still WINS where it is making a claim about content: TextureKind.PixelArt forces Point
-    // however this is set, exactly as it already forces compression and mip-maps off. A kind
-    // restricting the player is the direction this split allows.
-    //
-    // What this does NOT decide is how an image is REDUCED when it is too large for the device - see
-    // TextureLoadPlan.BoxDownscale. Those were one question only while Point meant "pixel art".
+    // How the GPU samples, and only that: TextureKind.PixelArt still forces Point. Reduction is
+    // TextureLoadPlan.BoxDownscale. Why: Docs/ENUMS.md
 
     /// <summary> How this device samples a level's images when it draws them. </summary>
     public enum TextureFilterMode : byte

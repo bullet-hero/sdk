@@ -2,10 +2,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Roslyn.Tests
 {
-    // Proves the rig itself works before anything is asserted through it: a driver runs, a
-    // generator sees a real compilation, the emitted source lands, and the whole thing compiles.
-    // It is pointed at SandboxProbeGenerator on purpose - the one generator whose only job is to
-    // report what it saw, so a failure here is the harness and never the component under test.
+    // Proves the rig itself, via SandboxProbeGenerator, so a failure here is the harness and never a
+    // generator.
 
     /// <summary> Proves the rig itself works before anything is asserted through it, pointed at the one
     /// generator whose only job is to report what it saw. </summary>

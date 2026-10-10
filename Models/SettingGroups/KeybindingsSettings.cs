@@ -8,19 +8,8 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models.SettingGroups
 {
-    // A SPARSE map, and that is the whole design. The shortcuts a game has, what each is called and
-    // what key it ships on are code - they change with the code, and a settings file that pinned all
-    // of them would go stale the moment a shortcut is added or its default is improved. So this
-    // holds only the entries a player actually moved: an id absent here takes the catalog's default,
-    // and a "reset to default" is a removal rather than a write.
-    //
-    // The value is a STRING rather than a packed number for the same reason a level's own format is
-    // readable: settings.json is a file people open. "ctrl+shift+d" survives a diff, a bug report and
-    // a hand edit; a bitfield survives none of them. ShortcutSyntax owns what the string may say.
-    //
-    // Nothing here knows which ids exist or which key names a keyboard has - both are the consumer's
-    // (see the header on ShortcutSyntax). An unknown id and an unrecognized key name are equally
-    // harmless: neither resolves, so neither takes a shortcut away.
+    // A SPARSE map of what a player moved: absent takes the catalog default, reset is a removal. A string
+    // so settings.json stays readable (ShortcutSyntax owns it). Docs/SETTING_GROUPS.md
 
     /// <summary>
     /// The player's own keyboard shortcuts, as overrides on top of the game's shipped defaults:
@@ -48,10 +37,7 @@ namespace BH.SDK.Models.SettingGroups
             Overrides = overrides;
         }
 
-        // Whether an id is overridden at all is the question every consumer asks, and it is not
-        // ContainsKey: an unbound entry is stored as the empty string, so a caller reading the value
-        // straight out of the dictionary must not confuse "the player cleared this" with "the player
-        // never touched it".
+        // An unbound entry is the empty string, so "overridden" is not ContainsKey's question.
 
         /// <summary> The player's binding for <paramref name="shortcutId"/>, or null when they never
         /// set one. An empty string is a real answer: they cleared it. </summary>

@@ -5,17 +5,9 @@ using BH.SDK.Models.Values;
 
 namespace BH.SDK.Generators.Spawn
 {
-    // Every spawning generator needs the same "what does one of these look like" fields, so they
-    // live on a shared base class rather than being copy-pasted (and inevitably renamed) into each
-    // parameters class. Reflection over a derived parameters class returns inherited public fields
-    // too, so a form picks these up with no extra work.
-    //
-    // The one thing inheritance does NOT solve is listing: Hints must name every field, inherited
-    // ones included, so the two arrays below exist to be spliced into each generator's own Section
-    // calls instead of spelling the names out again per generator. They are split by section rather
-    // than being one list, because these don't belong together in a form: WHAT is drawn, what is
-    // painted on it and what it collides with are the generator's resources (Main, spliced in before
-    // the generator's own numbers), while its size and tint only tune the look (Additional).
+    // Shared object-template fields, inherited by reflection. Hints must still name inherited fields, so
+    // the two arrays are spliced into each generator's Section calls: Main (what is drawn, paint,
+    // collider) and Additional (size, tint). Docs/GENERATORS.md.
 
     /// <summary>
     /// The object template shared by every generator that spawns objects: what shape is drawn, what

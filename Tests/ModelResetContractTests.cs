@@ -8,36 +8,9 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests
 {
-    // WHAT RESET MEANS IS "BACK TO WHAT THE CONSTRUCTOR BUILT", and until now nothing said so. Every
-    // Reset() here is hand-written and restates its constructor's defaults a second time -
-    // `Active = true`, `ShapeId.Square.Fill`, `Array.Fill(Matrix, Color4Value.white)` - so the two
-    // can drift, and a drift is invisible: a reset object simply is not the object a fresh one
-    // would be, in a way no round-trip test can see.
-    //
-    // This sweep is what makes the constructor the single source of those defaults. It is also a
-    // PRECONDITION of the generated Reset(): BH.SDK.Roslyn emits `Reset()` by assigning from a
-    // prototype built by `new T()` rather than by restating literals, which is only equivalent to
-    // today's behaviour where these two already agree. A failure here is a real defect either way -
-    // one of the two copies is wrong, and a person has to say which.
-    //
-    // Collections are the one deliberate asymmetry and the reason this compares by value rather
-    // than by reference: Reset CLEARS a collection in place while the constructor allocates a fresh
-    // one. Both end up with the same contents, which is what the model contract promises.
-    //
-    // TWO EXEMPTIONS, AND BOTH ARE FACTS ABOUT C# RATHER THAN CONCESSIONS.
-    //
-    // A STRUCT has no parameterless constructor to be a source of truth for (C# 9), so `new T()` is
-    // just zeroed memory and "back to what the constructor built" means nothing. ModificationKey is
-    // the case: its Reset normalizes Path to string.Empty, which is BETTER than the default null it
-    // would be compared against. Value-type models are skipped, and they are also the two types the
-    // generator does not cover at all.
-    //
-    // A NON-DETERMINISTIC MEMBER cannot be compared at all: LevelMeta's constructor calls
-    // LevelId.NewId(), so two fresh instances legitimately differ, and its Reset draws a new id
-    // too - deliberately, since a reset level is a different level. Those members are found rather
-    // than listed: two fresh instances are built and every property they disagree on is excluded.
-    // That is also why the generated Reset() builds a FRESH instance instead of copying from one
-    // shared prototype - a prototype would hand every reset the same id.
+    // Reset means "back to what the constructor built": the constructor is the single source of defaults.
+    // Exempt: structs (no parameterless constructor) and non-deterministic members (found, not listed).
+    // BH.SDK/Docs/TESTING.md, "Models".
 
 
     /// <summary> That Reset really means "back to what the constructor built", swept over every model - the
@@ -148,14 +121,8 @@ namespace BH.SDK.Tests
             Assert.IsEmpty(failures, Report(failures));
         }
 
-        // THE OTHER HALF OF WHAT RESET PROMISES, and the half a value comparison cannot see: a
-        // reset object is the SAME object, so whatever holds its nested models and its collections
-        // still holds them. Every hand-written Reset here cleared in place and called Reset() on a
-        // nested model for exactly that reason, and the generated one reproduces it through
-        // ModelUtils.PullFrom and ResetTo rather than by assigning a fresh instance over the top.
-        //
-        // A POLYMORPHIC field is the deliberate exception and is skipped: a Vector2Rect cannot be
-        // reset into the Vector2Value its constructor wanted, so the instance has to go.
+        // A reset object is the SAME object (nested models and collections survive); polymorphic fields
+        // are the exception.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]

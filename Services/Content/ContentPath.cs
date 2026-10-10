@@ -2,18 +2,9 @@ using System;
 
 namespace BH.SDK.Services.Content
 {
-    // The one place that decides what a path inside a store may look like, and it REFUSES rather
-    // than repairs. Every alternative is worse in the same way: converting a backslash to a slash
-    // renames a file that legitimately carries one on Linux, collapsing "a/../b" resolves a
-    // traversal instead of reporting it, and trimming a trailing slash turns a caller's directory
-    // into a blob it never meant to write. A store is addressed by names that came from an archive,
-    // a database or a hostile upload - the answer to a bad one is "no", not a guess at what was
-    // meant.
-    //
-    // Comparison is ORDINAL everywhere, case included: an archive written on Linux has to read back
-    // as the same archive on Windows, and a case-folding store would merge two entries a tar file
-    // holds separately. What the file system underneath a DirectoryContentStore does about case is
-    // its own answer and this cannot change it - a stated gap, not a claim.
+    // The one place that decides what a store path may look like, and it REFUSES rather than repairs
+    // (renaming, collapsing or trimming each changes what the name means). Comparison is ORDINAL, case
+    // included; the file system under a DirectoryContentStore has its own answer. Docs/ARCHIVE.md.
 
     /// <summary> Validation of the relative paths an <see cref="IContentStore"/> is addressed by. </summary>
     public static class ContentPath

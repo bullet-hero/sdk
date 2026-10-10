@@ -5,15 +5,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Roslyn.Tests
 {
-    // INCREMENTALITY IS NOT A NICETY HERE. Unity scopes this generator to BH.SDK and every assembly
-    // referencing it, and BH.SDK is autoReferenced - so it is asked about roughly every assembly in
-    // the project on every recompile, over 200 model types. If the pipeline cached by reference it
-    // would re-emit all of them on every keystroke, and an editor that recompiles on save would
-    // feel it.
-    //
-    // What makes it work is that ModelSpec holds no ISymbol - only strings and enums, with
-    // EquatableArray for the member list, since ImmutableArray compares by reference. These two
-    // fixtures are what notice if a symbol ever creeps back in.
+    // The generator is asked about nearly every assembly on every recompile, so the pipeline must cache by
+    // value (no ISymbol in ModelSpec); these fixtures notice if one creeps back.
 
     /// <summary> That the pipeline caches by VALUE - no ISymbol in the spec - or two hundred models re-emit on
     /// every keystroke of every assembly referencing the SDK. </summary>

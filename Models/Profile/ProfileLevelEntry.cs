@@ -6,11 +6,8 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models.Profile
 {
-    // THE TIMESTAMP HAS TO TRAVEL HERE because the archive cannot carry it: every zip entry is pinned
-    // to 1980 so two packs of one profile are the same bytes (ArchivePolicy), and LevelMeta has no
-    // edit time of its own. A merge deciding "which copy of this level is newer" reads this number
-    // for the incoming side, and an import writes it back onto the level document it places - or
-    // every imported level would look newest to the next merge and to the browser's sort.
+    // The write time travels here because the archive cannot carry it (every zip entry is pinned to 1980);
+    // a merge reads it for the incoming side, and an import writes it back onto the level it places.
 
     /// <summary> One level a profile archive carries: its identity, its folder under
     /// <c>levels/</c>, and when its level document was last written on the exporting device. </summary>

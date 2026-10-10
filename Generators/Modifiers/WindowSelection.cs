@@ -2,15 +2,9 @@ using BH.SDK.Models.Primitives;
 
 namespace BH.SDK.Generators.Modifiers
 {
-    // Shared by every modifier for which the run's window is an INSTRUCTION rather than a boundary -
-    // "do this to what the window names" instead of "write new content in here". Two of them exist
-    // (mod_content_remover, mod_span_fit) and the answer must read the same in both: a level cleaned
-    // by one and fitted by the other should have talked about the same objects.
-    //
-    // The asymmetry is the whole point and is NOT an oversight: Invert selects what shares no frame
-    // at all with the window, its opposite selects only what lies wholly inside it. Making both
-    // "overlaps" would mean content hanging over the edge is taken whichever way the flag is set,
-    // which is not a mode - it is a trap.
+    // Shared by the modifiers (mod_content_remover, mod_span_fit) for which the window is an INSTRUCTION.
+    // Asymmetric on purpose: Invert selects what shares no frame with the window, its opposite only what
+    // lies wholly inside it, so an edge-overhanging object is not taken either way.
 
     /// <summary> Whether a lifetime is what a window-driven modifier is talking about. </summary>
     public static class WindowSelection

@@ -4,22 +4,9 @@ using BH.SDK.Services.Archive;
 
 namespace BH.SDK.Services.LevelArchive
 {
-    // THREE INDEPENDENT CHOICES FLATTENED INTO ONE ENUM, and flattening them is deliberate: an
-    // author picks ONE thing from a dropdown, not a container, then a checkbox, then another
-    // checkbox. The predicates below are what code reads instead of switching on all seven.
-    //
-    // THE NUMBER IS IDENTITY, DisplayOrder IS THE DROPDOWN. They were the same thing once, and the
-    // day the order changed is the day that stopped being free: a value read back by position means
-    // every reordering silently turns one export into another. So the number a mode carries never
-    // moves again - 2 and 3 stay the tar.gz pair they have always been - and what an author sees is
-    // the table below, which is a product decision and is expected to change.
-    //
-    // ZipEncrypted IS NOT A SECOND WAY TO SPELL ZipProtected. Encrypted means the zip's own AES-256,
-    // which any archiver opens by asking for the password - that is the DEFAULT way to put a level
-    // behind a password, because the person receiving it has an archiver and does not have gpg.
-    // Protected means an OpenPGP message around the whole archive, which `gpg -d` opens and which
-    // covers a document, a folder and an archive with one scheme; it stays for the people who
-    // already live in that world, and for the folder shape, where nothing else can do the job.
+    // Three independent choices flattened into one enum (an author picks ONE thing from a dropdown).
+    // THE NUMBER IS IDENTITY, DisplayOrder IS THE DROPDOWN: a number never moves. ZipEncrypted (zip AES)
+    // is not a second spelling of ZipProtected (OpenPGP around the archive). Docs/ARCHIVE.md.
 
     /// <summary> How a level archive is written out. </summary>
     public enum LevelExportMode
@@ -115,11 +102,8 @@ namespace BH.SDK.Services.LevelArchive
             }
         }
 
-        // THE ORDER THE AUTHOR READS, most reached for first, and the three passworded shapes are
-        // ranked rather than grouped by container: the zip's own AES is what a password on a level
-        // means now, .tar.gz.gpg is the shape that predates it, and .zip.gpg is the rare one that
-        // exists for somebody who wants both a zip and gpg. Every mode appears exactly once, which
-        // LevelExportModeTests checks - a dropdown missing a mode is a mode nobody can pick.
+        // Ranked by use, not grouped by container: zip AES, then .tar.gz.gpg, then the rare .zip.gpg.
+        // Every mode appears exactly once (LevelExportModeTests).
         private static readonly LevelExportMode[] Order =
         {
             LevelExportMode.Folder,

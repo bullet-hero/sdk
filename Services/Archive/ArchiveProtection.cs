@@ -1,19 +1,8 @@
 namespace BH.SDK.Services.Archive
 {
-    // TWO SCHEMES, AND THE SECOND ONE IS NOT A DUPLICATE OF THE FIRST. OpenPgp wraps the whole
-    // archive in a message `gpg -d` opens, and it is the default because ONE scheme then covers a
-    // single document, a folder and an archive alike - which is what made it worth choosing over
-    // ZIP's own AES in the first place. ZipAes256 encrypts each entry inside the zip instead, and
-    // it exists because the person on the other end of a level very often has 7-Zip and nothing
-    // else: they type the password into the tool they already have rather than installing gpg.
-    //
-    // WHAT IT COSTS is written down so choosing it stays a choice: SharpZipLib takes the password
-    // as a `string`, which cannot be zeroed the way the char[] every other path here carries can;
-    // Windows Explorer refuses an AES zip outright; AE-2 is WinZip's extension rather than a
-    // formal standard; and the salt is random, so such an archive is never byte-reproducible.
-    //
-    // Only Zip can carry ZipAes256 - tar.gz has no encryption of its own, and asking for the
-    // combination is a caller mistake rather than a state to degrade.
+    // Two schemes: OpenPgp (default; one scheme for a document, folder and archive, opened by gpg) and
+    // ZipAes256 (opened by 7-Zip; costs and why it is not a duplicate: Docs/ARCHIVE.md). Only Zip can
+    // carry ZipAes256; asking tar.gz for it is a caller mistake, not a state to degrade.
 
     /// <summary> How a written archive is protected, if at all. </summary>
     public enum ArchiveProtection

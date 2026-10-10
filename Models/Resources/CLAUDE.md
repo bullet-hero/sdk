@@ -195,3 +195,7 @@ are guid-addressed, the three file kinds keep `ResourceId`); `RuleResourceMetaId
 exclusive. A V1 file migrates through `Versions/V1/Migrations/LevelMetaV1ToV2` with every guid empty.
 The same records travel inside a collection's manifest (`Models/Collections/ResourceCollection`), and
 an import copies the records of what it brings (`GameEditor`'s `OpMetaMergeResourceRecords`).
+The manifest lists only the FILE resources (a texture is bytes, so its record must live somewhere); the
+data resources (prefabs, themes, shapes, effects) are envelope files of their own, so the folder is the
+table. File-resource ids are collection-local negative ints, renumbered by every import (`ResourceRemap`).
+`ResourceCollection` is a new domain, not a generation bump: no level refers to a collection, it copies.

@@ -7,26 +7,9 @@ using BH.SDK.Rules;
 
 namespace BH.SDK.Utils
 {
-    // A placement's materialized copies are REBUILDABLE, and this is the pair of functions that
-    // says so: pfid names the template, ids maps every template-inner id to the copy's permanent
-    // outer id, mod carries the per-instance overrides, and off is the in-point the copies' spans
-    // are pulled back by (PrefabObject.PlacementOffset). Those four are all it takes, so the copies
-    // stop reaching the file and are rebuilt on the way back in - measured at 62-82% of four corpus
-    // levels' bytes, 13% of volcano's, and gzip does not absorb it (each copy carries its own id and
-    // its own span offset, and deflate's window is 32 KB). Docs/Issues/PREFAB_VIRTUALIZATION_HISTORY.md
-    // is the record.
-    //
-    // THE EDITOR STILL MATERIALIZES. Thin and Expand bracket the FILE, not the model: by the time a
-    // level plays, the same flat GameLevel.Objects map exists as before, and the editor, every
-    // operation, LevelStateBuilder and every job keep seeing ordinary objects. The consuming Unity
-    // project's BH.Core.Services.PrefabMaterializer is unchanged and remains the only thing that
-    // MINTS an outer id - ids are born at edit time, never at load time, which is exactly what makes
-    // the table in the file authoritative.
-    //
-    // EXPANSION WRITES BY INDEXER RATHER THAN BY Add, and that one character is what lets a level
-    // saved BEFORE virtualization still open: such a file holds its flat copies AND its id table, so
-    // an Add would throw or double them while an indexer overwrites them in place. No migration, no
-    // drop pass, nothing Rule 11 would call a shim.
+    // Placement copies are REBUILDABLE from pfid, ids, mod and off, so Thin keeps them out of the file and
+    // Expand rebuilds them on load; the editor still materializes. Expand writes by INDEXER, so a pre-
+    // virtualization file (copies AND table) still opens (Docs/PREFAB_PLACEMENT.md).
 
     /// <summary> Moving a prefab placement's copies out of the file and back in: Thin drops them
     /// before a write, Expand rebuilds them after a read. </summary>
@@ -66,10 +49,8 @@ namespace BH.SDK.Utils
             return thin;
         }
 
-        // A NEW DICTIONARY RATHER THAN REMOVALS FROM THE OLD ONE. Removing and re-adding reshuffles
-        // a Dictionary's entry slots, and slot order is what both writers iterate - so the same
-        // level would write different bytes depending on whether it had been thinned before. It also
-        // keeps this non-destructive, which is what lets a caller hand over the live level.
+        // A NEW dictionary, not removals: slot order is what both writers iterate, and it keeps this
+        // non-destructive.
 
         /// <summary> Every object of a scope except the ones some placement in that same scope
         /// materialized. </summary>
@@ -81,11 +62,8 @@ namespace BH.SDK.Utils
 
             if (copies.Count == 0) return objects;
 
-            // CAPACITY IS objects.Count AND NOT THE DIFFERENCE, because a copy id may name an object
-            // this scope does not hold: a level straight out of an importer has every placement's
-            // ObjectIds filled and none of the copies written yet - writing them is Expand's work -
-            // so the difference goes NEGATIVE and Dictionary's constructor throws on it. The
-            // over-allocation is one dictionary per scope per save.
+            // Capacity is objects.Count, not the difference: a fresh import has ObjectIds and no copies, so
+            // the difference goes negative and the constructor throws.
             var kept = new Dictionary<ObjectId, RectObject>(objects.Count);
             foreach (var pair in objects)
                 if (!copies.Contains(pair.Key))
@@ -94,13 +72,8 @@ namespace BH.SDK.Utils
             return kept;
         }
 
-        // The one predicate this whole feature turns on, and it is deliberately shared with the
-        // edit-time materializer (BH.Core.Services.PrefabMaterializer.FindPlacements) rather than
-        // restated: an object is a materialized copy exactly when its id appears as a VALUE in some
-        // placement's ObjectIds within the SAME scope. A PrefabObject can be both - a template
-        // holding a nested placement materializes flat, so the nested placement arrives in the host
-        // as an ordinary entry that still happens to be PrefabObject-typed, and its own table names
-        // ids in the TEMPLATE's scope rather than this one.
+        // Shared with PrefabMaterializer.FindPlacements: a copy is an object whose id is a VALUE in a
+        // placement's ObjectIds in the SAME scope. A nested placement can be both.
 
         /// <summary> Ids of every object in this scope that some placement in it materialized. </summary>
         public static void CollectMaterializedChildIds(Dictionary<ObjectId, RectObject> objects,
@@ -209,10 +182,7 @@ namespace BH.SDK.Utils
                 return;
             }
 
-            // THE ROOT IS WRITTEN BEFORE - AND INDEPENDENTLY OF - the id table, because it needs no
-            // entry in one: the placement IS the root's copy (see PrefabRootUtils). So a template
-            // holding nothing but a root still materializes that much, and the two early returns
-            // below end the same way this method does rather than skipping the overrides.
+            // The root is written before and independently of the id table: the placement IS its copy.
             PrefabRootUtils.ApplyRoot(placement, template);
 
             if (template.Objects.Count == 0)
@@ -221,10 +191,7 @@ namespace BH.SDK.Utils
                 return;
             }
 
-            // ONE FINDING FOR A WHOLE MISSING TABLE, one per entry for a partial one. A placement
-            // that was never materialized - an import before its host resynced, or one
-            // the materializer refused on depth - owns no table at all, and reporting that per
-            // template object would file a thousand findings for a single authoring state.
+            // One finding for a whole missing table, one per entry for a partial one.
             if (placement.ObjectIds == null || placement.ObjectIds.Count == 0)
             {
                 report.Report(PrefabExpandProblem.RemapMissing, scopeName, placement.ObjectId,
@@ -258,19 +225,9 @@ namespace BH.SDK.Utils
             report.CountExpanded(written);
         }
 
-        // A template's own objects store their span LOCAL to the prefab's own timeline - the exact
-        // same "local" relationship a keyframe's Frame has to its owning object's span start, and
-        // for the same reason: it is what makes one template placeable at multiple different start
-        // frames and still mean the same thing relative to each. Only the start moves: a duration is
-        // the same number in any coordinate system.
-        //
-        // ToGlobalFrame RATHER THAN A BARE ADDITION, because a local frame is a FRAME and not an
-        // offset: the placement's own first frame is local FrameRules.MinFrame, so composing two
-        // positions has to give the origin back exactly once. Adding them outright counts it twice
-        // and puts every copy one frame late - which is precisely what the edit-time materializer
-        // had been doing since it moved onto FrameSpan, invisibly, because the copies used to be
-        // stored rather than recomputed. The two halves must agree, and this is the formula they
-        // agree on; BH.Core.Services.PrefabMaterializer carries the same note.
+        // Template spans are local to the prefab timeline. Compose with ToGlobalFrame, never a bare
+        // addition: a local frame is a FRAME, and adding counts the origin twice. Lockstep:
+        // PrefabMaterializer.
 
         /// <summary> Resolves a copy's template-local span into the host scope's own timeline,
         /// pulled back by the placement's own in-point. </summary>
@@ -280,12 +237,8 @@ namespace BH.SDK.Utils
                 placement.Span.ToGlobalFrame(outerObj.Span.StartFrame) - placement.PlacementOffset);
         }
 
-        // An inner object whose ParentObjectId is unset (Null) OR explicitly ObjectId.PrefabRoot
-        // both auto-parent to the placement itself - the two are equivalent by design. An inner
-        // object naming another inner object keeps pointing at it, remapped through this
-        // placement's own table; a dangling inner reference is left unremapped, exactly like a
-        // hand-authored object's dangling ParentObjectId - an authoring error for the rule system
-        // to flag, not something silently fixed up here.
+        // Null and ObjectId.PrefabRoot both auto-parent to the placement; a dangling inner reference is left
+        // for the rule system to flag.
 
         /// <summary> Points every rebuilt copy's parent at the copy (or the placement) it belongs to. </summary>
         private static void RemapParents(PrefabObject placement, Prefab template, IObjectScope hostScope)

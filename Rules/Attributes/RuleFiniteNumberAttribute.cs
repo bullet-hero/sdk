@@ -3,15 +3,8 @@ using System.Reflection;
 
 namespace BH.SDK.Rules.Attributes
 {
-    // Covers the gap the numeric rules leave open. RuleInRange rejects every non-finite value for
-    // free (NaN fails its lower half, the infinities fail one side each), but the one-sided rules do
-    // not: NaN sorts below every real number, so RuleMaxValue accepts it, and +Infinity satisfies RuleMinValue.
-    // A property with only one bound - or with no numeric rule at all - can therefore hold NaN, and
-    // NaN spreads: one poisoned position turns every derived transform, bound and collision result
-    // into NaN for the rest of the frame.
-    //
-    // Prefer a two-sided RuleInRange where a real range exists; reach for this only where the value
-    // genuinely has no meaningful bound.
+    // Closes the gap one-sided bounds leave: NaN passes RuleMaxValue, +Infinity passes RuleMinValue,
+    // and one NaN position poisons every derived transform. Prefer a two-sided RuleInRange.
 
     /// <summary> A floating-point field must hold a real number - not NaN, not an infinity. </summary>
     [AttributeUsage(PropertyTarget)]

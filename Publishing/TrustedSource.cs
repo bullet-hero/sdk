@@ -11,14 +11,8 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Publishing
 {
-    // One entry of the site roster the licensing policy already lists in prose. Making it data is
-    // what turns that document into moderation: the client can grade a resource the moment its URL
-    // is typed, and a server queue can be sorted by which entries actually need a human.
-    //
-    // Matching is by HOST, not by the URL string. A site is its domain - the path, the query and the
-    // scheme all vary per resource, and "starts with https://freesound.org/" fails the moment
-    // someone pastes a www- or a country-prefixed link. Subdomains match their parent domain, which
-    // is what makes one entry cover a whole site.
+    // One entry of the site roster. Matched by HOST, not by URL string (www- and country-prefixed
+    // links break a prefix match); a subdomain matches its parent, so one entry covers a site.
 
     /// <summary> One known resource site and how far it can be taken at its word. </summary>
     [RuleContainer]

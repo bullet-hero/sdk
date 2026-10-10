@@ -41,22 +41,14 @@ namespace BH.SDK.Models.SettingGroups.Controls
         [JsonProperty(Names.DoubleClickTime)]
         public float DoubleClickTime { get; set; }
 
-        // Space and Shift both, because Space is the dash key players arrive with. The level editor also
-        // binds Space to play/pause, and that conflict is resolved where it exists rather than by taking
-        // the key away from everyone: the editor CLAIMS Space (ControlService.ClaimKeys), so the driver
-        // never reads it on that one screen and the setting stays what the player set.
+        // Space and Shift both; the editor CLAIMS Space (ControlService.ClaimKeys): the driver skips it.
 
         /// <summary> Which keys request a dash. </summary>
         [RuleEnumFlagsValid]
         [JsonProperty(Names.DashKeys)]
         public KeyBindingMask DashKeys { get; set; }
 
-        // Hidden only WHILE steering, and never captured: the arrow comes back the moment the button is
-        // up, so it is always there for the pause button and every menu. The two modes default apart
-        // because they answer different questions - Absolute puts the avatar where the arrow is, so the
-        // arrow is redundant with the in-world cursor drawn on top of it, while Relative moves the
-        // in-world cursor BY the arrow, and losing sight of the arrow costs the player the thing they
-        // are pushing with.
+        // Hidden only WHILE steering, never captured. The two modes default apart: Docs/SETTING_GROUPS.md
 
         /// <summary> Absolute mode: hide the OS cursor while the hold button is down. </summary>
         [JsonProperty(Names.CursorHideAbsolute)]
@@ -66,25 +58,15 @@ namespace BH.SDK.Models.SettingGroups.Controls
         [JsonProperty(Names.CursorHideRelative)]
         public bool CursorHideRelative { get; set; }
 
-        // Declared LAST because the blob writes members in declaration order and that order is
-        // append-only (see the SDK's VERSIONING record), not because it belongs at the bottom.
-        //
-        // The point of it is playing with ONE hand: the left button already steers, so binding the
-        // dash to the right one makes the mouse a complete controller and the keyboard optional. It
-        // is deliberately NOT excluded when it equals HoldButton - a press is an edge and a hold is a
-        // level, so the same button can legitimately do both, exactly as DashOnDoubleClick already
-        // does with the hold button itself.
+        // Declared LAST: the blob writes in declaration order, append-only (Docs/VERSIONING.md).
+        // For one-handed play; not excluded when it equals HoldButton (a press is an edge, a hold a level).
 
         /// <summary> Which mouse button requests a dash; <see cref="MouseButton.None"/> unbinds it. </summary>
         [RuleEnumValid(MouseButton.Right)]
         [JsonProperty(Names.DashButton)]
         public MouseButton DashButton { get; set; }
 
-        // What letting go of the hold button does is a question of FEEL, answered per device, and the
-        // two defaults are apart on purpose: a mouse player releases to stop, so the cursor comes back
-        // onto the avatar; a finger lifts all the time just to reposition, so the touchscreen default
-        // leaves the cursor where it was and the avatar walks on to it. Off is the pre-generation-2
-        // behaviour, where only a hit moved the cursor (ControlService.RestCursor).
+        // Releasing the hold button is a FEEL question answered per device (mouse: the cursor returns).
 
         /// <summary> Cursor modes: releasing the hold button returns the cursor onto the avatar, so the
         /// avatar stops where it stands. Off leaves the cursor where it was and the avatar walks on to

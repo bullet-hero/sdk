@@ -3,9 +3,8 @@ using System;
 namespace BH.SDK.Models.Enums.Controls
 {
     /// <summary>
-    /// A set of keyboard keys bindable to one gameplay action. Deliberately a small, curated set
-    /// rather than every key a keyboard has: the format only needs the keys an action is plausibly
-    /// bound to, and a full key enum would be a second source of truth against the engine's own.
+    /// A small curated set of keyboard keys bindable to one gameplay action; a full key enum would be a
+    /// second source of truth against the engine's own.
     /// </summary>
     [Flags]
     public enum KeyBindingMask : ushort

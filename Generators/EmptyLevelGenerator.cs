@@ -5,11 +5,8 @@ using BH.SDK.Rules;
 
 namespace BH.SDK.Generators
 {
-    /// <summary>
-    /// A blank level: nothing but the timeline shape the author asked for. The reference
-    /// implementation of the contract as much as it is a useful preset - if something here needs a
-    /// special case, the contract is wrong.
-    /// </summary>
+    /// <summary> A blank level: only the timeline shape asked for. The reference implementation of the
+    /// contract: if something here needs a special case, the contract is wrong. </summary>
     public class EmptyLevelGenerator : BaseLevelGenerator<EmptyLevelGenerator.Parameters>
     {
         /// <summary> <c>"gen_level_empty"</c>, the key a host lists this generator under. </summary>
@@ -50,11 +47,8 @@ namespace BH.SDK.Generators
             return new GeneratedLevel(level, meta);
         }
 
-        /// <summary>
-        /// Public mutable fields, deliberately - a form binds to them by reflection and a preset
-        /// serializes from them. This is the shape every parameters class takes, and the one place
-        /// in the SDK where it is intended rather than an oversight.
-        /// </summary>
+        /// <summary> Public mutable fields, deliberately: a form binds to them by reflection and a preset
+        /// serializes from them. The shape every parameters class takes. </summary>
         public class Parameters
         {
             /// <summary> Name the new level is created under. </summary>

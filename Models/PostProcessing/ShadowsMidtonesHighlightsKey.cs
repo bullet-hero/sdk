@@ -12,22 +12,8 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models.PostProcessing
 {
-    // THE FOURTH COMPONENT WAS NEVER AN ALPHA, and carrying one is what this stopped doing. URP
-    // takes each of these as a Vector4 whose w is a signed OFFSET, not opacity: PrepareLiftGammaGain
-    // adds it to every channel after removing the luminance (gamma additionally does w += 1 and
-    // inverts), and PrepareShadowsMidtonesHighlights weights it - times one when negative, times
-    // FOUR when positive - and adds that. Its neutral is zero.
-    //
-    // The model stored a four-component colour defaulting to white, so w arrived as 1: turning any
-    // of these ranges on with an untouched colour pushed +4 into every channel of a whole tonal
-    // band. The colour picker called it Alpha, nothing said otherwise, and the neutral value was
-    // unreachable except by guessing. So the component is gone rather than documented - these carry
-    // three channels now and the provider sends URP the zero the effect is neutral at.
-    //
-    // A LEVEL WRITTEN BEFORE THIS READS BACK FINE and no version moved, which is a decision about
-    // where the project is rather than about the format: the payload simply carries one property
-    // more than the type has, Newtonsoft drops it, and the colour survives. What does not survive is
-    // whatever the old alpha was doing to the picture - which is the point.
+    // Three channels: URP reads a fourth as a signed OFFSET (neutral 0), not an alpha. Why, and why no
+    // version moved: Docs/POST_PROCESSING.md
 
     /// <summary>
     /// Three-band color grading where the bands themselves are authorable: the two Limit fields say

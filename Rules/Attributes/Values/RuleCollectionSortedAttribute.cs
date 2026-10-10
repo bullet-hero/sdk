@@ -5,14 +5,8 @@ using System.Reflection;
 
 namespace BH.SDK.Rules.Attributes
 {
-    // Advice, not Error, and deliberately so: the format does NOT require sorted tracks. Frames must
-    // be unique (RuleCollectionUnique), order is the consumer's problem - Unity's LevelStateBuilder
-    // sorts once at load, and a hand-written or generated file is perfectly legal unsorted.
-    //
-    // It still earns its place: an editor that shows a track in file order, or a diff between two
-    // saves, reads much better when the file is sorted, and sorting is free at save time. So this
-    // reports "worth tidying" rather than "broken", and only surfaces when a consumer asks for
-    // Advice-level findings.
+    // Advice, deliberately: the format does NOT require sorted tracks (frames must be unique; the
+    // consumer sorts at load). Sorted files only read and diff better.
 
     /// <summary>
     /// Elements should be in ascending order of the named property. Advisory - unsorted data is

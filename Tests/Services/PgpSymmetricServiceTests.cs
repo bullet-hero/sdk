@@ -7,21 +7,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests.Services
 {
-    // THE CYRILLIC PASSPHRASE IS THE LOAD-BEARING TEST HERE, and it looks like the least important
-    // one. BouncyCastle offers two spellings of every passphrase call: the plain one encodes a
-    // passphrase byte-per-char, the ...Utf8 one encodes it the way gpg does. For an ASCII passphrase
-    // the two agree exactly, so every test written in English passes under either - and a level
-    // exported by a Russian-speaking author then fails to open in gpg, silently, reported as a wrong
-    // password. Since that is the DEFAULT case for this project's audience, the round trip below is
-    // what stops the wrong overload from ever being used.
-    //
-    // The other thing being pinned is that a wrong passphrase and a damaged file are TWO ANSWERS.
-    // Without the MDC there is only one - both arrive as the decryption failing - and the player is
-    // told something useless about two situations with completely different remedies.
-    //
-    // S2KWorkBytes is turned down to its floor throughout: what is under test is the format, and the
-    // work factor is a parameter of it. One test runs at the shipped default so that number is not
-    // untested either.
+    // The Cyrillic passphrase is load-bearing: only it distinguishes the byte-per-char overload from the
+    // UTF-8 one gpg uses. A wrong passphrase and a damaged file are two answers. BH.SDK/Docs/TESTING.md.
 
     /// <summary> The OpenPGP layer, and chiefly the Cyrillic passphrase: every ASCII test passes under either
     /// BouncyCastle overload, and the wrong one makes a Russian author's export unopenable in gpg. </summary>
@@ -221,11 +208,7 @@ namespace BH.SDK.Tests.Services
             Assert.AreEqual(Plaintext, plaintext);
         }
 
-        // The conversion that made every test above fail once. BouncyCastle's itCount parameter is
-        // the coded octet OpenPGP stores, not a number of anything, and it throws for any honest
-        // value - so the work factor is one of 256 rungs and this is where a request in bytes lands
-        // on one. Rounding UP is the direction that matters: a caller must never silently get less
-        // stretching than it asked for.
+        // BouncyCastle's itCount is a coded octet (256 rungs); a request in bytes rounds UP.
         [TestCase(1, ExpectedResult = 1024)]
         [TestCase(1024, ExpectedResult = 1024)]
         [TestCase(1025, ExpectedResult = 1088)]

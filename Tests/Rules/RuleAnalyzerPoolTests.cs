@@ -7,16 +7,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests.Rules
 {
-    // RuleAnalyzer rents one child buffer per visited object from a prewarmed pool, and a buffer that
-    // never comes back is invisible until the pool runs dry - from then on every Analyze dies on an
-    // empty stack instead of reporting rules, and a shared analyzer carries that damage to every
-    // consumer that touches it afterwards. That is how this regressed once: the misapplied-rule throw
-    // is by design (AssertWrongType provokes it in most files of this folder) and it leaked a buffer
-    // per occurrence, so the whole folder started failing once past the prewarmed count - including
-    // across separate test runs, since an analyzer can outlive one run in a static field.
-    //
-    // These tests pin the rental contract rather than the pool's size: returned on success, returned
-    // on throw, and the prewarmed count is an optimization rather than a depth limit.
+    // Pins the rental contract (returned on success and on throw; the prewarmed count is not a depth
+    // limit): a leaked buffer per by-design misapplied-rule throw once drained a shared analyzer.
 
     /// <summary>
     /// RuleAnalyzer's internal buffer pool: an instance stays reusable no matter how many analyses

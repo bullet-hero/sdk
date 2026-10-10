@@ -5,16 +5,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests
 {
-    // Two things here are worth a test rather than a comment. First, the group shipped WITHOUT a
-    // UserSettings version bump, so a settings.json written before it existed has no "keys" key at
-    // all and must come back holding an empty map rather than null - the same additive shape
-    // InterfaceSettings and AntiAliasingGraphicsSettings were added in.
-    //
-    // Second, and specific to this group: an EMPTY value is a real answer. "The player cleared this
-    // shortcut" and "the player never touched it" are different states that must survive a round
-    // trip separately, because the first has to beat the shipped default and the second has to lose
-    // to it. A map that dropped empty values on save would silently re-arm every shortcut anyone
-    // deliberately turned off.
+    // An absent "keys" key reads as an empty map, not null; and an EMPTY value is a real answer ("cleared"
+    // beats the default, "untouched" loses to it), so it must survive a round trip.
 
     /// <summary> KeybindingsSettings: defaults, the override API, boilerplate, and what an older
     /// settings file deserializes to. </summary>

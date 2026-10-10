@@ -6,14 +6,8 @@ using UnityEngine;
 
 namespace BH.SDK.Editor
 {
-    // WHERE EVERYTHING IS, ASKED RATHER THAN WRITTEN DOWN. The SDK is a submodule; the folder a
-    // consuming project mounts it at is that project's business, so nothing here may name it. The
-    // one fixed point is THIS assembly: Unity can hand back the path of the asmdef that declares
-    // it, and the SDK root is two folders above that. Every other path is derived from it.
-    //
-    // DELIBERATELY NOT GENERIC. This is the builder for BH.SDK.Roslyn and nothing else - one
-    // project, one artifact, one folder of compiler references. A configurable version of this
-    // would have to describe things that have exactly one correct value.
+    // Every path is derived from this assembly's own asmdef location; nothing may name the mount folder.
+    // Deliberately not generic: one project, one artifact, one folder of references.
 
     /// <summary> Filesystem layout of the SDK's Roslyn components. </summary>
     internal static class RoslynLayout
@@ -40,12 +34,8 @@ namespace BH.SDK.Editor
         /// <summary> Release, always: an analyzer runs on every compilation the Editor performs. </summary>
         public const string Configuration = "Release";
 
-        /// <summary>
-        /// The five assemblies the sources bind against. Three are an analyzer's own surface
-        /// (Roslyn plus ImmutableArray); the last two are there because the Editor's
-        /// System.Collections.Immutable spells its members with Span, and without them the build
-        /// fails with CS0012 naming a type nobody wrote.
-        /// </summary>
+        /// <summary> The five assemblies the sources bind against; the last two exist because the Editor's
+        /// System.Immutable spells members with Span (else CS0012 naming a type nobody wrote). </summary>
         public static readonly string[] CompilerReferenceNames =
         {
             "Microsoft.CodeAnalysis.dll",

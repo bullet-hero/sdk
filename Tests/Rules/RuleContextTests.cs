@@ -10,9 +10,8 @@ using NUnit.Framework;
 namespace BH.SDK.Tests.Rules
 {
     /// <summary>
-    /// RuleContext: what every rule is allowed to know about its surroundings. The scope it resolves
-    /// is what decides which timeline a frame is measured against and which reserved parent targets
-    /// mean anything, so getting it wrong misvalidates whole subtrees silently.
+    /// RuleContext: what a rule may know of its surroundings. A wrong scope misvalidates whole subtrees
+    /// silently (which timeline, which reserved parent targets).
     /// </summary>
     public class RuleContextTests : BaseRuleTests
     {
@@ -115,10 +114,8 @@ namespace BH.SDK.Tests.Rules
             Assert.AreSame(level.Game, outer.Objects);
         }
 
-        // The analyzer still rebases as it walks - WithScope swaps the timeline, as the case above
-        // asserts - but no rule measures a frame against it any more, so the same key is legal at
-        // level scope and legal one level down. Kept as the end-to-end proof of exactly that: a
-        // template shorter than the key inside it is not a finding.
+        // The analyzer still rebases the timeline, but no rule measures a frame against it: a short template
+        // holding a long key is not a finding.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]

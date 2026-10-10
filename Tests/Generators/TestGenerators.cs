@@ -6,13 +6,8 @@ using BH.SDK.Models.Values;
 
 namespace BH.SDK.Tests.Generators
 {
-    // Fixtures, not tests. Real generators (gen_radial and friends) arrive in later stages; these
-    // exist so the contract itself - context, journal, estimate, requirements - can be exercised
-    // now, and so each one is deliberately the SMALLEST generator that reaches one part of it.
-    //
-    // They deliberately live in the test assembly rather than in Generators/: GeneratorRegistry
-    // scans only the SDK assembly, so keeping them here is what stops test fixtures from showing up
-    // in a real host's generator list.
+    // Fixtures, not tests: the smallest generator reaching each part of the contract. They live here
+    // because GeneratorRegistry scans only the SDK assembly.
 
     /// <summary> Creates N plain objects. Exercises Create + Estimate. </summary>
     internal class SpawnTestGenerator : BaseContentGenerator<SpawnTestGenerator.Parameters>

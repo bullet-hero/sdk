@@ -102,10 +102,7 @@ namespace BH.SDK.Tests.Rules
             AssertInvalid<RuleStringMaxAttribute>(new ZeroModel { Value = "a" });
         }
 
-        // The ceiling counts CODE UNITS, and an astral character is two of them, so a cut landing
-        // between the halves leaves a character that is not one. Truncation gives the shorter answer
-        // rather than the broken one - the rule is already a Warning precisely because its repair is
-        // destructive, and one code unit more destroyed is the cheaper of the two outcomes.
+        // The ceiling counts CODE UNITS; a cut between surrogate halves yields the shorter answer.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]

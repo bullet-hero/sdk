@@ -20,10 +20,7 @@ namespace BH.SDK.Models.PostProcessing
     [GenerateModel]
     public sealed partial class VignetteKey : PostProcessingKeyframe, IModel<VignetteKey>
     {
-        // NO ALPHA AND NO HDR PART, and both are URP's own call rather than ours: the component
-        // declares its colour as `new ColorParameter(Color.black, hdr: false, showAlpha: false, ...)`,
-        // so a value above one changes nothing and a fourth component is not read at all. The note
-        // that used to ask for an HDR check here was asking for something the effect does not have.
+        // No alpha and no HDR part, by URP's own declaration (hdr: false, showAlpha: false).
 
         /// <summary> Color the edges fade toward; black is the usual choice, but any tint works. </summary>
         [RuleOptional]

@@ -1,12 +1,7 @@
 namespace BH.SDK.Models.Enums.Meta
 {
-    // How far a rights holder's permission reaches. The whole point of storing this rather than a
-    // bare "permission granted" bool is that the three cases fail differently: a ThisLevel grant is
-    // void the moment the resource is copied into another level, while an AnyLevel grant survives
-    // every reuse. A moderator reading one record has to be able to tell which of those they hold.
-    //
-    // Undefined is 0 and means "the author wrote nothing", never "unlimited" - same reasoning as
-    // AgeRating.Unrated, and the reason a publish profile can refuse it outright.
+    // How far a permission reaches: ThisLevel is void once copied, AnyLevel survives reuse. Undefined is 0
+    // and means "wrote nothing", never "unlimited" (like AgeRating.Unrated).
 
     /// <summary> What a permission from a rights holder covers. </summary>
     public enum PermissionScope : byte

@@ -10,9 +10,8 @@ using Newtonsoft.Json;
 namespace BH.SDK.Models.Keyframes
 {
     /// <summary>
-    /// Animates how a texture is mapped onto a ShapeObject - scrolling and repeating the image
-    /// without moving the object itself. Both fields are concrete Vector2Value, not IVector2: a
-    /// randomized UV would tear the image differently every frame.
+    /// Animates how a texture is mapped onto a ShapeObject (scroll, repeat) without moving the object.
+    /// Concrete Vector2Value, not IVector2: a randomized UV would tear the image every frame.
     /// </summary>
     [RuleContainer]
     [GenerateModel]

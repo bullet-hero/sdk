@@ -53,12 +53,8 @@ namespace BH.SDK.Models.Objects
         [JsonProperty(Names.Color)]
         public List<Color4Key> Colors { get; set; }
 
-        // THE ONLY TRACK HERE WHOSE KEY CLASS IS POLYMORPHIC, and it is what makes auto sizing a
-        // property of a FRAME rather than of the object: a FontSizeKey draws at the size it carries,
-        // an AutoFontSizeKey is fitted into the band it carries, and a track mixes the two freely.
-        // Which one a frame between two keys is in follows the LATER key of the pair, exactly as the
-        // Fillment/Appearing modes below do - and across that boundary a plain key blends as the
-        // degenerate band min = max = Value, so nothing jumps.
+        // The only polymorphic key track: FontSizeKey draws at its size, AutoFontSizeKey is fitted into a
+        // band, and the LATER key of a pair decides the frame. Models/Objects/CLAUDE.md
 
         /// <summary> Font size track, animated independently of the object's Scales - one resizes
         /// glyphs, the other stretches the whole rendered block. </summary>
@@ -68,14 +64,8 @@ namespace BH.SDK.Models.Objects
         [JsonProperty(Names.FontSize)]
         public List<IFontSizeKey> FontSizes { get; set; }
 
-        // The two tracks below are per-character effects rather than transform ones, so they are
-        // resolved by the player's text job over the string itself rather than by the usual
-        // keyframe -> transform path. Both default to "off" through TextRules' fallbacks, which is
-        // what keeps text authored before they existed unchanged.
-        //
-        // Their direction/mode lives on each KEY rather than on the object, exactly like Ease: a
-        // track can start writing forward and finish from the centre without being split across two
-        // objects, and between two keys the later one's setting wins.
+        // Per-character effects resolved by the text job over the string, not the keyframe -> transform
+        // path; both default to "off" (TextRules). Direction/mode lives on each KEY, like Ease.
 
         /// <summary> How much of the text is written over time, 0..1, each key carrying the
         /// direction it is written from. </summary>

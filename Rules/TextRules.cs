@@ -24,10 +24,8 @@ namespace BH.SDK.Rules
         /// <summary> Highest font size allowed. </summary>
         public const float MaxFontSize = 1000f;
 
-        // The band an AutoFontSizeKey starts life with, and the two numbers are not symmetrical: the
-        // max is the size the text is DRAWN at while it fits, so it matches FontSize_Fallback and a
-        // key switched to auto sizing looks unchanged until the text stops fitting. The min is a
-        // floor, and 0 means "no floor" - shrink as far as it takes rather than overflow.
+        // An AutoFontSizeKey's band: max is the size DRAWN while the text fits (matches FontSize_Fallback,
+        // so switching to auto looks unchanged); min is a floor, 0 meaning none.
 
         /// <summary> The auto font size min used when nothing says otherwise, read by AutoFontSizeKey, FontSizeKeyTests. </summary>
         public const float AutoFontSize_Min_Default = 0f;
@@ -35,12 +33,9 @@ namespace BH.SDK.Rules
         public const float AutoFontSize_Max_Default = 1f;
 
 
-        // Cap on ONE font's distinct-character set in LevelHints.FontCharacters. That set is a
-        // glyph-atlas warm-up hint and nothing else - a consumer that ignores it still renders every
-        // character - so this bounds what a builder writes rather than what a reader must accept, and
-        // no [RuleXxx] enforces it. 512 covers Latin, Cyrillic and Greek together with room to
-        // spare; a CJK level overruns it and simply warms a prefix, which is exactly the graceful
-        // degradation an advisory value should have.
+        // Cap on one font's character set in LevelHints.FontCharacters: a glyph-atlas warm-up hint, so
+        // this bounds what a builder writes, not what a reader accepts, and no [RuleXxx] enforces it.
+        // 512 covers Latin, Cyrillic and Greek; a CJK level warms a prefix.
 
         /// <summary> Upper bound of CachedFontText.Characters. </summary>
         public const int MaxFontBufferSize = 512;
@@ -52,10 +47,8 @@ namespace BH.SDK.Rules
         /// <summary> What TextObject.VerticalAlignment holds when nothing says otherwise. </summary>
         public const TextObjectVerticalAlignment VerticalAlignment_Default = TextObjectVerticalAlignment.Middle;
 
-        // The two fallbacks below are what keeps every text object written before these tracks
-        // existed looking exactly as it did: an empty track must read as "this effect is off", and
-        // off means fully written and nothing hidden. Getting either one backwards makes every
-        // existing level's text vanish on the next load.
+        // The fallbacks keep text written before these tracks existed identical: an empty track means
+        // "effect off" = fully written, nothing hidden. Inverting either makes old text vanish.
 
         /// <summary> Fraction of the text written. Empty track = all of it. </summary>
         public const float Fillment_Fallback = 1f;
@@ -78,11 +71,8 @@ namespace BH.SDK.Rules
         /// <summary> What AppearingKey.Mode holds when nothing says otherwise. </summary>
         public const TextAppearingMode AppearingMode_Default = TextAppearingMode.Random;
 
-        // A SET rather than a single character: one character gives the classic "XXXX", several give
-        // a scatter picked per character index, which is the difference between a censored line and a
-        // decoding one. Bounded because the player copies it into a fixed-size slot per text, and
-        // because every character in it has to be warmed into the font's glyph atlas (see
-        // Services/FontCharacterService) whether or not it is ever drawn.
+        // A SET, not a character: several give a scatter picked per character index. Bounded because the
+        // player copies it into a fixed slot per text and every member is warmed into the glyph atlas.
 
         /// <summary> The appearing mask used when nothing says otherwise, read by FontCharacterServiceTests, TextObject. </summary>
         public const string AppearingMask_Default = "X";

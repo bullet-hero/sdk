@@ -9,15 +9,8 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models.SettingGroups.Controls
 {
-    // NOTHING HERE IS LOCAL. Rest is the phone lying flat, screen up, read against gravity - there is no
-    // calibration, no stored neutral point and no axis mapping, because every one of them made the
-    // neutral pose depend on how the phone happened to be held at some earlier moment, and players read
-    // that as the sensor being broken. How far a tilt reaches is the shared Sensitivity: 1 is full
-    // deflection at ControlsRules.DefaultTiltAngle. Relative (angular velocity) is gone with them - it
-    // has no absolute up at all and drifts by construction.
-    //
-    // A phone's gyro has no buttons at all, hence DashSource: a tap anywhere is the default, since it
-    // costs no screen space, and the on-screen button is for players who tap the play area by accident.
+    // Nothing here is local: Rest is the phone flat, read against gravity (no calibration, neutral or axis
+    // mapping). No buttons, hence DashSource. Docs/SETTING_GROUPS.md
 
     /// <summary>
     /// The phone/tablet's own motion sensor: tilt away from lying flat, as direction by default.

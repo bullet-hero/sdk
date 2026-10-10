@@ -3,17 +3,8 @@ using System.Text;
 
 namespace BH.SDK.Roslyn.Modification
 {
-    // THE APPLY PATH IS REFLECTION-FREE BY CONSTRUCTION, which is the half of this change that
-    // makes it worth doing at all rather than only correct. What it replaces looked a member up in
-    // a dictionary keyed on (type, string), then went through PropertyInfo.SetValue - boxing every
-    // scalar and paying a virtual dispatch per write. A case here is a type test at most, one
-    // conversion and a direct assignment.
-    //
-    // PropertyOf IS the exception and says so: the rule-checked write needs the PropertyInfo to
-    // read the [RuleXxx] attributes off, and there is no compile-time form of "every rule attribute
-    // on this member" that the validation system could consume. It is built lazily, from literal
-    // typeof/nameof pairs so an IL2CPP strip cannot take the members away, and it is never touched
-    // by Apply.
+    // Reflection-free by construction: a case is a type test at most, one conversion, a direct assignment.
+    // PropertyOf is the lazy exception (rule attributes); built from typeof/nameof so IL2CPP keeps members.
 
     /// <summary> Writes ModificationTable.g.cs from the collected specs. </summary>
     internal static class ModificationTableEmitter
@@ -94,10 +85,8 @@ namespace BH.SDK.Roslyn.Modification
             builder.AppendLine("                    return true;");
         }
 
-        // An index addresses ONE element and replaces it; no index replaces the track whole. The
-        // element branch refuses an index past the end rather than growing the list, because an
-        // override is a divergence from a template that HAS that element - if it does not, the
-        // override was written against a different template and applying it would invent content.
+        // An index replaces ONE element and is refused past the end: an override diverges from a template
+        // that HAS it.
         private static void EmitCollectionCase(StringBuilder builder, FieldSpec spec, string target)
         {
             builder.AppendLine("                    if (index < 0)");

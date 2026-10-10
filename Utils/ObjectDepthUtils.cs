@@ -5,21 +5,9 @@ using BH.SDK.Rules;
 
 namespace BH.SDK.Utils
 {
-    // Layer is summed up the parent chain and the chain itself is bounded: LevelRules.MaxObjectDepth
-    // is what authored content may reach, one below the Unity player's own MaxChildInherit, which is
-    // the size of BuildInstancesParentingJob's stackalloc. Past that cap the runtime composes an
-    // object against a mid-chain ancestor instead of its root: no exception, no validation failure,
-    // just an object drawn in the wrong place. So every edit that can deepen a chain - reparenting,
-    // materializing a placement, expanding one at load - asks here first.
-    //
-    // THIS LIVES IN THE SDK RATHER THAN BESIDE THE EDIT-TIME MATERIALIZER, and that is what keeps
-    // one answer instead of two: the load-time expander (PrefabVirtualizationUtils) is SDK code and
-    // cannot reach BH.Core, while the editor's own refusals are in BH.Core and cannot be moved. The
-    // consuming project's BH.Core.Utils.HierarchyMath is now a forwarding facade over this class,
-    // kept only for the IL2CPP options it carries and for its existing callers.
-    //
-    // Every walk is bounded by the cap itself: this reads author data, which can be cyclic (the
-    // per-property rules don't catch cycles - LevelGraphAnalyzer does, separately).
+    // Layer sums up the parent chain, bounded by LevelRules.MaxObjectDepth: past it the runtime draws an
+    // object in the wrong place with no error. Every edit that can deepen a chain asks here
+    // (Docs/PREFAB_PLACEMENT.md).
 
     /// <summary> Parent-chain depth math over an IObjectScope, shared by every edit that can make a
     /// chain deeper and by the load-time prefab expansion. </summary>
@@ -83,12 +71,8 @@ namespace BH.SDK.Utils
         public static bool WouldExceedDepth(IObjectScope scope, ObjectId movedId, ObjectId newParentId)
             => WouldExceedDepth(scope, newParentId, GetSubtreeHeight(scope, movedId));
 
-        // THE HEIGHT IS A PARAMETER because measuring it is the expensive half - GetSubtreeHeight
-        // walks every object in the scope, while the parent's own depth is a walk of at most
-        // MaxObjectDepth steps. A caller asking the same question about ONE moved subtree against
-        // MANY candidate parents - a parent picker filtering its rows - measures the height once and
-        // pays only the cheap half per candidate; anything asking about one pair uses the overload
-        // above and never sees this.
+        // The height is a parameter: measure it once, then pay only the cheap parent-depth half per
+        // candidate.
 
         /// <summary> Whether parenting a subtree of this height under this parent would push a chain
         /// past the cap. `movedSubtreeHeight` is GetSubtreeHeight of the object being moved. </summary>
@@ -102,16 +86,8 @@ namespace BH.SDK.Utils
             return parentDepth + movedSubtreeHeight > LevelRules.MaxObjectDepth;
         }
 
-        // A template's inner objects are copied into the host scope UNDER the placement, so the
-        // template's own internal depth stacks onto the placement's. Inner parents are template-
-        // local: Null and PrefabRoot both mean "the template's root" (see
-        // PrefabVirtualizationUtils.RemapParents), and anything else names another inner object.
-        //
-        // THE ROOT COSTS NO DEPTH, and that holds only while Prefab.Root stays a FIELD: this walks
-        // Objects.Values, so the root is not one of the chains measured, and a chain that reaches it
-        // stops on PrefabRoot below WITHOUT incrementing. Were the root an entry in Objects instead
-        // it would be minted as an ordinary object under the placement - one more transform and one
-        // more level per placement - and every cap here would be off by one.
+        // Inner parents are template-local (Null and PrefabRoot both mean the root). The root costs no depth
+        // only while Prefab.Root stays a FIELD: this walks Objects.Values and stops at PrefabRoot.
 
         /// <summary> Deepest chain inside a prefab template, measured from its own root: 0 when
         /// every object in it sits at the template's top level. </summary>

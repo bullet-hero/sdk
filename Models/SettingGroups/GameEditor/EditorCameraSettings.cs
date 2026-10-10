@@ -6,15 +6,8 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models.SettingGroups.GameEditor
 {
-    // The zoom limits used to live here while the pan and zoom TUNING lived in a project asset
-    // (Services.GameEditor's CameraDragViewportSettings), which meant half of one gesture was the
-    // author's and half was the project's - and the half that was the author's was read by nothing,
-    // so both sliders in the settings screen moved a number the camera never consulted. The whole
-    // gesture is here now. See docs/issues/EDITOR_SETTINGS_HISTORY.md.
-    //
-    // What stayed in the asset is what is not a preference at all: where the camera STARTS
-    // (DefaultPosition/DefaultSize, the zoom every on-screen size in the editor is stated at) and
-    // the epsilon below which two fingers count as not having pinched.
+    // The whole pan/zoom gesture is a preference; the project asset keeps what is not (start position and
+    // size, the pinch epsilon).
 
     /// <summary>
     /// How the editor's viewport camera pans and zooms, and how far it may zoom either way.
@@ -34,10 +27,7 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
         [JsonProperty(Names.MaxSize)]
         public float MaxSize { get; set; }
 
-        // On by default, which is "drag the CONTENT" rather than "drag the camera" - the direction a
-        // finger expects and the one every map and image viewer uses. The opposite is what a camera
-        // operator expects, and both camps are certain the other is backwards, which is exactly what
-        // makes this a setting rather than a decision.
+        // On: drag the CONTENT, the direction a finger expects; both camps think the other backwards.
 
         /// <summary> Whether a pan drag moves the content with the pointer instead of the camera. </summary>
         [JsonProperty(Names.Invert)]

@@ -20,12 +20,8 @@ namespace BH.SDK.Rules
         /// <summary> Upper bound of GameEvents.Backgrounds. </summary>
         public const int MaxBackgroundEvents = 128;
 
-        // 512 RATHER THAN THE 128 THE OTHER ONE-SHOT EVENT LISTS GET, because this one is not a
-        // list of one-shots: the theme track is an animated track like the camera's, interpolated
-        // between neighbours, so an author states a colour change with a PAIR of keyframes and a
-        // level whose palette follows its music spends them at that rate. A real imported level
-        // came in at 146 and lost the last stretch of its colour work to the old cap. Raising a cap
-        // invalidates nothing already authored - it only allows what could not be said before.
+        // 512, not the 128 other one-shot lists get: the theme track is interpolated, so a colour change
+        // costs a PAIR of keyframes (a real level needed 146). Raising a cap invalidates nothing authored.
 
         /// <summary> Upper bound of GameEvents.Themes. </summary>
         public const int MaxThemeEvents = 512;
@@ -41,13 +37,8 @@ namespace BH.SDK.Rules
 
         /// <summary> Upper bound of PostProcessingEvents.AnalogGlitches, PostProcessingEvents.Blooms, PostProcessingEvents.Chromatics and 9 more. </summary>
         public const int MaxPostProcessingKeys = 512;
-        // 32 was never justified in writing, and five real community levels say it was too
-        // low by an order of magnitude: 1 948 authored tracks exceeded it, and the worst carried 189
-        // keyframes across 123 seconds - truncating it froze that object for 100 of them. Every
-        // consumer of this number is a validation clamp or an import truncation; nothing sizes a
-        // buffer, a native collection or a blob field by it (a blob count is always an Int32), so
-        // the cap costs only what an author actually writes. It matches the camera and player tracks
-        // now for the reason stated above them: one number for every track is one fewer to explain.
+        // Matches the camera and player tracks. Only a validation clamp or import truncation: nothing
+        // sizes a buffer by it. Evidence for the size: BH.SDK/Docs/RULES.md, "Level and prefab".
 
         /// <summary> Upper bound of CameraEvents.Pivots, RectObject.AnchorsMax, RectObject.AnchorsMin and 11 more. </summary>
         public const int MaxObjectKeys = 512;
@@ -55,48 +46,27 @@ namespace BH.SDK.Rules
         /// <summary> Upper bound of LevelTrackEffects.StereoPans, LevelTrackEffects.Volumes. </summary>
         public const int MaxAudioKeys = 32;
 
-        // Was deliberately uncapped for a long time, on the grounds that peak simultaneous objects
-        // (LevelHints.Limits) is what actually costs anything at runtime. It is capped now because a
-        // total count is what a LOADER pays for - every object is deserialized, id-mapped and
-        // parent-linked before playback ever decides it is off-screen - so an unbounded count is an
-        // unbounded load, not an unbounded frame. 2^18 sits far above any authored level and far
-        // below what would exhaust a phone.
+        // Capped because a total count is what a LOADER pays (deserialize, id-map, parent-link every
+        // object). 2^18 sits far above any authored level and far below what exhausts a phone.
 
         /// <summary> Upper bound of GameLevel.Objects. </summary>
         public const int MaxObjects = 262_144;
 
-        // NOT MaxObjects, and the difference is the whole point. MaxObjects is how many objects may
-        // EXIST - what a loader pays for. This is how many ids have ever been MINTED, and ids are
-        // never reused (see LevelSettings.ObjectIdCounter) so nothing ever gives one back: a
-        // generator run, a paste, a prefab materialize and an undone creation all consume from here
-        // permanently. The two quantities diverge with editing TIME, not with level size, and
-        // binding the counter to the collection's cap made a long-lived level fail validation while
-        // holding almost nothing - and fail it destructively, since RuleInRange is an Error whose
-        // Fix CLAMPS: the repair wrote the counter back down and the next object created took an id
-        // that was already live.
-        //
-        // An int cannot hold more, so this ceiling is the type's rather than a policy, and reaching
-        // it needs 2.1 billion create gestures. What happens there anyway is the refusal below plus
-        // the compaction generator designed in Docs/Issues/LEVEL_MODEL_ANALYSIS.md section D2 -
-        // never a wrap and never a negative, those being game-space objects and the three reserved
-        // parents.
+        // NOT MaxObjects: that is how many may EXIST; this is how many ids have ever been MINTED, and ids are
+        // never reused. They diverge with editing time, so one cap made long-lived levels fail validation
+        // and RuleInRange's clamping Fix then reissued live ids. The ceiling is the int's, never a wrap.
 
         /// <summary> Upper bound of LevelSettings.ObjectIdCounter. </summary>
         public const int MaxObjectIds = int.MaxValue;
 
-        // Three quarters of the range, and the only part of this whole area a player would ever see.
-        // A validation WARNING here is what turns "the editor refused and I do not know why" into
-        // something the author was told about long before the wall - by the time minting actually
-        // refuses there is nothing left to do but run the compaction generator, and being told then
-        // is being told too late.
+        // Three quarters of the range: a validation Warning here tells the author long before minting
+        // refuses, when only the compaction generator (LEVEL_MODEL_ANALYSIS.md D2) is left.
 
         /// <summary> Counter value at which validation starts warning that the range is running out. </summary>
         public const int ObjectIdCounterWarning = MaxObjectIds / 4 * 3;
 
-        // Returns a long on purpose. The obvious int spelling of "how many are left" overflows at
-        // exactly the end of the range it exists to describe (MaxObjectIds - counter + 1 with the
-        // counter at its floor is int.MaxValue, one step from wrapping), and an overflow HERE would
-        // report a exhausted counter as having room, which is the one wrong answer that matters.
+        // A long on purpose: the int spelling of "how many left" overflows exactly at the end of the
+        // range and would report an exhausted counter as having room.
 
         /// <summary> How many more ids a counter sitting at this value may still mint. </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -125,25 +95,15 @@ namespace BH.SDK.Rules
                                     $"the range ends at {MaxObjectIds} and ids are never reused");
         }
 
-        // Longest parent chain AUTHORED CONTENT may have. Depth is walked per object per frame (a
-        // child's transform and layer are the sum up its chain), so the real ceiling is the
-        // consumer's: the Unity player walks it into a fixed stackalloc of
-        // LevelPlayerSettings.MaxChildInherit (16) and, past that, composes an object against a
-        // mid-chain ancestor instead of its root.
-        //
-        // This is that ceiling MINUS ONE. The editor parents its own overlays (the selection
-        // outline's marching-ants segments, the gizmo handles) one level under the selected object,
-        // so a level authored right at the runtime cap would push its own overlay past it - the
-        // object would render correctly and its selection border would not. Cycles are a graph
-        // invariant and checked separately.
+        // The player's MaxChildInherit (16, a fixed stackalloc) MINUS ONE: the editor parents its overlays
+        // one level under the selected object, so a level at the runtime cap would lose its selection
+        // border. Past 16 the player composes against a mid-chain ancestor. Cycles are a graph check.
 
         /// <summary> Highest object depth allowed, read by ContentRemoverGenerator, GeneratorContext, GraphRule and 6 more. </summary>
         public const int MaxObjectDepth = 15;
 
-        // Bounds of one BeatSegment. The tempo range covers everything a real song sits in with room
-        // to spare on both sides; the offset is bounded by the timeline itself rather than by one
-        // beat's length, since what a legal phase is depends on Bpm and a property attribute only
-        // ever sees one property. BeatMath normalizes it into a single beat on the way out anyway.
+        // Bounds of one BeatSegment. The offset is bounded by the timeline, not one beat: a legal phase
+        // depends on Bpm and a property rule sees one property. BeatMath normalizes it.
 
         /// <summary> Lower bound of BeatSegment.BPM. </summary>
         public const float MinBpm = 1f;
@@ -169,10 +129,8 @@ namespace BH.SDK.Rules
         /// <summary> The beats per bar used when nothing says otherwise, read by BeatSegment, BeatSegmentTests, LevelGraphAnalyzerTests. </summary>
         public const int DefaultBeatsPerBar = 4;
 
-        // How many grid points one BeatMath collection may produce. Not a format limit - the grid is
-        // computed, never stored - but a fast tempo over a long segment is millions of beats, and
-        // both consumers (a viewport redraw, a generator's beat list) would rather be cut off than
-        // stall. A viewport never comes near it; the whole-level form is what it actually guards.
+        // Cap on grid points one BeatMath collection may produce. Not a format limit (the grid is
+        // computed): a fast tempo over a long segment is millions of beats.
 
         /// <summary> Highest beat grid points allowed, read by BeatMath. </summary>
         public const int MaxBeatGridPoints = 65_536;
@@ -183,19 +141,14 @@ namespace BH.SDK.Rules
         /// <summary> Upper bound of LevelMeta.ResourcesMeta. </summary>
         public const int MaxResourcesMeta = 512;
 
-        // Raised from 64, which a real workshop level already crossed: 72 templates, so eight of
-        // them and the 63 placements referencing them were dropped - 524 of that level's 3 690
-        // materialized objects, one seventh of what it draws. A prefab is a template sitting in the
-        // resources, so what it costs is proportional to what is IN it rather than to this number,
-        // and nothing sizes a buffer by it.
+        // Cost is proportional to template content, nothing sizes a buffer by it. 64 was crossed by a real
+        // workshop level (72 templates), which lost eight of them and 63 placements.
 
         /// <summary> Upper bound of LevelResources.Prefabs. </summary>
         public const int MaxPrefabs = 256;
 
-        // Bounds of LevelHints.Limits - purely a format-level sanity clamp, so a corrupted or
-        // hostile file can't ask a player's device to preallocate gigabytes before the runtime even
-        // looks at the number. The real ceiling is per-device and applied at runtime; the hint
-        // itself is advisory and never trusted on its own.
+        // Bounds of LevelHints.Limits: a sanity clamp so a hostile file cannot make a device preallocate
+        // gigabytes. The hint is advisory; the real ceiling is per device, at runtime.
 
         /// <summary> Lower bound of LimitHints.Effects, LimitHints.Instances, LimitHints.ShapesOpaque and 3 more. </summary>
         public const int MinCapacityHint = 0;
@@ -203,18 +156,9 @@ namespace BH.SDK.Rules
         /// <summary> Upper bound of LimitHints.Effects, LimitHints.Instances, LimitHints.ShapesOpaque and 3 more. </summary>
         public const int MaxCapacityHint = 1_048_576; // 2^20
 
-        // Zero is not "seed number zero", it is the absence of a seed - the same convention every
-        // tier of seed resolution follows (per-launch override, then LevelSettings.Seed, then a
-        // freshly generated one), so a consumer only ever has to ask IsValidSeed instead of
-        // spelling out != 0 at each of the three steps. Shaped like AudioRules.IsActiveMixLevel: a
-        // constant plus the one predicate that reads it, rather than a rule attribute, because 0 is
-        // perfectly VALID authored data - it is what an unpinned level stores.
-        //
-        // Two ranges, not one, and confusing them is the easy mistake here. [MinSeed, MaxValidSeed]
-        // is what the FIELD accepts, NullSeed included - that is what RuleMinValue validates and what a
-        // seed input clamps to. [MinValidSeed, MaxValidSeed] is what a REAL seed lives in, and it is
-        // what every generator must draw from: hand a run seed 0 and it silently means "unseeded",
-        // so a generator that could produce it would occasionally produce a run nobody can reproduce.
+        // Zero is the ABSENCE of a seed in all three resolution tiers, and valid authored data, so a
+        // predicate rather than a rule. [MinSeed, MaxValidSeed] is what the FIELD accepts (NullSeed
+        // included); [MinValidSeed, MaxValidSeed] is what generators must draw from.
 
         /// <summary> The null seed, read by DisplayGraphicsSettings, LevelSettings, LevelSettingsTests and 1 more. </summary>
         public const int NullSeed = 0;

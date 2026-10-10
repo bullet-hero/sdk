@@ -4,17 +4,8 @@ using UnityEngine;
 
 namespace BH.SDK
 {
-    // THE 2D ROTATION PRIMITIVES, HERE RATHER THAN IN THE CONSUMER, and the reason is which way the
-    // dependency runs. BH.Shared.BHMath owns the project's whole math helper library and cannot be
-    // referenced from this repository - Shared references the SDK, never the reverse - but three types
-    // that now live here (AvatarMovement, Transform2D, RectTransform2D) need exactly these four
-    // functions. So the four moved down and BHMath's own overloads delegate to them.
-    //
-    // THEY ARE NOT EXTENSION METHODS, AND THAT IS THE WHOLE POINT OF THE SHAPE. BHMath already declares
-    // `RotateVector(this float2, float)`; a second extension with the same signature in another
-    // namespace is ambiguous in every file that has both namespaces in scope, which is most of the
-    // project. Plain statics cannot collide, so BHMath keeps its extension form, every existing
-    // `.RotateVector(...)` call site keeps compiling, and there is still only one implementation.
+    // The 2D rotation primitives live here because Shared references the SDK, never the reverse. They are
+    // NON-extension statics: a second RotateVector(this float2, ...) would be ambiguous beside BHMath's.
 
     /// <summary> Rotation of 2D vectors and angles, shared by the SDK's Unity-facing types. </summary>
     public static class Math2D

@@ -6,10 +6,8 @@ using NUnit.Framework;
 namespace BH.SDK.Tests.Rules
 {
     /// <summary>
-    /// RuleIIntInRange over all three IInt variants. NO MODEL CARRIES IT TODAY - its one user was
-    /// LayerKey.Layer, and that class is gone (Docs/Issues/LEVEL_MODEL_ANALYSIS.md, C5). The rule
-    /// stays because IInt is a live value family and the next int-valued member wants it; these
-    /// tests are what keep it working while nothing exercises it from a real model.
+    /// RuleIIntInRange over all three IInt variants. No model carries it today; it stays because IInt is
+    /// a live family, and these tests keep it working.
     /// </summary>
     public class RuleIIntInRangeTests : BaseRuleTests
     {

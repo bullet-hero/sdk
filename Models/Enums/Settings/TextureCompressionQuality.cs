@@ -1,15 +1,7 @@
 namespace BH.SDK.Models.Enums.Settings
 {
-    // How hard the encoder works, which is a LOAD TIME cost and therefore the device's own budget.
-    // It used to be derived from the author's TextureKind (everything but a photo took the careful
-    // encoder), and that was the wrong half: the resulting image is identical in size and format
-    // either way, so nothing about it is a property of the picture - only of how long the player
-    // waited for it.
-    //
-    // Auto keeps that derivation exactly, so a player who never opens this sees no change at all.
-    //
-    // Ignored by the ETC/EAC encoders mobile platforms use, which take no such parameter - it is a
-    // desktop BC1/BC3 setting in practice.
+    // Encoder effort is a LOAD TIME cost, so the device's budget. Auto derives from TextureKind; the ETC/EAC
+    // encoders on mobile ignore it.
 
     /// <summary> How much time this device spends compressing a level's images. </summary>
     public enum TextureCompressionQuality : byte

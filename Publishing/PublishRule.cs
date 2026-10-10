@@ -1,10 +1,8 @@
 namespace BH.SDK.Publishing
 {
     /// <summary>
-    /// What a level can fail on when it is offered to a service. Distinct from RuleXxx (one property
-    /// being out of range) and from GraphRule (one broken relationship): everything here is about
-    /// whether a level may be REDISTRIBUTED, which is a question about the level's paperwork and the
-    /// receiving service's policy, not about whether the level is well-formed or even playable.
+    /// What a level can fail on when offered to a service. Not RuleXxx (a value out of range) and not
+    /// GraphRule (a broken relationship): this is about whether a level may be REDISTRIBUTED.
     /// </summary>
     public enum PublishRule : byte
     {

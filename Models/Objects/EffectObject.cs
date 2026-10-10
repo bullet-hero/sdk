@@ -13,9 +13,8 @@ using Newtonsoft.Json;
 namespace BH.SDK.Models.Objects
 {
     /// <summary>
-    /// Places a particle system in the scene. Deliberately thin - it only points at an EffectData
-    /// resource; its inherited transform tracks decide where and when the emitter lives, the resource
-    /// decides what it emits.
+    /// Places a particle system in the scene. Thin on purpose: it points at an EffectData resource, its
+    /// inherited tracks decide where and when the emitter lives, the resource decides what it emits.
     /// </summary>
     [RuleContainer]
     [GenerateModel]

@@ -6,16 +6,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests
 {
-    // THIS FILE EXISTS FOR Copy(), and one line of it. LevelSettings' four-argument constructor
-    // deliberately takes neither Seed nor Orientation - every existing caller authors a level
-    // without either - so both ride an object initializer instead, and an initializer is the one
-    // shape a copy-paste drops silently. ModelContractTests cannot catch it: that sweep asks about
-    // REFERENCES on default-constructed pairs, so a Copy that loses a value field passes it.
-    //
-    // Orientation's default is Horizontal while its zero value is NotSpecified, and here that is
-    // load-bearing rather than tidy: every level authored before the field existed must read back as
-    // Horizontal, which is how the game already played it. A NotSpecified default would have opted
-    // every level that exists into a portrait screen its content was never composed for.
+    // Exists for Copy(): Seed and Orientation ride an object initializer. Orientation defaults to
+    // Horizontal (zero is NotSpecified), so older levels keep playing horizontal.
 
 
     /// <summary> Seed and Orientation, which ride object initializers rather than the constructor - and the fact

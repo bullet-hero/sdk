@@ -5,24 +5,8 @@ using UnityEditor;
 
 namespace BH.SDK.Editor
 {
-    // THE ONE BUTTON THAT TURNS THE SOURCES INTO A WORKING ANALYZER. It shells out to MSBuild
-    // rather than compiling in-process so the artifact is identical whether it was produced here or
-    // by `dotnet build` on a machine with no Unity - one project file, one compiler, two callers.
-    // The equivalent by hand is exactly:
-    //
-    //     cd <sdk>/Roslyn
-    //     dotnet build BH.SDK.Roslyn.csproj -c Release
-    //     cp bin~/Release/BH.SDK.Roslyn.dll ../BH.SDK.Roslyn.dll
-    //
-    // and the copy is not optional: bin~ is invisible to Unity, so a build left there changes
-    // nothing. What this adds over the two commands is the import and its settings.
-    //
-    // THE dotnet IT RUNS IS UNITY'S OWN (Editor/Data/DotNetSdk/dotnet.exe), so nothing has to be
-    // installed on a fresh machine and the SDK version follows the Editor.
-    //
-    // UNITY RECOMPILES THE WHOLE PROJECT AFTERWARDS. That is not overhead to optimize away - the
-    // analyzer is an input to every assembly it is scoped to, and that is every assembly built on
-    // BH.SDK.
+    // Shells out to MSBuild with Unity's own dotnet; the by-hand equivalent and why are in
+    // Docs/ROSLYN_GENERATORS.md ("Editor tooling"). Unity recompiles the whole project afterwards, by design.
 
     /// <summary> Builds BH.SDK.Roslyn and installs it as the SDK's analyzer. </summary>
     internal static class RoslynBuilder

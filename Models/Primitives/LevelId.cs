@@ -31,10 +31,8 @@ namespace BH.SDK.Models.Primitives
             value = Guid.Empty;
         }
 
-        // Level ids are a stable identifier for a Level (replaces LevelMeta.LevelGuid). Unlike the
-        // int-based ids (AudioId, TypedResourceId, ...) there is no game-defined/user-defined range
-        // split - levels are always standalone authored data, and a Guid has no meaningful
-        // "positive/negative" ordering to split on anyway. Guid.Empty is the only reserved/Null value.
+        // A stable id for a Level (replaces LevelMeta.LevelGuid). Levels are always standalone authored data,
+        // so no range split; Guid.Empty is the only reserved value.
 
         /// <summary> The reserved "unset" value. Never a real id. </summary>
         public static readonly Guid NullValue = Guid.Empty;

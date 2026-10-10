@@ -13,15 +13,9 @@ namespace BH.SDK.Services.Shapes
         T32 = 5,
     }
 
-    // THE CUTS ARE THE BOX'S OWN AXES, not the polygon's. Half is cut by the vertical through the
-    // box centre, quarter adds the horizontal, eighth adds the 45 degree diagonal - so the sector a
-    // slice covers is exactly the sector of the BOX that carries the same name, which is what lets
-    // Invert subtract the shape from its own sector instead of from the whole box.
-    //
-    // It is also what the existing library already does: Pentagon_F4 starts at y = 0.0503 and the
-    // pentagon's own AABB centre is 0.0502, i.e. the horizontal cut was made through the AABB
-    // centre. Once the geometry is AABB-centred that line IS the box centre, so the rule below
-    // reproduces the shipped shapes rather than replacing them.
+    // The cuts are the BOX's own axes, not the polygon's (half: vertical; quarter adds horizontal;
+    // eighth adds the diagonal), so a slice is a sector of the box and Invert subtracts from it.
+    // Docs/SHAPES.md.
 
     /// <summary> Which fraction of a turn the shape covers, measured from straight up, clockwise. </summary>
     public enum ShapeSlice : byte
@@ -32,11 +26,8 @@ namespace BH.SDK.Services.Shapes
         Eighth = 3,
     }
 
-    // A quarter has two forms and only sometimes needs both. The lower-right quarter is the
-    // upper-right one turned by -90 degrees whenever 90 degrees is a whole number of the form's own
-    // rotational steps (360/N), i.e. whenever N % 4 == 0. For every other N the two are genuinely
-    // different shapes and both have to exist - nothing here relies on mirroring through a negative
-    // Size, which would also reverse the winding the renderer culls on.
+    // A quarter has two forms and only sometimes needs both: they are one shape turned by -90 degrees
+    // when N % 4 == 0. No mirroring through a negative Size (it reverses the culled winding).
 
     /// <summary> Which of a sector's congruence classes this is. </summary>
     public enum ShapeSliceVariant : byte
@@ -45,15 +36,8 @@ namespace BH.SDK.Services.Shapes
         Second = 1,
     }
 
-    // FORM CODES ARE A LOW BAND PLUS A LADDER, and the split is what keeps the four starting shapes
-    // first without a hand-kept ordering list: sorting by id does it. Square, Circle, RightTriangle
-    // and Triangle are named things an author reaches for, not "the 4-gon" and "the 32-gon", so they
-    // live at 0x01..0x04 with 0x05..0x0F held for whatever else earns a name of its own.
-    //
-    // The ladder is the SIDE COUNT itself, offset by PolygonBase - so an eleven-, thirteen- or
-    // twenty-sided shape slots in later without renumbering anything and without a lookup table.
-    // 0x13 and 0x14 are therefore permanently unused: the three- and four-sided shapes already have
-    // names above.
+    // Form codes are a low band (0x01..0x04 named shapes, 0x05..0x0F held) plus a ladder: the side
+    // count offset by PolygonBase. 0x13 and 0x14 are permanently unused. Docs/SHAPES.md.
 
     /// <summary> Which silhouette a shape is built from. </summary>
     public readonly struct ShapeForm : IEquatable<ShapeForm>
@@ -103,11 +87,8 @@ namespace BH.SDK.Services.Shapes
         /// polygon's rim - so every generator has to branch on it exactly once. </summary>
         public bool IsRightTriangle => Code == RightTriangle.Code;
 
-        // EVERY form is built with a corner pointing straight up, which costs nothing for all but
-        // one of them: ShapeLoopUtils measures its angles clockwise FROM straight up, so a rim laid
-        // out from angle zero already has a corner there whatever the side count. Four sides is the
-        // exception and has to be turned by half a step, because a 4-gon with a corner at the top is
-        // a diamond and the shape wanted here is a square.
+        // Every form has a corner straight up (angles run clockwise from up); four sides is turned half
+        // a step, or the 4-gon would be a diamond.
 
         /// <summary> Whether the first corner sits half a step round from straight up. </summary>
         public bool UsesHalfStepPhase => Sides == 4;
@@ -159,10 +140,8 @@ namespace BH.SDK.Services.Shapes
         public static bool operator !=(ShapeForm a, ShapeForm b) => a.Code != b.Code;
     }
 
-    /// <summary>
-    /// Everything that decides which built-in shape this is. The whole catalogue is the cross
-    /// product of these fields minus a handful of degenerate combinations, and a ShapeId is these
-    /// fields packed - see <see cref="ShapeCatalogService"/>.
+    /// <summary> Everything that decides which built-in shape this is: the catalogue is the cross product
+    /// of these fields minus degenerate combinations, and a ShapeId is them packed (ShapeCatalogService).
     /// </summary>
     public readonly struct ShapeParameters : IEquatable<ShapeParameters>
     {

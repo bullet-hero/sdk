@@ -7,13 +7,8 @@ using MetaAuthor = BH.SDK.Models.Meta.Author;
 
 namespace BH.SDK.Tests
 {
-    // Credit is the third field on this model and the only one that can be empty on a complete
-    // record - a level says who, not always what. So the tests it needs are the ones the generated
-    // contract cannot state for itself: that an empty credit is a real StringValue rather than a
-    // null waiting to throw, and that a record written before the field reads back as one.
-    //
-    // The model is aliased because NUnit's own [Author] attribute is on every method here, and a
-    // plain `using` of its namespace would make the name ambiguous between the two.
+    // Credit is the only field that can be empty on a complete record: an empty credit is a real
+    // StringValue, and a record written before the field reads back as one. [Author] is aliased (NUnit).
 
 
     /// <summary> MetaAuthor's optional credit: that an empty one is a real value rather than a null, and that a

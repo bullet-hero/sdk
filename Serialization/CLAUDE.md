@@ -6,6 +6,8 @@ layer-wide conventions. This file is folder-local.
 
 ## Serialization/
 
+Why the codecs and converters are shaped as they are: `Docs/SERIALIZATION.md`.
+
 `SerializationService` (the JSON/`.blob` entry point, at the folder root), `Serializers/`
   (`IDataSerializer`s, `SerializationType`), `Json/`, `Blob/`,
   `Converters/Base/` + `Converters/CustomTypes/` + `Converters/Dict/` (the polymorphism/id/dictionary

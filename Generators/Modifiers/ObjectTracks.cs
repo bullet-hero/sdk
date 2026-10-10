@@ -39,14 +39,9 @@ namespace BH.SDK.Generators.Modifiers
         All = Transform | Layout | Colors | UVs | FontSizes | Fillments | Appearings,
     }
 
-    // Every track on a RectObject is a List<T> of something implementing IFrame, but they are
-    // separate properties of unrelated element types - so anything wanting to work "on the
-    // object's tracks" generically either writes the same one-branch-per-track switch (every modifier, once
-    // each) or gets it from here, once.
-    //
-    // IList<IFrame> would have been the tidy signature and is not available: List<PosKey> is not
-    // IList<IFrame>, and copying each track into a temporary list would break the whole point,
-    // which is mutating the real keyframes in place.
+    // Every track is a List<T> of an unrelated IFrame element type, so generic work on "the object's
+    // tracks" needs this once. IList<IFrame> is unavailable (List<PosKey> is not one) and copying would
+    // defeat mutating the real keyframes in place.
 
     /// <summary>
     /// Enumerates an object's keyframe tracks by mask, so a modifier can read or rewrite frames

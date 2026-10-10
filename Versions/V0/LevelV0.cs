@@ -14,17 +14,9 @@ namespace BH.SDK.Versions.V0
     [GenerateModel]
     public sealed partial class LevelV0 : IModel<LevelV0>
     {
-        // Settings/Game/Resources are independently-versioned domains ([ModelGeneration] on
-        // LevelSettings/GameLevel/LevelResources) - a nested envelope always resolves its OWN
-        // generation tag and upgrades it to the domain's current type before returning, regardless of
-        // which generation *this* container (Level) itself is. So these properties must be typed
-        // using the CURRENT classes, not LevelSettingsV0/GameLevelV0/LevelResourcesV0 - those still
-        // exist and are still registered at generation Test, they're just never anyone's actual
-        // field type, only VersionedTypeRegistry's resolve target.
-        //
-        // THIS IS THE RULE MOST EASILY BROKEN NOW THAT A SNAPSHOT IS A GENERATED MODEL. Reading this
-        // class through its own codec emits ReadEnveloped<LevelSettings>, which resolves that nested
-        // envelope independently; typing it as LevelSettingsV0 would migrate the same payload twice.
+        // Typed with the CURRENT classes, never LevelSettingsV0/GameLevelV0/LevelResourcesV0: each
+        // nested envelope resolves its own generation, and a V0 type here migrates the payload twice.
+        // The V0 types stay as VersionedTypeRegistry resolve targets only.
 
         /// <summary> Its own versioned domain, typed as the CURRENT class for the same reason. </summary>
         [JsonProperty(NamesV0.Settings)]

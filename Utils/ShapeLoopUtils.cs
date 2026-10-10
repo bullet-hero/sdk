@@ -4,28 +4,12 @@ using BH.SDK.Models.Values;
 
 namespace BH.SDK.Utils
 {
-    // EVERY built-in shape is two closed loops and a sector, and this file is the whole vocabulary
-    // for saying so. A filled shape is one loop; a ring is a loop with a second one inside it; an
-    // inverted shape is the BOX's loop with the shape's loop inside it. Slicing is the same
-    // operation on whichever loops are present. So the catalogue needs exactly two emitters - a fan
-    // and an annulus - rather than a generator per combination, and adding an axis later means
-    // producing different loops, not writing a fourth builder.
-    //
-    // ANGLES ARE MEASURED CLOCKWISE FROM STRAIGHT UP, and that is what makes the sectors fall out
-    // for free: [0, pi] is the right half, [0, pi/2] the upper-right quarter, [pi/2, pi] the
-    // lower-right one and [0, pi/4] the octant a 45-degree cut leaves. Those are the box's own axes
-    // and diagonal through its centre, which is the rule the shipped library already follows (its
-    // Pentagon_F4 is cut at y = 0.0503 and the pentagon's AABB centre is 0.0502) and the reason an
-    // inverted slice can subtract the shape from the matching sector OF THE BOX: the same three
-    // lines cut both.
-    //
-    // Deliberately separate from ShapeSynthUtils, which builds shapes OUTSIDE the catalogue as
-    // level-authored data rather than the catalogue's own presets.
+    // Every built-in shape is loops plus a sector: a fan and an annulus emitter cover every combination.
+    // Angles run CLOCKWISE FROM STRAIGHT UP (Docs/SHAPES.md). Separate from ShapeSynthUtils.
 
     /// <summary>
-    /// Radial loops - the intermediate form the built-in shape catalogue is built out of. A loop is
-    /// a list of points ordered by their clockwise angle from straight up, star-shaped about the
-    /// centre it is used with.
+    /// Radial loops, the intermediate form of the built-in shape catalogue: points ordered by clockwise angle
+    /// from straight up, star-shaped about the centre they are used with.
     /// </summary>
     public static class ShapeLoopUtils
     {
@@ -38,11 +22,8 @@ namespace BH.SDK.Utils
         /// <summary> A full turn in radians, at double precision. </summary>
         public const double Tau = Math.PI * 2.0;
 
-        // ANGLES ARE ALWAYS RELATIVE, never absolute, and this constant is why. A rim corner meant
-        // to sit at angle zero is routinely built at x = -1e-17, whose absolute angle is not zero
-        // but a hair under a full turn - which sorts it to the far end of its own loop and silently
-        // reverses a sector. Measuring against a reference and snapping the result to zero is what
-        // makes that impossible; comparing absolute angles is what made it happen.
+        // Angles are always RELATIVE: an absolute x = -1e-17 corner sorts to the far end and reverses a
+        // sector.
         private const double AngleEpsilon = 1e-6;
 
         #region Angles
@@ -89,13 +70,8 @@ namespace BH.SDK.Utils
             return loop;
         }
 
-        // The radius is picked so the BOUNDING BOX fills the unit box, not so every corner sits
-        // within half a unit of the origin. Those are different numbers for an odd side count, and
-        // the second one is what makes a triangle small: an equilateral triangle inscribed by its
-        // circumradius reaches 0.5 up and only 0.433 sideways, while the shipped Triangle preset is
-        // a full unit wide (its apex at 0.577 is outside the box only because the geometry is not
-        // AABB-centred yet). Fitting the bounds keeps the shipped size and, once the loop is
-        // recentred on its own bounds, puts every point back inside the box.
+        // The radius fits the BOUNDING BOX to the unit box, not every corner within half a unit (an odd side
+        // count differs: a circumradius triangle is only 0.433 wide).
 
         /// <summary> The circumradius at which a regular polygon's bounding box exactly fills the
         /// authored box. </summary>
@@ -185,10 +161,8 @@ namespace BH.SDK.Utils
             return result;
         }
 
-        // Shrinking towards the CORNER CENTROID rather than towards the origin, and for the right
-        // triangle the difference is the whole shape: its hypotenuse runs through the origin, so an
-        // origin-scaled copy keeps the same hypotenuse and the "ring" has no width along it at all.
-        // For every regular polygon the two centres coincide and this changes nothing.
+        // Shrink towards the CORNER CENTROID, not the origin: the right triangle's hypotenuse passes through
+        // it.
 
         /// <summary> A loop shrunk towards its own centroid - the inner rim of a ring. </summary>
         public static List<Vector2Value> Inset(IReadOnlyList<Vector2Value> loop, float thickness)
@@ -313,15 +287,8 @@ namespace BH.SDK.Utils
             }
         }
 
-        // BOTH RIMS ARE RESAMPLED ONTO THE UNION OF THEIR OWN ANGLES, rather than walked in
-        // lockstep, and that is not an optimisation to skip - it is what makes an inverted shape
-        // correct. A regular polygon fitted to the box TOUCHES the box at its widest corners, so
-        // the region between the two is pinched to zero width there and is not one ribbon at all.
-        // A merge that advances whichever rim comes next straddles that pinch and emits a triangle
-        // lying across the shape it was supposed to avoid - invisible in the signed area, obvious
-        // as a flipped, overlapping triangle on screen. Sampling both rims at every angle either
-        // one of them turns at makes each cell a proper trapezoid, and the pinch merely makes one
-        // of them degenerate, which Sanitize drops.
+        // Both rims are resampled onto the UNION of their angles, not walked in lockstep: the rims pinch to
+        // zero width where the polygon touches the box, and a plain merge emits a flipped triangle there.
 
         /// <summary>
         /// Fills the region between two loops - a ring, or an inverted shape, which is the same

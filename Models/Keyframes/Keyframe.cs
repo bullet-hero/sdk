@@ -9,9 +9,8 @@ using Newtonsoft.Json;
 namespace BH.SDK.Models.Keyframes
 {
     /// <summary>
-    /// Base of every animated key in a level: a point in time plus how the value gets there.
-    /// Concrete subclasses add exactly one payload field each. Tracks are plain lists with unique
-    /// but not necessarily sorted frames - sorting is the consumer's job, not the format's.
+    /// Base of every animated key: a point in time plus how the value gets there. Subclasses add one
+    /// payload field each. Frames in a track are unique but not necessarily sorted (the consumer sorts).
     /// </summary>
     [RuleContainer]
     [GenerateModel]

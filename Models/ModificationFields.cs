@@ -1,31 +1,8 @@
 ﻿namespace BH.SDK.Models
 {
-    // These numbers are part of what a level FILE says, not an implementation detail: a prefab
-    // override is addressed by (template-inner ObjectId, FIELD, index), so renumbering a field
-    // silently repoints every override written against the old number in every level already on
-    // disk. The constants below are therefore append-only, and a number is never handed out again
-    // after its field is removed - a retired number must decode to nothing rather than to whatever
-    // took its place.
-    //
-    // The number belongs to the DECLARATION, not to the runtime type, which is what makes
-    // inheritance fall out for free: RectObject.Layer is one number, and a ShapeObject, a TextObject
-    // and an EffectObject all override it through that same one. It also means two members sharing
-    // a wire key are still two numbers - ShapeObject.Colors and TextObject.Colors are both "c" in
-    // JSON, and they are 0x0205 and 0x0303 here, because the key alone could never say which field
-    // it meant.
-    //
-    // The bands, written down because a new declaring type must take the next FREE one rather than
-    // the one that reads as its neighbour: 0x01 RectObject, 0x02 ShapeObject, 0x03 TextObject,
-    // 0x04 EffectObject, 0x05 PrefabObject. A placement's own PrefabId, ObjectIds and Modifications
-    // are what an override is expressed IN, so none of them is a thing an override may address -
-    // which is why that band held nothing until PlacementOffset, an ordinary authored field, opened
-    // it. ObjectId is absent from band 0x01 for the same kind of reason as the first three: it is
-    // the identity the address is built from.
-    //
-    // The generator is what makes a hand-written number safe. BHS1201 refuses two members claiming
-    // one number, BHS1202 a member it cannot encode or that carries no [JsonProperty], and BHS1203
-    // a zero or a band already spoken for by a different declaring type. ModificationFieldsTests
-    // pins uniqueness a second time, from the other side.
+    // Part of what a level FILE says: append-only, a retired number is never handed out again. The number
+    // belongs to the DECLARATION (inheritance falls out), bands per declaring type; BHS1201-1203 enforce it.
+    // Rules and the root-addressing list: Models/Objects/CLAUDE.md
 
     /// <summary>
     /// Stable field ids a prefab override is addressed by - the "which field" half of a
@@ -86,35 +63,15 @@
 
         public const int EffectId = 0x0401;
 
-        // PrefabObject - band 0x05. PrefabId, ObjectIds and Modifications are still absent from it
-        // and always will be: they are what an override is expressed IN. PlacementOffset is not -
-        // it is an ordinary authored field that a NESTED placement (one materialized as a child of
-        // an outer placement) has to be able to diverge in, like any other inner object's field.
+        // PrefabObject, band 0x05: PlacementOffset is addressable (a nested placement diverges in it).
 
         public const int PlacementOffset = 0x0501;
 
-        // PlacementDuration is not a stored member and is the only field here that is not: it is a
-        // view onto Span's duration half (PrefabObject.PlacementDuration), which exists BECAUSE the
-        // template owns that number and ApplyRoot rewrites it. Overriding Span whole would restate
-        // the start as well and beat every ordinary move, which is why Span stays excluded below
-        // and this narrower field exists instead.
+        // PlacementDuration is a view onto Span's duration half, not a member. Models/Objects/CLAUDE.md
         public const int PlacementDuration = 0x0502;
 
-        // THE ROOT IS ADDRESSABLE, BUT NOT FOR EVERYTHING, and this is the list. A Modification
-        // keyed to ObjectId.PrefabRoot lands on the PLACEMENT itself (PrefabRootUtils), so it may
-        // only address what the template owns and the placement therefore has no other say in:
-        // Name, the seven positional tracks, and the span's DURATION through PlacementDuration.
-        //
-        // Span, Active, Layer, ParentObjectId and PlacementOffset are excluded because they are the
-        // PLACEMENT's own authored fields - nothing copies them off the root, the author edits them directly, and an
-        // override on one of them would be a second way to say the same thing that additionally
-        // overwrote the first, since ApplyModifications runs after everything else. The remaining
-        // bands are excluded by construction: a placement is a PrefabObject and has no shape,
-        // text or effect member to override.
-        //
-        // A NESTED placement is the case that makes the exclusions read oddly and is still right: an
-        // outer placement overrides its inner placement's Span or PlacementOffset by that inner
-        // object's OWN id, which is case 1 in ModificationRecorder and never consults this list.
+        // The root is addressable only for what the template owns; Span, Active, Layer, ParentObjectId and
+        // PlacementOffset are the placement's own and excluded. Models/Objects/CLAUDE.md
 
         /// <summary> Whether a <see cref="Primitives.ModificationKey"/> addressed at
         /// <see cref="Primitives.ObjectId.PrefabRoot"/> may name this field. </summary>

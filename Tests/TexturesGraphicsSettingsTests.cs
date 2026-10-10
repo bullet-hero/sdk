@@ -6,12 +6,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests
 {
-    // This group is the device's half of how a level's images are loaded, and the property that
-    // carries the whole design is that every field defaults to Auto: a settings.json written before
-    // the group existed has no "textures" key at all, so Newtonsoft leaves the constructor's values
-    // in place, and Auto is what resolves per platform. A default of Off or On instead would make
-    // an older file assert a device policy nobody chose - which is why the default is pinned here
-    // rather than left to whoever edits the class next.
+    // Every field defaults to Auto, so an older file without "textures" resolves per platform and asserts
+    // no device policy nobody chose.
 
 
     /// <summary> The device's half of image loading, and the property carrying the whole design: every field
@@ -95,10 +91,8 @@ namespace BH.SDK.Tests
             Assert.AreEqual(new TexturesGraphicsSettings(), settings.Textures);
         }
 
-        // WHAT A SETTINGS FILE STORES IS THE NUMBER, so a rung may only ever be appended - renumbering
-        // this ladder silently rewrites every player's choice into a different one. It is pinned here
-        // because the temptation to tidy the members into ascending order is real and the damage is
-        // invisible: the file still loads, it just means something else.
+        // The file stores the number, so a rung may only ever be appended; tidying into ascending order
+        // silently rewrites players' choices.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]

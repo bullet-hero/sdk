@@ -14,22 +14,14 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
     [GenerateModel]
     public sealed partial class EditorSelectionSettings : IModel<EditorSelectionSettings>, IMoveable<EditorSelectionSettings>
     {
-        // Whether multi-selection is a MODIFIER or a MODE is a real preference, not a constant: on a
-        // desktop the modifier is the familiar answer and an ordinary click should still replace the
-        // selection, while on touch there is no key to hold, so the mode has to apply on its own.
-        // Turning this off makes every click additive for as long as the mode is on.
-        //
-        // A mode entered by LONG PRESS ignores this either way, and has to: a finger has no modifier
-        // to hold, so gating it there would make the touch entry point reach a mode that never applies.
+        // Multi-selection as a modifier or a mode is a preference (desktop vs touch); a long-press mode
+        // ignores this either way.
 
         /// <summary> Whether multi-selection applies only while the modifier is held down. </summary>
         [JsonProperty(Names.RequiresHold)]
         public bool MultiRequiresHold { get; set; }
 
-        // The two numbers below are what makes that long press reachable at all, and they are here
-        // rather than in the project's asset because the gesture is an accessibility one: half a
-        // second and eight points are a steady hand's numbers, and the author whose hand is not
-        // steady is exactly the one who cannot change them from a ScriptableObject.
+        // The long-press numbers are an accessibility gesture, so they live here, not in an asset.
 
         /// <summary> How long a hierarchy row or timeline clip must be held to enter multi-select
         /// mode, in seconds. </summary>
@@ -42,11 +34,7 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
         [JsonProperty(Names.LongPressThreshold)]
         public float LongPressMoveThreshold { get; set; }
 
-        // Off by default, unlike almost everything else here, and the asymmetry is the point: the fill
-        // covers the object an author has just selected and is about to work on, so it is in the way
-        // far more often than it answers a question. The global collider view (a session toggle, not a
-        // preference) is what an author reaches for when the question is actually about hitboxes; this
-        // one exists for the case where they want the answer without leaving that view on.
+        // Off: the fill covers the object just selected. The global collider view is a session toggle.
 
         /// <summary> Whether selecting an object draws its collider. </summary>
         [JsonProperty(Names.PreviewCollider)]
@@ -67,17 +55,8 @@ namespace BH.SDK.Models.SettingGroups.GameEditor
         [JsonProperty(Names.ColliderOpacityView)]
         public float ColliderOpacityView { get; set; }
 
-        // Off by default, which is the picker's own answer rather than a taste: a shape is clicked by
-        // what it DRAWS (or by its collider), and the empty padding around a slice or a ring belongs
-        // to whatever sits behind it. Turning this on gives every object its whole rect back, for an
-        // author who would rather have a generous target than an exact one. Either way an object
-        // carrying no geometry at all is picked by its rect - it has nothing else to be clicked by.
-        //
-        // IT IS NOT AN ESCAPE HATCH FOR AN OBJECT THAT CANNOT BE CLICKED. It hands the picker the
-        // whole rect, and a bare rect or a prefab placement with no size keyframes HAS no rect -
-        // an empty size track reads as zero, which is what those types are (see
-        // BH.Shared.defaults.size). They are selected from the hierarchy or a timeline, or given a
-        // size keyframe if the author wants one; this setting changes nothing for them either way.
+        // Off: a shape is clicked by what it draws. No escape hatch for a size-less node (an empty Sizes
+        // track reads zero, so it has no rect). Docs/SETTING_GROUPS.md
 
         /// <summary> Whether a click picks an object by its whole rect instead of its own shape. </summary>
         [JsonProperty(Names.PickInvisibleAABB)]

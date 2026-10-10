@@ -6,12 +6,8 @@ using BH.SDK.Services.Controls;
 
 namespace BH.SDK.Rules.Attributes
 {
-    // The one invariant in the control tree a player must not be able to break: with every device
-    // inactive there is no way left to move the avatar, and no way inside the game to notice why. The UI
-    // refuses to clear the last checkbox and settings load falls back to platform defaults, but neither
-    // helps a hand-edited or foreign file - which is exactly what validation is for.
-    //
-    // A class rule rather than a property one because the invariant spans the four device groups.
+    // With every device inactive nothing can move the avatar, and a hand-edited file can get there.
+    // A class rule: the invariant spans the four device groups.
 
     /// <summary>
     /// At least one control device must be active. Fix activates the first one in the catalog's order.

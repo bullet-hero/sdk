@@ -3,16 +3,8 @@ using System.Reflection;
 
 namespace BH.SDK.Rules.Attributes
 {
-    // Covers every "these two fields are a range" invariant in the format, of which there were a
-    // surprising number and not one of them checked: Min/Max on all four MinMax value types, the
-    // per-component pairs of every Rect, ScreenLimitBounds' aspect pair, and anything else on
-    // objects and audio tracks, the editor's camera size pair.
-    //
-    // One attribute rather than the two the design sketched (a "min/max" one and a "this before
-    // that" one) - they turned out to be the same check with different field names, and a second
-    // attribute would only have invited guessing which one applies.
-    //
-    // AllowMultiple, because a type can hold several independent pairs: Color4MinMax has four.
+    // One attribute for every "these two fields are a range" invariant (Min/Max pairs, Rect
+    // components, aspect and camera pairs). AllowMultiple: Color4MinMax has four pairs.
 
     /// <summary>
     /// Two properties of the same object form an ordered pair: the low one must not exceed the high

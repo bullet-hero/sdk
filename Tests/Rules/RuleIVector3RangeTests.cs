@@ -5,13 +5,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests.Rules
 {
-    // The three IVector3 rules share one file: they are the same switch as their IVector2 siblings
-    // with a Z axis bolted on, so the interesting behaviour (one-sided blind spot on random ranges,
-    // disc-edge measurement for circles) is documented once in RuleIVector2*Tests. What must be
-    // proven separately here is that the Z axis is actually checked - a copy-paste that forgot it
-    // would pass every X/Y test.
-    //
-    // None of the three is used by a live model yet.
+    // The three IVector3 rules share a file (the IVector2 siblings plus Z); what needs proving here is that
+    // Z is checked. None is used by a live model yet.
 
     /// <summary>
     /// RuleIVector3InRange / RuleIVector3Min / RuleIVector3Max over all four IVector3 variants.

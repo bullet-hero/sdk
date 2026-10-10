@@ -3,15 +3,8 @@ using UnityEditor;
 
 namespace BH.SDK.Editor
 {
-    // WHY THESE ARE INSTALLED RATHER THAN COMMITTED. BH.SDK.Roslyn.Sources.asmdef compiles the
-    // analyzer sources so the IDE can resolve them, and for that Unity needs the Roslyn assemblies
-    // as real plugin assets inside Assets/. Committing them would put 13 MB of Microsoft binaries
-    // into an open-source SDK repo AND pin a Roslyn version into git that has to follow whichever
-    // Editor is open - so they are copied out of the Editor's own installation instead.
-    //
-    // IT RUNS ON LOAD, not from a menu item alone, because a fresh clone has no Refs/ and would
-    // otherwise open with an asmdef that cannot resolve its references. The check is five
-    // File.Exists calls, so it costs nothing on the loads where it finds them.
+    // Installed from the Editor rather than committed (13 MB of binaries pinned to one Roslyn version), on
+    // load so a fresh clone resolves (Docs/ROSLYN_GENERATORS.md).
 
     /// <summary> Installs this Editor's Roslyn assemblies into the SDK's Roslyn/Refs/ folder. </summary>
     [InitializeOnLoad]

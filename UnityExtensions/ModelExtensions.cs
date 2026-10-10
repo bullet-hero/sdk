@@ -74,12 +74,8 @@ namespace BH.SDK
             }
         }
 
-        // ON A PHONE THE CURRENT MODE IS AN ANSWER TO THIS APP, NOT A PROPERTY OF THE PANEL. Android
-        // picks the refresh rate from what the foreground app asks for, and Unity asks through
-        // targetFrameRate - so reading Screen.currentResolution at boot, before anything was asked,
-        // got 60 on a 120 Hz phone, set targetFrameRate to 60, and the OS kept the panel at 60 for
-        // good. A phone therefore takes the fastest mode the display reports; a desktop keeps the
-        // current one, since there the mode is the player's own choice of monitor setting.
+        // On a phone the current mode answers this app's own request (Android sets the rate from
+        // targetFrameRate), so take the fastest; a desktop keeps the player's chosen mode.
 
         /// <summary> The refresh rate ScreenHz means: the current mode on a desktop, the fastest supported
         /// one on a mobile platform (never below the current). </summary>

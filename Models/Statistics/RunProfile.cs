@@ -4,21 +4,8 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models.Statistics
 {
-    // THE CONDITIONS A RUN WAS PLAYED UNDER, AS A DICTIONARY KEY. A record only means something
-    // against runs it can be compared with: three lives at half speed with a bot helping is not the
-    // same achievement as one life at double speed, and folding them into one "best" would make the
-    // number meaningless in exactly the cases a player cares about. So the profile is the key and
-    // BestRun carries none of these fields - see BestRun's own header.
-    //
-    // SPEED IS QUANTIZED TO HUNDREDTHS RATHER THAN STORED AS A FLOAT, and that is a requirement of
-    // being a key rather than a preference. The speed control is a continuous slider whose readout
-    // shows two decimals, and a float key compares bit for bit: 1f and 0.9999999f would open two
-    // separate records for what the player and the screen both call "1.00", and both would sit in
-    // the file forever. Hundredths are exactly the precision the player is shown.
-    //
-    // A struct, so no [RuleContainer]: that attribute is class-only, and RuleAnalyzer's walk
-    // deliberately never descends into value types (see the SDK CLAUDE.md, "The walk is on a level's
-    // load path"). What bounds this is the collection cap on Records, not a per-property rule.
+    // The conditions a run was played under, AS A DICTIONARY KEY. Speed is quantized to hundredths: a float
+    // key compares bit for bit. A struct, so no [RuleContainer]; Records' cap bounds it. Docs/STATISTICS.md
 
     /// <summary> The launch conditions a record is filed under. </summary>
     public readonly struct RunProfile : IEquatable<RunProfile>, IComparable<RunProfile>
@@ -41,10 +28,7 @@ namespace BH.SDK.Models.Statistics
         [JsonProperty(Names.Bot)]
         public BotKind Bot { get; }
 
-        // PART OF THE KEY, NOT A REASON TO DROP THE RUN. A run nothing could hit is not the same
-        // achievement as a Zen run - which is hit, only never killed - and neither is one with lives,
-        // so it files under its own records rather than beside either. Added at LevelStatistics
-        // generation 2 (Versions/V1/RunProfileV1 is the shape before it).
+        // Part of the key, not a reason to drop the run: nothing-can-hit is not Zen (hit, never killed).
 
         /// <summary> Whether the avatar had no collisions at all - the launch's "No collision"
         /// option. </summary>

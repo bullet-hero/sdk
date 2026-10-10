@@ -12,15 +12,8 @@ using BH.SDK.Utils;
 
 namespace BH.SDK.Publishing
 {
-    // A COLLECTION IS GRADED ON WHETHER IT STANDS ON ITS OWN, since that is the one thing an importer
-    // relies on and nobody can fix after the upload: every file the manifest names is in it, every user
-    // resource its prefabs and effects point at is in it (a closure left behind is an unresolved
-    // reference in every level that imports it), and it says who made it and under what terms. The
-    // per-resource licence and attribution checks are the level analyzer's own, run on the credits the
-    // collection carries; a profile's size cap applies to the whole folder, as it does to a level.
-    //
-    // It reads no files. What is present is handed in as a set of store paths and a byte count, so the
-    // same check runs on a folder on disk, an unpacked upload on a server, or memory.
+    // Grades whether a collection STANDS ON ITS OWN. Reads no files: present store paths and a byte
+    // count are handed in, so it runs on a folder, an unpacked upload or memory. Docs/PUBLISHING.md.
 
     /// <summary> Checks a collection against one service's publishing conditions. </summary>
     public class CollectionReadinessAnalyzer
@@ -100,11 +93,8 @@ namespace BH.SDK.Publishing
             }
         }
 
-        // Only a reference that LOOKS user-made can be missing: a file resource with a negative id, or a
-        // guid the collection does not hold and that is not a game preset. The analyzer cannot tell a
-        // game preset guid from a dangling one, so guid references are checked against the closure of
-        // the data resources only - a shape, effect or prefab id no resource here defines is reported,
-        // and a game-defined shape is recognised by being addressed through the built-in catalogue.
+        // Only a reference that LOOKS user-made can be missing, and a game-preset guid cannot be told
+        // from a dangling one: guids are checked against the data resources' closure only.
         private static void AnalyzeClosure(LevelResources resources, List<PublishIssue> issues)
         {
             var reported = new HashSet<ResourceRef>();

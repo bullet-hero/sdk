@@ -9,12 +9,9 @@ namespace BH.SDK.Versions.V1.Migrations
 {
     // ReSharper disable once InconsistentNaming
 
-    /// <summary> User settings, generation 1 to generation 2 - every group carried as it is except
-    /// that the controls' shared <c>cursor_return</c> moves into the mouse and touchscreen groups, the
-    /// device priority and manual selection (the most recently used device always leads), the
-    /// gamepad's dash buttons and every form of motion-sensor locality; the groups that only GAINED a
-    /// member (Colliders Only, both level browser layouts, publishing) take that member's default; and
-    /// the tutorial flag starts unset, so a player updating from 1.0.0 is offered the tutorial once. </summary>
+    /// <summary> User settings, generation 1 to 2: cursor_return moves from the shared controls group
+    /// onto the mouse and touchscreen groups; device priority, gamepad dash buttons and motion-sensor
+    /// locality are dropped or defaulted; the tutorial flag starts unset, so 1.0.0 players see it. </summary>
     public class UserSettingsV1ToV2 : ModelMigration<UserSettingsV1, UserSettings>
     {
         /// <summary> Builds the newer shape out of the older one. </summary>
@@ -90,10 +87,8 @@ namespace BH.SDK.Versions.V1.Migrations
             from.Active, from.Sensitivity, from.DeadZone, from.Smoothing, from.InvertX, from.InvertY,
             from.Mode, from.MotionStick, from.ResponseCurve);
 
-        // The calibration, the stored neutral point and the axis mapping are dropped: the tilt is read
-        // against gravity with the phone lying flat as rest, which none of them can be translated into.
-        // What IS carried is how far a player had to tilt - MaxTiltAngle becomes the sensitivity that
-        // reaches full deflection at the same angle, sin(20) being the span a sensitivity of 1 means.
+        // Calibration, neutral point and axis mapping are dropped (no translation to tilt against
+        // gravity); MaxTiltAngle becomes the sensitivity reaching full deflection at the same angle.
         private static DeviceGyroControlsSettings Migrate(DeviceGyroControlsSettingsV1 from) => new(
             from.Active, TiltSensitivity(from.MaxTiltAngle), from.DeadZone, from.Smoothing,
             from.InvertX, from.InvertY,

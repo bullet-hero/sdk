@@ -13,12 +13,8 @@ using Newtonsoft.Json;
 namespace BH.SDK.Models.Objects
 {
     /// <summary>
-    /// Base of every placeable object in a level: identity, parenting, lifetime and the seven shared
-    /// transform tracks. Usable on its own as an invisible node - a pure transform other objects
-    /// parent to. Subclasses only add what they draw.
-    /// <br/><br/>
-    /// Every track may legitimately be empty; that means "use the engine default for this field",
-    /// not "data is missing".
+    /// Base of every placeable object: identity, parenting, lifetime and the seven shared transform
+    /// tracks. Usable alone as an invisible node. An empty track means "use the default", not "missing".
     /// </summary>
     [RuleContainer]
     [GenerateModel]
@@ -46,11 +42,8 @@ namespace BH.SDK.Models.Objects
         [JsonProperty(Names.Name)]
         public string Name { get; set; }
 
-        // This IS the disable switch, unlike the Visible flag it replaced. That one gated rendering
-        // only, so an invisible object still hit the player - a trap, since nothing in its name said
-        // so. "Not drawn but still solid" is now expressed where it belongs: a Null ShapeId with a
-        // real ColliderId. Inactive means the object contributes nothing to either path, while
-        // staying alive as a parent for whatever hangs off it.
+        // This IS the disable switch (it replaced Visible, which gated rendering only): Inactive
+        // contributes to neither path but stays alive as a parent. Models/Objects/CLAUDE.md
 
         /// <summary> Whether the object participates at all - drawn and collided against. Applies
         /// down the hierarchy: an inactive parent takes its whole subtree with it. </summary>
@@ -64,11 +57,8 @@ namespace BH.SDK.Models.Objects
         [JsonProperty(Names.SpanShort)]
         public FrameSpan Span { get; set; }
 
-        // STATIC, AND DELIBERATELY SO. There is no layer track and there is not going to be one: a
-        // Random* value is addressed by Hash(seed, frame, EFFECTIVE layer, span start, track,
-        // channel), so a layer that moved would silently reroll every random value under this
-        // object on every frame it moved. The LayerKey class that used to imply otherwise is gone.
-        // Docs/Issues/LEVEL_MODEL_ANALYSIS.md section C5 is the record.
+        // Static, deliberately: Random* values hash the EFFECTIVE layer, so a layer track would reroll
+        // them on every frame it moved. Docs/Issues/LEVEL_MODEL_ANALYSIS.md section C5.
 
         /// <summary> Draw order among siblings - higher draws in front. Not animated. </summary>
         [RuleInRange(ValueRules.MinLayer, ValueRules.MaxLayer)]

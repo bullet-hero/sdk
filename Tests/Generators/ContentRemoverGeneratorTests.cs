@@ -12,11 +12,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests.Generators
 {
-    // The generator that only ever DELETES, so the properties worth pinning are the ones a spawning
-    // generator has no equivalent of: that both modes are exact opposites on a point and deliberately
-    // NOT opposites on a span (partial overlap survives either way), that the level stays structurally
-    // whole after the cut (no orphaned child, no broken prefab remap table), that the three content
-    // switches are independent, and that the journal can put a deleted audio track back.
+    // Only deletes: the modes are opposites on a point but not on a span, the level stays whole (no
+    // orphans, no broken remap table), and the journal restores a deleted audio track.
 
     /// <summary> The generator that only ever deletes: that the two modes are opposites on a point and
     /// deliberately not on a span, that the level stays structurally whole after the cut, and that undo restores it. </summary>

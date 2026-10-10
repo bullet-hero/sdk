@@ -9,30 +9,9 @@ using Org.BouncyCastle.Utilities.IO;
 
 namespace BH.SDK.Services.Crypto
 {
-    // Exactly what `gpg --symmetric --cipher-algo AES256` produces, and that sentence is the entire
-    // specification: SKESK v4, S2K type 3 (iterated and salted) over SHA-256, SEIPD v1 (CFB with an
-    // MDC) under AES-256, and a literal-data packet inside. A level protected by this game opens in
-    // gpg, and one gpg protected opens in this game. Nothing about the layout is ours to choose.
-    //
-    // SEIPD v1 RATHER THAN RFC 9580's v2/AEAD, and this is a decision that looks backwards until
-    // the reason is stated: GnuPG does not implement the new formats - its developers went to
-    // LibrePGP instead - and gpg is the external tool the whole format was picked for. Writing v2
-    // would mean writing something the one program this has to interoperate with cannot read. v1 is
-    // read by gpg, Sequoia, OpenPGP.js and GopenPGP alike. When that changes, the reader already
-    // answers Unsupported with a clear message rather than failing obscurely.
-    //
-    // THE Utf8 OVERLOADS ARE MANDATORY AND IT IS NOT A STYLE POINT. AddMethod/GetDataStream encode
-    // a passphrase one byte per char, while gpg treats it as UTF-8. For an ASCII passphrase the two
-    // agree; for a Cyrillic one a file this game wrote will not open in gpg and a file gpg wrote
-    // will not open here. The audience is Russian-speaking, so that is the DEFAULT case, not an
-    // edge one - and it is silent, since both sides simply report a wrong passphrase.
-    //
-    // Verify() is always called, and it is what separates "wrong passphrase" from "damaged file" -
-    // two different sentences to show a player, and the practical reason encrypt-then-authenticate
-    // earns its place here at all.
-    //
-    // ASCII armor (.asc) is deliberately not written: a third more bytes to gain a shape nothing in
-    // this project transports as text.
+    // Exactly what `gpg --symmetric --cipher-algo AES256` produces: SKESK v4, S2K 3 / SHA-256, SEIPD v1
+    // (not RFC 9580: GnuPG does not implement it), AES-256, literal data. The Utf8 overloads are
+    // MANDATORY (gpg reads a passphrase as UTF-8). Verify() is always called. Docs/ARCHIVE.md.
 
     /// <summary> Symmetric OpenPGP - the format a password-protected level is written in. </summary>
     public static class PgpSymmetricService
@@ -61,16 +40,8 @@ namespace BH.SDK.Services.Crypto
             return tag == 1 || tag == 3 || tag == 8 || tag == 10 || tag == 11 || tag == 18;
         }
 
-        // BOUNCYCASTLE'S itCount PARAMETER IS THE CODED OCTET, NOT A COUNT, and nothing in its own
-        // documentation says so - it is named "itCount", takes an int, and throws
-        // ArgumentOutOfRangeException("must be in range 0-255") for any honest number of anything.
-        // What OpenPGP actually stores is one byte, decoded by the formula below, so the work factor
-        // is not a free number at all: it is one of 256 rungs.
-        //
-        // Everything above this layer therefore speaks in BYTES, which is the unit S2K work is
-        // genuinely measured in, and the rounding happens here - upwards, to the first rung that
-        // meets what was asked for, so a caller never silently gets less stretching than it
-        // requested.
+        // BouncyCastle's itCount is the CODED OCTET (0-255), not a count. Callers speak in BYTES hashed;
+        // the rounding is here, upwards, so a caller never gets less stretching than it asked for.
 
         /// <summary> Decodes an S2K count octet into the number of bytes hashed. </summary>
         public static long FromCodedS2K(int coded) => (16L + (coded & 15)) << ((coded >> 4) + 6);
@@ -220,10 +191,7 @@ namespace BH.SDK.Services.Crypto
             if (passphraseData == null)
                 return PgpOpenOutcome.Failed(PgpOpenResult.Unsupported);
 
-            // Refused rather than opened unauthenticated. gpg has written an MDC by default since
-            // 2003, so a symmetric message without one is either two decades old or stripped of the
-            // very thing that would report the stripping - and opening it would mean handing a
-            // level back with no way to say whether it is the level that was sent.
+            // Refused rather than opened unauthenticated: gpg has written an MDC by default since 2003.
             if (!passphraseData.IsIntegrityProtected())
                 return PgpOpenOutcome.Failed(PgpOpenResult.Unsupported);
 

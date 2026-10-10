@@ -7,31 +7,8 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models.SettingGroups.Graphics
 {
-    // The device's half of how a level's images are loaded. The author's half is six fields on the
-    // image itself (TextureResource's Kind/Alpha/Sampling/Compression/WrapU/WrapV), and they say only
-    // what is true of the PICTURE - the split is the whole point: a level has to play the same
-    // everywhere, so the author may not author the device's memory budget, and the player may not be
-    // asked what a picture depicts. The two meet in Core's TextureLoadPlanner, which is the only place
-    // that turns an (authoring, settings) pair into a format.
-    //
-    // Every field defaults to Auto and Auto resolves per platform, so a player who never opens this
-    // group runs the right settings for their device. None of them is a BaseGraphicsSettings Render
-    // switch, for the same reason AntiAliasingGraphicsSettings is not: "do not render textures" is
-    // not a state this game has.
-    //
-    // TWO OF THESE USED TO BE DERIVED FROM THE AUTHOR'S KIND, and only ONE of them belonged here.
-    // The compression encoder's EFFORT is the player's outright: the result is the same size in the
-    // same format either way, so all it trades is this device's own loading time.
-    //
-    // FILTERING IS THE ONE THAT IS SHARED, and the line runs between two questions its four members
-    // conflate. Whether an image is drawn SHARP or SOFT is a look: it costs the same on every GPU, so
-    // there is no budget here to protect and the author's TextureSampling wins outright over Point.
-    // How soft - whether a smoothed image blends between mip levels, i.e. Bilinear against Trilinear -
-    // is a real device cost and stays this setting's answer. So Point here is a preference an image
-    // may overrule, while the linear pair is not.
-    //
-    // These are read when a level's resources LOAD. Changing one mid-level does nothing until the
-    // next load, which is why nothing here is pushed by SettingsApplier the way anti-aliasing is.
+    // The device's half of image loading; the author's half is TextureResource's six fields. They meet in
+    // Core's TextureLoadPlanner. Everything defaults to Auto and is read at LOAD. Docs/SETTING_GROUPS.md
 
     /// <summary>
     /// How this device turns a level's image files into GPU textures - whether it compresses them

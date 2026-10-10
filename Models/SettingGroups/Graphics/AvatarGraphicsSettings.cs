@@ -5,17 +5,8 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models.SettingGroups.Graphics
 {
-    // WHAT THE AVATAR COSTS TO DRAW, WHICH IS ONE DECISION TODAY. The body is a grid of 64 cells
-    // that health takes apart (Services.Shared.Avatars' ShatterGridMath); off, that grid collapses
-    // to ONE square and health becomes transparency instead. Same reading, a sixty-fourth of the
-    // objects, and nothing for a weak device to overdraw.
-    //
-    // TRUE EVERYWHERE, including phones. 64 inframe squares is not a lot next to what a level draws,
-    // and the effect is the game's main piece of readable feedback about how a run is going - so it
-    // ships on and the switch is there for the device that disagrees, not as a platform default.
-    //
-    // Inherited Render is that switch. It is not a "draw the avatar" flag: an avatar that is not
-    // drawn is not a graphics option, it is a broken run.
+    // The body is 64 cells health takes apart; Render off collapses it to ONE square, health becoming
+    // transparency. True everywhere: it is the main readable feedback of a run. Docs/SETTING_GROUPS.md
 
     /// <summary>
     /// How the player avatar is drawn: whether its body comes apart cell by cell as health falls.

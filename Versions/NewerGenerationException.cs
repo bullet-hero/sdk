@@ -2,11 +2,8 @@ using System;
 
 namespace BH.SDK.Versions
 {
-    // A NEWER FILE IS REFUSED, NOT DEGRADED. Every model change since 1.0.0 is a generation bump, so
-    // a generation above this build's latest is a shape this build has provably never seen - reading
-    // it by property name would open a file that is silently missing whatever moved, and the next
-    // save would write that loss over the original. The reader throws instead, and the caller tells
-    // the player to update. Docs/VERSIONING.md lists every site that throws it.
+    // A newer file is refused, not degraded: reading it by property name would drop whatever moved
+    // and the next save would write that loss over the original. Sites: Docs/VERSIONING.md.
 
     /// <summary> A file claims a generation of <see cref="Domain"/> newer than this build knows. Thrown before
     /// anything is read on the payload's behalf; nothing the reader returned is usable. </summary>

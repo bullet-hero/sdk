@@ -4,12 +4,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Roslyn.Tests
 {
-    // THE STRONGEST ASSERTION HERE IS "IT COMPILES". A generator that emits plausible-looking text
-    // which does not build is the ordinary failure, and every fixture below therefore checks the
-    // whole compilation - original sources plus generated ones - before it checks anything else.
-    // The text assertions after that are about SHAPE: virtual where a subclass has to override,
-    // explicit interface implementations where a polymorphic variant needs a second contract, and
-    // the base-typed Equals that downgrades rather than answering false.
+    // The strongest assertion is "it compiles": every fixture checks original plus generated sources first,
+    // then the SHAPE of the text.
 
     /// <summary> That the emitted code COMPILES, checked before anything about its text is asserted - and then
     /// that its shape is right where a subclass or a polymorphic variant needs it to be. </summary>
@@ -92,12 +88,8 @@ namespace Fixture
         [Category(Metadata.Category.Easy)]
         public void AValueList_IsCopiedWholesale_NotPerItem()
         {
-            // List<int> has no ICopyable elements, so CopyList would not even compile. Getting this
-            // wrong is the commonest way a member-shape classifier fails.
-            //
-            // It goes through CopyValueList rather than through List's own copy constructor for one
-            // reason: a value list is the only shape in the format a member may legally be NULL in,
-            // and `new List<T>(null)` throws where copying an absent list has to keep it absent.
+            // A value list goes through CopyValueList, not new List<T>(null): it is the one shape that may
+            // be null.
             var source = Run(Leaf).Source("Fixture.Leaf.Model.g.cs");
 
             Assert.That(source, Does.Contain("ModelUtils.CopyValueList(src.Values)"));
@@ -365,10 +357,7 @@ namespace Fixture
             // to migrate, so IBinaryModel.Read would look for a second one.
             Assert.That(aggregate, Does.Contain("IBinaryEnvelope.ReadContent(ref"));
 
-            // The JSON half is wrapped by whoever HOLDS it, never by the aggregate itself - and the
-            // reader is handed BOTH the domain and the generation. The generation says a file
-            // disagrees; only the domain says what to resolve it against, which is the difference
-            // between migrating an old payload and reading it into today's class by name.
+            // The JSON half is wrapped by whoever HOLDS it, and the reader gets both domain and generation.
             var holder = run.Sources.Single(s => s.Key.Contains("Holder")).Value;
             Assert.That(holder, Does.Contain("WriteEnvelope(writer, Inner, 1);"));
             Assert.That(holder,

@@ -9,9 +9,8 @@ using NUnit.Framework;
 namespace BH.SDK.Tests.Publishing
 {
     /// <summary>
-    /// PublishProfile and the site roster it grades against: the policy-as-data half of publishing.
-    /// A profile is a file an operator edits, so it has to survive a round trip and match hosts the
-    /// way a person typing a URL expects.
+    /// PublishProfile and the site roster: a file an operator edits, so it round trips and matches hosts
+    /// the way a person typing a URL expects.
     /// </summary>
     public class PublishProfileTests
     {

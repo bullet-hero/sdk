@@ -14,15 +14,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests
 {
-    // THE RULE A WITHDRAWN READER BOUGHT THIS PROJECT: anything that changes how a level is READ is
-    // locked by a test comparing the SAME BYTES through the old path and the new one. Not a round
-    // trip, not self-consistency - the change that shipped a game unable to open a level passed
-    // 4494 tests, every one of them self-consistent, because a reader that writes and reads its own
-    // mistakes agrees with itself perfectly.
-    //
-    // So both halves are here. WRITING is compared byte for byte against the reflective path, which
-    // is the only proof that a level written by this build is the file the last one wrote. READING
-    // is compared through Level.Equals over the whole graph, on bytes neither path produced.
+    // Anything that changes how a level is READ is locked by the SAME BYTES through the old and the new
+    // path, never a self-consistent round trip. BH.SDK/Docs/TESTING.md, "Reading and writing".
 
 
     /// <summary> The generated JSON path against the reflective one: writing compared byte for byte, reading
@@ -99,11 +92,7 @@ namespace BH.SDK.Tests
 
         #region Reading
 
-        // An id remap table is the one member in the format whose key a reader cannot recover from
-        // the value, so it is written as an array of {k,v} pairs. The generated codec and the
-        // reflective DictionaryAsPairListConverter used to disagree about the CASE of those two
-        // letters, which no self-consistent test can see: each path read back exactly what it
-        // wrote. These two are what pin them together.
+        // The id remap table is written as {k,v} pairs; both paths once disagreed on the CASE of the letters.
 
         // A PrefabObject is not a serialization ROOT (no [ModelGeneration]), so both halves below go
         // through the level that holds it - which is also the only shape the format ever writes one in.
@@ -194,15 +183,8 @@ namespace BH.SDK.Tests
             Assert.DoesNotThrow(() => Generated.DeserializeData<Level>(text));
         }
 
-        // A DEGRADED READ IS A READ OF BYTES NEITHER PATH WOULD WRITE, which is exactly the shape
-        // this fixture was built for, and exactly what the corpus could never supply: every file it
-        // holds sits at one generation and carries no unknown tag, so it has nothing to disagree
-        // about. That is how a real divergence between the two stacks survived 4494 self-consistent
-        // tests - the same nested LevelSettings reading back fps=60 one way and fps=61 the other.
-        //
-        // So both stacks must degrade to the SAME MODEL and report the SAME SUBSTITUTIONS. Agreeing
-        // about the second is the stronger half: two readers can arrive at identical defaults for
-        // opposite reasons, and only the report says which reason it was.
+        // A degraded read is bytes neither path would write, which the corpus cannot supply: both stacks
+        // must give the SAME MODEL and the SAME SUBSTITUTIONS (the report says which reason).
 
         [Test]
         [Author(Metadata.Author.Vertoker)]
@@ -231,10 +213,8 @@ namespace BH.SDK.Tests
         [Category(Metadata.Category.Normal)]
         public void AnUnknownTag_DegradesTheSameWayThroughBothStacks()
         {
-            // `[tag, payload]` is how every polymorphic value is written, so `"v":[0,` is a keyframe's
-            // own value at its family's lowest tag. Retagging them to a number nothing claims leaves
-            // the payloads untouched - the model must come back identical, and the report is the only
-            // evidence anything happened at all.
+            // Retagging every keyframe value to an unclaimed tag: the model is identical, the report is
+            // the only evidence.
             var text = Generated.SerializeData(MockData.CreateTestLevel())
                 .Replace("\"v\":[0,", "\"v\":[" + MockData.FabricatedTag + ",");
 
@@ -283,10 +263,7 @@ namespace BH.SDK.Tests
         [Category(Metadata.Category.Hard)]
         public void EveryModel_WritesTheMembersItsContractDeclares()
         {
-            // The check that does not need a fixture to reach a member. A byte comparison only sees
-            // what MockData happens to populate; this asks Newtonsoft itself, for every model, what
-            // it would have written and in which order - and compares that against what the
-            // generator emitted. A member the fixtures never touch is caught here or nowhere.
+            // Asks Newtonsoft itself what it would write, for every model: catches members no fixture sets.
             var resolver = new SerializationService.ContractResolver(new SerializationSettings());
             var failures = new System.Collections.Generic.List<string>();
             var swept = 0;

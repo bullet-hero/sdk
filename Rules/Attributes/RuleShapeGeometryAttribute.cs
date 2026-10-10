@@ -4,18 +4,9 @@ using BH.SDK.Utils;
 
 namespace BH.SDK.Rules.Attributes
 {
-    // A class rule rather than a property one, because the invariant spans the two halves of the
-    // geometry: an index means nothing without the vertex list it points into, and a property rule
-    // only ever receives one value.
-    //
-    // Every check here has a silent failure mode, which is why they are enforced rather than
-    // documented: a point outside the box samples past its own atlas cell, a flipped triangle is
-    // culled and simply missing, a degenerate one collides with nothing, an unreferenced point is
-    // invisible to both paths, and an index past the end would throw deep inside a bake.
-    //
-    // Fix delegates to ShapeGeometryUtils.Sanitize - the same call the in-game shape editor makes on
-    // Save. That sharing is the point: a shape the editor accepts must be a shape validation
-    // accepts, and two implementations would eventually disagree about which.
+    // A class rule: an index means nothing without its vertex list. Every check has a silent failure
+    // mode. Fix is ShapeGeometryUtils.Sanitize, the call the in-game shape editor makes on Save, so the
+    // two cannot disagree about what is valid.
 
     /// <summary>
     /// Indexed shape geometry must be well formed: whole triples, in-range indices, points inside

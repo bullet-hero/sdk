@@ -7,15 +7,8 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models.SettingGroups.Graphics
 {
-    // The one graphics sub-group that does NOT derive from BaseGraphicsSettings, and the reason is
-    // its own Type field: an inherited Render would mean "is anti-aliasing on", which is precisely
-    // what Type = None already says. Two switches for one decision can disagree, and whichever one
-    // a reader happened to check would be the wrong one half the time.
-    //
-    // Hdr lives here rather than beside the post-processing switches because it is the same
-    // decision as the sample count - both describe what the camera's target IS, and both are paid
-    // for in the same tile memory. The game ships with it off: nothing it renders needs values
-    // above 1, and HDR would double the bandwidth MSAA multiplies.
+    // Not a BaseGraphicsSettings: an inherited Render would be a second switch for what Type = None says.
+    // Hdr lives here (the sample count's tile memory); it ships off. Docs/SETTING_GROUPS.md
 
     /// <summary>
     /// How the camera's own render target is configured - the anti-aliasing method, the MSAA sample

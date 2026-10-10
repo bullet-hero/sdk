@@ -11,15 +11,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests.Services
 {
-    // THE ADVERSARIAL ARCHIVES HERE ARE BUILT BY HAND, out of raw 512-byte headers, and that is the
-    // point rather than an inconvenience. A traversal entry or a symlink entry is not something the
-    // writer under test can produce - it refuses to - so asking it to build the attack would prove
-    // only that it refuses twice. A hostile archive arrives from somewhere else, and so does this
-    // one: the fixture below writes the ustar fields directly, exactly as `tar` would.
-    //
-    // What the caps are for is stated where they are checked: a gzip bomb is a few kilobytes that
-    // expands to whatever the reader will hold, and on the server this reader is what stands between
-    // an upload and the disk.
+    // Adversarial archives are built by hand from raw 512-byte headers: the writer refuses to produce an
+    // attack. On the server this reader stands between an upload and the disk.
 
     /// <summary> The archive layer, including hostile archives built by hand out of raw ustar headers - the
     /// writer refuses to produce one, and on a server this reader is what stands between an upload and the disk. </summary>

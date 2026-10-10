@@ -9,13 +9,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests
 {
-    // THE COLLECTOR IS WHAT SEPARATES THIS POLICY FROM THE ONE IT REPLACED. Degrading was never the
-    // defect - the format did exactly that before, by Skip()ing a generation and reading an old
-    // payload into today's class. What it did not do was SAY so, and a nested LevelSettings coming
-    // back with fps=60 through one codec stack and fps=61 through the other is what that cost.
-    //
-    // So these are the three things the collector has to be: silent on an ordinary read, present on a
-    // degraded one, and free when nobody asked.
+    // The collector separates this policy from the silent one it replaced: silent on an ordinary read,
+    // present on a degraded one, free when nobody asked.
 
     /// <summary> That a degraded read reports what it substituted, an ordinary one reports nothing, and a
     /// read with no collector costs nothing at all. </summary>
@@ -79,15 +74,7 @@ namespace BH.SDK.Tests
         [Category(Metadata.Category.Easy)]
         public void AnUnknownPolymorphicTag_StandsInTheFamilysLowestAndSaysSo()
         {
-            // FloatType.Value is the family's lowest tag, and it is the family's plain literal form -
-            // which is why the fallback needed nothing declared for it. An unknown VALUE is the
-            // invisible half of this policy: a track that fell to its default looks like a level
-            // authored that way, and only the report tells them apart.
-            //
-            // A polymorphic value is written `[tag, payload]`, so `"v":[0,` is every keyframe's own
-            // value at its lowest tag. Retagging them all to a number nothing claims leaves the same
-            // payloads in place - which is the point: the model comes back identical, and the ONLY
-            // evidence that anything happened is the report.
+            // An unknown VALUE is the invisible half: a track fallen to its default looks authored that way.
             var service = new SerializationService();
             var json = service.SerializeData(MockData.CreateTestLevel())
                 .Replace("\"v\":[0,", "\"v\":[" + MockData.FabricatedTag + ",");
@@ -107,10 +94,7 @@ namespace BH.SDK.Tests
         [Category(Metadata.Category.VeryEasy)]
         public void NoFamilyClaimsTheFabricatedTag()
         {
-            // The guard under every unknown-tag fixture there is. The day a family reaches this tag,
-            // all of them quietly become tests of an ORDINARY read that still pass - and stop
-            // covering the thing they were written for. The families are found the way the format
-            // itself finds them: the discriminator enum of every JsonConverterCustomType.
+            // The guard under every unknown-tag fixture; families are found as the format finds them.
             var families = typeof(SerializationService).Assembly.GetTypes()
                 .Select(t => t.BaseType)
                 .Where(b => b is { IsGenericType: true }

@@ -2,12 +2,8 @@
 
 namespace BH.SDK.Roslyn.Model
 {
-    // ONE VALUE, AND HOW IT IS WRITTEN. MemberShape answers what a member IS to Copy and Equals - a
-    // list, a dictionary, a nested model - and stops there, because those three only ever need to
-    // know the shape. An encoding needs the LEAF: the element inside the list, the key of the
-    // dictionary, the enum's underlying width. That is what this is, and it is deliberately a
-    // separate axis rather than more MemberShape members - the cross product of shape and leaf is
-    // where a flat enum turns into forty cases nobody can read.
+    // One value and how it is written: the LEAF (element, key, enum width), a separate axis from
+    // MemberShape.
 
     /// <summary> How one leaf value is written and read. </summary>
     internal enum ValueKind
@@ -47,10 +43,7 @@ namespace BH.SDK.Roslyn.Model
         ModelPolymorphic,
     }
 
-    // MIRRORS BH.SDK's ModelGenerations.Invalid, and has to be its own copy: this assembly is
-    // compiled against no reference to the SDK at all - the generator only ever sees the user's
-    // source through Roslyn symbols. The two must stay in step; ModelGenerations.cs says so on its
-    // own side.
+    // Lockstep: mirrors ModelGenerations.Invalid, because this assembly references no SDK.
 
     /// <summary> The generation numbers the generator itself needs to name. </summary>
     internal static class ModelGenerationValues
@@ -100,11 +93,9 @@ namespace BH.SDK.Roslyn.Model
         /// against. It was already read here and thrown away while a nested envelope could only refuse. </summary>
         public string Domain { get; }
 
-        /// <summary> The value-family interface this leaf's type implements, when it has one.
-        /// A member declared as the CONCRETE type is still written `[tag, payload]` in JSON -
-        /// ConverterRouter resolves by the value's RUNTIME type and the family converter matches
-        /// any implementor, so Marker.Color4 is `[0,{...}]` even though it can only ever be a
-        /// Color4Value. The blob needs no such thing: sealed means the type IS the declared one. </summary>
+        /// <summary> The value-family interface this leaf implements, if any. A concrete member is still
+        /// written [tag, payload] in JSON (ConverterRouter matches by runtime type); the blob needs no such
+        /// thing - sealed means the type IS the declared one. </summary>
         public string Family { get; }
 
         /// <summary> True when nothing here can encode the type. </summary>

@@ -3,19 +3,9 @@ using BH.SDK.Models.Enums.Meta;
 
 namespace BH.SDK.Publishing
 {
-    // The site list the public UGC licensing policy (https://bullethero.space/en/notes/ugc-licensing-policy) writes out in prose, as data. Same entries, same
-    // reasoning - the document stays the human-readable version and this is what code grades against,
-    // so the two must be edited together.
-    //
-    // A starting roster, not a fixed one. It ships in the SDK so a fresh server has something to work
-    // with on day one and so a client can grade a URL before it has ever spoken to a server; every
-    // operator is expected to override it in their own profile as sites change their terms. Nothing
-    // downstream may assume a particular entry is present.
-    //
-    // Streaming platforms are listed as NotAllowed rather than left out. An absent site grades as
-    // whatever the profile says about unknowns - "somebody should look at this" - which is far too
-    // mild for the single most common way a level becomes unpublishable. Naming them turns a
-    // moderation queue item into an immediate, self-explanatory refusal at the moment of typing.
+    // The site list of the public UGC licensing policy, as data: edit the two TOGETHER. A starting
+    // roster only (operators override it); nothing downstream may assume an entry is present.
+    // Streaming platforms are listed as NotAllowed, not omitted: Docs/PUBLISHING.md.
 
     /// <summary> The default resource-site roster a publish profile starts from. </summary>
     public static class TrustedSourceCatalog

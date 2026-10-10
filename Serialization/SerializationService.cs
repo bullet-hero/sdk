@@ -66,12 +66,8 @@ namespace BH.SDK.Serialization
             {
                 TypeNameHandling = serializationSettings.typeNameHandling,
                 ContractResolver = contractResolver,
-                // Without this, Newtonsoft populates (appends into) a non-null nested object/list
-                // property left behind by the parameterless constructor instead of replacing it -
-                // e.g. EffectAngleCurvesBySpeed's ctor seeds Curve with 2 default keyframes, and
-                // deserializing a JSON curve with its own keyframes would append onto those instead
-                // of starting fresh, breaking round-trip equality for any model with a non-empty
-                // constructor default.
+                // Without Replace, Newtonsoft appends into a non-null nested list left by a
+                // parameterless constructor (e.g. a two-key default curve), breaking round-trip equality.
                 ObjectCreationHandling = ObjectCreationHandling.Replace,
             };
 
@@ -85,16 +81,9 @@ namespace BH.SDK.Serialization
             Serializer = JsonSerializer.Create(settings);
         }
 
-        // The list below is not what a serializer ends up holding: it is handed to a ConverterRouter,
-        // and the serializer holds that one plus VersionedEnvelopeConverter. Newtonsoft asks every
-        // converter in a serializer's list whether it can convert, once per value and cached nowhere,
-        // so a list this long is paid for on every number in the file - see ConverterRouter's header
-        // for what that measured. Order still decides which converter wins a type, and the router
-        // preserves it exactly, so adding a converter here works the same as it always did.
-        //
-        // VersionedEnvelopeConverter is the one that cannot be routed: its CanConvert answers
-        // differently depending on which domain is currently being written, which is what stops it
-        // re-wrapping its own payload, and a per-type cache cannot express that.
+        // The list is handed to a ConverterRouter (Newtonsoft asks every converter per value, uncached);
+        // order still decides the winner. VersionedEnvelopeConverter is NOT routed: its CanConvert
+        // depends on the domain being written, which a per-type cache cannot express.
 
         /// <summary> Builds the converter set a serializer needs, already routed. </summary>
         public static List<JsonConverter> GetConverters(JsonSerializerSettings settingsDefault,
@@ -120,11 +109,8 @@ namespace BH.SDK.Serialization
                 new DictionaryCheckpointDeathsConverter(),
                 new DictionaryAsPairListConverter<ObjectId, ObjectId>(),
 
-                // The pair form rather than the key-from-value one above, because BestRun carries
-                // none of the numbers RunProfile is made of - a record is filed under the
-                // conditions it was set under, and repeating them inside the record would be a
-                // second copy with nothing keeping the two in agreement. RunProfile is also a
-                // value type with no TypeConverter, so Newtonsoft's own dictionary path throws.
+                // The pair form: BestRun carries none of the numbers RunProfile is made of, and
+                // RunProfile is a value type with no TypeConverter, so the default dictionary path throws.
                 new DictionaryAsPairListConverter<RunProfile, BestRun>(),
 
                 new PrimitiveIntConverter(),
@@ -154,18 +140,12 @@ namespace BH.SDK.Serialization
                 new ObjectConverter(),
             };
 
-            // LAST, AND THAT IS THE WHOLE OF ITS WIRING - see its own header. First match wins, so
-            // every tagged value still reaches the converter that tags it, and this one answers for
-            // the payload inside. It is what makes reading a level stop binding members by
-            // reflection; the thirty-five converters above stay for the shapes it hands back to.
+            // LAST, and that is the whole of its wiring (GeneratedModelConverter): first match wins, so
+            // tagged values still reach the converter that tags them.
             if (useGeneratedCodecs) converters.Add(new GeneratedModelConverter());
 
-            // Some converters above resolve a concrete implementation of a polymorphic type and need a
-            // private "default" JsonSerializer to populate that concrete type's own members (see
-            // IRequiresDefaultSerializer for why). Wired automatically here, so adding a new converter of
-            // that kind to the list above is the only step a future change needs - nothing here has to change.
-            // Each gets its own router, since each excludes a different converter (itself) and a router
-            // caches the answers for the exact set it was built with.
+            // Each IRequiresDefaultSerializer gets its own router: each excludes a different converter
+            // (itself), and a router caches answers for the exact set it was built with.
             foreach (var converter in converters.OfType<IRequiresDefaultSerializer>())
             {
                 var excluded = new HashSet<JsonConverter>(converter.GetExcludedConverters(converters));
@@ -207,13 +187,9 @@ namespace BH.SDK.Serialization
                 return contract;
             }
 
-            // THE REFLECTIVE PATH HAS TO AGREE WITH THE GENERATED ONE, byte for byte - JsonParityTests
-            // compares them - so the rule the emitter applies is applied here too: a null SUB-MODEL is
-            // omitted whole, and nothing else is. The test is that the member's type is an IModel<T>,
-            // which is exactly what the generator calls a Model or a PolymorphicModel: every concrete
-            // model implements it and so does every polymorphic value interface (IVector2 : IModel
-            // <IVector2>), while List<T> and Dictionary<,> do not - which is what keeps a null
-            // collection distinguishable from an empty one, as the blob codec keeps it.
+            // Agree byte for byte with the generated path (JsonParityTests): omit a null SUB-MODEL whole
+            // (the member's type is an IModel<T>) and nothing else, so a null collection stays distinct
+            // from an empty one, as in the blob codec.
 
             /// <summary> Applies the property order the format was written in, which is what keeps a re-saved file byte-identical. </summary>
             protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
@@ -235,10 +211,8 @@ namespace BH.SDK.Serialization
             }
         }
 
-        // The mode reaches the writer, not the shared Serializer: Formatting used to live on
-        // SerializationSettings and therefore applied to every save this service ever made, which is
-        // the opposite of what a per-save choice needs. Bson is not a valid argument here - this is
-        // the plain-text entry point; use GetDataSerializer for the binary one.
+        // The mode reaches the writer, not the shared serializer. Plain-text entry point: use
+        // GetDataSerializer for the binary one.
 
         /// <summary> The TEXT api: always compact JSON, whatever a caller's chosen file format is.
         /// Which FORMAT a level is written in is SerializeEnvelope's question, since only bytes can
@@ -274,15 +248,9 @@ namespace BH.SDK.Serialization
             return (TValue)Serializer.Deserialize(jsonTextReader, typeof(TValue));
         }
 
-        // THE BYTE-LEVEL COUNTERPARTS OF SerializeData/DeserializeData, and the pair anything that
-        // moves a whole aggregate around needs: a level archive writes a document into an archive
-        // entry, a reader takes one back out, and a server stores one in a column. Every one of
-        // them holds BYTES, and none of them can go through the string API without deciding that
-        // Bson does not exist.
-        //
-        // The domain and the version come off the type's own [ModelGeneration] rather than from the
-        // caller, for the same reason the string API refuses a type without one: an envelope whose
-        // version was supplied by whoever wrote it is an envelope that can lie about what it holds.
+        // The byte-level counterparts of SerializeData/DeserializeData, for anything that moves a whole
+        // aggregate around (archive entries, a server column). Domain and generation come off the
+        // type's own [ModelGeneration], never the caller: an envelope must not be able to lie.
 
         /// <summary> Serializes a versioned aggregate into an envelope's bytes. </summary>
         public byte[] SerializeEnvelope<TValue>(TValue value, SerializationType type)

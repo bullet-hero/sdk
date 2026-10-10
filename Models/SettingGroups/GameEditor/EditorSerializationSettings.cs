@@ -7,17 +7,8 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models.SettingGroups.GameEditor
 {
-    // Which wire format the editor WRITES with, split by what is being written rather than kept as
-    // one switch: a level is the thing an author hands to somebody else, while a library resource is
-    // reused across levels - two different trade-offs between speed and being readable by hand.
-    // Neither describes how anything is READ, which is always resolved from the file itself
-    // (PathUtils.FindDataFile), so changing one of these can never make existing content unreadable.
-    //
-    // THERE WAS A THIRD, FOR THE CLIPBOARD, AND IT COULD NOT MEAN ANYTHING. A clipboard payload is
-    // TEXT - it leaves the process through the operating system's own buffer - so the binary format
-    // has no form to take there, and once the indented JSON mode was retired the only remaining
-    // choice was between JSON and JSON. It was removed rather than left as a dropdown that changes
-    // nothing; `copy` is retired as a key and never reissued.
+    // The format the editor WRITES, split by what is written; reading is always resolved from the file
+    // (PathUtils.FindDataFile). No clipboard key: `copy` is retired and never reissued.
 
     /// <summary>
     /// Which wire format the editor writes each kind of file with.

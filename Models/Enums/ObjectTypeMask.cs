@@ -2,16 +2,8 @@ using System;
 
 namespace BH.SDK.Models.Enums
 {
-    // A BIT PRESENT MEANS EXPANDED, which is the inverse of how a filter mask reads and is the one
-    // thing about this type a reader gets backwards. It is not a filter over what exists; it is the
-    // answer to "does a row of this kind open by itself", one bit per kind, and an author who wants
-    // prefabs folded away ticks every OTHER box.
-    //
-    // EACH BIT'S INDEX IS ITS ObjectType'S OWN VALUE, and that is a contract rather than a
-    // coincidence: ToMask is a shift by (int)type, so a member added to ObjectType without one added
-    // here silently maps onto whatever bit sits at its ordinal. ObjectTypeMaskTests pins the pairing
-    // member by member, so the addition fails there rather than in a hierarchy that folds the wrong
-    // rows.
+    // A bit PRESENT means EXPANDED (the inverse of a filter mask).
+    // Lockstep: a bit's index is its ObjectType value (ToMask shifts by it); ObjectTypeMaskTests pins it.
 
     /// <summary> Which object kinds a surface shows unfolded. </summary>
     [Flags]

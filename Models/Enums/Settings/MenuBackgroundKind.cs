@@ -1,12 +1,6 @@
 namespace BH.SDK.Models.Enums.Settings
 {
-    // THE ZERO VALUE IS NOT THE DEFAULT, which is the opposite call from BotKind's and costs nothing.
-    // The members are ordered the way the three modes are OFFERED to the player, and the migration
-    // this looks like it needs does not exist: an absent JSON key is never written, so
-    // InterfaceSettings' constructor value survives deserialization untouched and no older file can
-    // read back as None. That is the same mechanism OpenMenuOnLose already relies on, and
-    // InterfaceSettingsTests pins it - so this stays a free choice rather than a trade someone has to
-    // remember.
+    // Zero is not the default: an absent key never overwrites the constructor value (InterfaceSettingsTests).
 
     /// <summary> What the main menu draws behind its buttons. </summary>
     public enum MenuBackgroundKind : byte

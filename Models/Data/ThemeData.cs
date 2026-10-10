@@ -13,9 +13,8 @@ using Newtonsoft.Json;
 namespace BH.SDK.Models.Data
 {
     /// <summary>
-    /// A named palette of 64 colors that objects reference by slot instead of storing colors of
-    /// their own. Swapping which theme is active (ThemeKeyframe) then recolors the whole level at
-    /// once - the reason ColorType.ThemeRef exists.
+    /// A named palette of 64 colors that objects reference by slot instead of storing colors; swapping
+    /// the active theme (ThemeKeyframe) recolors the whole level at once.
     /// </summary>
     [RuleContainer]
     [ModelGeneration(ModelDomains.ThemeData, ModelGenerations.V1_AlphaRelease)]
@@ -38,29 +37,11 @@ namespace BH.SDK.Models.Data
         [JsonProperty(Names.Matrix)]
         public Color4Value[] Matrix { get; set; }
         
-        // Theme - is map of colors, level can refer to color via index
-        // Theme is a predefined array in runtime
-        // Now it's 64 or 8x8 grid. What the indexes mean (starts with 1)
-        // 1 - fallback color, if index is not founded
-        // 2 - GUI
-        // 3 - Background
-        // 4-7 - Players
-        // 8 - Tail
-        // 9-16 - free space
-        // 17-25 - objects
-        // 26-32 - free
-        // 33-41 - parallax
-        // 42-48 - free
-        // 49-57 - effects
-        // 58-64 - free
+        // Slot bands (1-based; 1 is the fallback colour): Docs/RESOURCE_DATA.md
 
-        /// <summary> One author-written label per slot, or null when nothing in this palette was
-        /// ever named. Null is a real state and writes as one null rather than as 64 empty strings
-        /// (a collection is never omitted whole - see Docs/NAMING.md); a non-null list is exactly
-        /// ThemeCount long and an empty or null entry inside it means that one slot is unnamed.
-        /// The band comment above says what a slot is FOR, which is a different question from what
-        /// an author calls it - the shipped Balanced preset names its slots by hue and ignores the
-        /// bands entirely. </summary>
+        /// <summary> One author-written label per slot, or null when none was ever named (a real state,
+        /// written as one null). A non-null list is exactly ThemeCount long; an empty or null entry
+        /// means that slot is unnamed. Not derived from the band map. </summary>
         [RuleOptional, RuleCollectionCount(ValueRules.ThemeCount)]
         [JsonProperty(Names.ColorNames)]
         public List<string> ColorNames { get; set; }

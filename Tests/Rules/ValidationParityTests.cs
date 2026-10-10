@@ -5,19 +5,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests.Rules
 {
-    // THE HALF OF THE ACCEPTANCE TEST THAT NEEDS NOTHING BUT THIS ASSEMBLY. Its twin,
-    // BH.Core.Tests.ValidationParityTests, is the one with the real corpus behind it and states a
-    // level's whole report as a digest; this one states three small reports IN FULL, in the file, so
-    // a change to the walk's ORDER is read rather than merely detected.
-    //
-    // The fixtures are MockData's CreateInvalid* factories, which are deliberately minimal - each
-    // encodes the violations RuleFixer must find and no others - so the expected report is a
-    // readable list rather than a wall. That is the whole reason the golden is inline here and a
-    // digest there.
-    //
-    // WHAT THIS PINS is exactly what the generated walk must reproduce: which rule fired, at which
-    // path, and IN WHICH ORDER. Order is not cosmetic - RuleFixer repairs in reverse, and repairs
-    // are not commutative.
+    // Three small reports stated IN FULL so a change of ORDER is read (RuleFixer repairs in reverse, and
+    // repairs do not commute). Its twin with the real corpus is BH.Core.Tests.ValidationParityTests.
 
 
     /// <summary> Three small reports stated IN FULL, so a change to the walk's ORDER is read rather than merely
@@ -52,10 +41,7 @@ namespace BH.SDK.Tests.Rules
             AssertReport(MockData.CreateInvalidTestSettings(), InvalidSettings);
         }
 
-        // The large fixture is not stated in full - 4750 objects is not a list anyone reads - but it
-        // is the only one here big enough to exercise the pooled buffer, the boxed-index cache and a
-        // prefab template's scope rebase. A count plus the first and last line is what a reordering
-        // would move, and it is small enough to live in the file.
+        // Not stated in full: count plus first and last line, enough to move on a reordering.
 
         [Test]
         [Author(Metadata.Author.Vertoker)]
@@ -121,10 +107,7 @@ namespace BH.SDK.Tests.Rules
             "rule_not_null ResourcesMeta[0].ResourceUrl\n" +
             "rule_not_null ResourcesMeta[0].ResourceLicense\n";
 
-        // Audio before Controls because UserSettings declares it there. The walk visits properties in
-        // declaration order, so this golden is also a record of that order - moving a group in the
-        // model moves lines here, and that is the point rather than a maintenance cost: nothing else
-        // would report that RuleFixer's reverse-order repairs now run in a different sequence.
+        // Declaration order is visited, so this golden records that order; a moved group moves lines here.
         private const string InvalidSettings =
             "rule_in_range General.ResourceParallelLoadCount\n" +
             "rule_min_value General.ResourceWebTimeout\n" +

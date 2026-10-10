@@ -3,19 +3,9 @@ using Org.BouncyCastle.Bcpg;
 
 namespace BH.SDK.Services.Crypto
 {
-    // What a message says about itself, and one number that is a real trade rather than a setting.
-    //
-    // S2K WORK IS COUNTED IN BYTES HASHED, NOT ITERATIONS, and gpg's own default asks for roughly
-    // 65 MB of SHA-256 - a fifth of a second on a desktop and potentially two seconds on a cheap
-    // phone, every time a protected level is opened. The default here is a quarter of that, and the
-    // reason it is defensible is what this protects: a level file already sitting on the player's
-    // own disk, guarded by a password its author chose to share with somebody. It is stated in the
-    // format's own docs that this is not DRM. A file gpg wrote with a higher count still opens -
-    // reading takes whatever the file declares - so nothing about interoperability rests on this.
-    //
-    // THE MODIFICATION TIME IS PINNED. A literal-data packet carries one, and the local clock is
-    // not something an exported level should be leaking; a fixed instant also means two exports of
-    // the same document differ only where OpenPGP genuinely randomizes (salt and IV).
+    // What a message says about itself. S2K work is counted in BYTES hashed (default a quarter of gpg's:
+    // this protects a file on the player's own disk, not DRM) and the modification time is PINNED, so the
+    // local clock does not leak. Reading takes whatever the file declares. Docs/ARCHIVE.md.
 
     /// <summary> How an OpenPGP message is written. </summary>
     public sealed class PgpEncryptOptions

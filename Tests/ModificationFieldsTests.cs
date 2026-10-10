@@ -8,16 +8,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests
 {
-    // A HAND-WRITTEN NUMBER IS CHECKED TWICE, from both sides, and neither check makes the other
-    // redundant. BH.SDK.Roslyn refuses a collision at compile time but sees only the members it is
-    // handed - a constant declared here and marking nothing is invisible to it. This fixture reads
-    // the table itself, so a number that collides with one no member has taken yet is caught the
-    // day it is written rather than the day a member takes it.
-    //
-    // Modelled on Core's RandomTracksTests, which exists for the regression this is meant to
-    // prevent: two bands were declared on top of each other, nothing reported it, and the defect
-    // stayed latent until the two families would have shared a source. Reflection rather than a
-    // hand-written list, because a hand-written list is what failed to notice the first time.
+    // The number table is checked from both sides: the Roslyn check sees only members it is handed. Uses
+    // reflection, not a hand-written list.
 
     /// <summary> The field-id table read back from itself - uniqueness, bands, and the one number that means "no field". </summary>
     public class ModificationFieldsTests
@@ -153,16 +145,8 @@ namespace BH.SDK.Tests
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.VeryEasy)]
-        // An overridable member that is not serialized cannot be overridden in any sense that
-        // survives a save, so the two attributes travel together or neither is true.
-        //
-        // THE ONE EXEMPTION IS A DERIVED MEMBER, and it is not a loophole: [GenerateModelIgnore]
-        // says the property is a VIEW over state that is already serialized under its own key, so
-        // an override written through it survives the save in that other member. PrefabObject
-        // .PlacementDuration is the case - it reads and writes Span.FrameDuration, and giving it a
-        // key of its own would store the placement's length twice and let the two disagree. What
-        // such a member does still owe is a SETTER: ApplyModifications writes through it, and a
-        // getter-only view would make the override addressable and unappliable.
+        // A marked member must be serialized, except a derived view ([GenerateModelIgnore]), which still
+        // owes a SETTER because ApplyModifications writes through it.
         public void EveryMarkedMember_IsSerialized()
         {
             var unserialized = MarkedMembers()

@@ -10,24 +10,9 @@ using BH.SDK.Versions;
 
 namespace BH.SDK.Generators.Import
 {
-    // A LEVEL GENERATOR RATHER THAN A MENU COMMAND, because importing a level is one in all but name:
-    // "build a whole Level and LevelMeta from a few parameters" is exactly what the generator
-    // contract already describes, and going through it costs the host no UI at all - the form, the
-    // preset list, the estimate and the labels all come off the contract. Importing this project's
-    // OWN format is authoring automation like any other.
-    //
-    // THE REVERSE DIRECTION IS DELIBERATELY NOT A GENERATOR. A generator produces content; an export
-    // consumes a level and writes files, which is a host service (Services/Archive's writer, driven
-    // from the editor's Dangerous Zone).
-    //
-    // IT DESERIALIZES THROUGH THE ORDINARY SERVICE, which is the whole reason importing an older
-    // archive costs nothing: DeserializeEnvelope walks VersionedTypeRegistry and migrates the
-    // document to the domain's current shape on the way in. An archive written by a build from a year
-    // ago opens as today's model, and this generator never learns that it was old.
-    //
-    // ExternalAnalysis for the reason every other one here needs it: the SDK does not open the file.
-    // The host reads the archive - decrypting it if it was protected - and fills the bytes in.
-    // Handed nothing, this produces an empty level and says why, never a plausible-looking one.
+    // A LEVEL generator, not a menu command: the form, presets, estimate and labels come off the contract.
+    // Export is NOT a generator (it consumes a level; a host service). It deserializes through the
+    // ordinary service, so an old archive migrates on the way in. Handed nothing: an EMPTY level, with why.
 
     /// <summary> Builds a level out of a level archive the host opened. </summary>
     public class LevelArchiveGenerator : BaseLevelGenerator<LevelArchiveGenerator.Parameters>
@@ -100,10 +85,8 @@ namespace BH.SDK.Generators.Import
             }
             catch (Exception exception) when (exception is not NewerGenerationException)
             {
-                // An archive that opened and then would not deserialize is a real answer the author
-                // needs: the archive was fine, the document inside it was not.
-                // A NEWER document is not that answer - it is refused, unwrapped, so the host can tell
-                // the player to update instead of reporting a broken archive.
+                // An archive that opened but would not deserialize is its own answer. A NEWER document is
+                // refused unwrapped, so the host can say "update", not "broken archive".
                 report.Failed(CodeUnreadable,
                     $"The level document could not be read: {exception.Message}", parameters.SourcePath);
                 return Empty();
@@ -132,10 +115,8 @@ namespace BH.SDK.Generators.Import
         {
             var meta = Deserialize(parameters, report);
 
-            // Minted by default, and the default is the safe one: an archive is usually a copy of a
-            // level the author may well already have, and importing it under the same id would point
-            // two entries at one folder. Keeping the id is the deliberate choice - restoring a level
-            // this machine used to hold.
+            // Minted by default: an archive is often a copy of a level the author already has, and the
+            // same id would point two entries at one folder. Keeping it is the deliberate restore case.
             if (parameters.NewLevelId)
             {
                 meta.LevelId = LevelId.NewId();

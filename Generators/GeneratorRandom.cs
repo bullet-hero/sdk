@@ -1,14 +1,8 @@
 namespace BH.SDK.Generators
 {
-    // Neither of the obvious options works here. System.Random's sequence is not contractually
-    // stable - .NET Core reimplemented it once already - so a level generated today could come out
-    // different on a future runtime, and "same seed, same level" is a promise this system makes to
-    // authors. UnityEngine.Random is not even reachable: the core SDK asmdef is
-    // noEngineReferences: true, on purpose (see the SDK's own CLAUDE.md).
-    //
-    // xorshift32 is the smallest thing that is fully specified by its own source: same seed, same
-    // numbers, forever, on every runtime. Quality is adequate for scattering bullets; nothing here
-    // is cryptographic (CryptographyService exists for that) or statistical.
+    // xorshift32: System.Random's sequence is not contractually stable and UnityEngine.Random is
+    // unreachable (noEngineReferences). Fully specified by its own source: same seed, same numbers,
+    // forever. Not cryptographic (CryptographyService) and not statistical.
 
     /// <summary>
     /// Deterministic RNG for generators. Same seed always yields the same sequence.

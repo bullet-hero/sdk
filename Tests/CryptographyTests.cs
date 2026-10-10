@@ -5,15 +5,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests
 {
-    // Two of these pin defects that were live in the shipped class rather than behaviour anyone
-    // asked for, and both were invisible from the round trip alone:
-    //
-    //   The salt and the IV came out of a constant-seeded System.Random, so every installation drew
-    //   the same ones in the same order. Encrypting the same text twice produced identical bytes -
-    //   which is what NotDeterministic below refuses, and it is the only assert that can see it.
-    //
-    //   A short input computed a negative array length and threw out of the crypto path, so "this
-    //   file is not ours" arrived as "the cipher broke".
+    // Two shipped defects: a constant-seeded Random made salt and IV identical on every installation
+    // (NotDeterministic sees it), and a short input threw out of the crypto path.
 
     /// <summary> The raw AES primitive: that two encryptions of the same text differ, and that a short input is
     /// refused as "not ours" rather than throwing out of the crypto path. </summary>

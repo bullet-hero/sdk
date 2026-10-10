@@ -2,23 +2,8 @@ using System.Text;
 
 namespace BH.SDK.Roslyn.Validation
 {
-    // WHAT THIS WRITES IS THE REFLECTIVE WALK, UNROLLED. Not a tidier walk - the same one, statement
-    // for statement, because the acceptance test is that the report does not change: same findings,
-    // same order, same RulePath traces, on a corpus level that produces a hundred thousand of them.
-    //
-    // FLAT, NOT CHAINED. ModelEmitter's habit is a per-level helper calling its base FIRST; both
-    // halves of that are wrong here. GetProperties is DERIVED-FIRST, so a base-first chain inverts
-    // the report for every derived type and nothing stops compiling. And the walk has two phases
-    // that are each total before the next begins, so a chain would have to thread every property's
-    // descent gate across its boundary. Flattening costs a little duplicated code - the hierarchy is
-    // two deep and the widest base has thirteen members - and buys locals instead of a pooled buffer
-    // of boxed tuples.
-    //
-    // THE TWO PHASES ARE THE OTHER THING NOT TO TIDY. Every property's own rules run first; only
-    // then does anything descend. Fusing them - check a property, immediately walk into it - is the
-    // natural way to write this and it reorders the report for every object with more than one
-    // walkable property, which is every RectObject. Issue order is RuleFixer's input and repairs are
-    // not commutative.
+    // The reflective walk UNROLLED, statement for statement (same findings, order, RulePath), and FLAT
+    // rather than chained. Every property's rules run BEFORE anything descends - fusing reorders the report.
 
     /// <summary> Writes one [RuleContainer] type's generated walk. </summary>
     internal static class ValidationEmitter
@@ -64,10 +49,8 @@ namespace BH.SDK.Roslyn.Validation
             return builder.ToString();
         }
 
-        // THE ORDINAL CONTRACT, WRITTEN OUT. The names are what this generator believed the walked
-        // property list to be; RuleTable re-derives it by reflection and throws when the two
-        // disagree, which is the one failure mode a generated walk has that a reflective one cannot.
-        // A stale BH.SDK.Roslyn.dll is by far the likeliest cause, and the message says so.
+        // The ordinal contract: RuleTable re-derives the list by reflection and throws on a mismatch; a
+        // stale BH.SDK.Roslyn.dll is the likeliest cause.
 
         private static void EmitTable(StringBuilder builder, string indent, ValidationSpec spec)
         {

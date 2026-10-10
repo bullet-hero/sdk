@@ -8,28 +8,16 @@ using Newtonsoft.Json.Linq;
 
 namespace BH.SDK.Serialization.Converters
 {
-    // Single converter for every aggregate root and any internal aggregate that opts into
-    // versioning via [ModelGeneration]. Replaces the old per-kind JsonConverterData<T> subclasses
-    // and CompatibilityService entirely - see Docs/VERSIONING.md. CanConvert is gated purely on the
-    // attribute being present, so this recurses correctly into nested aggregates without any
-    // special-casing for "aggregated vs non-aggregated" models.
-    //
-    // THE ENVELOPE'S KEY IS ITS OWN, and deliberately not Names.Version: that one is the AUTHOR's
-    // version of a level (LevelMeta/BestRun/LevelStatistics), which is a System.Version written as
-    // a string. Sharing "vrs" would put {"vrs":1} and {"vrs":"1.0"} in one file meaning two
-    // different things.
+    // The single converter for every [ModelGeneration] aggregate, gated on the attribute alone, so
+    // nested aggregates recurse without special-casing. Its key is Names.Generation, NOT Names.Version
+    // (the author's System.Version string): sharing one key puts two meanings in one file.
 
     /// <summary> Wraps every <c>[ModelGeneration]</c> domain as <c>{g, v}</c>, and on the way back in resolves
     /// that generation to its historical snapshot type and walks the migration chain up to today's shape. </summary>
     public class VersionedEnvelopeConverter : JsonConverter
     {
-        // Domains currently being written/read one level up the call stack. Suppresses CanConvert
-        // just for that domain so the serializer.Serialize/ToObject calls below - which re-enter this
-        // same converter for the exact value being wrapped - fall through to plain member
-        // serialization instead of re-wrapping it in another envelope. A differently-domained nested
-        // aggregate (e.g. GameLevel's own [ModelGeneration] inside Level) is a different domain, so it
-        // stays convertible and recurses into this converter normally - this is how "aggregated"
-        // domains get every nested envelope written/upgraded without any special-casing.
+        // Domains being written/read up the stack: CanConvert is suppressed for just that domain so the
+        // inner serialize call writes plain members; a different nested domain still recurses.
         private readonly HashSet<string> _activeDomains = new();
 
         /// <summary> True for a versioning boundary - except the domain being written one level up, or every envelope would wrap itself forever. </summary>
@@ -55,17 +43,9 @@ namespace BH.SDK.Serialization.Converters
             writer.WritePropertyName(Names.Generation);
             writer.WriteValue(attribute.Generation);
 
-            // THE PAYLOAD IS HANDED STRAIGHT TO ITS OWN WRITER when it has one, and that is not an
-            // optimisation - it is the only way this works. Going back through the serializer for
-            // the SAME instance trips Newtonsoft's own circular-reference check: the value is
-            // already on its serialize stack, pushed by the call that reached this converter, and
-            // a second converter for it is a second push. It never fired while the inner call
-            // landed on the contract, and fired immediately once a converter answered for it.
-            //
-            // The _activeDomains dance below is the guard for anything that reaches this converter
-            // WITHOUT a generated codec, which would otherwise re-enter it and wrap itself twice.
-            // Historical snapshots used to be exactly that and no longer are - they carry
-            // [GenerateModel] now, so they take the branch above like every other model.
+            // The payload goes STRAIGHT to its own writer when it has one: routing the same instance back
+            // through the serializer trips Newtonsoft's circular-reference check. _activeDomains below
+            // guards anything reaching this converter without a generated codec.
             writer.WritePropertyName(Names.Value);
             if (value is Json.IJsonModel model)
             {
@@ -87,14 +67,8 @@ namespace BH.SDK.Serialization.Converters
             writer.WriteEndObject();
         }
 
-        // Read straight off the reader, one envelope property at a time, instead of loading the
-        // envelope into a JObject first. The old shape cost a materialized JToken tree PER DOMAIN,
-        // and domains nest: a Level's own tree was cloned again for GameLevel, again for each of the
-        // four event aggregates, and again for every Prefab in its resources - each clone one JToken
-        // per value in that subtree. WriteJson emits the generation first, so the ordinary document
-        // needs nothing buffered at all; a document that happens to carry the value first (hand
-        // edited, or written by another tool) is still read correctly, by buffering that one subtree
-        // until the generation that types it arrives.
+        // Read off the reader one envelope property at a time, never into a JObject (a tree per nested
+        // domain). A document carrying the value before the generation buffers just that one subtree.
 
         /// <summary> Resolves the generation tag to its snapshot type, reads that, and walks the migration chain up to today's shape. </summary>
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue,
@@ -150,12 +124,8 @@ namespace BH.SDK.Serialization.Converters
 
             if (raw == null) return null;
 
-            // NOTHING RESOLVED MEANS THERE IS NO CHAIN TO WALK, and the payload in hand was already
-            // read into today's shape by property name - which is the lossy half working, not a
-            // migration that failed. Walking from here would find no step, report a second finding
-            // and throw away everything the name match did land, while the generated codec kept it:
-            // the two stacks would disagree about a degraded file, which is the one thing they may
-            // never do.
+            // Nothing resolved means no chain to walk: the payload was already read by property name (the
+            // lossy half working). Walking would report a second finding and make the two stacks disagree.
             if (VersionedTypeRegistry.TryResolve(domain, generation) == null)
                 return objectType.IsInstanceOfType(raw) ? raw : Activator.CreateInstance(objectType);
 
@@ -171,11 +141,8 @@ namespace BH.SDK.Serialization.Converters
             return Activator.CreateInstance(objectType);
         }
 
-        // THE GUARD IS RELEASED IN A finally, AND IT HAS TO BE. A throw mid-payload used to leave the
-        // domain in _activeDomains for the life of this converter instance, which silently turns
-        // CanConvert off for it - every later envelope of that domain then reads as plain fields. It
-        // was unreachable while every failure here was a refusal that ended the whole read; the
-        // tolerant paths are what make it reachable.
+        // Released in a finally: a throw mid-payload would leave the domain in _activeDomains for the
+        // life of this converter and turn CanConvert off for every later envelope of it.
 
         private object ReadPayload(JsonReader reader, string domain, int generation, JsonSerializer serializer)
         {

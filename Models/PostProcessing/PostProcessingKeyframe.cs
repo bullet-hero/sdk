@@ -10,9 +10,8 @@ using Newtonsoft.Json;
 namespace BH.SDK.Models.PostProcessing
 {
     /// <summary>
-    /// Base of every post-processing key. Mirrors Keyframe (Frame + Ease) but implements IKeyframe
-    /// directly instead of deriving from it, because it adds a per-key Active toggle no other
-    /// keyframe family has - each effect can switch itself off mid-track, not just change values.
+    /// Base of every post-processing key. Mirrors Keyframe (Frame + Ease) but implements IKeyframe directly,
+    /// adding a per-key Active toggle so each effect can switch itself off mid-track.
     /// </summary>
     [RuleContainer]
     [GenerateModel]

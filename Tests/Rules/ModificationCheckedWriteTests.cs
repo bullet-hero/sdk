@@ -7,16 +7,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests.Rules
 {
-    // A per-instance override is the one write in the whole format that reaches a model without
-    // passing anything that could judge it - the table resolves a field and assigns. So an override
-    // could hold a value outside its property's declared range while the level it belongs to
-    // validated clean, and nothing would notice until playback.
-    //
-    // THE MECHANISM MOVED AND THE CAPABILITY DID NOT. This used to walk a dotted path through
-    // ModificationService's reflection to reach a PropertyInfo; it now asks the generated table for
-    // the same PropertyInfo by field id. Both halves of the pair are still here on purpose: what a
-    // rule-checked write refuses is the whole point, and the fact that the PLAIN write still does
-    // not check is what makes opting in explicit rather than accidental.
+    // A per-instance override is the one write that reaches a model with nothing to judge it. The checked
+    // write refuses; the PLAIN write still does not, which keeps opting in explicit.
 
     /// <summary>
     /// ModificationUtils.IsValueAllowed / SetValueChecked: the rules of the target property,

@@ -1,14 +1,7 @@
 namespace BH.SDK.Models.Enums
 {
-    // World is 0 on purpose, so a file written before Checkpoint carried a position deserializes
-    // into it and reads as "respawn where the level says", which is what every existing checkpoint
-    // already meant. That is also why GameEvents never bumped its generation - "absent" and
-    // "World at (0, 0)" have to mean the same thing for this to need no migration.
-    //
-    // Camera and CameraPosition differ by exactly one term and the difference is the point of
-    // having both: a respawn pinned to a rotating camera rides that rotation, which is what an
-    // author wants for a point framed inside a tilted shot, and is exactly what they do NOT want
-    // for a point that should stay upright while the camera rolls.
+    // World is 0 on purpose: a file from before a position existed reads as "respawn where the level says"
+    // (so no bump). Camera vs CameraPosition differ by the camera's rotation - Docs/ENUMS.md
 
     /// <summary>
     /// How a <see cref="Events.Checkpoint"/>'s respawn position is interpreted.

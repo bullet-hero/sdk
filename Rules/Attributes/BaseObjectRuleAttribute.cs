@@ -2,13 +2,9 @@ using System;
 
 namespace BH.SDK.Rules.Attributes
 {
-    // Declared on the class, not on a property, because the invariant spans several of them. The
-    // analyzer runs these once per visited object, before its properties - so a pair that is
-    // reported as unordered is reported against the object that owns both halves, which is also the
-    // object a Fix has to write back into.
-    //
-    // Kept deliberately small: anything needing more than one object (id uniqueness, dangling
-    // references, parent cycles) is a graph invariant and does not belong here either.
+    // Declared on the class: the invariant spans several properties. Run once per object, before its
+    // properties, so a finding lands on the object a Fix writes into. Cross-object checks are graph
+    // invariants and do not belong here.
 
     /// <summary>
     /// A rule about a whole object: an invariant between several of its properties, which a

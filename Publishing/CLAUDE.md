@@ -6,6 +6,8 @@ layer-wide conventions. This file is folder-local.
 
 ## Publishing/
 
+Why the pass, the profiles and the roster are shaped this way: `Docs/PUBLISHING.md`.
+
 **the third validation pass, and the only one that asks a question about the
   outside world.** `RuleAnalyzer` asks whether a value is in range; `LevelGraphAnalyzer` asks whether
   the objects agree with each other; `PublishReadinessAnalyzer` asks whether the level may be handed
@@ -34,7 +36,7 @@ layer-wide conventions. This file is folder-local.
     enum stays an enum so a client names it in its own language. Adding a rule means documenting
     its Args on the enum member, and the client's detail string reads them by index.
   - `CreateWorkshop()` is the Steam Workshop's profile and is deliberately LOOSER than `standard`:
-    every CC BY variant passes (ND included, knowingly - see its comment), and missing paperwork is a
+    every CC BY variant passes (ND included, knowingly - `Docs/PUBLISHING.md`), and missing paperwork is a
     warning. That warning comes from one analyzer rule, not a profile flag: a profile that LISTS
     licenses and still tolerates an unknown one hears about the unknown (`AsksAboutUnknowns`).
     `ResourceUrlMissing` is a warning in every profile.

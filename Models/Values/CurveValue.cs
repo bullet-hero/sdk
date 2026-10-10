@@ -11,9 +11,8 @@ using Newtonsoft.Json;
 namespace BH.SDK.Models.Values
 {
     /// <summary>
-    /// A whole animation curve stored as data, used inside effects (particle angle/scale over life).
-    /// Different axis from the level timeline: its Time is normalized 0..1 progress of a particle,
-    /// not a level frame - which is why it needs its own wrap modes instead of a FrameSpan.
+    /// A whole animation curve stored as data, used inside effects. Its Time is a normalized 0..1 particle
+    /// progress, not a level frame, so it has its own wrap modes instead of a FrameSpan.
     /// </summary>
     [RuleContainer]
     [GenerateModel]

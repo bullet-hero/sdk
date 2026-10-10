@@ -8,12 +8,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests.Utils
 {
-    // The one property everything else rests on is CollectChain reaching a NESTED placement copy.
-    // Leaving one behind is not a cosmetic miss: its ObjectIds table names ids in the template's own
-    // scope, and the moment the outer placement stops covering it, PrefabMaterializer.FindPlacements
-    // reads it as a genuine placement and the next resync writes over whatever host objects happen to
-    // carry those ids. The Unity project's PrefabFlattenResyncTests is what proves that end to end;
-    // this is the pure half.
+    // CollectChain must reach a NESTED placement copy, or FindPlacements reads it as a genuine placement.
+    // PrefabFlattenResyncTests (Unity project) is the end-to-end half.
 
     /// <summary> Which objects one flatten has to touch, and what a flattened placement becomes. </summary>
     public class PrefabFlattenUtilsTests

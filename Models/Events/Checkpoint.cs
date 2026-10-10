@@ -50,24 +50,16 @@ namespace BH.SDK.Models.Events
         [JsonProperty(Names.Space)]
         public CheckpointSpace Space { get; set; }
 
-        // WHAT CROSSING THE CHECKPOINT GRANTS, which is not what respawning at it does - a respawn
-        // already refills the run's lives unconditionally (Services.Game's CheckpointService). This
-        // is the mid-run heal: reach an authored checkpoint with it on and the life count goes back
-        // to what the launch gave the run. Off by default, so every checkpoint already on disk keeps
-        // meaning exactly what it meant.
+        // What CROSSING grants (the mid-run heal), not what respawning does (it always refills the lives).
+        // Off by default, so every checkpoint already on disk keeps its meaning.
 
         /// <summary> Whether reaching this checkpoint refills the run's lives. </summary>
         [JsonProperty(Names.Heal)]
         public bool RestoreHealth { get; set; }
 
         // TODO post-alpha: revive dead allies on reaching the checkpoint. There are no allies in the
-        // game yet - no model, no simulation, nothing to bring back - so the key stays unwritten
-        // rather than shipping a field nothing can act on. It appends AFTER RestoreHealth when it
-        // lands: the blob writes members in declaration order and that order is append-only.
-        //
-        // /// <summary> Whether reaching this checkpoint brings dead allies back. </summary>
-        // [JsonProperty(Names.Revive)]
-        // public bool ReviveAllies { get; set; }
+        // game yet, so the key stays unwritten; it appends AFTER RestoreHealth (blob order is append-only).
+        // Planned: `public bool ReviveAllies`, [JsonProperty(Names.Revive)].
 
         /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public Checkpoint()

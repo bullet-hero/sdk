@@ -10,11 +10,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests.Generators
 {
-    // GeneratorSweepTests already pins Estimate against Objects and Keyframes for every registered
-    // generator, but it does not look at Resources - and Resources is the only thing this generator
-    // reports. A host refuses a Content run whose estimate is entirely zero, so an estimate that
-    // drifted here would not show up as a wrong number, it would show up as the generator being
-    // permanently greyed out.
+    // The sweep does not look at Resources, the only thing this generator reports; a drifted estimate
+    // shows up as the generator greyed out.
 
     /// <summary> The one estimate the sweep cannot see, because Resources is all this generator reports - and an
     /// estimate that drifted would surface as the generator being permanently greyed out, not as a wrong number. </summary>

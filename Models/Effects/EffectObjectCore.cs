@@ -12,23 +12,8 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models.Effects
 {
-    // THE FORMAT CARRIES NO WORLD/LOCAL SWITCH, and that is a scope decision rather than an
-    // omission. A level's particles are ALWAYS local - they ride their object's own transform, so a
-    // moving parent, a loop and a scrub backwards all behave. World-space emission does exist, in
-    // the game's own engine (a second graph, chosen by a host-side flag no authored data ever
-    // writes), and it belongs to the GAME: debug work and the game's own world effects, never level
-    // content. The distinction is worth stating here because it is what makes the local guarantee
-    // free: a world-space effect cannot be replayed correctly by anything that writes one transform
-    // per frame and then simulates a window of history under it, which is exactly what a scrub, an
-    // edit and a jump all do. Keeping that out of the format keeps it out of levels.
-    //
-    // WHAT THE FORMAT CANNOT GUARANTEE ON ITS OWN is that the HOST's graph honours the local
-    // promise, and on 2026-09-22 it did not: the game's local graph carried two World-marked input
-    // slots, which VFX Graph converts against the component's live transform, so an authored effect
-    // emitted a world-fixed jet and replayed differently from how it played. Nothing in this library
-    // can express or detect that - the host pins it instead (the client's EffectGraphSpaceTests),
-    // and the measurement is in its Docs/Issues/EFFECTS_HISTORY.md. Stated here because the promise
-    // above is what the absence of a world/local field is SPENDING.
+    // The format carries NO world/local switch: level particles are always local to their object.
+    // The host's graph must honour it (EffectGraphSpaceTests). Why: Docs/RESOURCE_DATA.md
 
     /// <summary>
     /// The "how many, how long, what do they look like" half of an EffectData - everything that
@@ -49,18 +34,8 @@ namespace BH.SDK.Models.Effects
         public bool Loop { get; set; }
 
 
-        // THE NAME IS A RATE, NOT A POPULATION, and the two differ by one multiplication that the
-        // graph does rather than this field. A looping system feeds this straight to a constant
-        // spawn rate, so what is alive settles at count x average lifetime; a one-shot feeds a
-        // single burst, which is handed that same product so both modes put the same number of
-        // particles on screen. Naming it a population instead is what made "Loop off" read as
-        // "the colour gradient stopped working" - the gradient was fine, the cloud was 1/lifetime
-        // of its looping size. Nothing in this library bounds the PRODUCT: ParticleCount_Max caps
-        // the rate, LimitHints counts emitters rather than particles, and the only ceiling on what
-        // is actually alive is the graph's own capacity, which clamps silently. So a legal rate
-        // with a long lifetime can ask for more than the runtime will hold, and that is the one
-        // thing this field cannot express. Renaming it is a format change nobody has asked for;
-        // correcting what it is documented to MEAN is this comment.
+        // A RATE, not a population: alive count settles at count x average lifetime, and nothing here
+        // bounds that product. Why: Docs/RESOURCE_DATA.md
 
         /// <summary> Particles emitted per second - the main cost knob. What is alive at once is
         /// this times the average lifetime, in both modes: looping spawns at this rate, and a

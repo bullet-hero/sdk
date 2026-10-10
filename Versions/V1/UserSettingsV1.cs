@@ -7,12 +7,9 @@ namespace BH.SDK.Versions.V1
 {
     // ReSharper disable once InconsistentNaming
 
-    // The groups are typed as TODAY's classes wherever they did not change at this bump - they are not
-    // domains of their own, so a group that changes freezes its own leaf snapshot next to this one (no
-    // [ModelGeneration], like AudioLevelV0) and this file is retyped to it. Controls is the one that
-    // did: ControlsSettingsV1 still carries cursor_return in its shared group, and Graphics, Interface
-    // and GameEditor each gained a member at generation 2. Keys are literal: a snapshot spells them
-    // the way its own generation did.
+    // Groups are TODAY's classes wherever they did not change at this bump; a group that changes
+    // freezes its own leaf (no [ModelGeneration]) and this file is retyped to it. Controls did, and
+    // Graphics, Interface and GameEditor each gained a member at generation 2. Keys are literal.
 
     /// <summary> Generation 1 (Release) of the user-settings domain - the shape 1.0.0 shipped, before
     /// the tutorial flag and with the cursor-return switch. A frozen snapshot - never edit it to match today's shape. </summary>

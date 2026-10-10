@@ -5,15 +5,8 @@ using System.Reflection;
 
 namespace BH.SDK.Rules.Attributes
 {
-    // Every id-keyed dictionary in the format stores the id twice: once as the key, once inside the
-    // value. Serialization hides the redundancy - DictionaryAsListConverter drops the key on write
-    // and rebuilds it from the value on read, so a round trip can never disagree - but code can. An
-    // editor that mutates obj.ObjectId without re-keying leaves a dictionary where lookup by id
-    // finds nothing while iteration finds the object, and the two halves of the program disagree
-    // about what exists.
-    //
-    // The rule sits on the dictionary property rather than on the key, because a key is not a
-    // property and cannot be addressed by a RulePath - see the note in RuleAnalyzer.
+    // Every id-keyed dictionary stores its id twice; serialization hides that, code can desync it.
+    // On the dictionary property because a key is not a property and has no RulePath.
 
     /// <summary> Each dictionary key must equal its value's own id property. </summary>
     [AttributeUsage(PropertyTarget)]
@@ -54,10 +47,8 @@ namespace BH.SDK.Rules.Attributes
             return true;
         }
 
-        // Re-key rather than rewrite the value: the value's own id is the authored intent, the key
-        // is bookkeeping. Rebuilding the dictionary is the only way to do it - a key cannot be
-        // changed in place - and entries whose ids collide after re-keying collapse into one, which
-        // is the honest outcome of two objects claiming the same identity.
+        // Re-key, not rewrite the value: the value's id is the authored intent. Entries whose ids
+        // collide after re-keying collapse into one.
 
         /// <summary> Re-files each entry under the id its value carries, which is the half that cannot be wrong. </summary>
         protected override void FixInternal(object target, PropertyInfo property, RuleContext context)

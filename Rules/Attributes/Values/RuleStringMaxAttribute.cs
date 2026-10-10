@@ -35,11 +35,8 @@ namespace BH.SDK.Rules.Attributes
         protected override bool IsValidInternal(object value, RuleContext context)
             => value is string str && str.Length <= MaxLength;
 
-        // The ceiling counts code units, so a cut can land between the halves of one character and
-        // the repair then satisfies the bound with something that is not a character at all.
-        // SurrogateUtils gives back the shorter answer instead: one code unit more destroyed is the
-        // cheaper of the two, and this rule is a Warning precisely because its repair destroys
-        // authored text either way.
+        // The ceiling counts code units: SurrogateUtils returns the shorter answer rather than a cut
+        // surrogate pair. A Warning, since the repair destroys text either way.
 
         /// <summary> Truncates it. </summary>
         protected override void FixInternal(object target, PropertyInfo property, RuleContext context)

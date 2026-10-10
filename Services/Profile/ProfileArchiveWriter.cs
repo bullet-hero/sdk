@@ -12,13 +12,8 @@ using BH.SDK.Services.Content;
 
 namespace BH.SDK.Services.Profile
 {
-    // ONE STORE PER CATEGORY, never one rooted at the profile itself: a store lists everything beneath
-    // its root, and a store at the profile root would walk profile-backups/ - the previous backup and
-    // an import's staging - on every export. The host hands each folder category its own store and the
-    // settings document as bytes (it serializes the settings the game is running with, which is what
-    // the player expects to carry, not a file that may be up to a debounce behind).
-    //
-    // Within a category the entries are sorted ordinally, so the same profile packs to the same bytes.
+    // One store per category, never one at the profile root (it would walk profile-backups/ on every
+    // export). Settings come as bytes (what the game runs with). Entries sort ordinally: same bytes.
 
     /// <summary> Packs a profile into a zip: the manifest first, then each category in
     /// <see cref="ProfileLayout.PackOrder"/>. </summary>

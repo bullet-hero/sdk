@@ -1,11 +1,7 @@
 namespace BH.SDK.Models.Enums.Text
 {
-    // How TextObject.Appearings picks WHICH characters hide behind the mask; the fraction hidden is
-    // the keyframed value. Random is deliberately the zero value: it is the default, and it is the
-    // one that reads as text resolving out of noise rather than as a wipe, which the fill direction
-    // already covers.
-
-    /// <summary>
+    // Which characters hide behind the mask; the fraction hidden is keyframed. Random is zero: text
+    // resolving out of noise rather than a wipe.
     /// The order a text object's characters come out from behind its appearing mask.
     /// </summary>
     public enum TextAppearingMode : byte

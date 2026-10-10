@@ -5,24 +5,9 @@ using Unity.Mathematics;
 
 namespace BH.SDK.UnityExtensions.Tests
 {
-    // THE STATE MACHINE AROUND THE STEP - the dash and damage windows, which is what a verifier may
-    // claim anything about damage on. What these cases pin is not arithmetic for its own sake - it is
-    // the agreement between the replayed avatar and the two services that decide a real hit:
-    //
-    //   GameCycleService.ProcessDamage - takes ONE life and then blocks damage for DamageTimeout, so
-    //   the game counts at most one hit per second however long the avatar sits inside something.
-    //   The replay counted every FRAME of an overlap and reported 25 to 31 hits on volcano where the
-    //   run took 3 - and the repair pass, which is driven by that count, spent its whole budget on
-    //   the difference.
-    //
-    //   AvatarController.Damage - shoves the avatar away from the collision point for DamageTime,
-    //   answering no input. A replay that kept following the route through that was measuring a
-    //   position the game will never be in.
-    //
-    // There is ONE implementation of both windows now. These cases used to cover a hand-restated copy
-    // in the bake's own WarmReplayCheckpoint, which existed only because the type it needed was private
-    // to a class three assemblies above it; they cover the real thing, so the game's own avatar is
-    // pinned by them too.
+    // The dash and damage windows must agree with GameCycleService.ProcessDamage (one life, then
+    // DamageTimeout) and AvatarController.Damage (shove, no input for DamageTime), or a verifier counts hits
+    // the game never does.
 
     /// <summary> <see cref="AvatarMovement"/> - the dash and damage windows. </summary>
     [TestFixture]
@@ -112,10 +97,8 @@ namespace BH.SDK.UnityExtensions.Tests
             Assert.AreEqual(1f, replay.KnockoutDirection.y, 1e-5f);
         }
 
-        // A hit exactly on the collision point has no direction to aim away from. It must not produce
-        // a NaN, and it must not invent one either: AvatarController used to roll a random angle here,
-        // which broke determinism on a path the bot corpus replays. Standing still is the honest
-        // answer - the avatar was on top of what hit it.
+        // A hit on the collision point has no direction: zero, never NaN and never a drawn one
+        // (determinism).
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]

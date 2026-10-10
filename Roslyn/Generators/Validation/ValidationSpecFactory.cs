@@ -15,13 +15,8 @@ namespace BH.SDK.Roslyn.Validation
 
         private const string PropertyRuleBase = "BH.SDK.Rules.Attributes.BasePropertyRuleAttribute";
         private const string ObjectRuleBase = "BH.SDK.Rules.Attributes.BaseObjectRuleAttribute";
-        // THE ONE MODEL TYPE THIS GENERATOR NAMES, and it names it because the format has exactly
-        // one object scope carrying a timeline of its own and that stopped being something a type
-        // can declare: a template's length is its root's span (Prefab.Root), so the IFrameScope
-        // marker it used to be detected by had nothing left to hold and was deleted. An interface
-        // with no members would be the alternative, and a marker no runtime code reads is a worse
-        // answer than one name in one generator - RuleContext.WithScope takes the same concrete
-        // type, so the emitted call would not compile for anything else anyway.
+        // The one model type named, Prefab: RuleContext.WithScope takes that concrete type, so a marker
+        // interface would not compile for anything else.
         private const string PrefabScope = "BH.SDK.Models.Objects.Prefab";
         private const string Validatable = "BH.SDK.Validations.IValidatable";
 
@@ -37,15 +32,9 @@ namespace BH.SDK.Roslyn.Validation
             // into its own list.
             if (type.IsAbstract) return null;
 
-            // BOTH OF THESE ARE LEGAL STATES, SKIPPED SILENTLY, and that is a decision rather than
-            // laziness - each was a refusal once and each errored on the private nested fixtures in
-            // Tests/Rules, which are the only coverage RuleWalk.Node's reflective branch has.
-            //
-            // A container that is not partial keeps the reflective walk, which is what that branch
-            // is for. A container that implements IValidatable by hand already answers the question
-            // this generator exists to answer. What used to be claimed here - that every model of
-            // the FORMAT has a generated walk - is asserted where it can be scoped to the format:
-            // BH.SDK.Tests' RuleContainerCoverageTests.
+            // Both are LEGAL states, skipped silently: a non-partial container keeps the reflective walk and
+            // a hand-written IValidatable already answers the question. Each was a refusal once
+            // (Docs/ROSLYN_GENERATORS.md).
             if (!declaration.Modifiers.Any(modifier => modifier.ValueText == "partial")) return null;
             if (type.AllInterfaces.Any(i => i.ToDisplayString() == Validatable)) return null;
 
@@ -69,11 +58,8 @@ namespace BH.SDK.Roslyn.Validation
 
         #region Properties
 
-        // THE WHOLE CORRECTNESS OF THE GENERATED WALK IS THIS METHOD. It has to produce exactly what
-        // Type.GetProperties(Public | Instance).Where(CanRead && CanWrite) produces, in exactly that
-        // order - which is DERIVED-FIRST, each level in declaration order, an override appearing
-        // once at the derived position. RuleTable re-derives the same list at runtime and throws if
-        // the two disagree, so a mistake here is loud rather than a quietly reordered report.
+        // Must equal GetProperties(Public | Instance).Where(CanRead && CanWrite) in order, DERIVED-FIRST;
+        // RuleTable throws if the two disagree.
 
         private static List<PropertySpec> ResolveProperties(INamedTypeSymbol type,
             TypeDeclarationSyntax declaration, List<Diagnostic> diagnostics)
@@ -191,10 +177,7 @@ namespace BH.SDK.Roslyn.Validation
             narrower = null;
             if (property.DeclaredAccessibility != Accessibility.Public) return false;
 
-            // A private SETTER is legal and common and does not change membership - CanWrite is true
-            // either way. A non-public GETTER does: BindingFlags.Public admits the property because
-            // the setter is public, and then CanRead is still true, so which accessor decides is a
-            // question nothing here should have to answer.
+            // A private SETTER does not change membership; a non-public GETTER does, so it is refused.
             if (property.GetMethod != null
                 && property.GetMethod.DeclaredAccessibility != Accessibility.Public
                 && property.GetMethod.DeclaredAccessibility != Accessibility.NotApplicable)
@@ -240,10 +223,8 @@ namespace BH.SDK.Roslyn.Validation
             if (type.IsValueType || type.SpecialType == SpecialType.System_String)
                 return DescentShape.None;
 
-            // A declared type that cannot be a collection at runtime pins the shape; anything else
-            // keeps the runtime dispatch the reflective walk has, because a member declared object,
-            // an interface or an open base may hold a list and would otherwise get one RulePath
-            // where the reflective walk pushes N indexed ones.
+            // Only a sealed non-collection pins the shape; anything else keeps the runtime dispatch (N
+            // indexed paths).
             return type.IsSealed && !IsCollection(type) ? DescentShape.One : DescentShape.Runtime;
         }
 

@@ -2,10 +2,7 @@ using Microsoft.CodeAnalysis;
 
 namespace BH.SDK.Roslyn.Model
 {
-    // EVERY REFUSAL IS LOUD, and that is the whole point of the generator existing. The defect it
-    // replaces - a member present in Copy and missing from Equals, or an `is T` pasted from a
-    // sibling class - is silent by nature: the code compiles and behaves almost right. So a member
-    // the generator cannot express is an ERROR naming the member, never a member quietly skipped.
+    // Every refusal is loud: a member the generator cannot express is an ERROR naming it, never skipped.
 
     /// <summary> Diagnostics the model generator reports. </summary>
     internal static class ModelDiagnostics

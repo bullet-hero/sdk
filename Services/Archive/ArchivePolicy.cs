@@ -4,34 +4,9 @@ using System.Text;
 
 namespace BH.SDK.Services.Archive
 {
-    // EVERY FIELD HERE EXISTS TO MAKE TWO PACKS OF THE SAME CONTENT BYTE-IDENTICAL, and that is not
-    // neatness: the backend will want to recognise a re-upload of an archive it already holds by its
-    // digest, and a timestamp taken from the clock defeats that on the first try. So a tar entry
-    // carries a pinned time, no owner, no group, and one fixed mode - none of which any consumer of
-    // a level archive has a use for, and all of which vary per machine if left to the file system.
-    //
-    // The claim it supports is exactly "the same input, packed twice by the same build, is the same
-    // bytes". Deflate's own output across runtimes is not something this can promise, and nothing
-    // here depends on it: the digest is computed on whatever was actually written.
-    //
-    // NAMES ARE CAPPED AT 100 BYTES, which is shorter than ustar's own 100 + 155 prefix form. That
-    // is SharpZipLib's limit rather than the format's: its TarHeader writes the name field and has
-    // no way to fill the prefix, so a longer name would be silently TRUNCATED into a different file
-    // on the way out. A caller renames what does not fit and says so - see LevelArchiveBuilder.
-    //
-    // THE CAP IS SHARED BY EVERY FORMAT ON WRITE, and zip having room for 65535 bytes is not a
-    // reason to let it use them. The point of the number is that one level exported three ways
-    // carries the SAME file names: relax it for zip and level.json ends up naming a file that the
-    // tar.gz export of the same level renamed, which is a level that plays in one archive and not
-    // in the other. On READ nothing applies it - ContentPath's validation and the file system's own
-    // limit are what an arriving archive is judged by, or an ordinary `zip -r` from outside this
-    // game would stop importing.
-    //
-    // A PROFILE IS THE ONE WRITER ALLOWED PAST IT, through MaxNameBytes on its own policy. The shared
-    // cap exists for one level written three ways; a profile is written to zip only, mirrors the
-    // player's folders under their own names, and cannot rename anything - level.json refers to its
-    // media by name, and a renamed media file is a level that no longer finds its song. tar refuses a
-    // policy that raises the cap rather than truncating a name into a different file.
+    // Every field exists so two packs of the same content are byte-identical (a backend recognises a
+    // re-upload by digest). Name cap: 100 bytes on write, for every format, because SharpZipLib would
+    // truncate a longer tar name; a profile alone may exceed it. Reasons: Docs/ARCHIVE.md.
 
     /// <summary> How an archive is written, and what makes writing it reproducible. </summary>
     public sealed class ArchivePolicy

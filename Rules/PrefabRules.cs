@@ -11,10 +11,8 @@ namespace BH.SDK.Rules
         /// constructor gives Root.Span. </summary>
         public const int DefaultFrameDuration = 600;
 
-        // A template's timeline is bounded exactly like a level's - same frames, same timeline UI.
-        // Nothing VALIDATES against this any more: the length is a FrameSpan's duration now
-        // (Prefab.Root.Span), and no illegal FrameSpan is representable. It stays as the bound the
-        // editor's own length field clamps to.
+        // A template's timeline is bounded like a level's. Nothing validates against this (the length is
+        // a FrameSpan duration); it is the bound the editor's length field clamps to.
 
         /// <summary> Upper bound of a template's own timeline, Prefab.Root.Span's duration. </summary>
         public const int MaxFrameDuration = FrameRules.MaxFrameDuration;
@@ -25,21 +23,14 @@ namespace BH.SDK.Rules
         /// <summary> Upper bound of Prefab.Objects. </summary>
         public const int MaxObjects = LevelRules.MaxObjects;
 
-        // And it inherits the id BUDGET the same way, which is a different number for the reason
-        // spelled out over LevelRules.MaxObjectIds: a template's counter measures ids ever minted,
-        // not objects held. A template is the scope a prefab-editing session spends ids in fastest,
-        // since every create/undo/branch inside Prefab Mode consumes from here rather than from the
-        // level's own counter.
+        // Inherits the id BUDGET too, for the reason over LevelRules.MaxObjectIds. Prefab Mode spends it
+        // fastest: every create/undo/branch inside it consumes the template's own counter.
 
         /// <summary> Upper bound of Prefab.ObjectIdCounter. </summary>
         public const int MaxObjectIds = LevelRules.MaxObjectIds;
 
-        // How deep placements may nest before the format calls it absurd. This is a property of the
-        // FORMAT, not of one device: a file nesting deeper cannot be materialized correctly by any
-        // consumer, so it belongs here rather than in a per-project settings asset - the Unity
-        // side's ResourceSettings.Prefabs_MaxInheritanceLevel now defaults from this constant
-        // instead of carrying its own number. Cycles are a separate, graph-level check; this bounds
-        // nesting that is legitimate but unreasonable.
+        // A property of the FORMAT: no consumer can materialize deeper, so ResourceSettings'
+        // Prefabs_MaxInheritanceLevel defaults from this. Cycles are a separate, graph-level check.
 
         /// <summary> Highest inheritance level allowed, read by GraphRule, LevelGraphAnalyzer. </summary>
         public const int MaxInheritanceLevel = 8;

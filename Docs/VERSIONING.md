@@ -107,6 +107,16 @@ moved to 2 would pass that check against a build whose domain A is already at 2,
 read. `ModelGenerations.Current` is the maximum across the live domains, and `ModelGenerationsTests`
 is what fails when it stops being.
 
+**`LevelGenerations.Required()` lists the level's domains rather than taking
+`ModelGenerations.Current`.** `Current` is the maximum across every domain, including
+`UserSettings`, `ClipboardData` and the statistics files, none of which a level contains, so a level
+whose own domains never moved would inherit a warning from `settings.json`. The list is exactly what
+`level.json` can hold, `LevelMeta` itself excluded: metadata is the half that must stay readable,
+and a file that hid its own claim inside the thing it describes could never be asked about. The
+answer is computed once (it comes from `[ModelGeneration]` attributes in a loaded assembly, so it
+cannot change while the process runs), which is what makes it usable per level card in a browser
+(`LevelMetaInfo.NewerThanThisBuild`).
+
 The named constants are in `Versions/ModelGenerations.cs`:
 
 - `Invalid = -1` - no generation at all: an unversioned leaf in the generator's specs, or an envelope
@@ -116,7 +126,13 @@ The named constants are in `Versions/ModelGenerations.cs`:
   end rather than to describe a format any build shipped.
 - `V1_AlphaRelease = 1` - what 1.0.0 shipped; every live domain not yet bumped is still at it.
 - `V2_SimplifyEntrance = 2` - the first bump after release (`UserSettings`, `LevelStatistics`,
-  `GameStatistics`, `LevelMeta`, `Collection`).
+  `GameStatistics`, `LevelMeta`, `Collection`). What moved: `UserSettings` remembers whether the
+  tutorial was offered, its controls move the cursor-return switch from the shared group onto each
+  pointer device (on for the mouse, off for touch), and `GraphicsSettings` gained the Colliders Only
+  mode group; a `LevelStatistics` record can be filed under "no collision"; `GameStatistics` counts
+  completed tutorials; `LevelMeta` joined before any build carrying it shipped - a resource record
+  can credit a theme, effect, shape or prefab (`ResourceMeta.ResourceGuid`), describe the level's
+  cover (`ResourceType.LevelLogo`), and the level and each record declare `AiGeneration`.
 - `Current` - an alias for the newest. The only one UI and reports read.
 
 ### The envelope on disk

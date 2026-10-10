@@ -10,10 +10,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests
 {
-    // WHAT STILL POINTS AT A RESOURCE, which nothing could answer before - the validator answers the
-    // opposite direction and only after a delete has already broken something. Every case here is
-    // one the editor's confirmation depends on being right: a count of zero means the delete goes
-    // through with no question, so a MISSED reference is the expensive failure, not a spurious one.
+    // What still POINTS at a resource: a zero count lets a delete through unasked, so a MISSED reference
+    // is the expensive failure.
     public class ResourceReferenceUtilsTests
     {
         private static Level LevelWith(params RectObject[] objects)

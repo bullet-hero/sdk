@@ -7,17 +7,8 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models.Statistics
 {
-    // THE AUTHORING HALF OF THE PROFILE, and the reason it is worth having at all: this project is
-    // an engine as much as a game, so how much someone has BUILT is as much a part of their profile
-    // as how much they have played. LevelEditorStatistics answers the same question per level; this
-    // is the device-wide sum, plus the few counters that belong to no single level.
-    //
-    // LevelsDeleted is kept beside LevelsCreated rather than netted off against it: the two answer
-    // different questions, and a difference cannot be recovered from a single number afterwards.
-    //
-    // TotalResources counts resources added to levels - images, audio, fonts. It replaced a
-    // narrower "archives imported and exported" pair, which measured one workflow rather than the
-    // work.
+    // The authoring half of the profile (the device-wide sum of LevelEditorStatistics). LevelsDeleted sits
+    // beside LevelsCreated: a difference cannot be recovered from one number. Docs/STATISTICS.md
 
     /// <summary> What has been authored on this device, summed across every level. </summary>
     [RuleContainer]

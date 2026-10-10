@@ -22,33 +22,13 @@ namespace BH.SDK.Serialization.Converters.Base
             IReadOnlyList<JsonConverter> allConverters) =>
             new JsonConverter[] { this };
 
-        // THE TYPE TAG IS WRITTEN AND READ DIRECTLY rather than through a serializer. It is plainly the
-        // cheaper way to write one enum, and it measured as a real if modest win - `Resources` on a
-        // 3.2 MB level went 672 -> 470 ms - but it is worth reading the block below before assuming it
-        // did more than that: on the same level's OBJECTS tree, which is three times the size, it was
-        // worth nothing at all.
-        //
-        // The wire format is unchanged: an enum serializes as its integer here (no StringEnumConverter
-        // is registered), which is what every level file already carries - `"clr":[0,{...}]`. Verified
-        // rather than assumed: re-serializing a real level reproduces its file byte for byte.
+        // The type tag is written directly, not through a serializer: a modest win on Resources,
+        // nothing on the objects tree. The wire format is unchanged (the enum is an integer).
+        // Measurements and the real cost, the per-value dispatch: Docs/SERIALIZATION.md.
 
-        // THE SECOND HALF OF THE WRAPPER IS WHERE THE TIME GOES, AND IT IS NOT THIS CALL. Measured on
-        // a 3.2 MB level: its objects tree costs ~1420 ms through this converter stack and 295 ms
-        // through the same contract resolver with no converters at all, so ~1120 ms of it is this
-        // layer. The obvious suspects were both tried and both measured at nothing:
-        //
-        // - the type tag above, which used to go through `serializer.Serialize` - kept, since it is
-        //   plainly cheaper, but worth 0 ms on this tree (it did save ~200 ms on `Resources`);
-        // - hand-writing the members for `Vector2Value`, `FloatValue` and `Color4Value` - the three
-        //   most common values in a level - instead of this `Serialize` call. Eight passes put that
-        //   build at min 1398 / max 1437 / mean 1419 ms against 1421 without it. Reverted: it is a
-        //   hand-kept duplicate of what the contract writes, so a field added to one of those models
-        //   and not to its writer changes the wire format silently, and it bought nothing.
-        //
-        // So the cost is the per-value DISPATCH - `ConverterRouter` plus Newtonsoft's own
-        // converter-invocation path - rather than the work inside the converters. Anything aimed at
-        // this number should start by measuring that, and should not assume otherwise from the
-        // shape of the code here.
+        // The time is in the per-value DISPATCH (ConverterRouter plus Newtonsoft's invocation path), not
+        // here: hand-writing the members of the common values measured at nothing and was rejected.
+        // Measure the dispatch before optimizing this call (Docs/SERIALIZATION.md).
 
         /// <summary> Writes the tag, then the concrete class's own members - the tag directly rather than through a serializer, which is measurably cheaper for one enum. </summary>
         public override void WriteJson(JsonWriter writer, T value, JsonSerializer serializer)
@@ -99,16 +79,9 @@ namespace BH.SDK.Serialization.Converters.Base
         /// <summary> The concrete class a tag names, or null when nothing does. </summary>
         public abstract Type GetType(TType customType);
 
-        // THE FALLBACK IS THE FAMILY'S LOWEST TAG, and it is a fallback rather than an invention
-        // because every family already puts its plain literal form there: FloatType.Value is
-        // FloatValue, ObjectType.RectObject is RectObject, LicenseType.NoSpecified is
-        // NoSpecifiedLicense. Nothing had to be declared for this.
-        //
-        // An unknown OBJECT is a visible hole - one rectangle missing from the screen - and the inert
-        // RectObject is preferred to skipping the entry, because it keeps the object's children
-        // parented where they were; skipping orphans them, and the consumer's BuildInstancesJob
-        // answers an orphan by not drawing it at all. An unknown VALUE is invisible instead, which is
-        // why the report is not optional decoration.
+        // The fallback is the family's LOWEST tag, every family's plain literal form. An unknown OBJECT
+        // becomes an inert RectObject, not a skipped entry: skipping would orphan its children and the
+        // runtime does not draw an orphan. An unknown VALUE is invisible, so the report is not optional.
 
         /// <summary> Stands the family's lowest tag in for one this build has no type for, and reports it. </summary>
         protected Type Fallback(TType customType, Type fallback)
@@ -118,12 +91,8 @@ namespace BH.SDK.Serialization.Converters.Base
             return fallback;
         }
 
-        // `TType` is an enum on every one of the seventeen converters built on this, but nothing in the
-        // signature can say so without constraining the type parameter and touching all of them, so the
-        // conversion goes through `Convert`. That boxes the enum once per value - tens of nanoseconds
-        // and one gen-0 object, negligible beside the multi-megabyte string being built around it. A
-        // converter that writes enough values to care can override this with a direct `(int)` cast,
-        // which boxes nothing.
+        // TType is an enum on every converter built on this, but the signature cannot say so without
+        // constraining all of them, so this boxes once per value. Override with an (int) cast if hot.
 
         /// <summary> The type tag as the number the wire format carries. </summary>
         protected virtual int GetCustomTypeIndex(T value) => Convert.ToInt32(GetCustomType(value));

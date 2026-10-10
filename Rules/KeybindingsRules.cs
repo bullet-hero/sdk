@@ -1,9 +1,7 @@
 namespace BH.SDK.Rules
 {
-    // Limits for the keybindings map, in the same "Max" shape PrefabRules uses for its collection
-    // caps. Nothing here clamps at runtime: an override the game does not recognize resolves to the
-    // catalog's own default, so a hand-edited file with a wilder number costs the author that one
-    // entry rather than the whole map.
+    // Limits for the keybindings map. Nothing clamps at runtime: an unrecognized override resolves to
+    // the catalog default, costing the author that one entry rather than the whole map.
 
     /// <summary>
     /// Bounds for <see cref="BH.SDK.Models.SettingGroups.KeybindingsSettings"/>.

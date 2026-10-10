@@ -10,12 +10,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests
 {
-    // Three things are checked here that no other test can see. The catalog is static data with no
-    // rule attached to it, so a device declared with no scenes or no modes would ship silently. The six
-    // device groups are hand-written boilerplate six times over, so a Copy/Pull/Equals that forgot one
-    // field is exactly the mistake this file exists for - which is why they are walked generically
-    // rather than asserted one group at a time. And GeneralMode is a cast between two enums whose
-    // values only line up by convention.
+    // The catalog has no rule (a device with no scenes or modes would ship silently), the six device
+    // groups are walked generically, and GeneralMode is a cast between enums that line up by convention.
 
     /// <summary>
     /// The control settings tree: catalog invariants, the per-device groups' Reset/Copy/Pull/Equals

@@ -11,11 +11,7 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models.Data
 {
-    // Carries its own FontResourceId so LevelHints.FontCharacters can serialize the way every
-    // resource dictionary in the format does - as a plain array with the key dropped and recovered
-    // from the value on read (DictionaryAsListConverter). The alternative, a bare id -> IString map,
-    // needs the {k, v} pair form instead, which reads differently from every other keyed collection
-    // for no reason a file's reader could guess.
+    // Carries its own FontResourceId so FontCharacters writes as a plain array, key recovered on read.
 
     /// <summary>
     /// One font's distinct-character set: every character the level's text draws in that typeface,

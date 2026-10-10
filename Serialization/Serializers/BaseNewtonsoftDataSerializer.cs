@@ -8,12 +8,8 @@ using Newtonsoft.Json.Linq;
 
 namespace BH.SDK.Serialization.Serializers
 {
-    // Shared envelope logic for every Newtonsoft-backed IDataSerializer. None of the converters in
-    // Serialization/Converters/* touch JsonTextWriter/JsonTextReader specifically - they only use
-    // members of the abstract JsonWriter/JsonReader - so the same JsonSerializer (and therefore the
-    // same VersionedEnvelopeConverter chain) works unchanged for both JSON and BSON. Only the raw
-    // reader/writer over the byte stream differs per format, which is what subclasses supply.
-    // See Docs/VERSIONING.md, "Format-agnosticism".
+    // Shared envelope logic for every Newtonsoft-backed IDataSerializer. The converters touch only the
+    // abstract JsonWriter/JsonReader, so subclasses supply just the raw reader/writer over the bytes.
 
     /// <summary> The envelope half every Newtonsoft-backed format shares; a subclass supplies only the
     /// reader and writer over the bytes. </summary>
@@ -56,19 +52,12 @@ namespace BH.SDK.Serialization.Serializers
             return stream.ToArray();
         }
 
-        // Two streaming passes over the bytes, not one materialized tree. The generation has to be
-        // known before the payload can be typed, and reading it used to mean loading the WHOLE
-        // document into a JObject and then walking that tree a second time to deserialize - so a
-        // level was parsed twice, the second time out of a tree that cost one JToken per value.
-        // The first pass here stops at the generation property; only the second one reads content.
-        //
-        // Both passes are format-agnostic: subclasses supply the reader, and nothing below it cares
-        // whether the bytes are JSON or BSON.
+        // Two streaming passes, not one materialized tree: the first stops at the generation (it types
+        // the payload), only the second reads content.
 
         /// <summary>
-        /// Reads one envelope. VersionedEnvelopeConverter resolves the concrete historical type for
-        /// the generation it finds and upgrades it to the domain's current shape in one step, so what
-        /// comes back is already current-shape - "raw" only means handed back untyped.
+        /// Reads one envelope and returns it already upgraded to the domain's current shape; "raw" only
+        /// means handed back untyped.
         /// </summary>
         public EnvelopeData DeserializeEnvelope(byte[] data, Type payloadType)
         {

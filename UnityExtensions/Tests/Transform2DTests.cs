@@ -82,10 +82,7 @@ namespace BH.SDK.UnityExtensions.Tests
             t3.Apply(t2);
             t4.Apply(t3);
 
-            // t4: parent t3
-            // scale: 1*3 = 3
-            // rot: 0+75=75°
-            // pos: t3.pos + Rot75( (0,0)*3 ) = t3.pos
+            // t4 (parent t3): scale 3, rotation 75 deg, position equals t3.
             Assert.AreEqual(t3.position, t4.position);
             Assert.AreEqual(math.radians(75), t4.rotation);
             Assert.AreEqual(new float2(3, 3), t4.scale);

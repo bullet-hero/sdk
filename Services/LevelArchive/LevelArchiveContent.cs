@@ -30,14 +30,8 @@ namespace BH.SDK.Services.LevelArchive
         Unsupported = 5,
     }
 
-    // WHAT COMES OUT IS BYTES AND A STORE, NOT A Level. Deserializing is the caller's step, and
-    // keeping it out of here is what lets the same reader serve two callers that want different
-    // things from the same file: the editor's import turns the bytes into a model and migrates it,
-    // while a server writes them into a column having never constructed one.
-    //
-    // The formats travel beside the bytes because nothing inside them says which they are - a level
-    // document is Json or Blob according to the NAME it was stored under, which is the same
-    // convention a level folder on disk uses.
+    // Bytes and a store, NOT a Level: deserializing is the caller's step (an editor migrates, a server
+    // stores bytes). The formats travel beside the bytes: a document's format is its stored NAME.
 
     /// <summary> Everything a level archive held. </summary>
     public sealed class LevelArchiveContent
@@ -67,10 +61,8 @@ namespace BH.SDK.Services.LevelArchive
         /// <summary> Why it ended the way it did. </summary>
         public LevelArchiveOpenResult Result { get; }
 
-        // THE CONTAINER TRAVELS WITH THE VERDICT, and a refusal is where it earns its place: a
-        // host that can say "this build does not read 7z yet" sends a person to re-zip their file,
-        // while one that can only say "unsupported" sends them looking for a fault in it. A folder
-        // answers Unknown, which is the truth - a folder is not a container.
+        // The container travels with the verdict so a refusal can say "7z is not read yet". A folder
+        // answers Unknown.
 
         /// <summary> Which container it turned out to be. </summary>
         public ArchiveFormat Format { get; }

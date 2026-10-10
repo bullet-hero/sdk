@@ -12,9 +12,8 @@ using Newtonsoft.Json;
 namespace BH.SDK.Models.Objects
 {
     /// <summary>
-    /// A reusable group of objects with its own timeline - the template a PrefabObject places.
-    /// The only type that is both an object scope and an id counter on one class; at level scope
-    /// those two roles are split across GameLevel and LevelSettings.
+    /// A reusable group of objects with its own timeline - the template a PrefabObject places. Both an
+    /// object scope and an id counter on one class (at level scope they are GameLevel and LevelSettings).
     /// </summary>
     [RuleContainer]
     [RulePrefabRootFixed]
@@ -27,12 +26,9 @@ namespace BH.SDK.Models.Objects
         [JsonProperty(Names.PrefabId)]
         public PrefabId PrefabId { get; set; }
         
-        /// <summary> The object a placement of this template IS - what everything parented to
-        /// <see cref="ObjectId.PrefabRoot"/> hangs off, materialized onto the placement itself
-        /// rather than beside it, and carrying that same id as its own. Holds the template's name,
-        /// its positional tracks and - as its own Span's duration - the template's whole timeline;
-        /// a placement diverges from the tracks through its Modifications, and from the length not
-        /// at all. </summary>
+        /// <summary> The object a placement of this template IS: everything parented to
+        /// <see cref="ObjectId.PrefabRoot"/> hangs off it, with that id as its own. Holds the name, the
+        /// positional tracks and (as its Span) the template's whole timeline. </summary>
         [RuleNotNull]
         [JsonProperty(Names.Root)]
         public RectObject Root { get; set; }

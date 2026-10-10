@@ -15,23 +15,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests
 {
-    // WHETHER AN OVERRIDE ACTUALLY LANDS, ASKED PER KIND OF FIELD. Everything that existed tested
-    // one half or the other: BlobCodecTests and ModelUtilsTests build a Modification and assert it
-    // ROUND TRIPS, never that it applies. Nothing drove a scalar through Apply at all.
-    //
-    // WHAT IT FOUND, AND WHAT FIXED IT. Seven kinds landed and four did not. An int never landed at
-    // all - Modification.Value's setter widens every integral to long so an override still equals
-    // itself after a round trip, and the old Apply guarded its write with
-    // PropertyType.IsAssignableFrom(value type), which is false for int from long. An enum and an
-    // id stopped landing once they had been through the serializer, where both arrive as a number.
-    // ModificationValues.TryConvert is the fix: it converts back through the very serializer that
-    // gave the value its shape, instead of refusing anything that is not already the right type.
-    //
-    // The four cases that read "DoesNotApply" while that was true are "Applies" below, and the
-    // three kinds this file used to leave uncovered after a round trip - a string, a FrameSpan and
-    // a keyframe list - are covered now. They were a deliberate gap while the question was "what
-    // does the serializer change", since nothing changes theirs; with a conversion in the path the
-    // question became "does the conversion preserve what it need not change", which is worth asking.
+    // Whether an override actually LANDS, per kind of field, in memory and after a round trip. It found
+    // that int, enum and id overrides did not apply. BH.SDK/Docs/TESTING.md, "Modifications".
 
     /// <summary> ModificationUtils.Apply against one field of each kind - scalar, enum, id, struct,
     /// reference and whole list - in memory and after a serializer round trip. </summary>
@@ -351,12 +336,7 @@ namespace BH.SDK.Tests
             Assert.AreEqual(replacement, obj.FontSizes[0]);
         }
 
-        // THE ONE SHAPE THE CASES ABOVE LEAVE OUT: a scalar whose DECLARED type is an interface.
-        // Every other polymorphic case here is an element of a list, and the two reach TryConvert
-        // differently - a list arrives as a JArray and is converted whole, while this arrives as
-        // whatever the IString converter wrote and has to find its concrete type from the tag alone.
-        // TextObject.Text is the only overridable member of this shape, and it is one an author
-        // overrides constantly.
+        // A scalar whose DECLARED type is an interface (TextObject.Text), unlike the list cases.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]

@@ -29,11 +29,7 @@ namespace BH.SDK.Tests.Generators
             return level;
         }
 
-        // Frames are given and read back as OFFSETS from the object's own first frame, not as raw
-        // frame numbers, so what these tests assert is what a modifier DOES rather than where the
-        // timeline happens to start. Every object here begins on FrameRules.MinFrame, which also
-        // makes an offset numerically equal to its global frame - the grid a modifier snaps to is
-        // anchored on that same first frame.
+        // Frames are OFFSETS from the object's first frame, so a test says what a modifier DOES.
         private static ShapeObject AddObject(Level level, int layer, float x, params int[] offsets)
         {
             var obj = new ShapeObject
@@ -231,10 +227,7 @@ namespace BH.SDK.Tests.Generators
             Assert.AreEqual(5, Offset(b.Span.StartFrame));
             Assert.AreEqual(10, Offset(c.Span.StartFrame));
 
-            // A keyframe's Frame is LOCAL to its object, so shifting the bounds already carried every
-            // key with it - in global terms b's key now lands on 5 and c's on 10, while the stored
-            // number stays what it was. Shifting the keys too (ShiftKeyframes, off by default) would
-            // delay the motion a SECOND time, inside the object's own lifetime.
+            // Frames are LOCAL, so shifting bounds already moves the keys; ShiftKeyframes would delay twice.
             CollectionAssert.AreEqual(new[] { 0 }, FramesOf(a));
             CollectionAssert.AreEqual(new[] { 0 }, FramesOf(b));
             CollectionAssert.AreEqual(new[] { 0 }, FramesOf(c));
@@ -341,10 +334,7 @@ namespace BH.SDK.Tests.Generators
             new StaggerGenerator().Run(Context(level, a.ObjectId, b.ObjectId),
                 new StaggerGenerator.Parameters { StepFrames = 500, Order = StaggerOrder.Selection });
 
-            // The whole lifetime is what gets clamped, not each edge on its own: a 91-frame object
-            // pushed past the end of a 100-frame timeline lands at 9, still 91 frames long. Clamping
-            // the edges separately - what the old StartFrame/EndFrame pair did - squashed it onto
-            // frame 99 and silently threw its animation away.
+            // The whole lifetime is clamped, not each edge: a 91-frame object stays 91 long, landing at 9.
             Assert.AreEqual(9, Offset(b.Span.StartFrame), "the object keeps its duration and stops at the end");
             Assert.AreEqual(FrameRules.EndBoundaryOf(100), b.Span.EndFrame);
             Assert.AreEqual(10, Offset(b.Positions[0].Frame),

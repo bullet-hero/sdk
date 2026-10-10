@@ -3,12 +3,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests.Interop
 {
-    // An interop report aggregates by code, and for a long time that meant it kept ONE path and a
-    // count - so a finding that fired on eight thousand objects surfaced a single example, and an
-    // author could reach exactly one of the objects it named. These pin the bounded list that
-    // replaced it, and in particular the two ways it can be incomplete, which mean different things:
-    // the COUNT can exceed the paths because the same place was hit repeatedly, and the PATHS can be
-    // cut because more distinct places were reached than the list keeps.
+    // Pins the bounded path list: the COUNT can exceed the paths (same place hit repeatedly) and the
+    // PATHS can be cut (more distinct places than kept).
 
     /// <summary> What an interop report remembers about where a finding was hit. </summary>
     public class InteropReportTests

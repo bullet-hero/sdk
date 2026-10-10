@@ -7,10 +7,7 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests
 {
-    // The repair pipeline is order-dependent and every step can undo an earlier one, so these test
-    // the ORDER as much as the individual passes: clamping can collapse a triangle, welding can
-    // collapse another, dropping triangles can orphan points, and winding has to run after all of
-    // it. A test that only checked each pass in isolation would pass while Sanitize corrupted data.
+    // The repair pipeline is order-dependent (each step can undo another), so the ORDER is tested.
 
     /// <summary>
     /// ShapeGeometryUtils: the shared "what is a valid shape" implementation behind both
@@ -270,11 +267,7 @@ namespace BH.SDK.Tests
             Assert.IsTrue(ShapeGeometryUtils.Analyze(vertices, indices).IsClean);
         }
 
-        // GetCentroidPivot IS THE GENERAL FORM OF ShapeCatalogService's per-form one, and the test
-        // that matters is that the two agree: the six alignment constants an author already clicks
-        // were computed from a form's rim, and a triangle soup has no rim to read. Weighting by
-        // area is what makes them agree - a corner average is the centre of mass only for a
-        // triangle and a regular polygon, which is every case the per-form version ever saw.
+        // GetCentroidPivot generalizes the per-form one and must agree; area weighting makes it so.
 
         [Test]
         [Author(Metadata.Author.Vertoker)]

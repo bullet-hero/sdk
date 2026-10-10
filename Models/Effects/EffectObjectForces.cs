@@ -79,14 +79,8 @@ namespace BH.SDK.Models.Effects
         [JsonProperty(Names.LinearForce)]
         public IVector2 LinearForce { get; set; }
 
-        // THE ELEVEN FORCES ARE BORN EMPTY. Each was a polymorphic value constructed at its own
-        // neutral - 318 bytes, 45% of a default EffectData - written for every effect whether or
-        // not it applies a force, and most do not. Null means "not set" and reads back as the
-        // neutral, which is what EffectForcesState.Default already spells out in one place.
-        //
-        // Unlike LevelTrackEffects this is COMPRESSION rather than a third state: 0 gravity is both
-        // the neutral and a legal authored value, so absent and zero behave identically. What it
-        // buys is that an effect only carries the forces it actually uses.
+        // The eleven forces are born null (compression, not a third state): null reads back as the
+        // neutral, EffectForcesState.Default. Why: Docs/RESOURCE_DATA.md
 
         /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public EffectObjectForces()

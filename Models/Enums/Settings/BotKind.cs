@@ -1,14 +1,7 @@
 namespace BH.SDK.Models.Enums.Settings
 {
-    // THE VERSION IS DELIBERATELY NOT IN HERE. A bot's version is what its display name carries
-    // ("Reflex Bot v1"), because a version is a statement about the current implementation while a
-    // member of this enum is a statement about what the player CHOSE - and those two have to be able
-    // to move independently. Shipping Reflex v2 must not silently invalidate every settings file
-    // that already says `Reflex`, and it would if the member were named for the version.
-    //
-    // None = 0 is what makes every consumer additive: a settings file written before a bot existed
-    // reads back as "no bot" without a migration, and a launch that says nothing gets the player's
-    // own hands.
+    // No version here: it belongs to the display name, a member to what the player CHOSE. None = 0 keeps
+    // every consumer additive (a file from before a bot reads as "no bot").
 
     /// <summary>
     /// Which bot steers the avatar, if any.
@@ -19,9 +12,7 @@ namespace BH.SDK.Models.Enums.Settings
         None = 0,
 
         /// <summary>
-        /// Reads the level a fraction of a second ahead every frame and walks towards whatever room
-        /// it can find. Knows nothing about the level before it starts, so it costs frame time for as
-        /// long as it runs and can still be cornered.
+        /// Reads the level a fraction of a second ahead every frame and walks towards the room it finds.
         /// </summary>
         Reflex = 1,
 

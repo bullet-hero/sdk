@@ -3,20 +3,8 @@ using System.Reflection;
 
 namespace BH.SDK.Rules.Attributes
 {
-    // C# enums accept any value of their underlying type, so `"ease": 200` deserializes without a
-    // murmur and only surfaces much later, as a switch falling through to a default or throwing
-    // deep inside a job. This is the rule that turns that into a reported, fixable issue.
-    //
-    // Note what it does NOT cover: the enums that discriminate polymorphism (ObjectType, ColorType,
-    // VectorType, ScreenLimitType, LicenseType, Color4X4KeyType, the EffectShape* family). Those are
-    // never stored as a property - they are the first element of a two-element JSON array, resolved
-    // by a converter that throws on an unknown value. The two are different failure classes on
-    // purpose: an unknown discriminator means the file cannot be read at all, an unknown enum FIELD
-    // means one value is wrong and the rest of the level is fine.
-    //
-    // [Flags] enums are not supported: Enum.IsDefined rejects legitimate combinations. They have
-    // their own rule, RuleEnumFlagsValid, which asks "does this carry an undeclared bit" instead -
-    // don't loosen this one to cover them.
+    // Single-choice enum FIELDS only. Not the polymorphism discriminators (a converter throws on those)
+    // and not [Flags] enums (use RuleEnumFlagsValid; do not loosen this one to cover them).
 
     /// <summary>
     /// An enum field must hold a value the enum actually declares. Fix falls back to DefaultValue,

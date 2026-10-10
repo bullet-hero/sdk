@@ -9,22 +9,11 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models
 {
-    // AUDIO SITS SECOND, right after General, and the settings screen's tabs follow the same order:
-    // volume is what a player reaches for first and most often, and it was buried behind Controls
-    // and Keybindings in both places. Reordering properties is free for the JSON this file is
-    // written as - Newtonsoft reads by key name - and it moves no key, so nothing migrates.
-    //
-    // GameEditorSettings was RESTRUCTURED once - sixteen flat properties became nine nested groups.
-    // Every other change to this file was additive and rode on Newtonsoft leaving a constructor's
-    // default in place for an absent key; moving keys is the one thing that cannot, so that change
-    // took the domain to (2,0) and shipped a snapshot and a migrator. Both are gone and the domain is
-    // back at (1,0), per root CLAUDE.md Rule 11: pre-release then, the format changed in place. A
-    // settings.json older than that restructure now reads its editor group back as defaults.
+    // Audio sits second, right after General, and the settings screen's tabs follow the same order.
 
     /// <summary>
-    /// The player's own options, saved once per device (settings.json) - the third top-level file
-    /// next to a level and its metadata. Nothing here travels with a level: the same level must
-    /// play the same way regardless of these.
+    /// The player's own options, saved once per device (settings.json), the third top-level file beside a
+    /// level and its metadata. Nothing here travels with a level.
     /// </summary>
     [RuleContainer]
     [ModelGeneration(ModelDomains.UserSettings, ModelGenerations.V2_SimplifyEntrance)]
@@ -51,10 +40,7 @@ namespace BH.SDK.Models
         [JsonProperty(Names.Graphics)]
         public GraphicsSettings Graphics { get; set; }
 
-        // Added after the domain was already at 1.0 and deliberately does NOT bump it: a settings.json
-        // written before this group existed simply has no "iface" key, and Newtonsoft leaves the
-        // constructor's defaults in place. That is the same call the Controls group's removed property
-        // made - an additive property with a default needs no snapshot and no migrator.
+        // The editor's interface group.
 
         /// <summary> Interface overlays the game draws over every screen. </summary>
         [RuleNotNull]
@@ -67,14 +53,7 @@ namespace BH.SDK.Models
         [JsonProperty(Names.GameEditor)]
         public GameEditorSettings GameEditor { get; set; }
 
-        // Additive like the Interface group above, and for the same reason: an older settings.json
-        // has no "keys" key and Newtonsoft leaves the constructor's empty map in place, so no
-        // snapshot and no migrator.
-        //
-        // The key is Names.Keys, which CurveValue also uses for its keyframe list. That reuse is
-        // what the file's own header allows - "a key is only ever reused across models that can
-        // never co-occur" - and a curve lives inside a level while this lives inside settings.json,
-        // so the two can never appear on one model.
+        // Names.Keys is shared with CurveValue's keyframe list: the two can never co-occur on one model.
 
         /// <summary> Which key runs which command, as overrides on the shipped defaults. Empty for a
         /// player who never rebound anything, which is most of them. </summary>
@@ -82,11 +61,8 @@ namespace BH.SDK.Models
         [JsonProperty(Names.Keys)]
         public KeybindingsSettings Keybindings { get; set; }
 
-        // THE FIRST MEMBER ADDED AFTER RELEASE, and so the first one that bumped the domain (Rule 11):
-        // generation Release is frozen as Versions/V1/UserSettingsV1, and its migrator reads this back
-        // as false, so a player updating from 1.0.0 is offered the tutorial exactly once. It flips on
-        // DECLINING the offer as much as on finishing it - the offer is what it remembers, and the
-        // sandbox stays one button away in the menu either way.
+        // The first member added after release (generation Release is frozen in Versions/V1/UserSettingsV1).
+        // It flips on DECLINING the tutorial offer as much as on finishing it.
 
         /// <summary> Whether the tutorial was already offered - finished or declined. </summary>
         [JsonProperty(Names.TutorialCompleted)]

@@ -11,9 +11,8 @@ using Newtonsoft.Json;
 namespace BH.SDK.Models.Meta
 {
     /// <summary>
-    /// One credited person, used both for a level's own authors and for the authors of a single
-    /// resource. No identity of its own - two records with the same name are the same person only
-    /// by convention.
+    /// One credited person, for a level's own authors and for a single resource's. No identity of its
+    /// own - two records with the same name are the same person only by convention.
     /// </summary>
     [RuleContainer]
     [GenerateModel]
@@ -24,10 +23,7 @@ namespace BH.SDK.Models.Meta
         [JsonProperty(Names.Name)]
         public IString Name { get; set; }
 
-        // A credit line, not a role enum: the vocabulary is open (mixing, mastering, playtesting,
-        // "level design, second half") and any fixed list would be a lie the moment a level needs a
-        // word not in it. Localizable for the same reason Name is - a handle and what it did are
-        // read by the same person in the same language.
+        // A credit line, not a role enum (open vocabulary), localizable like Name. Docs/RESOURCE_META.md
 
         /// <summary> What they are credited for ("music", "cover art") - what turns a list of names
         /// into credits. Empty is ordinary: the level says who, not always what. </summary>

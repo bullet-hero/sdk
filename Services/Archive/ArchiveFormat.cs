@@ -1,15 +1,8 @@
 namespace BH.SDK.Services.Archive
 {
-    // WHICH CONTAINER, ANSWERED BY THE BYTES AND NOTHING ELSE. The name of a file is the one part
-    // of it anybody can write, so this enum is never parsed from an extension - ArchiveFormatSniffer
-    // reads the first bytes and says which of these it saw.
-    //
-    // OpenPgp is a member because a sniff CAN legitimately land on it: a protected export is a PGP
-    // message whose plaintext is one of the other two, and the reader that sees it decrypts and
-    // sniffs again. SevenZip is a member for the opposite reason - nothing here reads or writes 7z,
-    // and naming it is what lets a refusal say "7z" instead of "not an archive", which is the
-    // difference between a person trying something else and a person concluding their file is
-    // broken.
+    // Which container, answered by the BYTES (ArchiveFormatSniffer), never by an extension. OpenPgp is
+    // a member because a protected export sniffs to it; SevenZip, although unread, so a refusal can
+    // say "7z" rather than "not an archive".
 
     /// <summary> Which container a stream turned out to be. </summary>
     public enum ArchiveFormat

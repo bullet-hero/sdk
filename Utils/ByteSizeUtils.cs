@@ -3,15 +3,8 @@ using System.Globalization;
 
 namespace BH.SDK.Utils
 {
-    // Sizes are plain longs of BYTES everywhere in the format and in publish profiles. .NET has no
-    // size type to use instead - there is no ByteSize/DataSize in the BCL, only third-party ones -
-    // and inventing a struct here would buy nothing over an integer while making every stored limit
-    // a custom-serialized value. What a number that big does need is a way to be READ, which is all
-    // this file is: the refusal a moderator sees says "48.2 MB", not "50529730".
-    //
-    // Binary units (1 KiB = 1024 B) printed with the decimal abbreviations everyone actually uses -
-    // matching what a file manager on any of the target platforms shows for the same file, which is
-    // the number an author will compare the message against.
+    // Sizes are plain long BYTES in the format; this only makes them readable (binary units, decimal
+    // abbreviations like a file manager). Why: Docs/UTILS_DESIGN.md.
 
     /// <summary> Human-readable byte counts. </summary>
     public static class ByteSizeUtils

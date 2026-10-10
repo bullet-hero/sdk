@@ -9,9 +9,8 @@ using Newtonsoft.Json;
 namespace BH.SDK.Models.SettingGroups
 {
     /// <summary>
-    /// Per-device rendering options: the global framerate policy plus one sub-group per subsystem
-    /// that can be turned down independently. This is how a weak phone runs a level authored on a
-    /// PC - the level is unchanged, the player just renders less of it.
+    /// Per-device rendering options: the global framerate policy plus one sub-group per subsystem that can
+    /// be turned down independently, so a weak phone renders less of a level authored on a PC.
     /// </summary>
     [RuleContainer]
     [GenerateModel]
@@ -59,10 +58,7 @@ namespace BH.SDK.Models.SettingGroups
         [JsonProperty(Names.AntiAliasing)]
         public AntiAliasingGraphicsSettings AntiAliasing { get; set; }
 
-        // Added after the domain was already at 1.0 and deliberately does NOT bump it, the same
-        // additive call UserSettings' own Interface and Keybindings groups made: a settings.json
-        // written before this group existed has no "textures" key, Newtonsoft leaves the
-        // constructor's defaults in place, and every one of those defaults is Auto.
+        // Textures: every default is Auto.
 
         /// <summary> How a level's images are turned into GPU textures here - compression, size cap,
         /// mip-maps. Read when a level's resources load, not per frame. </summary>
@@ -70,10 +66,7 @@ namespace BH.SDK.Models.SettingGroups
         [JsonProperty(Names.Textures)]
         public TexturesGraphicsSettings Textures { get; set; }
 
-        // Additive on the same terms Textures was, and it does not bump the domain either. This one
-        // is the group that has no effect at all on mobile - a phone has one window and it is the
-        // screen - which is why it is disabled rather than hidden on the settings screen, and why
-        // nothing here resolves per platform: a desktop honours all of it and a phone honours none.
+        // Display: no effect on mobile, disabled there rather than hidden.
 
         /// <summary> Window mode, window resolution and render scale. Desktop only. </summary>
         [RuleNotNull]

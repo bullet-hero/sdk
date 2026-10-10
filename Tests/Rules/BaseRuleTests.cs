@@ -9,13 +9,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests.Rules
 {
-    // Every [RuleXxx] attribute gets its own test file with its own throwaway [RuleContainer]
-    // fixtures, deliberately NOT MockData: a failure here has to name the single broken rule,
-    // not "something inside Level". MockData-driven ValidatorTests stays as the integration layer
-    // on top of this - it proves the rules compose, these prove each rule works at all.
-    //
-    // A fixture only needs [RuleContainer] plus public get/set properties - RuleAnalyzer walks
-    // properties, not [JsonProperty], so test models carry no serialization attributes.
+    // One file per [RuleXxx] with throwaway [RuleContainer] fixtures, not MockData, so a failure names one
+    // rule. A fixture needs only [RuleContainer] and public get/set properties.
 
     /// <summary>
     /// Shared harness for the per-attribute rule tests: analyze/fix plumbing plus assertions that

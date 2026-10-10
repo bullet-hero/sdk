@@ -3,10 +3,8 @@ using System.Reflection;
 namespace BH.SDK.Rules.Attributes
 {
     /// <summary>
-    /// A rule about one property's value: can this rule sit on this property, does the value satisfy
-    /// it, and how to repair one that does not. Rules see their surroundings only through
-    /// RuleContext - never the raw analysis root - so the same rule works at level scope and inside
-    /// a prefab template without knowing which it is in.
+    /// A rule about one property's value: can it sit on this property, does the value satisfy it, how
+    /// to repair one that does not. Sees its surroundings only through RuleContext, never the root.
     /// </summary>
     public abstract class BasePropertyRuleAttribute : BaseRuleAttribute
     {

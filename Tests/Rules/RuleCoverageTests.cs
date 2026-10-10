@@ -6,11 +6,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests.Rules
 {
-    // The safety net for this whole folder. Adding a rule attribute without a test file is easy and
-    // invisible; this makes it a compile-and-run failure instead. The registry is deliberately a
-    // hand-written list rather than a naming convention, because several rules are covered by a
-    // shared file (the IVector3/IVector4 families, the IPrimitiveInt trio) and a convention would
-    // either forbid that or be too loose to catch anything.
+    // A rule without a test file fails here. The registry is a hand-written list because some files cover
+    // a family (IVector3/4, the IPrimitiveInt trio).
 
     /// <summary>
     /// Every concrete BaseRuleAttribute in the SDK has a test file, and every entry in the registry
@@ -152,10 +149,8 @@ namespace BH.SDK.Tests.Rules
                 "RuleNameKey does not follow the naming scheme: " + string.Join(", ", mismatched));
         }
 
-        // Rule attributes have no parameterless constructor (every one of them takes its bounds), so
-        // reading an instance property off a Type means building the instance without running a
-        // constructor. That is safe here precisely because RuleNameKey is a literal on every rule -
-        // it reads no field, so an uninitialized instance answers exactly what a real one would.
+        // Rule attributes have no parameterless constructor; RuleNameKey is a literal, so an uninitialized
+        // instance answers like a real one.
         private static string NameKeyOf(Type type)
             => ((BaseRuleAttribute)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(type)).RuleNameKey ?? string.Empty;
 

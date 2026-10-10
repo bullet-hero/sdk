@@ -4,13 +4,8 @@ using System.Text.RegularExpressions;
 
 namespace BH.SDK.Rules.Attributes
 {
-    // For the handful of strings that are keys rather than prose: a language tag looked up against
-    // the player's locale, a URI scheme dispatched on. A malformed one does not throw - it simply
-    // never matches, so the localized text silently falls back or the resource silently fails to
-    // load. A length cap alone cannot catch that.
-    //
-    // The regex is compiled once per attribute instance and attribute instances are cached by the
-    // analyzer, so the cost is paid once per property, not per value.
+    // For strings that are keys, not prose (language tag, URI scheme): a malformed one never matches.
+    // The regex compiles once per attribute instance, and the analyzer caches instances.
 
     /// <summary> A string field must match the given regular expression. </summary>
     [AttributeUsage(PropertyTarget)]

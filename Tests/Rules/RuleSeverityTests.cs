@@ -8,16 +8,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests.Rules
 {
-    // SEVERITY MUST BE CHOSEN, NEVER INHERITED BY SILENCE. BaseRuleAttribute answers Error, which is
-    // the right default for a rule nobody has thought about and the wrong one for a rule nobody has
-    // thought about YET - and for most of this project's life the difference was invisible, because
-    // forty-four of forty-five rules took the default and ValidationReport.HasErrors was therefore
-    // identical to !IsValid.
-    //
-    // So every rule either states its own Group or is named below as deliberately Error, and adding
-    // a rule fails this test until one of the two is true. It is the same shape as RuleCoverageTests'
-    // registry, for the same reason: a hand-kept list that has to be edited is what makes the
-    // decision happen at all, and the diff is where it gets reviewed.
+    // Severity must be CHOSEN, never inherited by silence: a rule states its Group or is named below as
+    // deliberately Error. A hand-kept list makes the decision happen at all.
 
 
     /// <summary> That every rule either states its own severity or is named here as deliberately Error - so adding
@@ -25,10 +17,7 @@ namespace BH.SDK.Tests.Rules
     [TestFixture]
     public class RuleSeverityTests
     {
-        // DELIBERATELY ERROR: the file cannot be played as written. Ranges the runtime relies on,
-        // finiteness, not-null, unique keyframe frames, valid enums and flags, collection bounds,
-        // shape geometry, Min <= Max, identifiers. A rule here is not "unclassified" - it is
-        // classified as fatal, and this list is where that was said.
+        // Deliberately Error: the file cannot be played as written. Listing a rule here is classifying it.
         private static readonly HashSet<string> IntentionallyError = new()
         {
             nameof(RuleFiniteNumberAttribute),
@@ -112,10 +101,7 @@ namespace BH.SDK.Tests.Rules
                 + string.Join("\n  ", overriding));
         }
 
-        // WHAT THE DISTINCTION IS FOR. Until a rule reported anything but Error,
-        // ValidationReport.HasErrors was the same predicate as !IsValid and no consumer could act on
-        // it. This is what makes the two differ, and therefore what makes a "refuse to load on
-        // errors" policy expressible at all.
+        // What it is for: HasErrors differs from !IsValid, so "refuse on errors" becomes expressible.
 
         [Test]
         [Author(Metadata.Author.Vertoker)]

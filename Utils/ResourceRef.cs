@@ -7,12 +7,7 @@ using BH.SDK.Models.Primitives.Resources;
 
 namespace BH.SDK.Utils
 {
-    // ONE ADDRESS FOR SEVEN ID TYPES. The file resources are level-local ints and the data resources
-    // are guids, and anything that walks "whatever this points at" - a closure, a remap, a count -
-    // needs to hold both in one set. ResourceType already names the seven families (and is what a
-    // ResourceMeta record is keyed by), so it is reused rather than mirrored by a second enum. The
-    // cover (ResourceType.LevelLogo) fills neither slot and is never null: its type is its address,
-    // so a record for it maps to one reference, and nothing that walks resources ever produces it.
+    // One address for seven id types (ints and guids), keyed by ResourceType. The cover fills neither slot.
 
     /// <summary> A typed reference to one user resource of any family. </summary>
     public readonly struct ResourceRef : IEquatable<ResourceRef>

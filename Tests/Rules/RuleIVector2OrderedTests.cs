@@ -6,9 +6,8 @@ using NUnit.Framework;
 namespace BH.SDK.Tests.Rules
 {
     /// <summary>
-    /// RuleIVector2Ordered: for the IVector2 properties that are ranges rather than points
-    /// (LifetimeBounds, SpeedRange, the shadow/highlight limit pairs). Random variants must be
-    /// ordered for every value they can produce, not just on average.
+    /// RuleIVector2Ordered, for IVector2 properties that are ranges: random variants must be ordered for
+    /// every value they can produce.
     /// </summary>
     public class RuleIVector2OrderedTests : BaseRuleTests
     {

@@ -7,27 +7,8 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models.SettingGroups.Graphics
 {
-    // THE DESKTOP HALF OF GRAPHICS: where the game's pixels go, rather than what is drawn into them.
-    // A phone has one window and it is the screen, so every field here is inert on mobile and the
-    // whole group is disabled rather than hidden there - the same call PathUtils.CanOpenFolder gets
-    // on the General tab, and for the same reason: a control that vanishes per platform makes a
-    // screenshot of the settings screen unreadable to whoever is reading it.
-    //
-    // RESOLUTION IS TWO INTS WITH A ZERO SENTINEL, not a nullable pair and not a string: zero means
-    // "not set, take the display's own", which is what a fresh install and a new monitor both need,
-    // and it is the same never-a-literal sentinel discipline LevelRules.NullSeed keeps. The two are
-    // also the axis pair that decides the game's ASPECT, and therefore - on desktop, where nothing
-    // rotates - the orientation the whole UI lays itself out for. That is the desktop equivalent of
-    // turning a phone, and it is why this group and ScreenOrientationLock are two halves of one
-    // feature rather than neighbours.
-    //
-    // THE REFRESH RATE IS DELIBERATELY NOT STORED. Screen.SetResolution without one keeps the
-    // current rate, whereas a stored rate is wrong the moment the player moves the window to another
-    // monitor - a whole class of bugs bought for a setting nobody asks for. The framerate cap that
-    // players DO ask for already lives one level up, on GraphicsSettings.
-    //
-    // Nothing here resolves per platform the way TexturesGraphicsSettings' three Auto values do,
-    // because there is nothing to resolve: a desktop honours all three and a phone honours none.
+    // The desktop half: inert on mobile, so disabled there, not hidden. Resolution is two ints, zero meaning
+    // "the display's own"; the refresh rate is NOT stored. Docs/SETTING_GROUPS.md
 
     /// <summary>
     /// How this device presents the game - window mode, window resolution, and how many pixels are
@@ -68,10 +49,7 @@ namespace BH.SDK.Models.SettingGroups.Graphics
         [JsonProperty(Names.RenderScale)]
         public float RenderScale { get; set; }
 
-        // Additive, and the zero value is what makes it so: a settings.json written before this
-        // field has no "vsync" key, Newtonsoft leaves the constructor's Off in place, and Off is
-        // exactly what the game did unconditionally before there was a choice. No generation move,
-        // the same call Textures and Display themselves made.
+        // Off (the zero value) is what the game did unconditionally before there was a choice.
 
         /// <summary> Whether presentation waits for the display's refresh. Desktop only - Unity
         /// ignores vSyncCount on phones - and it OUTRANKS

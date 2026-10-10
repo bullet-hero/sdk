@@ -11,9 +11,8 @@ using Newtonsoft.Json;
 namespace BH.SDK.Models.SettingGroups
 {
     /// <summary>
-    /// The level's timeline shape and its id counters. Also the level-scope IObjectIdCounter, while
-    /// the objects those ids belong to live on GameLevel - the two halves a Prefab carries on one
-    /// class are split here, so anything creating objects must hold both.
+    /// The level's timeline shape and its id counters. Also the level-scope IObjectIdCounter while the
+    /// objects live on GameLevel, so anything creating objects must hold both.
     /// </summary>
     [RuleContainer]
     [ModelGeneration(ModelDomains.LevelSettings, ModelGenerations.V1_AlphaRelease)]
@@ -42,11 +41,7 @@ namespace BH.SDK.Models.SettingGroups
         [JsonProperty(Names.AudioIdCounter)]
         public int AudioIdCounter { get; set; }
 
-        // LevelRules.NullSeed (0) is the DEFAULT and means "no seed authored", not "seed number
-        // zero": a level ships without one and the player generates a fresh seed on every load,
-        // which is the normal behaviour. An author sets this only to pin a run down - and a host may
-        // still override it per-launch, so this is the middle tier of a three-step resolution, never
-        // the last word. Test it with LevelRules.IsValidSeed, not with a literal.
+        // NullSeed (0) means "no seed authored", the middle tier of the resolution; test IsValidSeed.
 
         /// <summary> Seed every random-tagged value in this level resolves against.
         /// <see cref="LevelRules.NullSeed"/> = unset. </summary>
@@ -54,14 +49,8 @@ namespace BH.SDK.Models.SettingGroups
         [JsonProperty(Names.Seed)]
         public int Seed { get; set; }
 
-        // Horizontal is the DEFAULT even though NotSpecified is the zero value, and that is what
-        // makes this field additive AND safe at once: every level authored before it existed reads
-        // back as Horizontal, which is how the game already played it. A NotSpecified default would
-        // have opted every existing level into a portrait screen its content was never composed for.
-        //
-        // It outranks the player's own UserSettings.Interface.ScreenOrientation for as long as this
-        // level is running, and it is honoured on phones only - nothing rotates a monitor, so on
-        // desktop a vertical level simply plays inside pillarbox bars.
+        // Horizontal is the default though NotSpecified is zero: older levels read back as they played.
+        // Outranks the player's setting while running; phones only.
 
         /// <summary> The orientation this level is composed for. </summary>
         [RuleEnumValid]

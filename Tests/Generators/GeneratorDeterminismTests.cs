@@ -7,10 +7,7 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests.Generators
 {
-    // "Same seed, same level" is a promise this system makes to authors, and it is only worth
-    // anything if it holds across runtimes - which is why GeneratorRandom is a hand-written
-    // xorshift32 rather than System.Random. These tests pin both halves: the RNG's own sequence,
-    // and the fact that a generator actually routes its randomness through it.
+    // Same seed, same level across runtimes: GeneratorRandom is a hand-written xorshift32.
 
     /// <summary> "Same seed, same level", across runtimes: the hand-written xorshift's own sequence, and the
     /// fact that a generator actually routes its randomness through it. </summary>

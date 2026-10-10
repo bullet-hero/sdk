@@ -5,10 +5,8 @@ using BH.SDK.Rules;
 
 namespace BH.SDK.Generators.Audio
 {
-    // Peaks come from the host (Unity side: Timelines/Utils/AudioWaveformCache, which already
-    // downsamples a clip for the audio timeline) rather than being computed here - the SDK has no
-    // decoder. With no peaks supplied this produces nothing at all, deliberately: a waveform of
-    // invented numbers is worse than an empty run, because it looks like it worked.
+    // Peaks come from the host (the SDK has no decoder). With none it produces NOTHING, deliberately:
+    // an invented waveform looks like it worked.
 
     /// <summary> Which side of the baseline the bars grow on - the baseline being OriginY, the axis
     /// the whole chart is read against. </summary>

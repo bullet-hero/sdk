@@ -96,15 +96,9 @@ namespace BH.SDK.Versions
             return null;
         }
 
-        // THIS USED TO REFUSE, AND THE REVERSAL IS NARROWER THAN IT LOOKS. The refusal's own reasoning
-        // was that reading a payload as a type it was not written in is SILENT corruption, and the
-        // word carrying it was `silent`. What comes back here is the tolerant read; what does not
-        // come back is the silence - every substitution is reported, and Docs/Issues/
-        // FORWARD_COMPATIBILITY_HISTORY.md is why that is the position the format takes.
-        //
-        // An unknown DOMAIN still throws, and the asymmetry is not an oversight: an unknown
-        // generation of a known domain has a current shape to fall back to, and a domain nothing has
-        // ever heard of has nothing at all.
+        // An unknown generation of a known domain falls back to the tolerant read, and every
+        // substitution is reported (Docs/Issues/FORWARD_COMPATIBILITY_HISTORY.md). An unknown DOMAIN
+        // still throws: there is no current shape to fall back to.
 
         /// <summary> The snapshot class one generation names. An unknown generation falls back to the domain's
         /// CURRENT shape and reports the substitution; an unknown domain has nothing to fall back to. </summary>
@@ -116,10 +110,8 @@ namespace BH.SDK.Versions
             var latest = GetLatestAttribute(domain);
             var current = Types[domain][latest.Generation];
 
-            // Worded exactly as IJsonModel.ReadOtherGeneration words the same substitution, and that
-            // is load-bearing rather than tidy: JsonParityTests compares the two stacks' REPORTS, not
-            // only their models, because two readers can reach identical defaults for opposite
-            // reasons and only the report says which reason it was.
+            // Word it exactly as IJsonModel.ReadOtherGeneration does: JsonParityTests compares the two
+            // stacks' REPORTS, since identical defaults can come from opposite reasons.
             SerializationReport.Report(domain, current.Name, "read into today's shape by property name",
                 generation, SubstitutionKind.UnknownGeneration);
             return current;
@@ -133,11 +125,8 @@ namespace BH.SDK.Versions
             return upgraded;
         }
 
-        // THE WALK STOPS RATHER THAN THROWS, AND THE CALLER IS THE ONE THAT DECIDES. A missing step is
-        // a file this build cannot fully understand, which is a version problem and not a damaged
-        // document - so it degrades and reports like every other one. What the caller must NOT do is
-        // assume the result is today's type: check it, and fall back to a default instance when it is
-        // not. Every call site in this repo does.
+        // The walk stops instead of throwing: a missing step is a version problem, not a damaged file.
+        // The caller must check the result is today's type and fall back to a default instance.
 
         /// <summary> The same walk, saying whether it actually arrived. False leaves <paramref name="result"/>
         /// holding the furthest instance the chain reached, which may still be the snapshot itself. </summary>

@@ -10,9 +10,8 @@ using BH.SDK.Utils;
 namespace BH.SDK.Models.Resources
 {
     /// <summary>
-    /// One 32-bit RGBA pixel - a Unity-free stand-in for Color32, since the core SDK must not
-    /// reference UnityEngine. Byte channels here, unlike the float-based Color4Value used for
-    /// authored colors: this is image data, not a value someone edits.
+    /// One 32-bit RGBA pixel - a Unity-free stand-in for Color32. Byte channels, unlike the float
+    /// Color4Value used for authored colors: this is image data, not a value someone edits.
     /// </summary>
     [StructLayout(LayoutKind.Explicit, Size = 4)]
     public struct Pixel : IEquatable<Pixel>, IFormattable, ICopyable<Pixel>

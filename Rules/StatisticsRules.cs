@@ -10,19 +10,14 @@ namespace BH.SDK.Rules
     /// </summary>
     public static class StatisticsRules
     {
-        // A FIXED COUNT RATHER THAN A RESOLUTION, because the histogram has to be comparable across
-        // levels of different lengths - a bucket is a percentage of the level, not a number of
-        // seconds. 64 puts a three-minute level at about 2.8s per bucket, which is fine enough for
-        // an author to see which passage kills people and coarse enough to stay a short array in a
-        // file a person may open.
+        // A fixed count, not a resolution, so the histogram compares across levels of different length (a
+        // bucket is a percentage). 64 puts a three-minute level near 2.8 s per bucket.
 
         /// <summary> The bucket count, read by DifficultyStatistics, StatisticsModelTests, StatisticsSerializationTests. </summary>
         public const int BucketCount = 64;
 
-        // Comfortably more profiles than a player produces by hand (four life presets x four speed
-        // presets x checkpoints x three bots is 96 in theory, but nobody plays the cross product),
-        // and low enough that a custom-slider spree cannot grow the file without bound. Eviction is
-        // oldest-first by the record's own TimeUtc.
+        // More profiles than a player produces by hand, low enough that a slider spree cannot grow the
+        // file without bound. Eviction is oldest-first by the record's TimeUtc.
 
         /// <summary> Upper bound of LevelStatistics.Records. </summary>
         public const int MaxRecordProfiles = 64;

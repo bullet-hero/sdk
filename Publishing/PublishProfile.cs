@@ -12,21 +12,9 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Publishing
 {
-    // The publishing policy as DATA, which is the whole design. Every service a level can reach -
-    // Steam Workshop, the official server, a community-run one, a store build's own catalogue - wants
-    // a different answer to the same handful of questions, and those answers change over the years
-    // while the code does not. A profile is one such answer, serialized, so adding a service means
-    // writing a file and adding a store means shipping a stricter one, never editing an analyzer.
-    //
-    // Which typical licenses are acceptable lives HERE and only here. It reads like a property of
-    // the license ("is CC BY-SA allowed?") but it is a property of the receiving service: BY-SA is
-    // fine for a server that does not mind ShareAlike propagating, and refused by one that publishes
-    // everything as CC BY-NC. A table baked into the SDK would state one service's opinion as if it
-    // were a fact about the license.
-    //
-    // What the profile deliberately does NOT decide is what a caller does with the answer. A client
-    // blocks an upload on HasErrors; a server queues NeedsManualReview instead of publishing; a
-    // catalogue re-runs the whole thing when the policy changes and re-sorts what it already holds.
+    // The publishing policy as DATA: a new service is a file, never an analyzer edit. Which typical
+    // licenses are acceptable lives HERE and nowhere else (it is the service's opinion, not a fact
+    // about the license). What a caller does with the answer is not decided here: Docs/PUBLISHING.md.
 
     /// <summary> One service's conditions for accepting a level. </summary>
     [RuleContainer]
@@ -89,12 +77,8 @@ namespace BH.SDK.Publishing
         [JsonProperty(Names.RequireHashes)]
         public bool RequireHashes { get; set; }
 
-        // Three separate ceilings rather than one, because they fail differently. A single huge file
-        // is usually one unconverted asset and the author can fix it by re-encoding; an oversized
-        // level.json is a structural problem (hundreds of thousands of keyframes) that no re-encode
-        // helps; and a total that fits neither pattern is simply a level nobody can download on a
-        // phone. Sizes are BYTES - see ByteSizeUtils for why there is no size type - and zero means
-        // no limit, so a profile that cares about none of this stays all-zero.
+        // Three ceilings because they fail differently (one asset, level.json, the total); bytes,
+        // zero means no limit. Docs/PUBLISHING.md.
 
         /// <summary> Largest single resource file the service accepts. Zero means no limit. </summary>
         [JsonProperty(Names.MaxResourceBytes)]
@@ -157,10 +141,8 @@ namespace BH.SDK.Publishing
         /// sizes handed to it to be complete. </summary>
         public bool HasSizeLimits => MaxResourceBytes > 0 || MaxDataFileBytes > 0 || MaxTotalBytes > 0;
 
-        // Whether the roster KNOWS a site and how it grades it are two answers, and a caller that
-        // only ever asks for the grade cannot tell "we vetted this and it needs reading" from "we
-        // have never heard of it" - the profile maps both onto the same value on purpose. Reporting
-        // is where they diverge: the first names the entry, the second says there is none.
+        // A rostered site and an unrostered one may carry the same grade on purpose; reporting is
+        // where they diverge (the first names the entry, the second says there is none).
 
         /// <summary> The roster entry covering a URL's site, if any. </summary>
         public bool TryGetSource(string url, out TrustedSource source)
@@ -187,10 +169,8 @@ namespace BH.SDK.Publishing
             return TryGetSource(url, out var source) ? source.Trust : UnknownSourceTrust;
         }
 
-        // The three shipped profiles are the three questions actually being asked today: may this
-        // level exist at all (yes, always), may it be handed to strangers, and may it be handed to
-        // strangers on a platform whose own store rules apply on top. An operator writes their own
-        // by editing the json, not by adding a factory here.
+        // The three shipped profiles: exists at all, may go to strangers, may go to strangers on a
+        // platform with store rules on top. An operator edits the json, not this class.
 
         /// <summary> Nothing is required. What a device applies to its own files - a level a player
         /// made for themselves is nobody else's business. </summary>
@@ -202,14 +182,8 @@ namespace BH.SDK.Publishing
             UnknownSourceTrust = SourceTrust.Approved,
         };
 
-        // GPL/AGPL/LGPL are absent on purpose, and it is not about the licenses being unsuitable for
-        // a level. A GPL work redistributed through the App Store collides with Apple's own terms -
-        // the VLC case - so allowing it here would build a catalogue that cannot be served to iOS
-        // later. MIT/Apache cover the same ground (a text, a data file) with no such collision.
-        //
-        // CC BY-SA and CC BY-ND are absent for the reason the public UGC licensing policy gives: ShareAlike
-        // would force the level's own license to change, NoDerivatives would forbid the editing the
-        // game is built around.
+        // GPL/AGPL/LGPL absent on purpose (App Store terms collide); CC BY-SA and CC BY-ND absent per
+        // the public UGC licensing policy. Reasons: Docs/PUBLISHING.md.
 
         /// <summary> What the public UGC licensing policy (https://bullethero.space/en/notes/ugc-licensing-policy) describes: a level publishable as CC BY-NC because
         /// every resource in it already permits that. The baseline for a public server. </summary>
@@ -249,19 +223,9 @@ namespace BH.SDK.Publishing
             UnknownSourceTrust = SourceTrust.RequiresLicenseCheck,
         };
 
-        // THE WORKSHOP ASKS LESS THAN A PUBLIC SERVER, on purpose and for now. Steam's own agreement puts
-        // a takedown on the uploader, the licensing policy is expected to be rewritten, and until then a
-        // Workshop upload should be refused only where it is plainly unsafe: a license that forbids
-        // passing the work on at all (proprietary, a custom text nobody graded), or a copyleft one that
-        // collides with a store. Every CC BY variant passes, 3.0 and 4.0 alike.
-        //
-        // ND IS ACCEPTED KNOWINGLY. CC 4.0 s.1(a) makes music synced to moving images Adapted Material,
-        // so an ND track in a level is a breach on every publish; the author chose low friction over
-        // catching that case here, and it is answered by a takedown instead. Revisit with the policy.
-        //
-        // WHAT A PUBLIC SERVER DEMANDS IS ASKED, NOT REFUSED: no license stated, no credits record, no
-        // source page. They are warnings (the analyzer's rule for a service that lists licenses and still
-        // tolerates an unknown one), so the author sees them and is never blocked by them.
+        // The Workshop asks LESS than a public server, on purpose: refuse only where plainly unsafe.
+        // ND is accepted KNOWINGLY (CC 4.0 s.1(a), music synced to images). A public server ASKS
+        // instead of refusing: those findings are warnings. Docs/PUBLISHING.md.
 
         /// <summary> The Steam Workshop's conditions: every CC BY variant, CC0, OFL, MIT, Apache and the
         /// Unlicense pass; missing paperwork is a warning; the public server's sizes. </summary>

@@ -1,10 +1,7 @@
 namespace BH.SDK.Generators
 {
-    /// <summary>
-    /// What a generator is allowed to touch, and therefore where a host offers it. Content and
-    /// Modifier share one entry point (IScopeGenerator) - they differ in intent and Requirements,
-    /// not in mechanism, and this enum is what lets a UI group and filter them apart anyway.
-    /// </summary>
+    /// <summary> What a generator may touch, and so where a host offers it. Content and Modifier share
+    /// one entry point (IScopeGenerator); this enum lets a UI group and filter them anyway. </summary>
     public enum GeneratorKind : byte
     {
         /// <summary> Builds a brand-new Level + LevelMeta from nothing; runs before any level is

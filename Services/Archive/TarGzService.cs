@@ -9,38 +9,17 @@ using ICSharpCode.SharpZipLib.Tar;
 
 namespace BH.SDK.Services.Archive
 {
-    // POSIX tar inside gzip, and the container the whole archive feature is built on. The reason it
-    // is this and not ZIP is one sentence long: `tar -xzf`, Windows Explorer, 7-Zip, Keka and Ark
-    // all open it, so a level a player was sent stays openable by tools they already have even if
-    // this game is gone.
-    //
-    // WHAT THE CHOICE COST is random access. A ZIP has a central directory, so metadata.json can be
-    // read out of a 50 MB archive without touching the song; tar.gz is a stream and structurally
-    // cannot. ReadLeadingAsync is the mitigation rather than a workaround - the writer puts the
-    // documents first, so a reader that only wants the level card decompresses a few kilobytes and
-    // stops. Replacing one entry in place is simply gone, and nothing here pretends otherwise.
-    //
-    // THE FOURTH UNPACK CHECK IS NEW RELATIVE TO ZIP AND IT IS THE IMPORTANT ONE. Names are
-    // validated, sizes are capped and the store cannot address anything outside its root - all
-    // three of which ZIP needed too. But tar also carries SYMBOLIC AND HARD LINKS, and a link entry
-    // pointing outward is a traversal that no name check sees, because the name is innocent. So an
-    // entry whose type is not a plain file or a directory is refused outright: changing container
-    // format added attack surface in exactly one place, and this is it.
-    //
-    // The codec itself is synchronous on purpose. The store opens streams asynchronously and the
-    // copies are async, but deflate is CPU work and gains nothing from being awaited - and this
-    // library never decides which thread that CPU work runs on. The caller does.
+    // POSIX tar in gzip: `tar -xzf`, Explorer, 7-Zip, Keka and Ark open it. No random access, hence
+    // documents first and ReadLeadingAsync. Link entries are refused (no name check sees them).
+    // The codec is synchronous: this library never picks the thread. Docs/ARCHIVE.md.
 
     /// <summary> Packing and unpacking the tar.gz a level archive is made of. </summary>
     public static class TarGzService
     {
         private const int CopyBufferSize = 81920;
 
-        // A leading "./" is what GNU tar itself writes when told to pack a directory, so an archive
-        // made outside this project routinely carries it - and ContentPath refuses a "." segment,
-        // correctly, since inside a store it means nothing. Stripping it here is the one
-        // normalization the reader does, and it is a fact about tar rather than a repair of a bad
-        // name.
+        // GNU tar writes a leading "./" and ContentPath refuses a "." segment: stripping it is the one
+        // normalization, a fact about tar rather than a repair.
         private const string CurrentDirectoryPrefix = "./";
 
         /// <summary> Writes entries into a tar.gz on the destination stream, in the order given -
@@ -206,10 +185,8 @@ namespace BH.SDK.Services.Archive
             return entry;
         }
 
-        // The check that ZIP never needed. LF_OLDNORM is the pre-ustar spelling of a plain file and
-        // is still what some writers emit, so refusing it would reject archives that are entirely
-        // ordinary; everything else - symlinks, hard links, devices, FIFOs, the GNU long-name and
-        // sparse extensions - is either an attack or a shape this format does not carry.
+        // The check ZIP never needed. LF_OLDNORM (pre-ustar plain file) stays accepted; symlinks, hard
+        // links, devices, FIFOs and the GNU extensions are an attack or a shape this format lacks.
         private static void RequireCarryableType(TarEntry entry)
         {
             var typeFlag = entry.TarHeader.TypeFlag;

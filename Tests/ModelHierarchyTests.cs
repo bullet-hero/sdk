@@ -22,18 +22,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests
 {
-    // Update/Pull are OVERLOADS down a hierarchy, not overrides, and Copy() being virtual is the
-    // contrast that makes it worth pinning: Copy() called through a base reference still returns the
-    // full subclass, while Update() called through one writes the base half and leaves the rest.
-    // That is deliberate (IModel's own header says why an override would cost three methods per
-    // subclass), so it is documented behaviour rather than a bug, and documented behaviour is what a
-    // test is for - nobody reading ShapeObject can see it from the class alone.
-    //
-    // The polymorphic value families are the other half. IVector2 is IModel<IVector2>, so every
-    // implementation carries the interface's own Update/Pull explicitly, and those do NOTHING when
-    // handed a sibling implementation - a Vector2Value cannot become a Vector2Rect. ModelUtils
-    // .PullFrom is the path that gets it right, and the no-op is what makes a wrong call harmless
-    // instead of half-applied.
+    // Update/Pull are overloads, Copy() is virtual: Update through a base reference writes the base half
+    // only. Value-family Update is a no-op on a sibling; ModelUtils.PullFrom is the path.
 
 
     /// <summary> That Update and Pull are OVERLOADS down a hierarchy while Copy is virtual, and that a
@@ -190,10 +180,7 @@ namespace BH.SDK.Tests
 
         #region Abstract bases
 
-        // Resource, BaseGraphicsSettings and BaseDeviceControlsSettings all declare an ABSTRACT
-        // Copy() while their Update/Pull are concrete, so these are the three places where the base
-        // half is only reachable through base.Update/base.Pull - a subclass that forgets the call
-        // silently stops carrying Sources / Render / the four device fields.
+        // Abstract Copy with concrete Update/Pull: a subclass forgetting base.Update loses the base half.
 
         [Test]
         [Author(Metadata.Author.Vertoker)]
@@ -430,11 +417,8 @@ namespace BH.SDK.Tests
 
         #region GameLevel.Objects - the one collection Pull merges instead of replacing
 
-        // A scope is where a reference IS the address, so this is the one dictionary Pull walks key
-        // by key. Three things have to hold at once and only the first is obvious: the surviving
-        // objects keep their instances, the SUBCLASS half travels (a merge through a RectObject
-        // reference would write the transform and leave the shape behind), and an id whose concrete
-        // type changed is replaced rather than half-written.
+        // A scope is where a reference IS the address: instances survive, the subclass half travels, a
+        // changed concrete type is replaced.
 
         private static GameLevel CreateScope(params RectObject[] objects)
         {
@@ -543,11 +527,7 @@ namespace BH.SDK.Tests
             Assert.AreEqual(source, target);
         }
 
-        // BH.SDK.Roslyn writes this switch now, one case per [GenerateModel] subtype of
-        // RectObject, so "a new subtype was added and the switch was not" has stopped being a way
-        // to lose a subtype's fields on every pull. It is still worth a test: what the dispatcher
-        // promises - the instance survives, and the SUBCLASS half travels - is not visible from
-        // the generated text.
+        // The generated dispatcher: the instance survives and the SUBCLASS half travels.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
@@ -579,10 +559,7 @@ namespace BH.SDK.Tests
 
         #region Prefab and ClipboardData - the other scopes held from outside
 
-        // Prefab is an IObjectScope exactly like GameLevel (Prefab Mode repoints the editor at one),
-        // and a ClipboardData's five sections are held one per timeline. Same merge, same reasons -
-        // and the track dictionaries take the constrained overload instead, LevelTrack being a
-        // concrete type with no hierarchy to dispatch over.
+        // Prefab and ClipboardData sections merge like GameLevel; track dictionaries use the constrained one.
 
         [Test]
         [Author(Metadata.Author.Vertoker)]

@@ -35,18 +35,8 @@ namespace BH.SDK.Models.SettingGroups.Graphics
         [JsonProperty(Names.MaxScrubTime)]
         public float MaxScrubTime { get; set; }
 
-        // The two budgets below are simulation STEPS, i.e. GPU dispatches, and they are the phone
-        // lever for effects the way FixedFramerate is for the update rate. They are separate numbers
-        // because they bound different things: the first is per effect and decides how a single
-        // replay LOOKS, the second is per frame across the whole pool and decides what the worst
-        // frame COSTS. Raising the first alone can still be absorbed by the second, which is the
-        // intended relationship - quality is requested per effect and granted by the frame.
-        //
-        // A replay rebuilds a graph from an empty state, so each of its steps is one particle spawn
-        // cohort: too few and a continuous stream comes back as that many visible packets. This is
-        // NOT the budget for catching a running graph up after a frame drop - that one stays a
-        // constant in GamePlayer, since a wrong value there can feed a longer frame back into an
-        // even longer one.
+        // The two budgets are simulation STEPS (GPU dispatches): per effect decides how a replay LOOKS,
+        // per frame decides what the worst frame COSTS. Docs/SETTING_GROUPS.md
 
         /// <summary> Simulation steps one effect may spend replaying itself - after a scrub
         /// backwards, an edit, or re-entering the frame. Higher looks closer to real playback and

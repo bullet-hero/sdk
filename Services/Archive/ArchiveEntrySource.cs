@@ -6,17 +6,9 @@ using BH.SDK.Services.Content;
 
 namespace BH.SDK.Services.Archive
 {
-    // Where one entry's bytes come from, expressed as "how to open it" rather than as the bytes
-    // themselves. An archive is three kinds of thing at once - documents the export just REWROTE and
-    // that exist only in memory, media sitting in the level's own store, and files collected from
-    // somewhere else on the machine - and the only one of the three that can be held as a byte[]
-    // without regret is the smallest.
-    //
-    // Buffering the other two would mean a copy of every song in memory purely so the cases could
-    // look alike; an opener costs one delegate and lets a 40 MB track stream from wherever it lives
-    // straight into the archive. It is also what keeps ABSOLUTE PATHS OUT OF THIS LAYER: a rooted
-    // store is a safety property the unpacker's defence rests on, so the one place allowed to reach
-    // outside one is the export that was asked to collect a file, and it passes an opener in.
+    // Where one entry's bytes come from, as "how to open it", not the bytes: an opener streams a 40 MB
+    // track straight in and keeps ABSOLUTE PATHS OUT of this layer (the export that collects passes it
+    // in). Docs/ARCHIVE.md.
 
     /// <summary> One entry to pack, and how to open its content when the pack reaches it. </summary>
     public sealed class ArchiveEntrySource

@@ -74,10 +74,7 @@ namespace BH.SDK.Tests.Rules
             AssertInvalid<RuleIFloatMinAttribute>(new Model { Value = new FloatMinMax(-1f, 10f) });
         }
 
-        // Only the Min end of a random range is checked here, so a range whose Max sits below the
-        // bound - one that can only ever roll an illegal value - slips past THIS rule. It does not
-        // slip past validation: such a range is necessarily inverted, and FloatMinMax's own
-        // RulePropertyOrder reports it. Pinned so the division of labour stays visible.
+        // Only the Min end is checked; an illegal Max is necessarily inverted (RulePropertyOrder).
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]

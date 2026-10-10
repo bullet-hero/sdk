@@ -12,19 +12,12 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models.Data
 {
-    // Stored INDEXED (vertices + indices) rather than as a flat triangle soup, because the same data
-    // feeds two consumers that want opposite layouts: a render mesh wants shared vertices, collision
-    // wants contiguous triples. Indexed is the form that converts to the other without guessing -
-    // going the other way means welding by epsilon, and two triangles meeting on an edge do not
-    // agree bit for bit once a person has dragged either of them.
-    //
-    // It is also what the shape editor edits: a corner shared by three triangles is ONE point that
-    // moves once, instead of three that drift apart the moment one is dragged.
+    // Stored INDEXED (vertices + indices): converts to a flat layout without guessing, while welding
+    // back by epsilon does not. Why: Docs/RESOURCE_DATA.md
 
     /// <summary>
-    /// A reusable shape built out of triangles, referenced by ShapeObject.ShapeId (what is drawn)
-    /// and/or ShapeObject.ColliderId (what is hit). Shared rather than embedded, so hundreds of
-    /// identical bullets cost one shape definition.
+    /// A reusable shape built out of triangles, referenced by ShapeObject.ShapeId (drawn) and/or
+    /// ColliderId (hit). Shared, so hundreds of identical bullets cost one definition.
     /// </summary>
     [RuleContainer]
     [RuleShapeGeometry]
@@ -42,32 +35,11 @@ namespace BH.SDK.Models.Data
         [JsonProperty(Names.ShapeName)]
         public string ShapeName { get; set; }
 
-        // A SHAPE CARRIES NO PIVOT OF ITS OWN, and that was decided rather than forgotten.
-        // RectObject.Pivot is the one pivot, it is per object and keyframed, and every consumer
-        // already maps through it - the renderer and the narrowphase alike
-        // (CollisionUtils.LocalToGlobalFast). Two reasons a second one cannot exist:
-        //
-        // A ShapeObject holds TWO ids into this collection - ShapeId (what is drawn) and
-        // ColliderId (what is hit) - which are independent by design. A pivot living here gives
-        // an object whose two ids differ two answers for one transform, and any tie-break puts
-        // the hitbox somewhere the art is not, which is the exact defect that mapping was
-        // written to end. And a shape is SHARED: editing its pivot would move every object
-        // referencing it, across every level already written.
-        //
-        // What an author actually wanted from it - "rotate this about where it balances" - is
-        // DERIVED instead: ShapeGeometryUtils.GetCentroidPivot reads it off the triangles, and
-        // the editor offers it as a pivot preset beside the built-in forms'. A stored field
-        // would only be a second answer that can disagree with the geometry it describes, one
-        // dragged vertex later.
+        // A shape carries NO pivot, by decision: RectObject.Pivot is the only one.
+        // Why: Docs/RESOURCE_DATA.md
 
-        // Neither list carries a collection rule beyond RuleNotNull, and that is deliberate rather
-        // than an omission: every generic collection fix is index-destructive here.
-        // RuleCollectionNoNullItems would REMOVE a null vertex and shift every index after it onto
-        // the wrong point; RuleCollectionMaxCount would truncate the vertex list out from under the
-        // triangles still referencing its tail. Both repairs look local and corrupt the shape
-        // silently. RuleShapeGeometry owns all of it instead, because only a rule that sees both
-        // lists can fix one without breaking the other - it replaces nulls in place, and reaches the
-        // vertex cap by trimming whole triangles and then dropping whatever is left unreferenced.
+        // No collection rule beyond RuleNotNull: every generic collection fix is index-destructive
+        // here, RuleShapeGeometry owns it. Why: Docs/RESOURCE_DATA.md
 
         /// <summary> Corners in the object's local rect space, each shared by every triangle that
         /// uses it. Concave shapes are expressed by using several triangles, never by winding

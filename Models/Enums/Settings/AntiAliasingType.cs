@@ -10,17 +10,13 @@ namespace BH.SDK.Models.Enums.Settings
         None = 0,
 
         /// <summary>
-        /// Multisampling. The default, and the method this game's content is shaped for: every shape
-        /// edge is real geometry, so MSAA resolves exactly what aliases, at full sharpness, on every
-        /// platform. Its cost grows with transparent overdraw (blending resolves per sample), which
-        /// is what the sample count exists to trade against.
+        /// Multisampling, the default: every shape edge is real geometry, so it resolves what aliases; cost
+        /// grows with transparent overdraw.
         /// </summary>
         Msaa = 1,
 
         /// <summary>
-        /// Fast approximate AA - one full-screen pass whose cost does NOT depend on how much the
-        /// level overdraws, which is the only reason to pick it over MSAA on a weak device. It blurs
-        /// thin outlines and crawls on movement, so it is an option rather than a default.
+        /// Fast approximate AA: one full-screen pass whose cost ignores overdraw. Blurs thin outlines.
         /// </summary>
         Fxaa = 2,
     }

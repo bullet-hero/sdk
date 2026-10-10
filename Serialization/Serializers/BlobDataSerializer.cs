@@ -5,17 +5,9 @@ using BH.SDK.Versions;
 
 namespace BH.SDK.Serialization.Serializers
 {
-    // THE THIRD IMPLEMENTATION OF A CONTRACT WRITTEN FOR EXACTLY THIS. IDataSerializer's own header
-    // says a future format would slot in without touching VersionedTypeRegistry, and this is that
-    // format - except that it reaches the registry from inside the GENERATED root read rather than
-    // from here. A JSON envelope resolves a version to a historical TYPE because Newtonsoft binds
-    // members by name; a blob's payload is read by generated code that IS the type, so the same
-    // resolve happens one level down, where the domain and the generation have just been read off
-    // the envelope. BlobEnvelopes is that half.
-    //
-    // SO THIS CLASS IS NOT WHERE VERSIONS ARE ANSWERED, and the split is worth keeping straight: it
-    // checks the FILE (magic, codec generation, declared length, payload hash, nothing left over),
-    // and every DOMAIN question - migrate, degrade, skip - belongs to the root that carries it.
+    // Not where versions are answered: this checks the FILE (magic, codec generation, length, hash,
+    // nothing left over); migrate, degrade and skip belong to the generated root read, which reaches
+    // VersionedTypeRegistry from BlobEnvelopes. Docs/SERIALIZATION.md.
 
     /// <summary> Reads and writes the binary level format. </summary>
     public sealed class BlobDataSerializer : IDataSerializer

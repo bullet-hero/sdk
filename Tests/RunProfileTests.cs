@@ -9,10 +9,7 @@ namespace BH.SDK.Tests
     [TestFixture]
     public class RunProfileTests
     {
-        // THE WHOLE REASON SPEED IS AN INT. The speed control is a continuous slider whose readout
-        // shows two decimals, so a float key would file "1.00" and "1.00" under two different
-        // records whenever the two floats differed in a bit nobody can see - and both would sit in
-        // the file forever, each claiming to be the best run under the same conditions.
+        // Speed is an int so "1.00" and "1.00" cannot become two records.
         [TestCase(1f, 100)]
         [TestCase(0.999f, 100)]
         [TestCase(1.004f, 100)]

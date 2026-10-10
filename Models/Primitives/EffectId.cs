@@ -31,13 +31,8 @@ namespace BH.SDK.Models.Primitives
             value = Guid.Empty;
         }
 
-        // Effect ids are a stable identifier for an EffectData entry (Level.Resources.Effects),
-        // same role ThemeId plays for Theme - an EffectObject references a shared, reusable
-        // EffectData preset instead of embedding its own copy, so editing one EffectData updates
-        // every EffectObject pointing at it. Unlike the previous int-based id, there is no
-        // game-defined/user-defined range split - a Guid has no meaningful "positive/negative"
-        // ordering to split on (see PrefabId/LevelId for the same reasoning). Guid.Empty is the
-        // only reserved/Null value.
+        // A stable id for an EffectData entry (Level.Resources.Effects): editing one preset updates every
+        // EffectObject using it. A Guid has no range to split, so Guid.Empty is the only reserved value.
 
         /// <summary> The reserved "unset" value. Never a real id. </summary>
         public static readonly Guid NullValue = Guid.Empty;

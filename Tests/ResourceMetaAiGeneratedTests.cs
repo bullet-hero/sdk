@@ -16,13 +16,8 @@ using ResourceMeta = BH.SDK.Models.Meta.ResourceMeta;
 
 namespace BH.SDK.Tests
 {
-    // The AI declaration is a three-state value on two models, and what the generated contract cannot
-    // state for itself is the part a client decides a screen from: that every state survives both
-    // codecs, that a record with no key reads "unknown" rather than "no", and that "contains AI" is
-    // answered by Yes alone.
-    //
-    // The two models are aliased rather than imported by namespace: NUnit's own [Author] attribute
-    // is on every method here, and a plain `using` of BH.SDK.Models.Meta makes the name ambiguous.
+    // Three-state AI declaration on two models: every state survives both codecs, a record with no key
+    // reads "unknown" not "no", and only Yes answers "contains AI". Models are aliased (NUnit's [Author]).
 
     /// <summary> LevelMeta.LevelAiGenerated and ResourceMeta.ResourceAiGenerated: unspecified by
     /// default and out of a file without the key, every value survives JSON and the blob, and

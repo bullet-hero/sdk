@@ -14,21 +14,9 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models.Clipboard
 {
-    // A clipboard is a PARTIAL LEVEL, not a container of its own kind. Every section below is a
-    // collection type the format already owns, so this whole aggregate rides on the existing
-    // converters (DictionaryObjectsConverter, DictionaryAudiosConverter, VersionedEnvelopeConverter)
-    // and introduces no new polymorphism - which is the entire reason a copied selection can be
-    // handed to SerializeData like any other root.
-    //
-    // Two consequences worth knowing before extending it:
-    // - Objects and KeyObjects are SEPARATE sections holding the same value type on purpose. The
-    //   first means "create these objects", the second means "add these keyframes to an object that
-    //   already exists" - a copied keyframe is carried by a stripped copy of its owner, since that
-    //   is the only shape the format has for "a keyframe plus which track it belongs to". One
-    //   dictionary cannot express both intents.
-    // - There is no anchor frame stored anywhere. Where a paste lands is derived from the section's
-    //   own contents at paste time; a stored anchor is one more thing that can disagree with what it
-    //   describes after a partial edit or a clear.
+    // A partial level, not a container of its own kind: every section reuses a collection type the
+    // format owns, so no new converter. Objects vs KeyObjects and the missing anchor frame: see
+    // Clipboard/CLAUDE.md.
 
     /// <summary>
     /// One copied selection, split into one section per editor timeline. A consumer keeps a single

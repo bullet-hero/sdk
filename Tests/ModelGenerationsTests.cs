@@ -7,15 +7,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests
 {
-    // WHAT A GENERATION IS CANNOT BE CHECKED BY READING ONE FILE, which is why this fixture exists
-    // at all: a generation is a number written in twenty-five places, and the invariants that make
-    // it mean anything are all relations between them. Current has to be the newest one actually
-    // carried; a domain has to be spelled once; two types may not claim the same (domain,
-    // generation), or resolving one back to a type is a coin toss.
-    //
-    // LIVE VERSUS FROZEN IS DECIDED BY NAMESPACE, not by the number. Reading it off the number
-    // would assume the answer - that Test is 0 and Release is 1 - which is exactly what these
-    // assertions are for.
+    // A generation is a number in twenty-five places; the invariants are relations between them. LIVE
+    // versus FROZEN is decided by namespace, not by the number.
 
     /// <summary> That the generation constants and the twenty-five attributes carrying them still agree. </summary>
     [TestFixture]
@@ -121,10 +114,7 @@ namespace BH.SDK.Tests
         [Category(Metadata.Category.VeryEasy)]
         public void NothingIsRegisteredAtTheFabricatedGeneration()
         {
-            // THE GUARD UNDER EVERY FORWARD FIXTURE. They claim a generation no build has ever
-            // written, and they are only testing the forward direction for as long as that stays
-            // true - the day a domain reaches the fabricated number, every one of them quietly
-            // becomes a backward test that still passes and no longer covers what it was written for.
+            // The guard under every forward fixture: the day a domain reaches the number they go backward.
             Assert.Greater(MockData.FabricatedGeneration, ModelGenerations.Current);
 
             foreach (var domain in Declared())

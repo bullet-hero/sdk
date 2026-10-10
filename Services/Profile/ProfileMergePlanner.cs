@@ -38,16 +38,8 @@ namespace BH.SDK.Services.Profile
         public List<ProfileLevelEntry> KeptLocal { get; } = new List<ProfileLevelEntry>();
     }
 
-    // A LEVEL IS MATCHED BY ITS LevelId, NEVER BY ITS FOLDER. A folder is a name a player can change and
-    // two players can share; the id is what LevelMeta declares scores and progress attach to. So the
-    // same level under two folder names is one level, and two different levels under one folder name
-    // are two - the second is placed under its own id instead of overwriting the first.
-    //
-    // THE WINNER IS WHOLE. A level's documents and media refer to each other, so mixing a newer
-    // level.json with an older media folder would produce a level neither side ever had. A tie keeps
-    // the local copy: the merge only replaces what it can show is newer.
-    //
-    // Folder names compare case-insensitively, because the file systems a profile lands on mostly do.
+    // A level is matched by LevelId, never by folder. The winner is WHOLE (documents and media refer to
+    // each other); a tie keeps local. Folder names compare case-insensitively. Docs/ARCHIVE.md.
 
     /// <summary> Decides, purely, what merging an archive's levels into the local ones does. </summary>
     public static class ProfileMergePlanner

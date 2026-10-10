@@ -8,17 +8,8 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models.Statistics
 {
-    // THE ONLY GROUP THAT REMEMBERS AN ORDER. Everything else here is a sum, and a sum cannot say
-    // whether the last five runs were finished or abandoned - which is the thing a player actually
-    // feels. The streak is the cheapest possible record of that: one number that goes up on a clear
-    // and back to zero on anything else.
-    //
-    // MostPlayedLevelId is kept beside its own count, so it can be maintained by comparison at the
-    // moment a level records an attempt. The alternative - deriving it - means opening every file in
-    // stats/ to answer one line on one screen.
-    //
-    // A LevelId here may name a level that no longer exists. That is deliberate and needs no repair:
-    // the per-level file outlives the level, carries the name it had, and the screen shows that.
+    // The only group that remembers an ORDER. MostPlayedLevelId may name a deleted level, deliberately.
+    // Docs/STATISTICS.md
 
     /// <summary> The parts of a history that a running total cannot express. </summary>
     [RuleContainer]

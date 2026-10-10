@@ -9,10 +9,7 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests
 {
-    // LevelTrack carries TWO things called volume and they are not rivals: Volume is the fader the
-    // whole track sits behind, Effects.Volumes is the keyframed curve that fades it inside that.
-    // They multiply at playback (BuildAudioJob), so the fader is the one an author reaches for to
-    // say "this track, quieter" without rewriting every key on it.
+    // Volume (the fader) and Effects.Volumes (the keyframed curve) are not rivals; they multiply.
 
     /// <summary> LevelTrack's own fields: the general Volume, and the boilerplate that has to carry it. </summary>
     public class LevelTrackTests
@@ -81,10 +78,7 @@ namespace BH.SDK.Tests
             Assert.IsTrue(track.Equals(restoredTrack));
         }
 
-        // What a level authored before this field existed looks like on the way in: the key is simply
-        // absent, and the constructor's default is what fills it. This is the whole reason the field
-        // needed no migration - and the one thing that would silently quieten every existing level
-        // if the default ever moved off 1.
+        // A level written before the fader reads back at full volume; the default must stay 1.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]

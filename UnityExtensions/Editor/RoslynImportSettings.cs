@@ -4,25 +4,9 @@ using UnityEditor;
 
 namespace BH.SDK.Editor
 {
-    // THE IMPORT SETTINGS ARE THE MECHANISM, not decoration. Both things they govern are written
-    // from outside the Editor - Refs/ is copied in and is gitignored (so its .meta files are
-    // recreated from defaults on every machine), and the analyzer is overwritten by every build. A
-    // default .meta means "Any Platform, auto-referenced", which for Refs/ pushes Roslyn into every
-    // assembly and into player builds, and for the analyzer means Unity links against it as an
-    // ordinary managed plugin instead of handing it to the compiler.
-    //
-    // TWO TARGETS, TWO OPPOSITE ANSWERS:
-    //   Roslyn/Refs/*.dll  - Editor only, explicitly referenced, i.e. visible to nothing but the
-    //                        one asmdef naming it in precompiledReferences.
-    //   BH.SDK.Roslyn.dll  - no platform at all, plus the RoslynAnalyzer label.
-    //
-    // IT IS CALLED EXPLICITLY by whichever tool just wrote the file, and only mirrored by the
-    // postprocessor. That order is the lesson of three failed attempts: OnPreprocessAsset is never
-    // called for a .dll (PluginImporter is a specialised importer with no matching hook), and an
-    // OnPostprocessAllAssets pass fires on an import Unity may skip when only content changed.
-    //
-    // EVERY SETTING IS COMPARED BEFORE IT IS WRITTEN, which is what makes SaveAndReimport safe here:
-    // a file that already agrees is left alone, so the reimport it triggers writes nothing and stops.
+    // The import settings are the mechanism: a default .meta pushes Roslyn into every assembly. Called
+    // explicitly by the tool that wrote the file, never from a hook; every setting is compared before it is
+    // written (Docs/ROSLYN_GENERATORS.md).
 
     /// <summary> Applies the import settings the SDK's Roslyn assets require. </summary>
     internal static class RoslynImportSettings

@@ -7,17 +7,7 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models.Statistics
 {
-    // WHERE THE TIME ACTUALLY WENT. Four numbers rather than one, because "I have 40 hours in this
-    // game" answers a different question from "I have 30 of them in the editor" - and for a game
-    // that is also an authoring tool, the second is the more interesting one.
-    //
-    // Loading is separated for a reason that is not vanity: it is the only one of the four the game
-    // can hope to shrink, so it is the one worth being able to measure across a release.
-    //
-    // These do NOT sum to ProfileStatistics.TotalAppSeconds and are not meant to: a screen being
-    // torn down belongs to nobody, and time spent in a menu over a paused level is charged once. The
-    // total is measured on its own rather than derived, so neither number can drift into being the
-    // other minus a rounding error.
+    // Four numbers; they do NOT sum to TotalAppSeconds, which is measured on its own. Docs/STATISTICS.md
 
     /// <summary> Real seconds spent on each kind of screen. </summary>
     [RuleContainer]

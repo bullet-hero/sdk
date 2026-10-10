@@ -62,22 +62,9 @@ namespace BH.SDK.Serialization
             (Generation == Versions.ModelGenerations.Invalid ? "" : $" (generation {Generation})");
     }
 
-    // THE COLLECTOR IS AMBIENT BECAUSE THE CODECS HOLD NOTHING. A generated codec carries a bare
-    // reader and no context at all, which is what IJsonModel's own header defends and what makes it
-    // fast; threading a report parameter through every one of the seven generated bodies would take
-    // that apart for a field that is null in every ordinary read.
-    //
-    // AsyncLocal RATHER THAN [ThreadStatic], and the difference is not academic here: the consumer
-    // deserializes on the thread pool (UniTask.RunOnThreadPool, because a whole-level read is a
-    // second of frozen frame otherwise), so a thread-static collector opened by the caller would be
-    // installed on the thread that does none of the reading and would come back empty every time.
-    // AsyncLocal flows into that hop and nowhere else, which is also what the SDK needs as a server
-    // DLL: per logical call, so two concurrent reads never interleave one file's findings into the
-    // other's.
-    //
-    // AN ENTRY DELIBERATELY CARRIES NO TREE PATH. A breadcrumb would have to be pushed and popped on
-    // the ordinary path, which is the one path that must not pay for this; the domain and the
-    // member name are what the degradation site knows for free.
+    // The collector is ambient because the generated codecs hold a bare reader and nothing else.
+    // AsyncLocal, not [ThreadStatic]: the consumer reads on the thread pool, and a server needs it per
+    // logical call. An entry carries NO tree path - a breadcrumb would tax the ordinary path.
 
     /// <summary> Collects what a degraded read substituted, for whoever asked to be told. </summary>
     public sealed class SerializationReport

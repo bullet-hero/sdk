@@ -6,11 +6,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests
 {
-    // The two step budgets are the effect pool's phone lever, so what these pin is that they behave
-    // like every other settings field: they survive a round trip, they take part in equality (a
-    // settings screen decides whether to re-apply by comparing), and an older settings.json without
-    // them falls back to the shipped defaults rather than to zero - a zero budget would stall every
-    // effect replay instead of merely making it coarse.
+    // The two step budgets round trip, take part in equality, and default to the shipped values, not zero
+    // (a zero budget would stall every effect replay).
 
 
     /// <summary> The two effect step budgets: round trip, equality, and an older settings file falling back to

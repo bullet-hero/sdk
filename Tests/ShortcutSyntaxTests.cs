@@ -5,11 +5,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests
 {
-    // The grammar is the contract between three parties that never see each other: a person editing
-    // settings.json, the rule that validates what they wrote, and the engine-side resolver that turns
-    // it into a key. Everything worth pinning here is a case where two of them could disagree -
-    // capitalization, modifier order, a stray separator - because each of those makes a binding that
-    // resolves correctly and still fails to compare equal to itself.
+    // The grammar is the contract between a person, the rule and the resolver: capitalization, modifier
+    // order and a stray separator make a binding that resolves yet never compares equal.
 
     /// <summary> ShortcutSyntax: what a binding string may say and what it canonicalizes to. </summary>
     public class ShortcutSyntaxTests

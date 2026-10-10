@@ -6,31 +6,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests
 {
-    // THIS IS THE ONLY THING THAT ACTUALLY PREVENTS THE DEADLOCK, and it works by reading the test
-    // sources rather than by running anything - because the failure it guards against cannot be
-    // caught at runtime by any means available inside the process.
-    //
-    // The failure: EditMode tests run on the main thread, which is also the only thread Unity's
-    // SynchronizationContext posts continuations to. A test that BLOCKS that thread waiting on a
-    // task - Assert.ThrowsAsync, .Result, .Wait(), .GetAwaiter().GetResult() - is waiting for a
-    // continuation that can only run on the thread it is occupying. The Editor stops responding at
-    // ZERO CPU and never recovers; it has to be killed from Task Manager, and every unsaved change
-    // in it is lost. It has happened twice.
-    //
-    // WHY A TIMEOUT CANNOT SAVE IT, and why nobody should add one expecting it to: a timeout is
-    // itself a continuation. On a blocked main thread it is queued behind the deadlock like
-    // everything else and never fires. `AsyncAssert.WithTimeout` exists for the OTHER hang - an
-    // await on something that never completes, where the thread is still free - and its own header
-    // says so. Two different failures, two different mechanisms.
-    //
-    // So the check is static, and it is deliberately a TEST rather than a Roslyn analyzer: an
-    // analyzer would have to ship in the `BH.SDK.Roslyn` assembly, which is `#if
-    // BHSDK_ROSLYN`-gated and compiles to nothing inside this project - i.e. exactly here, it would
-    // never run. A test runs in every suite, including the one a person runs before committing.
-    //
-    // Scope: `Tests/` folders only. Production code is free to block - `FileLoaderService` does it
-    // inside a thread-pool delegate on purpose, which is safe precisely because it is not the main
-    // thread.
+    // THE ONLY THING THAT PREVENTS THE MAIN-THREAD DEADLOCK: it reads test sources for blocking waits (a
+    // test, not an analyzer, so it runs in every suite). Scope: Tests/ folders. BH.SDK/Docs/TESTING.md.
 
     /// <summary> Reads the test sources and refuses any blocking wait on a task. The deadlock it guards
     /// against cannot be caught at runtime - it freezes the Editor at zero CPU. </summary>
@@ -57,12 +34,8 @@ namespace BH.SDK.Tests
         // The file that documents the trap is allowed to name it; so is this one.
         private static readonly string[] Exempt = { "AsyncAssert.cs", "AsyncDisciplineTests.cs" };
 
-        // THE ROOTS ABOVE ARE RELATIVE TO THE PROJECT, AND THIS FIXTURE DOES NOT ALWAYS RUN THERE.
-        // Unity's working directory is the project folder, so they resolved; `dotnet test` runs
-        // from Tests/bin~/Debug, where not one of them exists - and a root that does not exist is
-        // SKIPPED, so the whole check passed by examining nothing at all. It reported green over an
-        // Assert.ThrowsAsync that then froze the Editor, which is the exact failure it exists to
-        // prevent and the reason the count is asserted below rather than assumed.
+        // Project-relative roots do not exist under `dotnet test`; a missing root is skipped, so the count
+        // of scanned files is asserted rather than assumed.
         private static readonly string Repository = FindRepository();
 
         private static string FindRepository()
@@ -197,10 +170,7 @@ namespace BH.SDK.Tests
                     if (shown.Contains("/Plugins/vertoker.")) continue;
                     if (shown.Contains("/Plugins/Unity")) continue;
 
-                    // A folder called Tests that holds no C# is not a test folder. Under
-                    // Assets/Code/Architecture two of them hold only the AssemblyBuilder's
-                    // descriptor .assets, one per test assembly - named after what they describe,
-                    // which is why they look like the real thing from the outside.
+                    // A folder called Tests with no C# is not a test folder (AssemblyBuilder descriptors).
                     if (Directory.GetFiles(folder, "*.cs", SearchOption.AllDirectories).Length == 0) continue;
 
                     if (Array.IndexOf(TestRoots, shown) < 0) missing.Add(shown);

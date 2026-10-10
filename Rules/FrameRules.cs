@@ -8,28 +8,15 @@ namespace BH.SDK.Rules
     /// the conversions between frames, time and playback speed. </summary>
     public static class FrameRules
     {
-        // THE TIMELINE COUNTS FROM ONE, and it is a format decision rather than a display one: the
-        // number an author reads off the playhead, the number the model holds and the number in the
-        // file are all the same number. Frame f covers [(f-1)/fps, f/fps), so frame 1 begins at t=0
-        // and audio needs no compensation.
-        //
-        // Everything RELATIVE is unaffected by where the counting starts - a duration, a difference,
-        // an overlap test, a sort. Only three kinds of number exist here and only one of them moves:
-        // a FRAME is a position and starts at one, a COUNT is how many frames something lasts, a
-        // DELTA is a difference between two frames. Mixing them is the whole failure mode of this
-        // file, which is why FrameUtils carries ToFrame/ToTime for the first kind and
-        // ToFrameCount/ToSecondsCount for the second rather than one pair for both.
+        // THE TIMELINE COUNTS FROM ONE, a format decision: frame f covers [(f-1)/fps, f/fps). FRAME, COUNT
+        // and DELTA are three kinds of number and only the first shifts (FrameUtils has a pair for each).
+        // Full convention: "Frames, spans and the timeline" in the root CLAUDE.md.
 
         /// <summary> Lowest frame allowed, read by AudioFileLevelGenerator, AudioTextureGeneratorsTests, BaseLevelGenerator and 40 more. </summary>
         public const int MinFrame = 1;
 
-        // Freed by the origin move and worth spending on the one thing every frame-valued field
-        // needed and had to spell as -1: "there is no frame here". Zero is below MinFrame, so it can
-        // never collide with a real one, and it is what a default-initialised int already holds.
-        //
-        // It is NOT an index sentinel. List.IndexOf, enumerator cursors and the blob's null-length
-        // prefix keep their own -1, which means something else entirely and often sits in a method
-        // right next to one of these.
+        // "There is no frame here": zero, below MinFrame, so it never collides with a real one. NOT an
+        // index sentinel - List.IndexOf, enumerator cursors and the blob's null-length prefix keep -1.
 
         /// <summary> The answer when there is no frame at all - a lookup that found nothing, a field
         /// not yet set, a level holding no content. Never a frame the timeline can reach. </summary>
@@ -41,11 +28,8 @@ namespace BH.SDK.Rules
         /// <summary> Lowest time allowed. </summary>
         public const float MinTime = 0f;
 
-        // Upper bound of a timeline, and therefore of every Frame in the format. Chosen from what a
-        // level can plausibly be rather than from int.MaxValue: at the default 60fps this is ~4.6
-        // hours, at the 1000fps ceiling ~17 minutes. Without it a hostile or corrupt file can claim
-        // a two-billion-frame timeline, which every editor timeline widget and every "allocate per
-        // frame" consumer has to survive.
+        // Upper bound of a timeline and of every Frame, chosen from what a level can plausibly be (about
+        // 4.6 hours at 60 fps), so a hostile file cannot claim a two-billion-frame timeline.
 
         /// <summary> Upper bound of LevelSettings.FrameDuration. </summary>
         public const int MaxFrameDuration = 1_000_000;
@@ -53,12 +37,8 @@ namespace BH.SDK.Rules
         /// <summary> Highest frame allowed, read by FrameOriginTests, FrameSpan, FrameSpanTests and 2 more. </summary>
         public const int MaxFrame = MaxFrameDuration;
 
-        // A PLACEMENT'S IN-POINT IS BOUNDED BY ITS OWN START, and this pair is only the outer cap a
-        // hostile file is held to. The real bound is per-placement and cannot be a property rule:
-        // PlacementOffset may not exceed Span.StartFrame - MinFrame, or a materialized copy's span
-        // start falls below the first frame, where FrameSpan's constructor clamps SILENTLY and the
-        // phase is lost. Every gesture that writes the offset clamps against that; a rule here can
-        // only see one number and never the span beside it.
+        // Only the outer cap a hostile file is held to. The real bound is per placement and cannot be a
+        // property rule: PlacementOffset <= Span.StartFrame - MinFrame, or FrameSpan clamps silently.
 
         /// <summary> Lower bound of PrefabObject.PlacementOffset - negative, since content starting
         /// LATER than its placement is an ordinary empty head. </summary>
@@ -73,11 +53,8 @@ namespace BH.SDK.Rules
         /// <summary> Upper bound of LevelSettings.Fps. </summary>
         public const int MaxFramerate = 1000;
 
-        // Absorbs float32 round-trip error from ToTime (frame -> time -> frame must always
-        // recover the exact original frame). Without it, a time produced by ToTime(frame, ...)
-        // can land a hair below the intended integer (e.g. 18.999998f instead of 19f) and Floor
-        // below would drop it a whole frame early. Tiny relative to a frame (1/framerate), so it
-        // doesn't affect genuine continuous playback time.
+        // Absorbs float32 round-trip error of ToTime (18.999998f must not floor to 18). Tiny against a
+        // frame, so genuine continuous playback time is unaffected.
 
         /// <summary> The delta framerate. </summary>
         public const float DeltaFramerate = 1f / MaxFramerate;
@@ -133,10 +110,8 @@ namespace BH.SDK.Rules
                 throw new Exception($"Frame must be at least {MinFrame}");
         }
 
-        // THE FOUR DERIVATIONS EXIST SO NOBODY WRITES THE ORIGIN INLINE AGAIN. Before the timeline
-        // counted from one, "the last frame of a timeline N frames long" was spelled `N - 1` in
-        // roughly twenty places, each of which had to be found and inverted by hand. Named, the
-        // relationship is greppable and the next change to it is one line rather than twenty.
+        // The derivations exist so nobody spells the origin inline again ("last frame of N" was N - 1 in
+        // about twenty places).
 
         /// <summary> The last frame a timeline of <paramref name="frameCount"/> frames covers. </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -152,13 +127,8 @@ namespace BH.SDK.Rules
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int EndBoundaryOf(int frameCount) => MinFrame + frameCount;
 
-        // PROGRESS IS MEASURED BETWEEN THE FIRST FRAME AND THE LAST, not against the level's LENGTH,
-        // and that is the whole of why it is a derivation rather than a division written inline. A
-        // playhead never reaches the end BOUNDARY - time becomes a frame number and is clamped to
-        // LastFrameOf - so `elapsed / frameCount` tops out at (N-1)/N and a player who survived the
-        // whole level was told they had done 99.9% of it. Dividing by the span between the two
-        // reachable ends instead makes the first frame 0 and the last exactly 1, at the price of one
-        // frame's worth of optimism everywhere in between, which no readout can resolve.
+        // Progress is measured between the first and the LAST reachable frame, not against the length: the
+        // playhead never reaches the end boundary, so elapsed / frameCount topped out at (N-1)/N.
 
         /// <summary> How far through a timeline of <paramref name="frameCount"/> frames a frame is, 0 to 1 -
         /// <see cref="MinFrame"/> and below report 0, <see cref="LastFrameOf"/> and beyond report 1. </summary>

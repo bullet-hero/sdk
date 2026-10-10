@@ -5,9 +5,8 @@ using BH.SDK.Models.Interfaces.Primitives;
 namespace BH.SDK.Models.Primitives
 {
     /// <summary>
-    /// Identity of a scene object inside one object scope (GameLevel.Objects or a Prefab's own
-    /// Objects). A bare int wrapper whose sign carves the space into user objects, reserved game
-    /// objects and runtime-only ids - see the range table below.
+    /// Identity of a scene object inside one object scope (GameLevel.Objects or a Prefab's Objects). A
+    /// bare int whose sign carves the space into user, reserved game and runtime-only ids.
     /// </summary>
     [Serializable]
     public struct ObjectId : IEquatable<ObjectId>, IPrimitiveInt
@@ -32,10 +31,8 @@ namespace BH.SDK.Models.Primitives
         // Unique only inside each object scope. Can be referred (as pid) only in scope.
         // When PrefabObjects converts to regular Objects, they change all ids for each hierarchy level
         
-        // What certain objectId's meaning
-        // (1 - int.MaxValue) => user-space objects, valid for both ObjectId and ParentObjectId
-        // 0 => undefined (for ObjectId) or null (for ParentObjectId), exists as a fallback value
-        // All negative numbers (int.MinValue - -1) reserved for game-space objects
+        // 1..int.MaxValue user objects (ObjectId and ParentObjectId); 0 undefined (ObjectId) / null
+        // (ParentObjectId); every negative is a game-space object. Table: Docs/IDENTIFIERS.md
         
         // There are 3 types of objectIds: user objects, public game object and private game objects
         // user objects - objects created by users in levels, exists in this
@@ -118,20 +115,9 @@ namespace BH.SDK.Models.Primitives
         /// <summary> The local player's avatar, usable as an ordinary parent. </summary>
         public static readonly ObjectId LocalPlayer = new(-2);
 
-        // -3 => the template's own root. IT IS AN ADDRESS AND NOT A SENTINEL: Prefab.Root is a real
-        // RectObject whose own ObjectId is this value, and a placement of that template is what it
-        // materializes AS - so PrefabMaterializer.RemapParents resolving it to placement.ObjectId is
-        // translating an address, not standing in for something absent. It is therefore the one
-        // reserved id that appears as an IDENTITY as well as a parent (RuleObjectIdValid allows it
-        // inside a template and nowhere else), and the one a Modification may be keyed to.
-        //
-        // An unset/Null ParentObjectId inside a template still resolves to the same place, since
-        // "no parent in this template" and "attached to its root" describe one arrangement. The
-        // difference is which of the two an author SAID.
-        //
-        // Meaningless at level scope - GameLevel has no root to attach to or to be - and
-        // RuleParentObjectIdValid rejects it there, just as it rejects Camera/LocalPlayer inside a
-        // template, those being level-runtime objects an inner object cannot reach.
+        // -3 => the template's own root: an ADDRESS, not a sentinel (Prefab.Root carries it as its own id),
+        // and the one reserved id that is also an identity. Rejected at level scope, and Camera/LocalPlayer
+        // inside a template. Models/Objects/CLAUDE.md
 
         /// <summary> The template's own root, as both a parent target and that object's own
         /// identity - meaningful only inside a prefab template. </summary>

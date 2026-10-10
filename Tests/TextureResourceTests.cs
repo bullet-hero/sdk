@@ -8,17 +8,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests
 {
-    // TextureResource is the only resource carrying authored fields beyond its id, UV and sources,
-    // and there are six of them now - Kind, Alpha, Sampling, Compression, WrapU and WrapV. Every one
-    // is carried through the constructors, Reset, Copy, Update, Pull, Equals and GetHashCode, which is
-    // exactly the shape the SDK's own conventions call the easiest place to introduce a silent bug: a
-    // field forgotten in Copy or Equals compiles, and the level simply loses it on the next round
-    // trip. That is generated code today rather than hand-written, and the point of asserting it per
-    // field is that a member the generator cannot see fails HERE rather than in somebody's level.
-    //
-    // The additive-default property is pinned too: every one of the six defaults to its zero value,
-    // which is why LevelResources needed no migration and stays at generation 1 - a level written
-    // before them reads back as Auto/Auto/Auto/Auto/Clamp/Clamp, which IS the behaviour it had.
+    // All six authored fields travel through every contract method (generated now; a member the generator
+    // cannot see fails HERE). Each defaults to its zero value, so no migration was needed.
 
     /// <summary> The six authored fields on TextureResource, each carried through seven bodies - and
     /// that all six default to their zero value is why the resources domain needed no migration.

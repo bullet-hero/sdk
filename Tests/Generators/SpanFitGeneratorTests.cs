@@ -9,12 +9,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests.Generators
 {
-    // The generator that took over what GraphRule.ChildSpanOutsideParent used to repair, so the
-    // properties worth pinning are the ones that repair never had to answer: that a fit holds all the
-    // way DOWN a chain and not one level deep, that a child which plays nowhere is dealt with
-    // deliberately rather than turned into a one-frame ghost by accident, that a root object stays
-    // untouched because nothing bounds it, and that a prefab placement's materialized children are
-    // never orphaned from the remap table pointing at them.
+    // Took over GraphRule.ChildSpanOutsideParent's repair: fits all the way DOWN a chain, deals with a
+    // child that plays nowhere deliberately, leaves roots alone, never orphans a placement's copies.
 
     /// <summary> What the removed repair rule never had to answer: that a fit holds all the way down a chain,
     /// that a child playing nowhere is dealt with deliberately, and that a placement's children stay in the

@@ -5,12 +5,9 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Serialization.Converters.Base
 {
-    // For a plain Dictionary<TKey, TValue> where TKey can NOT be derived from TValue (unlike
-    // DictionaryAsListConverter, which assumes the value embeds its own key, e.g. RectObject.ObjectId) -
-    // serializes as an array of {k, v} pair objects instead of relying on Newtonsoft's default
-    // string-key dictionary serialization, which throws for value-type keys like ObjectId that have
-    // no working TypeConverter. Closed-generic instances are registered directly in
-    // SerializationService.GetConverters() - no per-usage subclass needed.
+    // For a Dictionary<TKey, TValue> whose key cannot be derived from the value (unlike
+    // DictionaryAsListConverter): an array of {k, v} pairs, since Newtonsoft's string-key form throws for
+    // value-type keys with no TypeConverter. Registered closed in SerializationService.GetConverters().
 
     /// <summary> Writes a dictionary as an array of key/value pairs, for the case where the key cannot be
     /// recovered from the value. </summary>

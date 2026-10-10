@@ -5,11 +5,8 @@ using NUnit.Framework;
 namespace BH.SDK.Tests
 {
     /// <summary>
-    /// ObjectTypeMask - one bit per <see cref="ObjectType"/>, a bit PRESENT meaning that kind is
-    /// shown unfolded. The property worth pinning is the pairing itself: ToMask is a shift by the
-    /// member's own ordinal, so a kind added to ObjectType and forgotten here silently lands on
-    /// whatever bit sits at that ordinal, and a surface then folds the wrong rows with nothing
-    /// failing to compile.
+    /// ObjectTypeMask - one bit per <see cref="ObjectType"/>. ToMask shifts by the ordinal, so a kind
+    /// added and forgotten here lands on whatever bit sits there.
     /// </summary>
     public class ObjectTypeMaskTests
     {

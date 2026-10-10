@@ -5,15 +5,8 @@ using BH.SDK.Utils;
 
 namespace BH.SDK.Rules.Attributes
 {
-    // The counterpart of RuleCollectionMaxCount, for collections that are meaningless below a
-    // certain size: a curve needs two keys to define a segment, a gradient two stops to define a
-    // blend, a composite collider one triangle to be a shape at all. Below that every consumer has
-    // to invent its own fallback, and they will not agree.
-    //
-    // Unlike RuleCollectionCount, its Fix never pads with null: an entry that exists but is null is
-    // worse than a missing one, since the analyzer walks straight past null elements and everything
-    // downstream has to null-check what the rule supposedly guaranteed. If the element type cannot
-    // be constructed, the fix declines and the issue stays reported.
+    // For collections meaningless below a size. Its Fix never pads with null (the analyzer walks past
+    // null elements); if the element type cannot be constructed, the fix declines.
 
     /// <summary> A collection must hold at least MinCount elements. </summary>
     [AttributeUsage(PropertyTarget)]

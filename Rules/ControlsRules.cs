@@ -1,14 +1,8 @@
 namespace BH.SDK.Rules
 {
-    // Limits for the control settings tree, in the "Min/Max/Default" shape the rest of this folder
-    // uses for generic value limits. Nothing here clamps at runtime - same as every other UserSettings
-    // group, these bound what the UI offers and what validation reports, and a hand-edited file with a
-    // wilder number simply plays wilder.
-    //
-    // Two families of number live here and must not be mixed up. Angles and travel distances are
-    // TILT/SCREEN quantities in their own units (degrees, pixels), while sizes, offsets and pad areas
-    // are NORMALIZED - a fraction of screen height, or of the camera rect - because a thumb control has
-    // to land in the same place on a 4:3 tablet and a 21:9 phone.
+    // Limits for the control settings tree. Nothing clamps at runtime; they bound the UI and the report.
+    // Angles and travel are tilt/screen units (degrees, pixels); sizes, offsets and pad areas are
+    // NORMALIZED (fraction of screen height or camera rect) so a thumb control lands alike on 4:3 and 21:9.
 
     /// <summary>
     /// Numeric bounds and defaults for <see cref="BH.SDK.Models.SettingGroups.Controls"/>.

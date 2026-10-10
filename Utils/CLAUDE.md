@@ -17,8 +17,8 @@ layer-wide conventions. This file is folder-local.
   `ModificationUtils`/`TypeExtensions`,
   **`PrefabVirtualizationUtils`** (+`PrefabExpandReport`) - the pair that keeps a prefab placement's
   materialized copies OUT of the file: `Thin` drops them before a write, `Expand` rebuilds them from
-  `pfid` + `ids` + `mod` after a read, and the level every other system sees is flat either way. Its
-  header carries why; `Docs/Issues/PREFAB_VIRTUALIZATION_HISTORY.md` is the record. Two things about it
+  `pfid` + `ids` + `mod` after a read, and the level every other system sees is flat either way.
+  `Docs/PREFAB_PLACEMENT.md` carries why; `Docs/Issues/PREFAB_VIRTUALIZATION_HISTORY.md` is the record. Two things about it
   are load-bearing rather than incidental: **it never mints an outer id** (ids are born at edit time,
   in the consumer's `PrefabMaterializer`, and a missing one is reported), and **`Expand` writes by
   INDEXER**, which is what lets a level saved before virtualization - copies AND table both present -
@@ -48,7 +48,7 @@ layer-wide conventions. This file is folder-local.
   loops that ENUMERATE a scope - those ask what a template HOLDS, and the root is not content but
   what content hangs off.
   `ShapeLoopUtils` (radial loops - the two emitters every
-  built-in shape is built out of, a fan and a resampled annulus, plus sector clipping; its header
+  built-in shape is built out of, a fan and a resampled annulus, plus sector clipping; `Docs/SHAPES.md`
   explains why angles are always measured RELATIVE to a reference and why the annulus resamples both
   rims instead of walking them in lockstep, both of which were real bugs), `ShapeSynthUtils`
   (procedural geometry for shapes the built-in library cannot name, built as level-authored data;
@@ -91,3 +91,6 @@ misses it is the same bug as a remap that misses it. `ResourceRef` is a typed re
 seven kinds (`Guid` for the data kinds, `int` for the file kinds - `ResourceTypeExtensions
 .IsGuidAddressed`), `ResourceSet` a set of them. `ResourceNaming` allocates the next user id and a
 unique file name, and names an entry for a list row.
+
+- **Design records**: `Docs/RESOURCE_GRAPH.md` (references, closure, remap, naming) and
+  `Docs/UTILS_DESIGN.md` (model copy/merge, overrides, level measurement, hashing, text, Interop).

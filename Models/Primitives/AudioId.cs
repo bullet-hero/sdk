@@ -6,9 +6,8 @@ using BH.SDK.Rules;
 namespace BH.SDK.Models.Primitives
 {
     /// <summary>
-    /// Identity of one LevelTrack inside a level's AudioLevel.Tracks. Positive-only: unlike every
-    /// other int id here it has no game-defined negative half, since audio tracks only ever exist
-    /// per level.
+    /// Identity of one LevelTrack inside AudioLevel.Tracks. Positive-only: unlike every other int id
+    /// here it has no game-defined negative half, since audio tracks only ever exist per level.
     /// </summary>
     [Serializable]
     public struct AudioId : IEquatable<AudioId>, IPrimitiveInt
@@ -28,11 +27,8 @@ namespace BH.SDK.Models.Primitives
             value = NullValue;
         }
 
-        // Same idea as ObjectId, but scoped to a single level's audio tracks and much simpler:
-        // unlike ShapeId/TypedResourceId, there is no negative (game-defined) range here -
-        // negative values are banned for consistency, see LevelTrack.AudioId
-        // 0 => Null / not-set
-        // (1 - int.MaxValue) => valid, level-local audio track id
+        // Level-scoped like ObjectId, but with no game-defined negative range: negatives are banned and
+        // 0 is Null. Docs/IDENTIFIERS.md
 
         /// <summary> The reserved "unset" number. Never a real id. </summary>
         public const int NullValue = 0;

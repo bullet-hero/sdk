@@ -9,13 +9,8 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models.SettingGroups.Controls
 {
-    // The Direction-only block at the bottom is the on-screen layout, and it is stored here rather than
-    // in a UI settings group on purpose: it only exists because THIS device is in Direction mode, and a
-    // player who never touches a touchscreen never sees it.
-    //
-    // Sizes are fractions of screen height and anchors are the nine reach positions, both so a layout
-    // authored on one phone lands in the same place on another. Handedness mirrors the whole set at
-    // once - mirroring elements one by one is how a left-handed layout ends up half right-handed.
+    // The Direction-only block is the on-screen layout, stored here because it exists only in that mode.
+    // Fractions of screen height and nine anchors; Handedness mirrors the whole set at once.
 
     /// <summary>
     /// The device's own touchscreen: drag-to-move by default, with an on-screen stick in Direction

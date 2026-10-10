@@ -25,16 +25,8 @@ namespace BH.SDK.Models.Resources
         [JsonProperty(Names.TextureResourceId)]
         public TextureResourceId TextureResourceId { get; set; }
 
-        // THE PER-RESOURCE DEFAULT MAPPING, and it stacks with the per-object UVs track exactly
-        // like every other empty-track fallback in this format: an object with no UV keyframes
-        // samples THIS, and an object with any key overrides it completely (the runtime's
-        // FrameMath.GetGlobalUV returns its fallback on an empty slice, and the fallback is what
-        // RegistryManager registered from here). So it says "this sprite sheet's cell is the
-        // top-left quarter" once instead of on every object that uses the image.
-        //
-        // Bounded like UVKey's own two halves rather than by Vector4Value's generic +-1e6, which is
-        // what it inherited while nothing could author it: the quantity is the same one, and a
-        // tiling of a million across one object is legal data nobody means.
+        // The per-resource default mapping: an object with no UV keys samples THIS, any key overrides it
+        // completely (FrameMath.GetGlobalUV falls back on an empty slice). Bounded like UVKey's halves.
 
         /// <summary> Region of the source image this resource actually is, as tiling+offset. Applies
         /// to the resource itself, unlike UVKey which animates a single object's mapping. </summary>
@@ -42,29 +34,8 @@ namespace BH.SDK.Models.Resources
         [JsonProperty(Names.TextureResourceUV)]
         public Vector4Value TextureResourceUV { get; set; }
 
-        // SIX FIELDS, SIX INDEPENDENT AXES, and none of them is a format, a size or a memory budget.
-        // A level has to play the same on every device, so the author says what is true of the
-        // PICTURE and the player's own settings (UserSettings.Graphics.Textures) decide what this
-        // device does about it; Core's TextureLoadPlanner is the only place the two meet.
-        //
-        // Kind names what the picture is. Alpha answers the one question about it that a device can
-        // read the file and still not know (see TextureAlpha's own header). Sampling says whether it
-        // is drawn crisp or blurred, which costs the same on every GPU and is therefore a look rather
-        // than a budget. Compression says whether a lossy format may be used at all - the veto Kind
-        // used to carry on its own behalf. WrapU/WrapV say what lies outside its edges, per axis,
-        // which is composition and has no player half at all.
-        //
-        // WHY SIX RATHER THAN ONE RICHER Kind: they genuinely vary independently, and every pair that
-        // was ever folded together made a real case unsayable. An opaque pixel-art tile repeating
-        // horizontally and clamped vertically is five answers; a photograph an author refuses to have
-        // compressed is not a Gradient; a crisp hand-drawn sprite is not pixel art and must not
-        // silently lose its mip-maps for wanting hard edges. Kind still SEEDS Sampling and
-        // Compression, so nothing authored before them changed.
-        //
-        // Every one is additive with a zero default except WrapU/WrapV, which REPLACED a single Wrap
-        // under a new pair of keys - a level written before them reads back Clamp on both axes, which
-        // costs a re-save on any level that had authored a repeat (Rule 11: the format breaks in
-        // place before release). LevelResources stays at generation 1 either way.
+        // Six independent axes of what is true of the PICTURE, never a format or a memory budget; the
+        // player's settings decide the device half (Core's TextureLoadPlanner). Models/Resources/CLAUDE.md
 
         /// <summary> What this image is - a photo, a drawing, pixel art - so the device can treat it
         /// the way that kind of picture has to be treated. </summary>

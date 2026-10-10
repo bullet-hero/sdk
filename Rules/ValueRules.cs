@@ -42,20 +42,9 @@ namespace BH.SDK.Rules
         /// <summary> Lowest layer delta allowed. </summary>
         public const float MinLayerDelta = 0.01f;
 
-        // Depth tie-break for objects sharing a layer, used by BOTH render paths. LayerCoefficient
-        // puts whole layers exactly 1.0 apart, so two objects on one layer are coplanar - and each
-        // path then fails its own way. Opaque: early-Z only rejects what DIFFERS in depth, so every
-        // overlapping pair shades twice and ZTest LEqual hands the pixel to whichever drew last.
-        // Transparent: the depth sort ties, and the tie is broken by an index that moves between
-        // frames, so the pair visibly REORDERS. A small deterministic offset per object separates
-        // them. Inframe objects are exempt - they stack themselves by MinLayerDelta above.
-        //
-        // Step times count must stay strictly below 1.0 or an object bleeds into the next layer's
-        // band and the draw order the author sees stops matching the one they wrote. 512 leaves half
-        // a layer spare; the full 1000 the step would allow leaves none.
-        //
-        // This is a DIFFERENT concern from MinLayerDelta above, which spaces the editor's own
-        // overlay pieces so they do not z-fight each other. Do not merge the two constants.
+        // Depth tie-break for objects sharing a layer, on BOTH render paths (coplanar objects z-fight or
+        // reorder). Step x Count must stay strictly below 1.0 or an object bleeds into the next layer.
+        // Not MinLayerDelta (the editor overlays' spacing): do not merge. Details: BH.SDK/Docs/RULES.md.
 
         /// <summary> Granularity the layer Z offset step is quantized to. </summary>
         public const float LayerZOffsetStep = 0.001f;
@@ -69,16 +58,8 @@ namespace BH.SDK.Rules
         /// <summary> Upper bound of RectObject.Layer. </summary>
         public const int MaxLayer = 1000;
 
-        // THE PLAYER LINE. The avatar is not authored content and owns no whole layer: it renders
-        // inside the (0, 1) band, between two authored layers, so the DEFAULT layer an object is
-        // created on draws BEHIND it. That is the point of the band sitting where it does - the one
-        // thing that must stay readable is the avatar, and a level authored without thinking about
-        // draw order must not bury it. Putting something in front of the player is an explicit act:
-        // the author types 1.
-        //
-        // Only the consumer draws inside the band (Services.Shared's AvatarInitData, Services.Root's
-        // InframeCursorService). Anything that has to KNOW the line cites these two constants rather
-        // than 0 and 1.
+        // THE PLAYER LINE: the avatar renders inside the (0, 1) band, so a default-layer object draws BEHIND
+        // it; in front is an explicit act (type 1). Anything that must know the line cites these constants.
 
         /// <summary> Highest authored layer that draws behind the player. </summary>
         public const int LastLayerBehindPlayer = 0;
@@ -86,31 +67,9 @@ namespace BH.SDK.Rules
         /// <summary> Lowest authored layer that draws in front of the player. </summary>
         public const int FirstLayerAbovePlayer = LastLayerBehindPlayer + 1;
 
-        // HOW THE BAND IS SHARED WHEN THERE IS MORE THAN ONE AVATAR. Nothing reads these two yet -
-        // they are the multiplayer reservation, decided now because the band they divide is fixed
-        // and a cap chosen later would be chosen against whatever the first implementation happened
-        // to spend. Every avatar gets ONE SLOT of the band and lays itself out inside it, so no
-        // avatar can ever be sliced through by another's parts.
-        //
-        // THE SLOT WIDTH IS 1 / (how many avatars there are), NOT 1 / MaxAvatars. One avatar keeps
-        // the whole band, which is what the numbers in AvatarInitData are written against; a session
-        // with eight players gives each an eighth. The cap bounds how many may exist, never how
-        // finely the single-player case is sliced. Joining restacks everyone's z, which is draw
-        // order alone and happens on join.
-        //
-        // WHY 128 AND NOT 100. 1/128 is exact in binary floating point, so a slot edge never drifts,
-        // and it leaves 28 over the hundred the design asks for. The ceiling that actually bites is
-        // far higher and is the depth buffer: the game camera is orthographic over near -2000 / far
-        // 2000, i.e. 4000 world units of LINEAR depth, which at 24 bits resolves about 2.4e-4 per
-        // step. At 128 avatars a slot is 0.0078, some 32 depth steps between two of them - reliably
-        // distinct. Around a thousand the slots themselves fall to ~4 steps and avatars begin to
-        // z-fight each other, so the cap keeps an eightfold margin.
-        //
-        // INSIDE a slot the separation is finer than the depth buffer and that is deliberate: the
-        // parts of ONE avatar overlap in a fixed draw order, which is already how the shipping
-        // 0.0001 offsets in AvatarSettings hold their order. Budget about 32 planes per avatar (the
-        // avatar uses ~14 distinct values today); at the cap that is a 1/4096 step, 2.4x coarser
-        // than what ships now. The cursor keeps the bottom tenth of its OWN owner's slot.
+        // The multiplayer reservation (nothing reads it yet): each avatar gets one slot of the band, 1 /
+        // avatars present, not 1 / MaxAvatars. 128 is exact in binary float and keeps an eightfold depth
+        // margin. Arithmetic and slot layout: BH.SDK/Docs/RULES.md, "Layers and depth bands".
 
         /// <summary> How many avatars may share the player band at once - the multiplayer cap. </summary>
         public const int MaxAvatars = 128;
@@ -122,39 +81,26 @@ namespace BH.SDK.Rules
         /// <summary> Lowest layer selection allowed. </summary>
         public const float MinLayerSelection = MaxLayer + MinLayerDelta;
 
-        // Between the two bands rather than beside them: the grid is a backdrop for the CONTENT, so
-        // it has to sit above every authored layer, and it is also the one overlay a gizmo handle is
-        // dragged across, so it has to sit below the handles. The selection band grows upwards from
-        // MinLayerSelection by MinLayerDelta per line, so this leaves it ~25k lines of room before
-        // the two could meet - the same reasoning that puts the gizmos at 1500.
+        // The grid is a backdrop for content, so above every authored layer, and below the handles a gizmo
+        // is dragged across. The selection band grows upward from MinLayerSelection (~25k lines of room).
 
         /// <summary> Lowest layer grid allowed. </summary>
         public const int MinLayerGrid = 1250;
 
-        // The editor's viewport grid, whose cell size is a user preference (GameEditorSettings
-        // .GridSize) rather than level data - a floor rather than a range, since how far out an
-        // author zooms is what actually bounds it, and the overlay stops drawing on its own once the
-        // cells stop being distinguishable.
+        // The viewport grid's cell size is a user preference: a floor only, the overlay stops drawing once
+        // cells are indistinguishable.
 
         /// <summary> Lower bound of EditorGridSettings.Size. </summary>
         public const float MinGridSize = 0.001f;
 
-        // The editor's collider overlay, which draws a semi-transparent fill over whatever a
-        // ShapeObject's ColliderId actually is. Above the grid because a hitbox is content the author
-        // is inspecting rather than a backdrop, and below the handles for the same reason the grid
-        // is: a gizmo dragged across a collider must stay visible and grabbable. It allocates ONE
-        // layer per drawn collider (overlapping translucent fills at an equal z pick their own draw
-        // order and flicker), so it spends the band rather than sitting on a single value - 10k
-        // slots at MinLayerDelta, far above any cap the overlay itself allows.
+        // Collider fill overlay: above the grid, below the handles. One layer per drawn collider, since
+        // overlapping translucent fills at an equal z flicker.
 
         /// <summary> Lowest layer colliders allowed. </summary>
         public const int MinLayerColliders = 1400;
 
-        // The bot's own diagnostic overlays - its clearance grid, its chosen target, the reach it
-        // believes it has. Above the collider fills because the whole question the grid answers is
-        // "where would the bot rather be than in those", and below the handles like every other
-        // overlay here. It spends the band a slot at a time for the collider fills' reason: the
-        // grid is hundreds of translucent cells, and at an equal z they pick their own order.
+        // The bot's diagnostic overlays, above the collider fills and below the handles. One layer per
+        // cell, for the collider fills' reason.
 
         /// <summary> Lowest layer bot debug allowed. </summary>
         public const int MinLayerBotDebug = 1450;
@@ -175,10 +121,8 @@ namespace BH.SDK.Rules
         /// <summary> The layer used when nothing says otherwise, read by RectObject, RulePrefabRootFixedAttribute, RulePrefabRootFixedTests. </summary>
         public const int DefaultLayer = 0;
 
-        // A MULTIPLIER of whatever size the player already is, so the neutral value is 1 rather
-        // than any number of world units - see PlayerEvents.Sizes. No maximum: a player scaled to
-        // nothing is still there, controllable and hittable at a point, and a level that wants a
-        // giant one is not this format's argument to have.
+        // A MULTIPLIER of the player's current size (neutral 1, see PlayerEvents.Sizes). No maximum: a
+        // player scaled to nothing is still there and hittable.
 
         /// <summary> Smallest player size a level may ask for. </summary>
         public const float MinPlayerSize = 0f;
@@ -214,10 +158,8 @@ namespace BH.SDK.Rules
         /// <summary> The color A used when nothing says otherwise. </summary>
         public const float DefaultColorA = 1f;
 
-        // approximate size for min/max coordinates, because this allows
-        // to calculate collision detection with at least 3 digits precision
-        // S_max = (0.5·10⁻ᵈ) / (2ε) = 10⁻ᵈ / (4ε) = 2²¹ · 10⁻ᵈ = 2 097 152 · 10⁻ᵈ
-        // d = 2, S_max = 20971.52, make this 10k on each side for more beauty.
+        // Collision keeps 3 digits of precision up to S_max = 2^21 * 10^-d (d = 2: 20971.52), so the
+        // coordinate range is 10k a side.
 
         /// <summary> Lower bound of Checkpoint.Position, PosKey.Pos. </summary>
         public const float MinPos = -10000f;
@@ -231,14 +173,8 @@ namespace BH.SDK.Rules
         /// <summary> The pos Y used when nothing says otherwise. </summary>
         public const float DefaultPosY = 0f;
 
-        // A size is measured in the SAME world units a position is, so it gets the same range rather
-        // than one of its own: an object may legitimately be as long as the space it is placed in,
-        // and the old +-100 was a tenth of that with nothing behind the number. Real content proved
-        // it: imported levels carry sizes to 820, and 5% of their objects broke a rule this format
-        // had no reason to hold them to.
-        //
-        // Derived rather than repeated, because the reason they agree is the point - a size that
-        // outgrew MinPos/MaxPos would be an object bigger than any coordinate can address.
+        // A size is in the same world units as a position, so it is DERIVED from the position range: it
+        // cannot outgrow what a coordinate can address. Imported levels carry sizes to 820.
 
         /// <summary> Lower bound of ScaKey.Scale. </summary>
         public const float MinSca = MinPos;
@@ -252,11 +188,8 @@ namespace BH.SDK.Rules
         /// <summary> The sca Y used when nothing says otherwise. </summary>
         public const float DefaultScaY = 1f;
 
-        // Rotation is stored in RADIANS, so the generic +-1e6 it used to inherit is about 160 000
-        // turns - a number no author writes and every angle-wrapping consumer has to survive. A
-        // spinner is the case that needs room: an object turning continuously is authored as one
-        // keyframe pair whose end angle keeps growing, so the cap is expressed in turns rather than
-        // picked as a round radian figure. 1000 turns is ~8 minutes at 2 rev/s, past any real level.
+        // Radians, capped in turns: a spinner is one keyframe pair whose end angle keeps growing. 1000
+        // turns is about 8 minutes at 2 rev/s.
 
         /// <summary> Highest rotation turns allowed, read by AngleKey. </summary>
         public const int MaxRotationTurns = 1000;
@@ -333,15 +266,8 @@ namespace BH.SDK.Rules
         /// <summary> Bounds ThemeData.Matrix. </summary>
         public const int ThemeCount = 64;
 
-        // A shape needs at least one triangle to be a shape at all - an empty one is a shape that
-        // silently draws and collides with nothing, which is worse than no shape (that is what a
-        // Null ShapeId already means, explicitly).
-        //
-        // THE CAP IS 128 BECAUSE 64 WAS NOT ENOUGH FOR THE GAME'S OWN SHAPES, which is the clearest
-        // sign a bound is too tight: an inverted 32-sided ring is the box's rim, the ring's outer
-        // rim and its inner disc, and that is 94 triangles. Six more built-in shapes sat at exactly
-        // 64 with no room at all. Raising it can invalidate nothing - it only lets a hand-written
-        // file carry more than it could before - and 128 triangles is still nothing to draw.
+        // 128 because 64 did not fit the game's own shapes (an inverted 32-sided ring is 94 triangles).
+        // A shape needs at least one triangle: an empty one draws and collides with nothing. See RULES.md.
 
         /// <summary> Lowest shape triangles allowed, read by ShapeCatalogServiceTests, ShapeSynthUtils, ShapeSynthUtilsTests. </summary>
         public const int MinShapeTriangles = 1;
@@ -349,10 +275,8 @@ namespace BH.SDK.Rules
         /// <summary> Highest shape triangles allowed, read by ShapeCatalogServiceTests, ShapeGeometryUtils, ShapeGeometryUtilsTests and 2 more. </summary>
         public const int MaxShapeTriangles = 128;
 
-        // Vertices are capped separately rather than derived from the triangle cap, because indexed
-        // geometry shares corners: 64 triangles need 192 vertices unwelded and roughly a third of
-        // that welded. The cap bounds the worst case, so a hand-written file cannot demand a vertex
-        // buffer the triangle cap alone would suggest is impossible.
+        // Capped apart from the triangles: indexed geometry shares corners (64 triangles need 192 vertices
+        // unwelded, roughly a third welded). Bounds the worst case.
 
         /// <summary> Lowest shape vertices allowed, read by ShapeSynthUtils, ShapeSynthUtilsTests. </summary>
         public const int MinShapeVertices = 3;
@@ -360,16 +284,8 @@ namespace BH.SDK.Rules
         /// <summary> Highest shape vertices allowed, read by ShapeGeometryUtils, ShapeGeometryUtilsTests, ShapeSynthUtilsTests. </summary>
         public const int MaxShapeVertices = MaxShapeTriangles * 3;
 
-        // A shape occupies exactly the object's own rect, the same box a quad used to. Rendering
-        // reads UV out of the position (positionOS.xy + 0.5), so a point outside this range samples
-        // past [0, 1]; collision would simply extend past what is drawn. Both failures are silent,
-        // which is why the bound is enforced rather than documented.
-        //
-        // The game's own shapes obey it now too. The library that shipped before was centred on each
-        // polygon's CIRCUMCENTRE, which for an odd side count is not the centre of its bounding box -
-        // so 31 of 78 presets reached out to 0.577 and the editor carried a margin to compensate.
-        // Centring on the bounding box instead brings every one of them inside, and costs nothing:
-        // each form's longer axis measures exactly 1 either way.
+        // A shape occupies exactly the object's own rect: UV is read from positionOS.xy + 0.5, and collision
+        // would extend past what is drawn. Both failures are silent, so the bound is enforced.
 
         /// <summary> Lowest shape point allowed, read by ShapeCatalogServiceTests, ShapeGeometryUtils, ShapeSynthUtilsTests. </summary>
         public const float MinShapePoint = -0.5f;
@@ -386,11 +302,8 @@ namespace BH.SDK.Rules
         /// <summary> Upper bound of CurveValue.KeyFrames. </summary>
         public const int MaxCurveKeys = 16;
 
-        // A GRADIENT IS THE OTHER CASE, and it used to be held to the curve's number for no reason
-        // beyond sitting next to it. One stop is a complete gradient - a constant colour, which
-        // every consumer already evaluates without a special case, UnityEngine.Gradient included -
-        // so demanding a second one refused a thing authors legitimately want and made the editor's
-        // own "remove key" illegal one step earlier than it looks.
+        // A gradient needs only ONE stop: a constant colour every consumer already evaluates. Held to the
+        // curve's number it made the editor's own "remove key" illegal a step early.
 
         /// <summary> Lower bound of GradientValue.AlphaKeys, GradientValue.ColorKeys. </summary>
         public const int MinGradientKeys = 1;
@@ -428,11 +341,8 @@ namespace BH.SDK.Rules
         /// <summary> The aspect height used when nothing says otherwise, read by ScreenAspect. </summary>
         public const int DefaultAspectHeight = 9;
 
-        // Also the fixed slot length of the player's per-frame text buffers, which is why it is a
-        // round power of two rather than a number picked per field: a text object's authored string
-        // and its rendered result each occupy exactly this much, so slot addressing stays two shifts
-        // and two slots can never overlap. Raising it costs (slot length x text capacity x 2) bytes
-        // twice over; lowering it silently truncates existing levels.
+        // Also the fixed slot length of the player's per-frame text buffers, hence a power of two (two
+        // shifts of addressing). Raising it costs slot x text capacity x 2 bytes twice; lowering truncates.
 
         /// <summary> Upper bound of LevelMeta.LevelName, StringLanguage.Value, StringValue.Value and 1 more. </summary>
         public const int MaxGameString = 1024;

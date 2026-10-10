@@ -7,12 +7,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests
 {
-    // Two things here are worth a test rather than a comment. First, the group shipped WITHOUT a
-    // UserSettings version bump - a settings.json written before it existed has no "aa" key at all
-    // and must come back holding the defaults, which is only true because the constructor supplies
-    // them (the same additive shape LevelSettings.Seed and GameEvents.Beats were added in). Second,
-    // MsaaType's value IS its sample count except for None, whose 0 has to read back as 1 - a cast
-    // instead of ToSampleCount would silently ask a graphics API for zero samples per pixel.
+    // Pins the additive defaults (absent "aa" key reads as defaults) and that None's 0 reads back as 1
+    // sample, not a cast. Why: BH.SDK/Docs/TESTING.md.
 
     /// <summary> AntiAliasingGraphicsSettings: defaults, boilerplate, sample-count conversion, and
     /// what an older settings file deserializes to. </summary>

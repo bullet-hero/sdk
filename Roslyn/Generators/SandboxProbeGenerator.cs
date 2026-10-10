@@ -6,9 +6,8 @@ using Microsoft.CodeAnalysis.Text;
 namespace BH.SDK.Roslyn
 {
     /// <summary>
-    /// Probe generator: emits one internal static class into EVERY assembly it is attached to.
-    /// The emitted constants are read back from Unity, so "the file compiles" is the proof that
-    /// the generator ran; the counts prove it saw the real compilation rather than an empty one.
+    /// Probe: emits one internal class into EVERY attached assembly; the constants read back from Unity prove
+    /// the generator ran and saw the real compilation.
     /// </summary>
     [Generator]
     public sealed class SandboxProbeGenerator : IIncrementalGenerator

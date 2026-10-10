@@ -1,14 +1,8 @@
 namespace BH.SDK.Publishing
 {
-    // Where a resource came from, graded. A licence field says what the author CLAIMS; this says how
-    // much that claim is worth given the site it came from. The two together are what makes
-    // moderation cheap: a CC0 claim on a Kenney URL needs nobody to look at it, the same claim on a
-    // random blog needs a human, and a claim on a site that licenses nothing needs no human at all
-    // because the answer is already no.
-    //
-    // The grades are not a severity ladder to compare with >=. Each maps to one outcome - publish,
-    // publish and queue for review, refuse - and PublishReadinessAnalyzer is the only place that
-    // mapping lives.
+    // Where a resource came from, graded: how much the author's licence claim is worth given the site.
+    // NOT a severity ladder to compare with >=: each grade maps to one outcome, and the mapping lives
+    // only in PublishReadinessAnalyzer.
 
     /// <summary> How far a known resource site can be taken at its word. </summary>
     public enum SourceTrust : byte

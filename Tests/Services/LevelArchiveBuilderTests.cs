@@ -17,18 +17,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests.Services
 {
-    // FOUR ROUTES OUT OF ONE FIELD, and every one of them is a different promise to the author:
-    // a file in the level folder is packed, a file outside it is COPIED IN and the level's own key
-    // rewritten to match, a URL is left exactly as it is, and a reference to something that is not
-    // there any more is reported rather than packed as a hole.
-    //
-    // The collecting case is the one that matters most in practice and looks like an edge case:
-    // the editor creates a level around a song picked from disk, with UriType = AbsolutePath, so
-    // the single most common way to START a level produces one whose music is outside its folder.
-    // An export that only packed the folder would ship those levels silently mute.
-    //
-    // And the live model must come out untouched. An export is not an edit, and the rewriting above
-    // is exactly the kind of thing that is invisible until somebody saves afterwards.
+    // Four routes out of one field: packed, COPIED IN with the key rewritten, URL left alone, missing
+    // reported. The live model comes out untouched. BH.SDK/Docs/TESTING.md, "Archives".
 
     /// <summary> The four routes a resource reference can take out of a level, including the one that matters
     /// most in practice: a song outside the level folder, collected in with its key rewritten. </summary>

@@ -2,10 +2,8 @@ using System;
 
 namespace BH.SDK.Roslyn.Model
 {
-    // Everything the emitter needs, and NOTHING that holds a compiler symbol. An incremental
-    // generator's pipeline caches by value, and a cached ISymbol pins a whole Compilation in memory
-    // and never compares equal twice - so the extraction step flattens to plain strings and enums
-    // here, once, and the emitter never touches the semantic model again.
+    // Holds NO compiler symbol: a cached ISymbol pins a whole Compilation, so extraction flattens to
+    // strings.
 
     /// <summary> How a member is copied, compared and merged - the one decision that drives every
     /// generated body. </summary>

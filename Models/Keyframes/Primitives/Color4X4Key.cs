@@ -13,9 +13,8 @@ using Newtonsoft.Json;
 namespace BH.SDK.Models.Keyframes
 {
     /// <summary>
-    /// Fully independent corner colors - the widest member of the four-corner family, giving a
-    /// barycentric blend across the quad. The other three variants exist so the common cases
-    /// (flat, horizontal, vertical) don't have to store four colors that are mostly equal.
+    /// Fully independent corner colors - the widest of the four-corner family (barycentric blend). The
+    /// other three exist so flat, horizontal and vertical do not store four mostly equal colors.
     /// </summary>
     [RuleContainer]
     [GenerateModel]

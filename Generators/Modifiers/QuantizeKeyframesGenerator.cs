@@ -17,16 +17,9 @@ namespace BH.SDK.Generators.Modifiers
         Ceil = 2,
     }
 
-    // The first Modifier, and the first generator that only ever EDITS. Two things fall out of that
-    // and are worth reading before writing another one:
-    //
-    // 1. Everything goes through context.Edit(id), which snapshots the whole object once. That is
-    //    what makes "quantize forty objects" a single undo step covering all forty.
-    // 2. Frames within a track must stay unique ([RuleCollectionUnique]). Snapping is exactly the
-    //    operation that collides two keys onto one frame, so the collision policy is not a detail -
-    //    it is the feature. Two keys landing on the same grid line means the author's two keys were
-    //    closer together than the grid they asked for, and the honest answer is to keep the first
-    //    and leave the second where it was rather than silently deleting it.
+    // Everything goes through context.Edit(id): one undo step for any number of objects. Snapping collides
+    // keys by nature, so the collision policy is the feature: keep the first key, leave the second where
+    // it was. Frames stay unique ([RuleCollectionUnique]). Docs/GENERATORS.md.
 
     /// <summary>
     /// Snaps the selection's keyframes onto a beat grid - from BPM, or from a plain frame step.
@@ -65,11 +58,8 @@ namespace BH.SDK.Generators.Modifiers
 
                 var obj = context.Edit(id);
 
-                // A keyframe's Frame is LOCAL to its object, but a beat grid is a property of the
-                // LEVEL's timeline - snapping the local number would put every object on a grid
-                // offset by its own span start, so two objects starting a beat and a half apart
-                // would quantize to two different grids. Everything below therefore works in global
-                // frames and converts back on write.
+                // A keyframe's Frame is LOCAL but the beat grid belongs to the LEVEL's timeline: work in
+                // global frames and convert back on write, or objects land on grids offset by their start.
                 foreach (var track in ObjectTracks.Of(obj, parameters.Tracks))
                 {
                     var taken = new HashSet<int>();
@@ -119,10 +109,8 @@ namespace BH.SDK.Generators.Modifiers
             return step < 1 ? 1 : step;
         }
 
-        // The grid is anchored on the timeline's FIRST FRAME, not on zero: with an offset of zero its
-        // lines are MinFrame, MinFrame + step, ... so line zero is the frame the level starts on and
-        // a beat-derived step lands where the beat actually is. Anchoring on a bare 0 would put every
-        // line one frame early and each of them on a fractional second.
+        // The grid is anchored on the first FRAME (MinFrame), not on zero: line zero is the frame the
+        // level starts on, so a beat-derived step lands where the beat is.
         private static int Snap(int frame, int step, int offset, QuantizeMode mode)
         {
             var origin = offset + FrameRules.MinFrame;

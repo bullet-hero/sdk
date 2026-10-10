@@ -10,9 +10,8 @@ using Newtonsoft.Json;
 namespace BH.SDK.Models.Values
 {
     /// <summary>
-    /// A normalized 0..1 point inside a rect - what anchors and pivots are made of. A thin wrapper
-    /// over IVector2 that exists to carry the clamp and the named presets below (corners, center,
-    /// and the centroid offsets that make regular polygons rotate around their real center).
+    /// A normalized 0..1 point inside a rect, what anchors and pivots are made of: an IVector2 wrapper
+    /// carrying the clamp and the named presets (corners, center, polygon centroid offsets).
     /// </summary>
     [RuleContainer]
     [GenerateModel]

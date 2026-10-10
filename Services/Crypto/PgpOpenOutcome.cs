@@ -21,16 +21,9 @@ namespace BH.SDK.Services.Crypto
         Unsupported = 4,
     }
 
-    // TWO OF THESE ARE THE WHOLE REASON THE FORMAT HAS AN INTEGRITY CHECK. Without one, a wrong
-    // passphrase and a damaged file are indistinguishable - both surface as the padding failing to
-    // unwrap - and the player is told "something went wrong" about two situations with completely
-    // different answers ("try again" versus "this download is broken, get another copy").
-    //
-    // The distinction is not perfect and the imperfection is one-directional: OpenPGP's own quick
-    // check on the session key is 16 bits, so about one wrong passphrase in 65536 gets past it and
-    // then fails the MDC, and that one is reported as Tampered. A damaged file is never reported as
-    // a wrong passphrase, which is the direction that matters - nobody is sent hunting for a
-    // password that would not have helped.
+    // Two outcomes exist because the integrity check separates a wrong passphrase from a damaged file.
+    // One-directional: about 1 wrong passphrase in 65536 passes the 16-bit quick check and reports as
+    // Tampered; a damaged file is never reported as a wrong passphrase.
 
     /// <summary> The result of opening an OpenPGP message, and what it said about itself. </summary>
     public readonly struct PgpOpenOutcome

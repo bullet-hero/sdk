@@ -7,11 +7,8 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models.Statistics
 {
-    // A COMPLETION IS EVERY STEP ACTUALLY PASSED, never "the tutorial was dismissed" - that is what
-    // UserSettings.TutorialCompleted also records, since declining the offer sets it too. This is the
-    // fact an achievement can be built on: the player did it. Kept as a group of its own rather than
-    // three members on ProfileStatistics because the tutorial is an activity, not an attribute of the
-    // player, and a later one (a second tutorial, a practice mode) lands beside it.
+    // A completion is every step actually passed, never "dismissed" (UserSettings.TutorialCompleted also
+    // records that). Docs/STATISTICS.md
 
     /// <summary> What the player has done in the sandbox's tutorial. </summary>
     [RuleContainer]

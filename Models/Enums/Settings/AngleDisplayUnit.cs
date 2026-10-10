@@ -1,12 +1,6 @@
 namespace BH.SDK.Models.Enums.Settings
 {
-    // Display only, and that is the whole contract: an angle is stored and processed in RADIANS
-    // everywhere - in the model, in the jobs, in every generator - and this decides nothing except
-    // what a rotation field SHOWS and what it accepts back. The conversion happens at that one
-    // boundary and nowhere else, so no value that reaches a file ever depends on this.
-
-    /// <summary>
-    /// Which unit the editor's rotation fields are read and typed in.
+    // Display only: angles are stored and processed in RADIANS everywhere; conversion is at the field.
     /// </summary>
     public enum AngleDisplayUnit : byte
     {

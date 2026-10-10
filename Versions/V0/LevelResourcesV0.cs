@@ -13,10 +13,8 @@ namespace BH.SDK.Versions.V0
     [GenerateModel]
     public sealed partial class LevelResourcesV0 : IModel<LevelResourcesV0>
     {
-        // IT WAS A Dictionary<int, object> AND COULD NOT STAY ONE. A snapshot carries its own
-        // generated codec now, and the generator encodes what it can name - `object` is not that.
-        // Retyping cost nothing: the migrator out of this domain (LevelResourcesV0ToV1) maps none of
-        // it, because the placeholder never corresponded to anything today's shape holds.
+        // Not a Dictionary<int, object>: a snapshot has a generated codec, which encodes only what it can
+        // name. LevelResourcesV0ToV1 maps none of it.
 
         /// <summary> Placeholder data with no correspondence to today's shape, so nothing maps out of it. </summary>
         [JsonProperty("test_resources")]

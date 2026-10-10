@@ -29,21 +29,9 @@ namespace BH.SDK.Generators.Modifiers
         Skip = 2,
     }
 
-    // A child reaching outside its parent is legal authored data, not damage: a consumer resolves the
-    // containment on READ (the Unity project's FrameSpanFitMath), so the overhanging part simply never
-    // plays and comes back the moment the parent grows again. That is why this is a generator the
-    // author asks for rather than a validation rule that follows them around - it used to be
-    // GraphRule.ChildSpanOutsideParent, whose repair is now this generator's ClampChildren mode.
-    //
-    // The window is an INSTRUCTION here, exactly as in mod_content_remover, and through the same
-    // WindowSelection.Selects: it names which children are being talked about, not where content may
-    // be written. So "fit the whole level" (window = whole timeline) and "fit this section" are one
-    // operation, and a host offering a whole-level switch on its window gets the first for free.
-    //
-    // Direction of the walk is not a detail. Clamping runs PARENT-FIRST, because cutting a parent
-    // moves the boundary its own children must fit into; expanding runs CHILD-FIRST, because a
-    // stretched parent is what its own parent then has to cover. Reversing either leaves the far end
-    // of a chain outside after a run that reported success.
+    // A child outside its parent is legal authored data resolved on READ, so fitting is a generator the
+    // author asks for. The window is an INSTRUCTION, as in mod_content_remover (WindowSelection). The
+    // walk direction matters: clamp PARENT-FIRST, expand CHILD-FIRST. Docs/GENERATORS.md.
 
     /// <summary>
     /// Makes every child's lifetime fit its parent's: by cutting the children down, or by stretching
@@ -54,10 +42,8 @@ namespace BH.SDK.Generators.Modifiers
         /// <summary> <c>"mod_span_fit"</c>, the key a host lists this generator under. </summary>
         public override string NameKey => "mod_span_fit";
 
-        // Whole-scope rather than the selection, same reasoning as mod_content_remover: "make the
-        // lifetimes agree" is a statement about the scope, and quietly limiting it to what happens to
-        // be selected would leave the rest overhanging while reporting success. Not LevelScope
-        // either - a Prefab template is a hierarchy like any other and wants this just as much.
+        // Whole-scope, not the selection (as mod_content_remover), and not LevelScope: a Prefab template
+        // is a hierarchy like any other.
 
         /// <summary> Nothing beyond a scope to run against. </summary>
         public override GeneratorRequirements Requirements => GeneratorRequirements.None;
@@ -84,11 +70,8 @@ namespace BH.SDK.Generators.Modifiers
         protected override GeneratorCost EstimateTyped(GeneratorContext context, Parameters parameters)
             => GeneratorCost.Zero;
 
-        // The three configurations that reach past what the author is looking at: Invert works on
-        // everything the window does NOT cover, a window spanning the whole timeline covers all of it
-        // either way, and Delete removes content rather than resizing it. All three are legitimate -
-        // "clean up everything that can no longer play" is the headline use case - which is why they
-        // get a confirmation instead of a refusal.
+        // The configurations reaching past what the author sees (Invert, whole timeline, Delete) are
+        // legitimate headline uses, so they get a confirmation, not a refusal.
 
         /// <summary> True where these parameters would destroy or rewrite content the author did not point at. </summary>
         protected override bool IsDangerousTyped(GeneratorContext context, Parameters parameters)
@@ -167,13 +150,8 @@ namespace BH.SDK.Generators.Modifiers
 
         #region Targets
 
-        // Only children with a parent that actually resolves. A root object is bounded by nothing -
-        // running past the end of the level is legal and simply never plays - and a ParentObjectId
-        // pointing at nothing is GraphRule.MissingParent's business, not a lifetime to fit.
-        //
-        // Sorted by depth so the walk can go strictly parent-first or strictly child-first, with the
-        // id as the tie-breaker: List.Sort is unstable, and a run that shuffles between invocations
-        // breaks "same inputs, same level".
+        // Only children whose parent resolves (a root is bounded by nothing; a dangling ParentObjectId is
+        // GraphRule.MissingParent's). Sorted by depth, id as tie-break: List.Sort is unstable.
         private static List<ObjectId> OrderedByDepth(GeneratorContext context, Parameters parameters,
             bool deepestFirst)
         {
@@ -231,11 +209,8 @@ namespace BH.SDK.Generators.Modifiers
             obj.Span = obj.Span.ClampedInto(bounds);
         }
 
-        // A materialized prefab child is pointed at by its placement's own ObjectIds table, so
-        // deleting one while the placement survives leaves a broken remap table - a cleanup pass that
-        // breaks the level it cleaned, which is the same case mod_content_remover rescues from the
-        // other side. It is cut into its parent instead: still a fit, just not a removal. A doomed
-        // placement takes its children along anyway (below), so this only ever catches the mixed case.
+        // A materialized prefab child is pointed at by its placement's ObjectIds table, so deleting it
+        // while the placement survives breaks the remap table: it is clamped into its parent instead.
         private static void DeleteOrClamp(GeneratorContext context, ObjectId id, in FrameSpan bounds)
         {
             if (IsMaterializedChild(context, id))

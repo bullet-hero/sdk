@@ -11,13 +11,8 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models.Keyframes
 {
-    // The directional half of the pair - VelocityPoint is the radial one. Both describe a force the
-    // LEVEL applies to the player, which is a thing the player's own input cannot express: wind
-    // across a section, a shove on a beat, a pull toward something.
-    //
-    // Zero is the neutral value and the default, so a track that exists but says nothing changes
-    // nothing. That matters because the force is authored on a level-global track: a keyframe with
-    // no value written is a keyframe that lets the player move normally, not one that stops them.
+    // The directional half (VelocityPoint is the radial one): a force the LEVEL applies, which the player's
+    // own input cannot express. Zero is neutral and the default, so a key with no value changes nothing.
 
     /// <summary>
     /// A force pushing the player in a direction at a given frame. Not wired into gameplay yet - the

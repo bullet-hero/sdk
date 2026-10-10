@@ -8,15 +8,11 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests.Rules
 {
-    // A real Prefab rather than a stand-in, for RuleAnyDeviceActiveTests' reason: the invariant is
-    // about Prefab.Root specifically, and a throwaway class carrying a RectObject would prove
-    // nothing about the type that ships. AssertHasIssue rather than AssertInvalid, same as there -
-    // a real aggregate may raise other issues and this is about this rule firing.
+    // A real Prefab, not a stand-in (as RuleAnyDeviceActiveTests); AssertHasIssue for the same reason.
 
     /// <summary>
-    /// RulePrefabRootFixed: a template's root carries the root id, stays active, stays on layer
-    /// zero and starts on the first frame unanchored - and Fix writes every one of them back while
-    /// carrying the authored length through.
+    /// RulePrefabRootFixed: the root carries the root id, stays active on layer zero, starts on the first
+    /// frame unanchored; Fix writes each back and keeps the authored length.
     /// </summary>
     public class RulePrefabRootFixedTests : BaseRuleTests
     {

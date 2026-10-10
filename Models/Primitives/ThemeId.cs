@@ -5,9 +5,8 @@ using BH.SDK.Models.Interfaces.Primitives;
 namespace BH.SDK.Models.Primitives
 {
     /// <summary>
-    /// Identity of a ThemeData palette in Level.Resources.Themes, picked over time by ThemeKeyframe.
-    /// Note it addresses a whole palette - a single color slot inside it is addressed by a plain
-    /// int index (Color4ThemeRef.ThemeColorIndex), not by an id.
+    /// Identity of a ThemeData palette in Level.Resources.Themes, picked over time by ThemeKeyframe. A
+    /// single color slot inside it is a plain int index (Color4ThemeRef.ThemeColorIndex), not an id.
     /// </summary>
     public struct ThemeId : IEquatable<ThemeId>, IPrimitiveGuid
     {
@@ -33,11 +32,8 @@ namespace BH.SDK.Models.Primitives
             value = Guid.Empty;
         }
 
-        // Theme ids are a stable identifier for a Theme entry (Level.Resources.Themes), replacing
-        // positional ThemeIndex - a theme's position in the list can change (reorder/delete), an
-        // id never does. Unlike the previous int-based id, there is no game-defined/user-defined
-        // range split - a Guid has no meaningful "positive/negative" ordering to split on (see
-        // PrefabId/LevelId for the same reasoning). Guid.Empty is the only reserved/Null value.
+        // A stable id for a Theme entry (Level.Resources.Themes), replacing the positional ThemeIndex (an
+        // id never changes on reorder or delete). Guid.Empty is the only reserved value.
 
         /// <summary> The reserved "unset" value. Never a real id. </summary>
         public static readonly Guid NullValue = Guid.Empty;

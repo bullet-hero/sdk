@@ -2,17 +2,8 @@ using BH.SDK.Rules;
 
 namespace BH.SDK.Avatars
 {
-    // THE THREE SPEEDS ARE FROZEN, THE SCALE IS PER FRAME. Keeping the scale separate rather than
-    // pre-multiplying it into each speed is what lets a caller hold this struct for a whole replay and
-    // only refresh the one field the level's own Player tracks actually move.
-    //
-    // WHY THE THREE FIELDS SURVIVED BECOMING CONSTANTS. Collapsing this to a bare float, with Step
-    // reading AvatarRules directly, was the obvious simplification and it costs the one thing that
-    // matters here: Step could then only ever be exercised at the shipped numbers. The behaviours worth
-    // testing - the arrival clamp being suppressed during a dash, damage outranking a dash, a knockback
-    // outrunning a walk - are about the RELATIONS between these three, and pinning them needs the
-    // freedom to vary them. So Default(scale) is what the game and the verifier call, and the full
-    // constructor is what a test calls.
+    // The three speeds stay separate from the per-frame Scale so a replay refreshes one field. They survive
+    // being constants so tests can vary the RELATIONS between them; Default(scale) is the game's call.
 
     /// <summary> How fast the avatar moves in each of its three modes, and this frame's scaling. </summary>
     public readonly struct AvatarStepSpeeds

@@ -4,14 +4,9 @@ using BH.SDK.Models.Primitives;
 
 namespace BH.SDK.Rules.Attributes
 {
-    // Validates a ParentObjectId reference (RectObject.ParentObjectId): unlike a regular ObjectId,
-    // this also allows Null (no parent, i.e. level space) and the reserved negative targets.
-    //
-    // Which reserved targets are legal depends on the scope, which is why this rule needs a context
-    // at all: PrefabRoot addresses the template's own root and is meaningless at level scope, while
-    // Camera and LocalPlayer are level-runtime objects a template's inner object cannot reach. With
-    // no scope resolved (a standalone value model), every reserved target is accepted - the rule
-    // falls back to the plain range check rather than inventing a scope it does not have.
+    // Validates a ParentObjectId: also allows Null and the reserved targets legal for the scope
+    // (PrefabRoot only inside a template; Camera/LocalPlayer unreachable from it). With no scope
+    // resolved every reserved target is accepted.
 
     /// <summary> A parent reference must be a user-space id, Null, or a reserved target legal in the
     /// current scope. </summary>

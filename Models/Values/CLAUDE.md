@@ -55,3 +55,15 @@ key recovered from the value on read). Dictionaries where the key *can't* be der
 (id→id remap tables) use `DictionaryAsPairListConverter` instead (array of `{K,V}` structs) - plain
 Newtonsoft dictionary serialization needs a `TypeConverter` on the key type to use it as a JSON
 property name, which value-type ids like `ObjectId` don't have; this sidesteps that entirely.
+
+**The `*Lerp` variants are SEGMENTS, not boxes.** One roll picks a position along the line `From`-`To` and every
+component is read at it, so the value never leaves the line; pinning one axis is a degenerate range on that axis
+alone (the same number in both ends). They carry NO `RulePropertyOrder` on purpose: a segment has no smaller end,
+and ordering the pair would swap `From` and `To`, making a line that falls as it advances (x up, y down)
+unrepresentable - the case correlation exists for. `CurveKeyframeValue`'s broken-tangent flag is a separate bit
+rather than a `CurveTangentMode` member (in Unity brokenness is independent of how each side's tangent is
+derived) and is authored intent: it records whether the author MEANT the two tangents to differ, which an editor
+dragging one handle otherwise has to guess. `CustomLicense` carries no permission flags (a ticked box is a claim
+nobody can check): a name, an address and the wording, never auto-approved by a publish profile; its body is the
+one uncapped string in the format, since a truncated licence is a different legal document that still reads as
+whole. `NoSpecifiedLicense.Source` names where a work came from and says nothing about what may be done with it.

@@ -5,27 +5,9 @@ using System.Threading.Tasks;
 
 namespace BH.SDK.Services.Content
 {
-    // A named set of blobs, and the reason the SDK's file rule could be lifted without the library
-    // learning about disks. "Against files" and "against data already in memory" are TWO
-    // IMPLEMENTATIONS, never two parallel APIs: the editor hands over a DirectoryContentStore
-    // rooted at the level folder, a test hands over a MemoryContentStore, and the server's own
-    // DbContentStore is one more class with nothing else to change. A second API would mean every
-    // pipeline above this is written twice and only one half is ever exercised by tests.
-    //
-    // A STORE IS ROOTED BY CONSTRUCTION. There is nothing outside the root to address, so "does
-    // this escape the folder" stops being a check every call site has to remember and becomes a
-    // property of the type - which is what makes the tar-slip defence structural rather than
-    // vigilant.
-    //
-    // ValueTask, not Task, on every member here. They complete synchronously very often (a
-    // MemoryContentStore always does, and even a directory store only opens a handle), they are
-    // called once per archive entry in a loop, and each is awaited exactly once - which is the
-    // precise profile ValueTask exists for. The pipeline entry points above (PackAsync, WriteAsync,
-    // ReadAsync) return Task instead, because a caller is entitled to store one, pass it on or
-    // combine it through Task.WhenAll, none of which ValueTask permits.
-    //
-    // IAsyncEnumerable is deliberately absent from ListAsync: a store listing is a level folder's
-    // worth of names, and an async stream is extra IL2CPP risk for nothing.
+    // A named set of blobs, ROOTED BY CONSTRUCTION: escaping the folder is a property of the type, not a
+    // check per call site. Files and memory are two implementations, never two APIs. ValueTask on
+    // members, Task on pipeline entry points, no IAsyncEnumerable (IL2CPP risk). Docs/ARCHIVE.md.
 
     /// <summary> A rooted, named set of blobs addressed by relative path. </summary>
     public interface IContentStore

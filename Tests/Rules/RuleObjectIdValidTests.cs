@@ -9,9 +9,8 @@ using NUnit.Framework;
 namespace BH.SDK.Tests.Rules
 {
     /// <summary>
-    /// RuleObjectIdValid: an object's own identity must be a user-space id (>= 1), or the reserved
-    /// PrefabRoot inside a template - Prefab.Root is a real object carrying that id. Camera and
-    /// LocalPlayer stay parent targets only: an object may attach to the camera, it may not be it.
+    /// RuleObjectIdValid: a user-space id, or the reserved PrefabRoot inside a template. Camera and
+    /// LocalPlayer stay parent targets only.
     /// </summary>
     public class RuleObjectIdValidTests : BaseRuleTests
     {
@@ -61,10 +60,7 @@ namespace BH.SDK.Tests.Rules
             Assert.IsFalse(Rule.IsValid(ObjectId.PrefabRoot, LevelContext));
         }
 
-        // Identity means the same thing in every scope for every value but ONE, and that one is
-        // Prefab.Root's: a template's root is a real object whose own id IS ObjectId.PrefabRoot, so
-        // the value is an identity inside a template and a parent target everywhere else. Camera and
-        // LocalPlayer gain nothing from the scope - nothing is ever either of them.
+        // Scope-independent for every value but PrefabRoot, which is an identity inside a template only.
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]

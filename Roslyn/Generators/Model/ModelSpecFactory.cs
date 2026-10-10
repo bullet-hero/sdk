@@ -81,16 +81,12 @@ namespace BH.SDK.Roslyn.Model
                 if (property.DeclaredAccessibility != Accessibility.Public) continue;
                 if (HasAttribute(property, IgnoreAttribute)) continue;
 
-                // AN ABSTRACT PROPERTY IS WRITTEN BY WHICHEVER SUBTYPE OVERRIDES IT, never here.
-                // It has no value to write, and Newtonsoft puts the override in the DERIVED type's
-                // block anyway - Resource.Type lands between TextureResource's own members and
-                // Resource's `src`, not after it. Emitting it in both places wrote it twice.
+                // An abstract property is written by the subtype that overrides it (Newtonsoft's derived
+                // block).
                 if (property.IsAbstract) continue;
 
-                // A get-only property is WRITE-ONLY on the wire and takes part in nothing else.
-                // Newtonsoft writes it (the contract is OptOut in practice - the resolver sets
-                // MemberSerialization after the properties are already collected), so dropping it
-                // would change the format; Resource.Type is the one that does this.
+                // A get-only property is write-only on the wire (Resource.Type); dropping it changes the
+                // format.
                 var assignable = property.SetMethod != null;
                 if (JsonIgnored(property) && property.SetMethod is null) continue;
 
@@ -170,10 +166,7 @@ namespace BH.SDK.Roslyn.Model
 
                     if (IsModelReference(value))
                     {
-                        // Which of the three dictionary copies applies is decided by the KEY, and
-                        // "unmanaged" is the real question rather than "is it a model":
-                        // ModificationKey is a struct holding a string, so it is neither, and only
-                        // the managed copy's ICopyable constraint fits it.
+                        // The KEY decides which dictionary copy applies: "unmanaged", not "is it a model".
                         keyIsModel = !key.IsUnmanagedType;
                         if (keyIsModel && !IsCopyable(key)) return null;
                         // A sealed value type needs no dispatcher: ModelUtils.PullFrom already
@@ -208,10 +201,7 @@ namespace BH.SDK.Roslyn.Model
         /// <summary> Carries its own Copy(), so the managed dictionary copy can take it. </summary>
         private static bool IsCopyable(ITypeSymbol type) => ImplementsSelf(type, "ICopyable");
 
-        // Matched by NAME AND NAMESPACE rather than by a formatted display string, because the
-        // display of a generic definition is not stable across the shapes these interfaces take:
-        // ICopyable is declared `ICopyable<out T>` and renders its variance, IModel does not.
-        // Comparing formatted text made a covariant interface silently invisible once already.
+        // Matched by NAME AND NAMESPACE, not display text: ICopyable<out T> renders its variance.
         private static bool ImplementsSelf(ITypeSymbol type, string interfaceName) =>
             type.AllInterfaces.Any(i =>
                 i.IsGenericType
@@ -242,10 +232,8 @@ namespace BH.SDK.Roslyn.Model
             return property.Name;
         }
 
-        // [JsonIgnore] IS INHERITED, and it is carried on the abstract declaration rather than on
-        // each override: BaseDeviceControlsSettings marks GeneralMode and Device, and the four
-        // device classes that override them do not repeat it. Newtonsoft walks the chain, so this
-        // has to as well - reading only the override wrote two members no level file has.
+        // [JsonIgnore] is INHERITED and sits on the abstract declaration; walk the chain like Newtonsoft
+        // does.
         private static bool JsonIgnored(IPropertySymbol property)
         {
             for (var current = property; current != null; current = current.OverriddenProperty)
@@ -471,11 +459,8 @@ namespace BH.SDK.Roslyn.Model
 
         #endregion
 
-        /// <summary> Reads the constant GetModelType() answers with. Every implementation in this
-        /// format is `=> SomeEnum.Member;`, and the semantic model resolves that to its underlying
-        /// number - so the tag is READ from the model rather than assigned by the generator, and a
-        /// member that is renumbered moves both encodings at once. A body that is not a constant is
-        /// simply not a tag, and the type then cannot be a polymorphic value. </summary>
+        /// <summary> Reads the constant GetModelType() answers with, so the tag is READ from the model and a
+        /// renumbered member moves both encodings. A non-constant body is not a tag. </summary>
         private static int ResolveTypeTag(INamedTypeSymbol type)
         {
             foreach (var method in type.GetMembers("GetModelType").OfType<IMethodSymbol>())
@@ -503,12 +488,8 @@ namespace BH.SDK.Roslyn.Model
             return NoTypeTag;
         }
 
-        // MATCHED BY SIMPLE NAME, which is what makes this the single most dangerous line in the
-        // generator: rename ModelGenerationAttribute without renaming the literal here and every
-        // type resolves to no domain at all - the blob emitter silently stops writing envelopes and
-        // the JSON emitter silently stops wrapping nested domains. It compiles clean and the format
-        // is different. The arity is the same trap one step down, which is why a wrong one is
-        // REPORTED now rather than skipped in silence.
+        // Matched by SIMPLE NAME: renaming ModelGenerationAttribute without this literal drops every domain
+        // silently, and the format changes while everything compiles. A wrong arity is reported.
 
         /// <summary> The [ModelGeneration] this type carries, if any. </summary>
         private static string ResolveDomain(INamedTypeSymbol type, out int generation)

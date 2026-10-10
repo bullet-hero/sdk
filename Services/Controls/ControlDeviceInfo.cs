@@ -3,15 +3,9 @@ using BH.SDK.Models.Enums.Controls.Modes;
 
 namespace BH.SDK.Services.Controls
 {
-    // Static facts about a device, and the reason they live here rather than in the settings tree: they
-    // are not the player's to change and must not survive a file. A saved "this device supports Relative"
-    // would still claim so after the build stopped supporting it, and the game would offer a mode nothing
-    // implements. Read it from the catalog every run instead.
-    //
-    // Two gates decide whether a device drives the avatar, and they are the game's own: Permitted (static,
-    // per platform - Core's InputPlatformRules) and Present (runtime, per device - each driver's IsPresent).
-    // There is no third, per-scene gate: these settings describe how the AVATAR is steered, and the menu
-    // and the level editor drive themselves through their own input entirely.
+    // Static facts about a device; not in the settings tree because they must not survive a file (a saved
+    // "supports Relative" would outlive the build's support). Read from the catalog every run.
+    // Two gates decide whether a device drives the avatar: Permitted (static) and Present (runtime).
 
     /// <summary>
     /// What one <see cref="ControlDevice"/> can do: which modes it implements and which scenes it may

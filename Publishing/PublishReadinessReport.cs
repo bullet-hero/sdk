@@ -4,13 +4,8 @@ using BH.SDK.Rules;
 
 namespace BH.SDK.Publishing
 {
-    // Carries LevelInspected because the analyzer answers a different question depending on what it
-    // was given, and a caller must not mistake one for the other. metadata.json is a separate file
-    // precisely so a catalogue can read thousands of them without touching a single level, and that
-    // cheap pass genuinely checks most of the policy - but two findings are invisible to it:
-    // a resource that has no metadata record at all, and where a resource is fetched from. Both live
-    // in level.json. A meta-only report that came back clean therefore means "nothing wrong in what
-    // was read", not "ready to publish", and only the flag distinguishes the two.
+    // Carries LevelInspected because a meta-only pass cannot see two findings (ResourceMetaMissing,
+    // ResourceUriTypeNotAllowed): a clean meta-only report is NOT "ready to publish".
 
     /// <summary> Everything one publish check found, and how complete that check was. </summary>
     public readonly struct PublishReadinessReport

@@ -89,24 +89,9 @@ namespace BH.SDK.Services.Collections
                             + Added.Prefabs.Count;
     }
 
-    // IMPORT IS PLANNED FIRST AND RESOLVED SECOND, because between the two sits a person. The plan
-    // answers everything that has one answer - what the selection needs (ResourceClosure), which data
-    // resources the level already holds identically, which file resources need a fresh id and a free
-    // file name - and lists what does not: a data resource whose id the level already uses for
-    // something different. The editor shows that list, the author answers each, and Resolve builds
-    // the copies. Nothing here touches a disk or the level itself.
-    //
-    // "IDENTICAL" IS THE GENERATED Equals, not a byte comparison of two serializations: the model
-    // contract already defines value equality member by member, and a second definition in terms of
-    // serializer output would disagree with it the first time a default is written differently.
-    //
-    // A FILE RESOURCE IS IDENTIFIED BY ITS BYTES. Its id is local to where it lives, so the
-    // collection's -1 says nothing about the level's -1, and no identity survives the crossing to
-    // compare against. What does survive is the file: when the host hands in both sides'
-    // MediaFingerprints and the level already holds a file resource of the same kind with the same
-    // digest, the import points at THAT one - no id, no file, no copy of a 3 MB track under a "_1"
-    // name. Without fingerprints (no store on either side) every file resource is new, which is only
-    // wasteful, never wrong.
+    // Planned first, resolved second: a person answers the conflicts in between. Nothing touches a
+    // disk. "Identical" is the generated Equals, a file resource is identified by its bytes
+    // (MediaFingerprints); without fingerprints every file is new. Docs/ARCHIVE.md.
 
     /// <summary> Plans and resolves bringing part of a collection into a level. </summary>
     public sealed class CollectionImportPlanner

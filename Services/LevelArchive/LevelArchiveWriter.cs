@@ -13,22 +13,9 @@ using BH.SDK.Utils;
 
 namespace BH.SDK.Services.LevelArchive
 {
-    // Writing what LevelArchiveBuilder decided, in whichever of the four shapes the author picked.
-    // The four are two independent choices - one file or a folder, protected or not - so this is two
-    // methods rather than four, and the mode enum exists to give the pair a name in a dropdown.
-    //
-    // THE DOCUMENTS GO FIRST, ALWAYS, and it is the only mitigation tar.gz allows for what it cannot
-    // do. A ZIP has a central directory, so metadata.json can be lifted out of a 50 MB archive
-    // without touching the song; a stream format structurally cannot. Putting the two documents at
-    // the front means a reader that only wants the level card decompresses a few kilobytes and
-    // stops, which covers every listing and preview this project has. See TarGzService's header.
-    //
-    // WHAT "PROTECTED" MEANS DIFFERS BETWEEN THE TWO, and the difference is the point rather than an
-    // inconsistency. A protected ARCHIVE is one .gpg file: nothing about it is readable, because it
-    // is in transit and an archive in transit has no reason to advertise itself. A protected FOLDER
-    // encrypts the level document ALONE - the metadata, the cover and the media stay plain, so the
-    // level browser still renders a card with a name and a picture and asks for the passphrase only
-    // when the level is opened. What is protected is the CONTENT, not the existence.
+    // Writes what LevelArchiveBuilder decided: two independent choices (file or folder, protected or
+    // not), so two methods. Documents go FIRST (tar.gz has no central directory). A protected archive
+    // hides everything; a protected FOLDER encrypts the level document alone. Docs/ARCHIVE.md.
 
     /// <summary> Writes a planned level archive out. </summary>
     public static class LevelArchiveWriter
@@ -79,16 +66,9 @@ namespace BH.SDK.Services.LevelArchive
             var hasPassphrase = passphrase != null && passphrase.Length > 0;
             var protection = options.Protection;
 
-            // A PASSPHRASE ON ITS OWN MEANS PROTECTED, and this is not leniency. The options carry
-            // WHICH scheme; handing one a passphrase says THAT it should be protected, and the only
-            // other reading - write it in the clear and drop the passphrase on the floor - produces
-            // a file the author believes is protected and is not. That failure is silent, survives
-            // being sent to somebody, and is the worst outcome available at this line.
-            //
-            // WHICH scheme it means depends on the container, because only one of them can choose: a
-            // zip carries AES of its own, which is what a password on an archive means by default -
-            // the recipient opens it with the archiver they already have. A .tar.gz carries no
-            // encryption at all, so there the answer is the OpenPGP layer or nothing.
+            // A passphrase on its own means PROTECTED: dropping it would yield a file the author believes
+            // is protected and is not. Which scheme depends on the container: a zip carries AES, a
+            // .tar.gz has none, so OpenPGP or nothing.
             if (protection == ArchiveProtection.None && hasPassphrase)
                 protection = options.Format == ArchiveFormat.Zip
                     ? ArchiveProtection.ZipAes256
@@ -121,10 +101,8 @@ namespace BH.SDK.Services.LevelArchive
                     return;
 
                 default:
-                    // The archive is packed straight INTO the encrypted message rather than into a
-                    // buffer first, so a big level never exists twice in memory. Its length is
-                    // therefore unknown when the literal packet opens, which is exactly the
-                    // streaming shape gpg itself writes.
+                    // Packed straight INTO the encrypted message so a big level never exists twice in
+                    // memory (the length is unknown when the literal packet opens, as gpg writes it).
                     await PgpSymmetricService.EncryptAsync(
                         stream => PackAsync(entries, stream, options.Format, token),
                         destination, passphrase,
@@ -160,12 +138,8 @@ namespace BH.SDK.Services.LevelArchive
                 ArchiveEntrySource.FromBytes(metaName, serialization.SerializeEnvelope(plan.Meta, options.MetaFormat)),
             };
 
-            // THINNED LIKE ANY OTHER LEVEL WRITE. An archive's level document is a level.json by
-            // another name, so a placement's materialized copies stay out of it and are rebuilt on
-            // import (LevelArchiveGenerator). The host's own writes go through
-            // BH.Core.Services.FileLoaderService, which does the same thing one line down; this path
-            // never reaches it, and an archive holding the copies would be the one shape of this
-            // format that still carried them.
+            // Thinned like any other level write: a placement's materialized copies stay out and are
+            // rebuilt on import (LevelArchiveGenerator); the host's FileLoaderService is not reached here.
             var levelBytes = serialization.SerializeEnvelope(
                 PrefabVirtualizationUtils.Thin(plan.Level), options.LevelFormat);
 
@@ -175,10 +149,8 @@ namespace BH.SDK.Services.LevelArchive
                 return entries;
             }
 
-            // Buffered rather than streamed, and this is the one place where that is right: a level
-            // document is the small half of an archive, it is already fully in memory as the byte[]
-            // the serializer just produced, and knowing its length lets the message use
-            // definite-length packets - the shape every reader handles.
+            // Buffered: the document is small and already a byte[], and a known length gives definite-length
+            // packets, the shape every reader handles.
             using var buffer = new MemoryStream();
             await PgpSymmetricService.EncryptBytesAsync(levelBytes, buffer, passphrase,
                 PgpEncryptOptions.ForDocument(levelName), token);
@@ -189,10 +161,8 @@ namespace BH.SDK.Services.LevelArchive
             return entries;
         }
 
-        // A collected file is the one thing an archive carries that does not live in the level's own
-        // store, so it is the one thing opened by absolute path - and the opener is built HERE
-        // rather than in the archive layer, which must stay unable to address anything outside a
-        // rooted store. See ArchiveEntrySource's header.
+        // The one thing opened by absolute path; the opener is built HERE because the archive layer must
+        // stay unable to address anything outside a rooted store.
         private static ArchiveEntrySource ToEntry(ArchiveFile file, IContentStore source)
         {
             if (!file.IsExternal) return ArchiveEntrySource.FromStore(file.ArchivePath, source, file.SourcePath);

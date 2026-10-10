@@ -11,15 +11,11 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Models.Game
 {
-    // ColorCurves' two scalars became URP's eight curves - see ColorCurvesKey's own header for why
-    // they could not simply be joined by six more. That took the domain to 1.1 and shipped with a
-    // snapshot and a migrator; both are gone and the domain is back at 1.0, per root CLAUDE.md
-    // Rule 11 - that was before 1.0.0, when the format still changed in place and nothing migrated.
+    // ColorCurvesKey is URP's eight curves; the domain stays at generation 1.
 
     /// <summary>
-    /// The level's screen-effect stack: one independent keyframe track per URP effect. Two levels of
-    /// switching - this Active gates the whole stack, and every key has its own Active on top of it.
-    /// Fields are grouped below as general / color grading / glitches.
+    /// The level's screen-effect stack: one keyframe track per URP effect. This Active gates the whole
+    /// stack, and every key has its own Active on top of it.
     /// </summary>
     [RuleContainer]
     [ModelGeneration(ModelDomains.PostProcessingEvents, ModelGenerations.V1_AlphaRelease)]

@@ -3,31 +3,9 @@ using System.Threading.Tasks;
 
 namespace BH.SDK.Tests
 {
-    // NUNIT'S OWN Assert.ThrowsAsync FREEZES THE UNITY EDITOR, and it does it silently: the whole
-    // application stops responding at zero CPU and never comes back, so the run has to be killed
-    // from Task Manager. It is worth stating exactly why, because the call looks completely
-    // ordinary and the failure looks like an infinite loop.
-    //
-    // Assert.ThrowsAsync BLOCKS the calling thread on the task it was handed. EditMode tests run on
-    // the main thread, which is also the only thread Unity's SynchronizationContext posts
-    // continuations to. So the moment the awaited work suspends for real - a GZipStream.WriteAsync,
-    // a tar entry read, anything that does not finish synchronously - its continuation is queued
-    // for a thread that is sitting inside the assert waiting for that very continuation. Neither
-    // side can move.
-    //
-    // It survived a first round of tests here only by accident: those exceptions were thrown
-    // synchronously, before the first await, so nothing ever suspended. That is precisely the kind
-    // of luck that makes the trap worth a file of its own rather than a comment somewhere.
-    //
-    // What is safe is AWAITING the failure instead of blocking on it. Every caller is an
-    // `async Task` test, so the await returns to the pump like any other.
-    //
-    // THE TIMEOUT BELOW IS NOT A CURE FOR THAT DEADLOCK AND MUST NOT BE READ AS ONE. A timeout
-    // needs its own continuation to run, so a BLOCKED main thread swallows it exactly as it
-    // swallows everything else. What it does catch is the other hang: a test awaiting something
-    // that simply never completes - a completion source nobody sets, an event that never fires -
-    // where the thread is free and the run would otherwise sit at that test forever. Preventing the
-    // blocking kind is `Tests/AsyncDisciplineTests`' job, which reads the test sources themselves.
+    // NUnit's Assert.ThrowsAsync BLOCKS the main thread and freezes the Editor at zero CPU: await the
+    // failure instead. The timeout below does NOT cure that deadlock (it needs a free thread); it catches
+    // an await that never completes. Full account: BH.SDK/Docs/TESTING.md, "Async tests".
 
     /// <summary> Awaiting counterpart of NUnit's Assert.ThrowsAsync, which must not be used in
     /// EditMode tests - see this file's header. </summary>
@@ -71,10 +49,7 @@ namespace BH.SDK.Tests
             }
         }
 
-        // Task.WhenAny rather than a CancellationToken, deliberately: a token only helps when the
-        // awaited work honours one, and the work worth guarding here is precisely the work that has
-        // stopped honouring anything. Losing the race is reported and the original task is
-        // abandoned - it cannot be killed, and pretending otherwise would be worse than saying so.
+        // Task.WhenAny, not a CancellationToken: the work worth guarding stopped honouring tokens.
 
         /// <summary> Awaits an operation, failing the test rather than hanging the run when it does
         /// not finish. See this file's header for the one hang this cannot catch. </summary>

@@ -1,12 +1,7 @@
 ﻿namespace BH.SDK.Models.Enums.Resources
 {
-    // THREE FAMILIES SHARE THIS ENUM since generation 2. The first five are FILE resources: bytes on
-    // disk, a level-local negative int id, and what the loader turns them into. The next four are DATA
-    // resources: a model inside level.json, addressed by a guid, never loaded as a file - they are here
-    // only so a ResourceMeta record can credit one. The last is the level's COVER, which is no resource
-    // at all (LevelMeta.LevelLogo is a bare location, so the browser can draw it from metadata.json
-    // alone) and so has neither id: a level has exactly one cover, and its type is its whole address.
-    // Append-only: the value is what the file stores.
+    // Three families since generation 2: five FILE kinds (negative level-local id), four DATA kinds (a guid,
+    // creditable only) and the level cover (no id). Append-only: the value is what the file stores.
 
     /// <summary> What a level resource becomes once loaded, or which data resource a record credits. </summary>
     public enum ResourceType : byte

@@ -5,10 +5,8 @@ using NUnit.Framework;
 
 namespace BH.SDK.Tests
 {
-    // Validation is the one full-graph reflection pass a level pays on every load
-    // (LevelLoaderService.LoadLevel), so its cost is not a library curiosity - it is the level's
-    // load time. The point of this fixture is that the walk stays linear in node count and does not
-    // regress into per-node reflection lookups again.
+    // Validation is the one full-graph pass on the editor load path; the walk must stay linear in node
+    // count, with no per-node reflection lookups.
 
     /// <summary> Guards the analyzer's cost on a level the size of a real, heavy one. </summary>
     [TestFixture]

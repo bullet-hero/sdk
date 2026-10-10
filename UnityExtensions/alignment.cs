@@ -66,23 +66,9 @@ namespace BH.SDK
             get => new(1.0f, 1.0f);
         }
         
-        // THESE ARE THE PIVOT THAT ROTATES A SHAPE ABOUT ITS CENTRE OF MASS, and the direction
-        // matters because it reversed. Every built-in shape's geometry is centred on its BOUNDING
-        // BOX now, so the default pivot (0.5, 0.5) already puts the transform on the box centre -
-        // which is what an editor wants to drag, size and align against, and what every gizmo and
-        // the object picker already assume. What it is NOT is where a polygon balances: for an
-        // odd-sided one the two are up to 0.145 apart, and rotating about the box centre makes a
-        // pentagon wobble instead of spin.
-        //
-        // So the numbers below are what an author picks when they want the second behaviour. They
-        // used to mean the opposite - the geometry was centred on the centroid and these moved it
-        // onto the box - and the values barely changed, because it is one offset seen from either
-        // end. They are exact now (ShapeCatalogService.GetCentroidPivot); the previous set was
-        // hand-computed and drifted in the fifth decimal.
-        //
-        // ONLY FORMS WHOSE TWO CENTRES DIFFER APPEAR HERE. Every even-sided polygon and the circle
-        // balance exactly on their box centre, so their answer is center_middle and giving them a
-        // constant of their own would only invite the question of which to use.
+        // Pivots that rotate a shape about its centre of MASS; geometry is centred on its bounding box, so
+        // the default (0.5, 0.5) is the box centre. Only forms whose two centres differ
+        // (Docs/SHAPES.md).
 
         /// <summary> Centre of mass of the right triangle, as a pivot. </summary>
         public static float2 rightTriangle

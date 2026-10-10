@@ -5,10 +5,8 @@ using BH.SDK.Rules;
 
 namespace BH.SDK.Generators.Bullets
 {
-    // The only generator so far whose output is not a formula, which makes it the one that proves
-    // determinism actually works: the same context seed has to reproduce the same rain exactly, or
-    // an author's saved level stops matching what they authored. Randomness comes from
-    // GeneratorContext.CreateRandom(), never from System.Random.
+    // The one generator whose output is not a formula, so it proves determinism: the same context seed
+    // must reproduce the same rain. Randomness is GeneratorContext.CreateRandom(), never System.Random.
 
     /// <summary>
     /// Bullets falling through a band of the screen, scattered across it and staggered in time.
