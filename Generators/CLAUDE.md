@@ -74,5 +74,6 @@ authoring automation: a generator produces level content from a few parameters.
   `FrameRules.LastFrameOf`, never by hand. Validation will not catch a generator that misses it:
   `RuleLevelFrame` bounds a frame on the left only, so content written past the end is legal data
   the author simply never sees.
+  `GeneratorSchema` writes a generator's parameters (fields in `Hints.Order`, hints as `x-` extras) as JSON schema for the MCP bridge and reads a caller's values back with range clamps; `Visible` is stated for the defaults only, `HiddenFields` answers for given values.
   Has its own `README.md`, and that README is now the design record: the spec it was written
   from is no longer present in the consuming project.

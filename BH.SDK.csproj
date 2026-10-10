@@ -18,12 +18,13 @@
     UnityEngine, Unity.Mathematics and Unity.Collections unconditionally. See UnityIntegration's own
     README.md.
 
-    FOUR FOLDERS ARE EXCLUDED, each for its own reason:
+    FIVE FOLDERS ARE EXCLUDED, each for its own reason:
       Roslyn/          - analyzers/generators; its own project, and it targets netstandard2.0
                          against the compiler's Roslyn rather than this library's dependencies.
       UnityExtensions/ - genuinely engine-bound, see above.
       Tests/           - its own project, so `dotnet build` here builds no test framework in.
       Samples~/        - consumers of the BUILT DLL (ConsoleSmoke), each its own project.
+      Mcp~/            - the MCP server (net8); it compiles this library through a ProjectReference.
 
     BHSDK_UNITY is deliberately NOT defined: it is what Player Settings define for the Unity build,
     and the whole point of this project is to compile the branch Unity never takes.
@@ -120,7 +121,7 @@
 
   <ItemGroup>
     <Compile Include="**\*.cs"
-             Exclude="Roslyn\**\*.cs;UnityExtensions\**\*.cs;Tests\**\*.cs;Samples~\**\*.cs;bin~\**\*.cs;obj~\**\*.cs" />
+             Exclude="Roslyn\**\*.cs;UnityExtensions\**\*.cs;Tests\**\*.cs;Samples~\**\*.cs;Mcp~\**\*.cs;bin~\**\*.cs;obj~\**\*.cs" />
     <!--
       The one file of UnityIntegration/ that does NOT come along. Two assemblies in Unity means two
       AssemblyInfo.cs, and merging them into one here would declare InternalsVisibleTo twice for the

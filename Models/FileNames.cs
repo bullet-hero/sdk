@@ -133,5 +133,14 @@
 
         /// <summary> Under <see cref="ProfileBackupsDirectory"/>: the one kept backup. </summary>
         public const string ProfileBackupFileName = "profile-backup.zip";
+
+        // Machine-local like the folders above, never part of a level or a profile, and not a model.
+        // The bridge's own files: BH.SDK.Agent.AgentEndpoint.
+
+        /// <summary> Under the persistent data path: where the level-editing bridge keeps its files. </summary>
+        public const string AgentDirectory = "mcp";
+
+        /// <summary> Under <see cref="AgentDirectory"/>: the running bridge's port, token and pid. </summary>
+        public const string AgentEndpointFile = "endpoint.json";
     }
 }

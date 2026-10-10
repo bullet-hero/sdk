@@ -25,3 +25,6 @@ folder reads this first; a level is a folder of files a player can zip and send,
   `profile-backups/` is a sibling owning everything the profile transfer writes on the device (the one kept
   backup, and in `staging/` every temporary of an import); it is never itself packed, or a backup carrying the
   previous backup would grow without end.
+- **`mcp/` holds the level-editing bridge's own files** (`AgentEndpoint`: the port and token of the running game). It is
+  machine-local and describes a running process, so it is no `ProfileCategory`: a profile never packs it, and no
+  level carries it.

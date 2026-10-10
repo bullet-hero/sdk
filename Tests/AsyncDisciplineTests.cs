@@ -29,6 +29,7 @@ namespace BH.SDK.Tests
             "Assets/Code/Specifics/Shared/Tests",
             "Assets/Plugins/BH.SDK/Tests",
             "Assets/Plugins/BH.SDK/UnityExtensions/Tests",
+            "Assets/Plugins/BH.SDK/Mcp~/Tests",
         };
 
         // The file that documents the trap is allowed to name it; so is this one.

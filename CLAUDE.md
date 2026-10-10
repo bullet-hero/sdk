@@ -54,6 +54,7 @@ describes it; each loads only when you touch a file in that folder.
 | `Roslyn/` | the compile-time half: analyzers and incremental source generators, **running** since… | `Roslyn/CLAUDE.md` |
 | `UnityExtensions/` | everything that genuinely needs Unity, in four groups. Own asmdef, unconditionally requires… | `UnityExtensions/CLAUDE.md` |
 | `UnityIntegration/` | `Cat.cs`, a tiny `Debug.Log`-style logging façade (`Meow`/`MeowWarn`/ `MeowError`/...)… | `UnityIntegration/CLAUDE.md` |
+| `Agent/` | the pure half of the level-editing bridge: wire constants and DTOs, the readable value codec, `TimeAddress`, the endpoint file. No level or save model lives here, so nothing in it bumps a version | `Agent/CLAUDE.md` |
 | `Tests/` | `BH.SDK.Tests.asmdef`, NUnit. **There is a SECOND test assembly**, `UnityExtensions/Tests/`… | `Tests/CLAUDE.md` |
 
 ## Mental model

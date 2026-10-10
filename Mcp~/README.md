@@ -1,0 +1,88 @@
+# bh-mcp - the Bullet Hero MCP server
+
+A thin MCP server (stdio) that forwards tool calls to the running game's bridge: a loopback TCP
+listener inside the game, one JSON-RPC 2.0 request per line. It reads where the game listens from the
+endpoint file `<persistentDataPath>/mcp/endpoint.json`, which the game writes while MCP is enabled in
+Settings. All editor logic lives in the game; this process only connects, performs the `hello`
+handshake with the file's token, forwards, and formats the answer.
+
+The wire contract (method names, error codes, limits) is `Agent/` in this SDK
+(`AgentProtocol`, `AgentErrorCode`, `AgentRules`). The plan is `Docs/Plans/LEVEL_MCP_PLAN.md` in the
+game repository.
+
+## Build and test
+
+```sh
+dotnet build Assets/Plugins/BH.SDK/Mcp~/BH.SDK.Mcp.csproj
+dotnet test  Assets/Plugins/BH.SDK/Mcp~/Tests/BH.SDK.Mcp.Tests.csproj
+```
+
+The tests run a `FakeBridge` (a real loopback socket speaking the same protocol), so they need no game.
+The machine's `dotnet` can be the SDK bundled with Unity: `<Unity>/Editor/Data/DotNetSdk/dotnet`.
+
+## Publish a self-contained binary (development)
+
+```sh
+dotnet publish Assets/Plugins/BH.SDK/Mcp~/BH.SDK.Mcp.csproj -c Release -r win-x64 --self-contained true \
+  -p:PublishSingleFile=true -p:PublishTrimmed=true -p:TrimMode=partial -o Assets/Plugins/BH.SDK/Mcp~/bin~/publish/win-x64
+```
+
+Other runtime identifiers (`linux-x64`, `osx-arm64`, `osx-x64`) cross-publish the same way. The output
+folder is under `bin~`, which git and Unity both ignore.
+
+## Connect a client
+
+Any MCP client that launches a stdio server takes the same shape:
+
+```json
+{ "mcpServers": { "bullet-hero": { "command": "<path to bh-mcp(.exe)>", "args": ["--endpoint", "<path to endpoint.json>"] } } }
+```
+
+`--endpoint` is optional: without it the server looks in the game's default data folder for this
+machine (`AgentEndpoint.DefaultPath`). The game's Settings screen has a Copy client config button that
+fills both paths in.
+
+## Tools
+
+Class per area under `Tools/`; the name is the bridge method with `_` for `.`.
+
+| Class | Tool | Does |
+|---|---|---|
+| `SessionTools` | `session_status` | connection, screen, open level, revision, author busy, AI rights |
+| `LevelTools` | `level_list` | levels in the editor's list (paged) |
+| | `level_open` | open a writable level by id |
+| | `level_create` | new empty level (name, framerate, duration) |
+| | `level_save` | save the open level |
+| `ReadTools` | `level_outline` | hierarchy as indented lines (paged, depth, filters) |
+| | `object_query` | objects by time range, name, type or parent (paged) |
+| | `object_get` | objects in full as readable JSON |
+| | `keys_get` | keyframes of chosen tracks, global frames |
+| | `events_get` | markers, beat segments, checkpoints, audio tracks |
+| | `resources_list` | textures, fonts, audios, prefabs, themes, effects |
+| | `shapes_find` | shapes by form, sector, thickness or name |
+| `EditTools` | `edit_batch` | the one write tool: ops in one undo step, verb vocabulary in its description |
+| `HistoryTools` | `history_get` | the undo history, AI batches captioned |
+| | `history_undo` / `history_redo` | step the history |
+| | `changes_since` | what changed after a revision, and who |
+| `SelectionTools` | `selection_get` / `selection_set` | the author's selection |
+| `PrefabTools` | `prefab_mode_enter` / `prefab_mode_exit` | Prefab Mode: reads and writes move into a template |
+| | `prefab_overrides` | what a placement changes against its template |
+| `GeneratorTools` | `generator_list` / `generator_schema` | scope generators and their parameter schema |
+| | `generator_run` | one generator over a time window, one undo step |
+| `MaintenanceTools` | `resource_import` | copy a texture, font or audio file into the level, its own undo step |
+| | `raw_get` / `raw_set` | the level file as a tree; unvalidated write, last resort |
+| | `command_list` / `command_run` | whitelisted editor commands |
+| | `validate_list` / `validate_fix` | validation findings; automatic fixes in one undo step |
+
+A list comes back as a header line (`total=.. offset=.. revision=.. scope=.. next=..`) and its lines;
+anything else as compact JSON. A refusal is an error result carrying the code. Hints the game attaches
+are dropped by `HintFilter` when sent within `AgentRules.HintRepeatAfterCalls` calls.
+
+## Adding a tool
+
+One NON-static class per area under `Tools/`, `[McpServerToolType]`, each method a thin forwarder
+through `BridgeTool.ForwardAsync` with a `[Description]` written for the AI (what, units, cost). Then
+list the class in `Program.cs` with `WithTools<T>(toolJson)`. A parameter type a tool takes must be
+listed in `ToolJsonContext`: a trimmed binary has no reflection-based JSON and fails to start without it.
+**Never `WithToolsFromAssembly()`**: a trimmed binary finds no tools through it.
+Logging goes to stderr only - stdout is the MCP transport.
