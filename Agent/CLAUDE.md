@@ -4,7 +4,7 @@ Read `Assets/Plugins/BH.SDK/CLAUDE.md` first - it carries the mental model, the 
 layer-wide conventions. This file is folder-local.
 
 The pure half of the level-editing bridge an MCP client drives the running editor through. The plan is
-`Docs/Plans/LEVEL_MCP_PLAN.md` in the game repo. Nothing here is a level or save model: no
+`Docs/Plans/LEVEL_MCP_PLAN_COMPLETED.md` in the game repo. Nothing here is a level or save model: no
 `[GenerateModel]`, no `[ModelGeneration]`, no snapshot, no migrator, so nothing here bumps a version.
 
 ## Invariants

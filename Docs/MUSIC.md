@@ -4,7 +4,7 @@ Two pure halves of hearing a level's track and speaking about it in bars. `Servi
 turns a mono signal into an `AudioMap`; `Agent/MusicGrid` numbers the bars of the level's own
 `BeatSegment`s, and `TimeAddress` reads the musical time forms through it. Both are BCL + Newtonsoft,
 hold no static mutable state and run as well in the game as in a server. The game repo's
-`Docs/Plans/LEVEL_MCP_PLAN.md` (Phase 4) is what consumes them.
+`Docs/Plans/LEVEL_MCP_PLAN_COMPLETED.md` (Phase 4) is what consumes them.
 
 ## `AudioAnalyzer.Analyze(mono, sampleRate, settings, token)`
 
