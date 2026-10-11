@@ -9,8 +9,10 @@ The pure half of the level-editing bridge an MCP client drives the running edito
 
 ## Invariants
 
-- **The game and the server (`Mcp~/`, net8) both compile this folder**, so it stays BCL + Newtonsoft (+ SharpZipLib
-  for `Imaging/`'s zlib), netstandard2.1 and C# 9, no `UnityEngine`. The server project is excluded from `BH.SDK.csproj` by its tilde name.
+- **The game and the server (net8, its own repository [bullet-hero/mcp](https://github.com/bullet-hero/mcp))
+  both compile this folder**, so it stays BCL + Newtonsoft (+ SharpZipLib for `Imaging/`'s zlib),
+  netstandard2.1 and C# 9, no `UnityEngine`. Inside the game the server compiles against the game's
+  copy of this SDK; on its own, against its `BH.SDK` submodule.
 - **DTOs in `Messages/` are plain Newtonsoft classes, each member under an explicit camelCase
   `[JsonProperty]`.** Not `Names.cs` and not the file's short keys: these never reach a level file, and a
   wire name is read by an AI, so it is spelled out.
