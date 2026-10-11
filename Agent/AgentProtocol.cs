@@ -38,6 +38,10 @@ namespace BH.SDK.Agent
             /// <summary> Connection, screen, level and author state. </summary>
             public const string SessionStatus = "session.status";
 
+            /// <summary> Moves the running game to another screen with a line of its launch arguments.
+            /// </summary>
+            public const string AppNavigate = "app.navigate";
+
             /// <summary> The levels in the editor's list. </summary>
             public const string LevelList = "level.list";
 
