@@ -3,93 +3,32 @@
 Read `Assets/Plugins/BH.SDK/CLAUDE.md` first - it carries the mental model, the folder index and the
 layer-wide conventions. This file is folder-local.
 
+`SerializationService`-adjacent but SDK-root-level: the level archive (`Content/`, `Archive/`,
+`Crypto/`, `LevelArchive/`, read together), resource `Collections/`, the `Profile/` archive, the
+built-in shape library (`Shapes/ShapeCatalogService`), the static `Controls/` device catalogue,
+`AudioAnalysis/` (tempo, onsets and sections of a track; its own `CLAUDE.md`), and
+`CryptographyService`/`TextFormatService`/`FontCharacterService`.
 
-## Services/
+Why each is shaped as it is: `Docs/ARCHIVE.md` ("The folder at a glance" is this folder's map);
+the shape catalogue: `Docs/SHAPES.md` - read it before touching the `ShapeId` layout.
 
-Why the archive, store, crypto, collection and profile code is shaped as it is: `Docs/ARCHIVE.md`; the
-shape catalogue: `Docs/SHAPES.md`.
+## Traps
 
-`SerializationService`-adjacent but SDK-root-level. **Four of its subfolders are
-  the level-archive feature and only make sense read together** (design record:
-  `docs/issues/ARCHIVE_HISTORY.md` in the consuming project): `Content/` (`IContentStore` - a named
-  set of blobs, ROOTED BY CONSTRUCTION, so "does this escape the folder" is a property of the type
-  rather than a check at every call site; `DirectoryContentStore`/`MemoryContentStore` are two
-  implementations rather than two parallel APIs, which is what lets the same pipeline serve a disk,
-  a test and a server), `Archive/` (**two containers behind one set of rules** - `TarGzService` and
-  `ZipService`, with `ArchiveFormatSniffer` deciding which a stream is from its first bytes and
-  naming 7z so a refusal can say so rather than call a good file corrupt. The four unpack checks are
-  the same four for both, and the differences decide how either is touched: tar carries LINK
-  ENTRIES, which no name check catches, while a zip's declared size is a CLAIM the archive makes
-  about itself - so its limits are enforced twice, cheaply from the central directory and then as a
-  hard counter during the copy - and two zip entries may SHARE A NAME, which is refused outright.
-  `NonSeekableWrite` is what keeps one input producing one output: ZipOutputStream writes a
-  different file when it can seek, and a desktop export can while an Android SAF export cannot),
-  `Crypto/` (`PgpSymmetricService`, OpenPGP symmetric,
-  SEIPD v1 because GnuPG does not implement RFC 9580; the `...Utf8` overloads are what make a Cyrillic
-  passphrase interoperate with gpg at all - `Docs/ARCHIVE.md`), and
-  `LevelArchive/` (what a level archive contains, written and read; the reader is also the future
-  server's entry point, which is why every refusal is a value rather than an exception).
-  **This is where the SDK started reading files**, so any header claiming it reads none is stale.
-  **`Cache/` is GONE**, and what replaced it is a FORMAT rather than another layer: a side-car
-  cache has to decide when it is stale, carry an invalidation hook on every write path and keep a
-  second serializer in step with the real one, while a format cannot disagree with the file because
-  it IS the file. `Serialization/Blob/` is that format; `LevelObjectCodec`, the object tree written
-  out by hand, was its worked example and is no longer needed.
-  Also `CryptographyService`
-  (AES-256-CBC, and NOT what protects a level any more - OpenPGP does, `Docs/ARCHIVE.md`), `TextFormatService` (`{variable}` string templating), `FontCharacterService` (builds
-  `LevelHints.FontCharacters`, see below), and **`Shapes/ShapeCatalogService`** + `ShapeParameters` -
-  the game's own built-in shape library, which lives HERE rather than in the consumer because it
-  is what a `ShapeId` means: 497 shapes as the cross product of a form, a sector, a thickness rung
-  and an invert flag, an id that IS those parameters packed one axis per nibble
-  (`Encode`/`TryDecode`), and `Build` producing the geometry in pure C#. The consuming project only
-  bakes what this enumerates. Read `Docs/SHAPES.md` before touching the id layout - its six rules
-  are what make a future axis free and an inserted side count harmless.
-  Finally `Controls/` (`ControlDeviceCatalog`/`ControlDeviceInfo`) - the STATIC per-device facts,
-  here rather than in the settings tree because they are not the player's to change and **must not
-  survive a file**: a saved "this device supports Relative" would still claim so after the build
-  stopped supporting it. The matrix is uniform but for one hole (three devices do all three
-  modes, `DeviceGyro` has no Relative, so its `SupportedModes` is `Absolute | Direction`); the mask
-  is also the only place a future device that genuinely cannot do one - a pedal, a wheel, a MIDI pad - could say so
-  without every consumer growing a special case.
-
-**`Collections/` is the RESOURCE COLLECTION format** - a folder of reusable resources of any of the
-seven kinds, the unit the game keeps in `resources/collections/<guid>/`, archives and publishes to the
-Workshop. Everything here works over `IContentStore`, so on a folder, on memory and on an unpacked
-upload alike, and every failure is a value (`CollectionReadResult`, `CollectionArchiveResult`), never a
-throw - `LevelArchiveReader`'s contract.
-- The MANIFEST is `Models/Collections/ResourceCollection` (a new domain at `V2_SimplifyEntrance`, not a
-  bump - nothing on disk had its shape): name, description, authors, license, the three file-kind
-  dictionaries (a `LevelPath` source is relative to the collection root, media live in `media/`) and
-  the credits. The four data kinds are NOT in it: they sit in `prefabs/`, `themes/`, `shapes/`,
-  `effects/` as the same one-envelope-per-file the device library writes. `CollectionContent` pairs the
-  manifest with a `LevelResources` that SHARES its file dictionaries, so every planner reads one shape.
-- `CollectionReader` skips (and reports in `Skipped`) an entry of a newer generation or whose payload
-  id disagrees with its file name. `CollectionWriter` writes a snapshot - it prunes the owned folders -
-  and the manifest LAST, so a half-written folder is not a collection. `CollectionArchive` packs and
-  unpacks through `TarGzService`/`ZipService`, format sniffed from the bytes, refusing an archive with
-  no manifest at its root. It takes the level archive's two protections for any content - an OpenPGP
-  wrap of either container, or zip AES-256 - and a missing or wrong passphrase comes back as
-  `PassphraseRequired`/`WrongPassphrase`, which the host answers by asking. The plaintext of an
-  OpenPGP message is sniffed again, since only it says which container it holds.
-- `CollectionImportPlanner` (into a level) and `CollectionExportPlanner` (out of anything holding a
-  `LevelResources`) are PURE: closure through `Utils/ResourceClosure`, identity by the generated
-  `Equals`, fresh level-local ids and unique file names for the file kinds, a `ResourceRemap` the
-  models are rewritten through, and the credits that travel with them. A conflict (same id, different
-  content) is resolved by an answer the host supplies - keep, or copy under a new id - never by the
-  planner.
-- **`Profile/` is the PROFILE ARCHIVE** - a player's whole data folder as one zip, the game's
-  Settings > Other transfer. It MIRRORS the profile root under the player's own names
-  (`ProfileLayout`: a category is one folder, or `settings.json`; the mapping is also the whitelist,
-  read the same way on pack and unpack), so it is written to zip only, under a policy that lifts the
-  shared 100-byte name cap (`ArchivePolicy.MaxNameBytes`; tar refuses such a policy). The manifest is
-  `Models/Profile/ProfileManifest` (a new domain, not a bump): categories STORED rather than derived,
-  and each level's export-time write time, since every zip entry is pinned to 1980. The unpack limits
-  are what the archive's own directory declared (`ProfileArchiveReader`), and `ZipService` gained a
-  filtered unpack and a directory listing for it. `ProfileMergePlanner` (levels by `LevelId`, newer
-  wins whole, a tie keeps local) and `StatisticsMerge` (max per counter - idempotent, decided with the
-  author; `BestRunOrder` mirrors the game's `StatisticsMath.IsBetter`) are pure.
-- A FILE resource has no identity outside its folder, so the import planner identifies it by its
-  BYTES: handed both sides' `MediaFingerprints` (sha256 of each file resource's first `LevelPath`
-  source, read from an `IContentStore`), it points an incoming texture, font or audio at the level's
-  own one with the same digest instead of copying it in again (`Reused`). Without fingerprints every
-  file is new - wasteful, never wrong. The planner stays pure; `MediaFingerprints` is its only IO.
+- **Every refusal is a value, never an exception** (`LevelArchiveReader`, `CollectionReadResult`,
+  `CollectionArchiveResult`) - the reader is the future server's entry point.
+- **`IContentStore` is rooted by construction**; the same pipeline serves a disk, memory and a server.
+- **tar and zip share the four unpack checks but differ**: tar's link entries, a zip's declared size
+  (a claim, enforced twice), and duplicate zip names (refused). `NonSeekableWrite` keeps one input one
+  output.
+- **OpenPGP (SEIPD v1) protects a level, not `CryptographyService`'s AES**; use the `...Utf8`
+  overloads for a non-ASCII passphrase.
+- **There is no cache**: `Serialization/Blob/` is a format. Don't add a side-car.
+- **Device capabilities (`Controls/`) must never be saved** in a file.
+- **`CollectionImportPlanner`/`CollectionExportPlanner`/`ProfileMergePlanner`/`StatisticsMerge` are
+  pure**; a conflict is resolved by the host's answer, never by the planner. `MediaFingerprints` is
+  the import planner's only IO.
+- **`CollectionWriter` writes the manifest LAST**, so a half-written folder is not a collection.
+- **The profile archive is zip only** (`ArchivePolicy.MaxNameBytes` lifted; tar refuses that policy),
+  and `ProfileLayout`'s mapping is also the whitelist.
+- `ResourceCollection` and `ProfileManifest` were new domains, not bumps - nothing on disk had their
+  shape.

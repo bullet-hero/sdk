@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using BH.SDK.Agent;
 using BH.SDK.Interop;
 using BH.SDK.Models;
 using BH.SDK.Models.Enums.Resources;
@@ -25,11 +26,18 @@ namespace BH.SDK.Services.LevelArchive
         private const string CodeBadPath = "archive.resource_bad_path";
         private const string CodeRenamed = "archive.resource_renamed";
         private const string CodeDropped = "archive.unreferenced_dropped";
+        private const string CodeAiWithheld = "archive.ai_context_withheld";
+
+        /// <summary> The plan of an unprotected export - a plain folder or a Workshop upload. </summary>
+        public static Task<LevelArchivePlan> BuildAsync(Level level, LevelMeta meta,
+            IContentStore levelStore, CancellationToken token = default) =>
+            BuildAsync(level, meta, levelStore, LevelExportMode.Folder, token);
 
         /// <summary> Walks the level for everything it references and decides what the archive
-        /// carries, what is collected into it, and what cannot travel. </summary>
+        /// carries, what is collected into it, and what cannot travel. A protected mode never carries
+        /// the level's <c>ai/</c> folder. </summary>
         public static async Task<LevelArchivePlan> BuildAsync(Level level, LevelMeta meta,
-            IContentStore levelStore, CancellationToken token = default)
+            IContentStore levelStore, LevelExportMode mode, CancellationToken token = default)
         {
             if (level == null) throw new ArgumentNullException(nameof(level));
             if (meta == null) throw new ArgumentNullException(nameof(meta));
@@ -49,7 +57,9 @@ namespace BH.SDK.Services.LevelArchive
             await context.RouteAsync(metaCopy.LevelLogo, "metadata.logo");
             await RouteResourcesAsync(context, levelCopy.Resources);
 
-            var dropped = await CountUnreferencedAsync(levelStore, context, token);
+            var aiWithheld = await RouteAiContextAsync(context, levelStore, mode, report, token);
+
+            var dropped = await CountUnreferencedAsync(levelStore, context, aiWithheld, token);
             if (dropped > 0)
                 report.Info(CodeDropped,
                     $"{dropped} file(s) in the level folder are referenced by nothing and were not packed.");
@@ -93,9 +103,64 @@ namespace BH.SDK.Services.LevelArchive
             return sorted;
         }
 
-        // The regenerated documents, and those a DIFFERENT format left behind, are not "unreferenced".
-        private static async Task<int> CountUnreferencedAsync(IContentStore store, WalkContext context,
+        // Packed only with a manifest that shares it, and never in a protected mode (whose point is that
+        // nothing readable travels). No manifest leaves ai/ to the unreferenced count. Docs/ARCHIVE.md.
+        private static async Task<bool> RouteAiContextAsync(WalkContext context, IContentStore store,
+            LevelExportMode mode, InteropReport report, CancellationToken token)
+        {
+            var manifestPath = AiFolderRules.StorePath(FileNames.AiManifestFile);
+            if (!await store.ExistsAsync(manifestPath, token)) return false;
+
+            string reason = null;
+            if (mode.IsProtected())
+            {
+                reason = "a protected export never carries it";
+            }
+            else
+            {
+                var manifest = await ReadManifestAsync(store, manifestPath, token);
+                if (manifest == null) reason = "its manifest could not be read";
+                else if (!manifest.Share) reason = "the author chose not to share it";
+            }
+
+            if (reason != null)
+            {
+                report.Info(CodeAiWithheld, $"The level's AI context was not packed: {reason}.",
+                    FileNames.AiDirectory);
+                return true;
+            }
+
+            var sizes = new List<KeyValuePair<string, long>>();
+            foreach (var path in await store.ListAsync(FileNames.AiDirectory, token))
+            {
+                var name = AiFolderRules.NameOf(path);
+                if (name == null) continue;
+
+                var length = await store.GetLengthAsync(path, token);
+                sizes.Add(new KeyValuePair<string, long>(name, length));
+            }
+
+            foreach (var name in AiFolderRules.SelectShareable(sizes))
+                context.PackStoreFile(AiFolderRules.StorePath(name));
+
+            return false;
+        }
+
+        private static async Task<AiFolderManifest> ReadManifestAsync(IContentStore store, string path,
             CancellationToken token)
+        {
+            if (await store.GetLengthAsync(path, token) > AgentRules.MaxContextFileBytes) return null;
+
+            using var stream = await store.OpenReadAsync(path, token);
+            using var reader = new StreamReader(stream);
+            var text = await reader.ReadToEndAsync();
+            return AiFolderManifest.TryParse(text, out var manifest, out _) ? manifest : null;
+        }
+
+        // The regenerated documents, and those a DIFFERENT format left behind, are not "unreferenced";
+        // neither is a withheld ai/ folder, which is reported on its own.
+        private static async Task<int> CountUnreferencedAsync(IContentStore store, WalkContext context,
+            bool aiWithheld, CancellationToken token)
         {
             var listing = await store.ListAsync(string.Empty, token);
 
@@ -104,6 +169,7 @@ namespace BH.SDK.Services.LevelArchive
             {
                 if (context.IsPackedFromStore(path)) continue;
                 if (IsDocument(path)) continue;
+                if (aiWithheld && ContentPath.HasPrefix(path, FileNames.AiDirectory)) continue;
 
                 dropped++;
             }
@@ -208,6 +274,16 @@ namespace BH.SDK.Services.LevelArchive
 
                 _packedStorePaths.Add(storePath);
                 key.Uri = archivePath;
+            }
+
+            /// <summary> Packs a file of the level's own folder that no resource names, under its own path.
+            /// </summary>
+            public void PackStoreFile(string storePath)
+            {
+                Take(SourceId(storePath, external: false),
+                    () => new ArchiveFile(Reserve(storePath, storePath), storePath, isExternal: false));
+
+                _packedStorePaths.Add(storePath);
             }
 
             private void Collect(ResourceKey key, string path)

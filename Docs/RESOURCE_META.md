@@ -8,10 +8,14 @@ A credit line, not a role enum: the vocabulary of a credits list is open (mixing
 "level design, second half") and a fixed list is a lie the moment a level needs a word not in it. It is
 localizable for the same reason `Name` is: a handle and what it did are read by the same person in the same
 language. A record has no identity of its own - two with the same name are the same person only by
-convention.
+convention. It holds a name, a credit and a url, and an empty credit is an ordinary record.
 
 ## ResourceMeta
 
+- **Consumed by `LevelMeta` (itself NOT in `Models/Meta/`), addressed in one of THREE ways**: a file
+  resource's negative int, a data resource's guid, or neither for the cover (`ResourceType.LevelLogo`),
+  since a level has exactly one - `RuleResourceMetaId` enforces which. It carries licensing/attribution
+  only. From `Models/CLAUDE.md` ("Meta"), which keeps the summary.
 - **The licence defaults to `NoSpecifiedLicense`.** An unfilled record is one nobody read the terms of;
   defaulting it to a real licence (it was CC BY-NC) made the file state something the author never
   checked, about a work usually someone else's. A publish profile can then refuse the level, which is the

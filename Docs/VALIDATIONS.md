@@ -64,12 +64,109 @@ because the mapping is per rule, not per occurrence.
   reporting is a root override naming a field the root does not own, since `ApplyModifications` would
   drop it (`PrefabRootUtils.TryGetModificationTarget`).
 
+## Rules, severities and the attribute families
+
+Moved here from `Validations/CLAUDE.md`, which keeps the summary.
+
+- **What `Rules/` depends on.** `Rules/` classes are mostly pure `public const` numeric tables that
+  depend on no model CLASS - at most on `Models/` enums and primitives (`FrameRules` on
+  `Models.Enums`, `LevelRules` on `Models.Primitives`, `TextRules` on `Models.Enums.Text`). Two
+  exceptions reach further: `EffectRules` constructs default `CurveValue`/`GradientValue` model
+  instances, and `RuleContext` is built over the level's object models.
+- **`RuleGroup` (`None/Error/Warning/Advice`) is real** - every rule states its group. While all but
+  one rule took `BaseRuleAttribute`'s default, `ValidationReport.HasErrors` was identical to
+  `!IsValid` and no consumer could act on it. The CRITERION is written out at the top of
+  `RuleGroup.cs`: Error means the file cannot be played as written, Warning means it plays but not as
+  authored (content that never appears, a dangling reference taking a fallback, an override that does
+  not apply) or that the only repair is destructive, Advice means playback does not change.
+  `Tests/Rules/RuleSeverityTests` makes the choice mandatory - a rule either states its own `Group` or
+  is named in that file's `IntentionallyError` list, so a new rule cannot inherit Error by silence.
+- **`ValueRules.MaxShapeTriangles` is 128** (64 was outgrown by the game's own shapes): an inverted
+  32-sided ring is the box's rim, the ring's outer rim and its inner disc, which is 94 triangles, and
+  six more built-in shapes sat at exactly 64 with no room at all. Raising a cap can invalidate nothing
+  (it only lets a hand-written file carry more than it could before), and `MaxShapeVertices` is
+  derived from it rather than restated.
+- **`CompositeShape`'s geometry carries no per-property collection rule beyond `[RuleNotNull]`, and
+  that is deliberate.** Every generic collection fix is index-destructive on indexed geometry:
+  `RuleCollectionNoNullItems` would *remove* a null vertex and shift every index after it onto the
+  wrong point, `RuleCollectionMaxCount` would truncate the vertex list out from under the triangles
+  still referencing its tail. Both look local and corrupt the shape silently. The class-level
+  `RuleShapeGeometry` owns all of it - only a rule seeing both lists can fix one without breaking the
+  other. Don't add a collection rule to `Vertices`/`Indices`.
+- **`[RuleOptional]` is what makes a nullable member representable at all.**
+  `BasePropertyRuleAttribute.IsValid` answers null for every rule at once
+  (`if (value == null) return false`), which is the safety net for a forgotten `RuleNotNull` and is
+  pinned by a `TestNull` case in each of the ~20 value-rule fixtures. It is also why a member that
+  deliberately starts null - `LevelTrackEffects`' eleven DSP slots, `EffectObjectForces`' eleven
+  forces, the colours and limits on `ShadowsMidtonesHighlightsKey`/`VignetteKey`/`LensDistortionKey` -
+  made every bound on it report an absent value as out of range. The marker is read once per property
+  and cached in `RuleWalk`, on the null path only; both walks go through the same `Check`, so the
+  reflective and generated paths cannot disagree about it. Null stays `RuleNotNull`'s question -
+  `[RuleOptional]` is the opposite answer to the same one, written down instead of inferred from an
+  absent attribute.
+- **`RuleEnumValid` covers single-choice enums only.** `[Flags]` enums (`ClipboardContent` on
+  `ClipboardData`, `KeyBindingMask` on the keyboard-mouse controls settings, `ObjectTypeMask` on
+  `EditorInterfaceSettings`, `CurveWeightedMode` on `CurveKeyframeValue`) go through
+  `RuleEnumFlagsValid`, which asks "does this carry an undeclared bit" and whose `Fix` masks the
+  unknown bits off instead of falling back to a default. Don't loosen `RuleEnumValid` to cover both -
+  `Enum.IsDefined` rejects every legitimate flag combination.
+- **The attribute families.** `Rules/Attributes/` are declarative `[RuleXxx]` property attributes
+  (`[AttributeUsage(Property)]` only - never fields), all `: BaseRuleAttribute`
+  (`IsValidType`/`IsValid`/`Fix`). `[RuleContainer]` (a bare class-level marker) opts a type into the
+  walk - applied broadly across `Models/`, not just a handful of aggregate roots.
+  `Rules/Attributes/Contextual/` need a `RuleContext` (the root `Level` and the resolved object scope):
+  `RuleObjectIdValidAttribute`/`RuleParentObjectIdValidAttribute` check `ObjectId` validity/parent
+  rules against the scope, `RuleReferenceExistsAttribute` that a level-defined resource id resolves;
+  uniqueness within a scope stays the graph pass's, because a property attribute only ever sees one
+  property at a time. `Rules/Attributes/Values/` are typed against the polymorphic
+  `IFloat`/`IVector2-4`/`IString`/`IPrimitiveInt`/`IPrimitiveGuid` interfaces, switching per concrete
+  variant to check/clamp.
+- **`RuleLevelFrame` is not a contextual rule any more**: it bounds a frame on the LEFT only
+  (`FrameRules.MinFrame`), because a level's end is a number the author drags, so a key parked past it
+  is content waiting for the level to grow - a right-hand bound reported it and its `Fix` clamped it
+  away.
+- **Cross-object invariants are not attributes.** `Validations/Graph/LevelGraphAnalyzer` owns them
+  (duplicate `ObjectId`s, missing or cyclic parents, dangling/self-referencing prefab placements, stale
+  id counters, broken remap tables), and `ValidationFacade` runs the two passes together. Don't write
+  a graph check as a `[RuleXxx]` attribute.
+- **`Validations/RuleAnalyzer`** walks any `[RuleContainer]`-typed object graph (generic over the root,
+  not hardcoded to `Level`) and returns `List<RuleIssue>`; `RuleIssue`/`RulePath` carry the full trace
+  from root to the failing property (including list index / dict key) so a fix knows exactly where to
+  write.
+- **The walk is on the EDITOR's load path, not the player's** - a decision the consumer made:
+  `Core`'s `LevelLoaderService` carries `LevelValidation { Report, Skip }`, `LoadLevel` (playback)
+  defaults to `Skip` and `LoadLevelProtected` (opening a level in the editor) defaults to `Report`. So
+  the cost is how long an author waits, and nothing a player waits for.
+- **The walk is generated.** `BH.SDK.Roslyn`'s `ValidationGenerator` writes a `Validate` for every
+  `[RuleContainer]` type, and `RuleWalk.Node` dispatches through `IValidatable`, falling back to
+  `RuleAnalyzer.WalkNode` for anything without one (a non-partial type, a test fixture, a future
+  hand-written model), so a half-migrated tree is a legal state. Measured on the corpus, three passes:
+  volcano's rules pass went **1614 ms to 850 ms** and weathergirl's **264 ms to 112 ms** - 1.9x and
+  2.4x, not the order of magnitude the `.blob` codec bought, because there reflection was the whole
+  cost of reading and here it is part of it. What survives is the virtual
+  `rule.IsValid(object, RuleContext)` and the boxing at that boundary. The two per-node prohibitions
+  under "RuleAnalyzer and RuleWalk" were measured at ~1.3 s on a 4.7k-object level;
+  `Tests/RuleAnalyzerPerformanceTests` pins the result.
+- **`[RuleContainer]` is INHERITED and the generator only sees DECLARED attributes**: a type that is a
+  container purely through its base is invisible to `ForAttributeWithMetadataName` and silently keeps
+  the reflective walk. `Tests/Rules/RuleContainerCoverageTests` keeps that count at zero and separately
+  asserts that every `[RuleContainer]` in this assembly has a generated walk.
+- **The acceptance test is that the report did not change**, two-sided: `Core.Tests.ValidationParityTests`
+  compares against a stored count-plus-digest AND compares both walks against each other through
+  `RuleAnalyzerSettings.useGeneratedWalk` (details in the last bullets below).
+- **`Roslyn/Analyzers/RuleContainerAnalyzer.cs`** (shipped as `BH.SDK.Roslyn.dll`, live in the Editor
+  since 2026-09-02) enforces at compile time that every `[RuleContainer]` class is non-static,
+  non-abstract, and has a public parameterless constructor - because several `Fix*` paths
+  (`RuleNotNullAttribute`, the `RuleIPrimitiveXxx` family) call `Activator.CreateInstance` on property
+  *types* at runtime, and a violation would otherwise surface only as a rare `MissingMethodException`
+  deep inside an editor "auto-fix my level" flow.
+
 ## RuleAnalyzer and RuleWalk
 
 - **What the walk must not do per node** (measured, then removed): query `[RuleContainer]` uncached
   (a Mono custom-attribute query allocates a fresh attribute instance per call), and fetch a property
   value that can lead nowhere (`PropertyInfo.GetValue` boxes every value type). `IsWalkable` is the
-  once-per-type answer: `RuleContainerAttribute` is class-only, so a value type, or a collection of
+  once-per-type answer: `RuleContainerAttribute` is class-only (`AttributeTargets.Class`), so a value type, or a collection of
   value types (the walk descends into list items and dictionary values only), is a dead end;
   everything else stays walkable because a reference type's runtime type may carry the attribute, and a
   declared `IList`/`IEnumerable` can be anything.

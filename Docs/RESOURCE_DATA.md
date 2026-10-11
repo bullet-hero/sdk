@@ -25,6 +25,20 @@ is never omitted whole, `Docs/NAMING.md`); a non-null list is exactly `ThemeCoun
 null entry means that one slot is unnamed. The shipped Balanced preset names its slots by hue and
 ignores the bands, so nothing derives a name from a band.
 
+From `Models/CLAUDE.md` ("Theme"), which keeps the summary:
+
+- `ThemeData` (`Level.Resources.Themes`) holds a fixed `Color4Value[64] Matrix` (the 8x8 grid above)
+  and, beside it, the NULLABLE `List<string> ColorNames` (`clrn`) of the same length. **Null is the
+  normal state.** It is `[RuleOptional, RuleCollectionCount]`, and it is the first member of the format
+  that is BOTH a collection and legally absent - which is what forced `RuleWalk`'s three `Descend*` to
+  answer null, since the generated walk calls those INSTEAD of `Check` and never reaches
+  `[RuleOptional]`'s own short-circuit. The band comment inside `ThemeData.cs` says what a slot is FOR
+  and is a different question from its name.
+- `ThemeKeyframe` (a real animated track, unlike `Marker`/`Checkpoint`) selects which `ThemeId` is
+  **active** over time. `ColorType.ThemeRef` (`Color3ThemeRef`/`Color4ThemeRef`) stores only a raw
+  `int ThemeColorIndex` (0-63) - **not** a `ThemeId` - indexing into whichever theme is currently
+  active. Two-level indirection: `ThemeKeyframe` picks the theme, `ThemeRef` picks a slot within it.
+
 ## CompositeShape
 
 - **Stored indexed** (vertices + indices), not as a triangle soup. A render mesh wants shared vertices
@@ -53,6 +67,20 @@ id-to-`IString` map would need the `{k, v}` pair form, which reads differently f
 collection for no reason a reader of the file could guess.
 
 ## EffectData (Models/Effects)
+
+The shape, from `Models/CLAUDE.md` ("Effects"), which keeps the summary: `EffectObject.EffectId` points
+at an `EffectData` resource (`Models/Data/EffectData.cs`, `Level.Resources.Effects`) - the SDK-side
+analog of Unity's `EffectGameStatic` index table. `EffectData` groups: `Core`
+(render/loop/particle-count/lifetime/texture/pivot), `Forces` (gravity/velocity/orbital/linear-force),
+plus 4 independently-polymorphic sub-shapes:
+
+- `IEffectAngle`/`IEffectColor`/`IEffectScale` - each: Value / CurvesOverLife / CurvesBySpeed /
+  RandomUniform / RandomPerComponent. The Random pair is structurally identical and differs only in
+  evaluation semantics; `IEffectColor` names its curve pair `GradientOverLife`/`GradientBySpeed` and
+  adds a sixth, `GradientRandom`.
+- `IEffectShape` - Point/Circle/Rectangle/Line/Cone/Torus, with Circle/Line/Cone/Torus additionally
+  nesting an `IEffectShapeSpread`: Random/Loop/PingPong/Sine. `Sine` and `Point` carry zero fields,
+  pure enum-selected behavior.
 
 - **No world/local switch in the format.** A level's particles are always local: they ride their object's
   transform, so a moving parent, a loop and a scrub backwards all behave. World-space emission exists

@@ -1,8 +1,115 @@
 # Serialization: the reasoning behind the codecs and converters
 
-Contributor-facing. `Serialization/CLAUDE.md` carries the map, the measured `.blob` / JSON speedups and
-the retired enum numbers; `Docs/VERSIONING.md` carries the envelope and the migration rules. This file
-holds the design reasoning the code used to carry in comments, and the verified negatives.
+Contributor-facing. `Serialization/CLAUDE.md` carries the folder map and the traps, compressed, and
+links here; `Docs/VERSIONING.md` carries the envelope and the migration rules. This file holds the
+measured `.blob` / JSON costs, the entry points, the retired enum numbers, the design reasoning the code
+used to carry in comments, and the verified negatives.
+
+## Two formats, and what each costs
+
+**A level has two formats and `.blob` is the fast one.** `level.json` stays the readable, diffable,
+portable one and is what the project's longevity promise is about; `level.blob` is the same data
+through the generated codec. `.blob` is a first-class level format, equal to `.json` rather than a
+cache beside it - a level may be saved only as `.blob`, and `LevelArchiveBuilder` carries it inside an
+archive the same way. What `.json` keeps is the promise the project actually makes about it: readable,
+diffable, openable by somebody else's tool in ten years. `.blob` deliberately does not make that
+promise, and it is the default nowhere.
+
+`.blob` removes the reflection instead of re-encoding around it - the codec is generated onto the
+models themselves - and the difference is not incremental. Measured on the real corpus, three passes,
+minimum:
+
+| level | `level.json` | read | `.blob` | read | speedup | size |
+|---|---:|---:|---:|---:|---:|---:|
+| smoke | 2 KB | 1 ms | | 0 ms | 28x | 0.41x |
+| **volcano** | **15.7 MB** | **9 946 ms** | **5.1 MB** | **203 ms** | **49x** | **0.32x** |
+| weathergirl | 3.2 MB | 2 176 ms | 1.1 MB | 39 ms | 55x | 0.33x |
+
+Writing volcano went 9.6 s to 147 ms; it occupies a third of the bytes. All three round-trip
+`Level.Equals`-identical.
+
+**The `.json` path is generated too, and its acceptance test is that the format did not change by one
+byte** - checked against the real corpus, volcano included, by `Core.Tests`'
+`CorpusLoadCostTests.EveryCorpusLevel_IsWrittenAndReadIdenticallyByBothJsonPaths` and by
+`JsonParityTests` here. What changed is the cost of READING one: volcano goes 11 249 ms to 1 837 ms,
+six times faster, because nothing binds members by reflection any more. **Writing did not move** (924
+ms against 921 on volcano), and that is worth knowing before anyone tries: reflection dominates
+reading, while writing is `JsonTextWriter` turning numbers into text, which both paths do identically.
+
+**BSON is gone, and `.blob` is what it was pretending to be.** BSON's role here was speed and it never
+delivered any: on a 4.7k-object level it read ~5% faster than JSON while writing a file ~30% *larger*,
+because what dominates is Newtonsoft binding members by reflection and both formats pay that
+identically. The level cache it stood in for is gone too: a side-car has to decide when it is stale,
+while a format cannot disagree with the file because it IS the file.
+
+**Validation**, two facts measured rather than assumed: **it runs on the EDITOR's load path only**
+(`Core`'s `LevelLoaderService` defaults `LoadLevel` to `LevelValidation.Skip` and `LoadLevelProtected`
+to `Report`), and the generated validation walk's speedup is **1.9x, not the order of magnitude `.blob`
+bought** - three quarters of it came from hoisting `rule.IsValidType` off the per-node path rather than
+from generating anything.
+
+## Entry points (`SerializationService`)
+
+- `SerializationService.SerializeData<T>`/`DeserializeData<T>` are the plain string-JSON entry points -
+  both throw `ArgumentException` if `T` has no `[ModelGeneration]` (only aggregate roots may go through
+  this API). They take no mode: **text is always compact JSON**, and which FORMAT a file is written in
+  is `SerializeEnvelope`'s question, since only bytes can answer it.
+- `GetDataSerializer(type)` returns an `IDataSerializer` (`SerializeEnvelope`/`DeserializeEnvelope` over
+  raw `byte[]` + `EnvelopeData` - version tag + untyped payload): `JsonDataSerializer` on
+  `BaseNewtonsoftDataSerializer`, and `BlobDataSerializer`, which shares none of that machinery because
+  it goes through no Newtonsoft at all.
+- `SerializationType` is `byte`-backed and holds **two** members, `Json = 0` and `Blob = 3`;
+  `SerializationTypeExtensions.ToFileExtension`/`TryFromFileExtension` map `.json`/`.blob`.
+- Two `JsonSerializerSettings` are built: one with the full converter list, one bare
+  ("`settingsDefault`", the escape hatch every `IRequiresDefaultSerializer` converter needs).
+  `ObjectCreationHandling = Replace` is load-bearing (documented inline in `SerializationService.cs`;
+  below). `ContractResolver` only forces `MemberSerialization` (`OptIn` by default) onto every contract.
+- **Id/primitive wrapper structs** (`ObjectId`, `ThemeId`, `AudioId`, `PrefabId`, `ShapeId`,
+  `EffectId`, any `IPrimitiveGuid`/`IPrimitiveInt`/`IPrimitiveFloat`) serialize as a **bare scalar**, not
+  `{"Value": ...}`, via `PrimitiveGuidConverter`/`PrimitiveIntConverter`/`PrimitiveFloatConverter` - all
+  reconstruct via `Activator.CreateInstance(type, value)`, so every such wrapper needs a public
+  single-arg constructor.
+- **Nothing on the read path materializes a `JToken` tree, and that is a rule, not an implementation
+  detail.** A version has to be known before the payload can be typed, and reading it by loading the
+  whole document into a `JObject` and walking that tree a second time cost a clone per domain - and
+  domains nest, so a `Level`'s tree was cloned again for `GameLevel`, again for each of the four event
+  aggregates, and again for **every** `Prefab` in its resources. `DeserializeEnvelope` makes two
+  streaming passes (the first stops at the version property, only the second reads content) and
+  `VersionedEnvelopeConverter.ReadJson` reads envelope properties straight off the reader. Since
+  `WriteJson` emits the version first, the ordinary document buffers nothing at all; a document whose
+  value happens to come first (hand-edited, or written by another tool) is still read correctly, by
+  buffering that one subtree until the version that types it arrives.
+  `Tests/SerializationPerformanceTests` pins both formats.
+
+## Retired `SerializationType` numbers
+
+- **`Bson = 1` is RETIRED, not reused**: an old `settings.json` holding 1 lands on an undefined value
+  that `RuleEnumValid` repairs to `Json`, rather than silently meaning something new. `Blob = 3` is
+  appended, which is why `SerializationModeUtils`' dropdown index is no longer the enum's own number -
+  order is what that class promises, and equality was a coincidence of the numbers happening to be 0,
+  1, 2.
+- **`JsonPretty` was member 2 and is gone, and there is no `Formatting` question left anywhere.** It
+  wrote the same document as `Json` with indentation, shared its `.json` extension and was read by the
+  same reader - so nothing could ever recover the choice from a file, which made it a property of
+  whoever happened to save rather than of the level. What it was FOR is reading a level file by eye,
+  and that is what an editor's own formatter does, on demand, without a second shape of the format
+  existing to be tested, migrated and explained. Every JSON document this project writes is compact,
+  `ToFormatting` is deleted rather than moved, and `SerializationSettings` carries no `formatting`
+  field (it applied to the one shared `JsonSerializer`, so one screen's "write this readable"
+  re-indented every file written afterwards).
+- Number 2 is retired like number 1 and is never reissued - and the reason nothing may test
+  `== Bson`-style two-branch ternaries survives it: a third member reads as `Json` silently, which is
+  what the Unity project's `Core/Utils/SerializationModeUtils` exists to prevent at the five UI call
+  sites that did.
+
+## Keys (`Names.cs`)
+
+- **`Names.cs` constants, never string literals, for `[JsonProperty]`.** Deliberately short/abbreviated
+  (`"f"` for Frame, `"v"` for Value, `"t"` reused for both TimeShort and TangentShort - disambiguated
+  only by never co-occurring on the same model) to keep the wire format compact. The naming rule
+  itself is the consuming project's `Docs/NAMING.md`.
+- Historical `Versions/V<n>/` snapshot classes intentionally use their own frozen literals/`NamesV<n>`
+  instead, so renaming a *current* key can never silently corrupt what an old snapshot deserializes.
 
 ## Two different "generations"
 
@@ -20,7 +127,9 @@ by the header rather than misread deeper in.
   declared length against the real one, the hash - and only then is a byte decoded. Nothing is
   allocated on the strength of anything the file says until the file is shown to be whole (a format's
   payload is a stranger's; a cache's was its own). Four refusals, not one, so the UI can tell
-  "damaged" from "from a newer build".
+  "damaged" from "from a newer build". The hash is an xxHash64 of the payload, non-cryptographic on
+  purpose - what is being checked is corruption, and forgery is already answered by the OpenPGP layer
+  that protects a level.
 - **Degrading at domain granularity is free.** A root already writes `domain + generation + length +
   content`, so the framing that makes a skip safe is paid at every root. A root this build cannot
   parse is stepped over whole, leaving siblings intact.
@@ -48,18 +157,23 @@ by the header rather than misread deeper in.
   `BinaryWriter`), and by-ref because the buffer grows and a by-value copy would leave the caller
   writing into the old array. Little-endian, fixed width, no varints: a level's numbers are mostly
   floats and ids, which a varint does not shrink, and the format has to be explainable to whoever
-  writes the second reader.
+  writes the second reader. They are not `Stream` wrappers.
+- **Null and polymorphism in the encoding**: a length prefix of `-1` is null (an empty keyframe list
+  and a missing one are different states and a round trip has to keep them apart); a polymorphic
+  value carries a one-byte tag with `0xFF` reserved for null. **The tag is the model's own
+  `GetModelType()`** - the generator reads the enum member that method names - so the blob and the
+  JSON `[tag, payload]` carry the same discriminator and cannot drift apart.
 - **Every read is bounds-checked and every failure is the same `BlobFormatException`**, caught in
   exactly one place (the envelope), which turns it into "this file could not be read" and lets the
   caller fall back to the `.json` beside it; generated bodies carry no error handling.
-- **A count the file chose is refused before it is believed** (`Remaining` is what every collection
-  checks before allocating): `new List<T>(count)` on a file-chosen length is an allocation of the
-  file's choosing. This is the one attack a format has that a self-produced cache did not.
+- **A count the file chose is refused before it is believed** (`BlobReader.ReadCount`; `Remaining` is
+  what every collection checks before allocating): `new List<T>(count)` on a file-chosen length is an
+  allocation of the file's choosing. This is the one attack a format has that a self-produced cache did not.
 - **`BlobPrimitives` holds the structs the generator cannot write**: `FrameSpan` packs two ints with
   the anchor flags in their sign bits, so writing "its fields" would write the packing - the blob
   writes start, duration, anchors honestly (the JSON side DOES pack, because a two-number array was the
-  shipped form); `ModificationKey` and `RunProfile` are readonly structs with get-only properties, so a
-  member-driven generator has nothing to assign on read; `Pixel` is four bytes seen as one int, which
+  shipped form); `ModificationKey` and `RunProfile` (and its `RunProfileV1` snapshot) are readonly
+  structs with get-only properties, so a member-driven generator has nothing to assign on read; `Pixel` is four bytes seen as one int, which
   costs a quarter of the calls on an image-sized array. An id wrapper is NOT here: one int or Guid
   behind a public single-argument constructor, which the generator emits directly.
 - **A trailing index is written last and never moves** (`NAMING.md`'s positional rule): the blob writes
@@ -76,8 +190,9 @@ by the header rather than misread deeper in.
   type, so a `Vector2Value` still reaches `Vector2Converter` and comes out `[0,{...}]`, while a model
   with no polymorphic wrapper reaches this one directly. First in the list, every tagged value would
   silently lose its tag. A snapshot is a generated model too, but it never reaches this converter
-  through the top-level envelope, which `VersionedEnvelopeConverter` still owns because only it resolves
-  an old version to its snapshot type and walks the migrations.
+  through the top-level `{version, value}` envelope, which `VersionedEnvelopeConverter` still owns
+  because only it resolves an old version to its snapshot type and walks the migrations. A versioned
+  MEMBER is wrapped by whoever holds it instead.
 - **`JsonConverterCustomType` writes its type tag directly** (the enum is an integer on the wire - no
   `StringEnumConverter` is registered - verified by re-serializing a real level byte for byte).
   Measured on a 3.2 MB level: `Resources` 672 -> 470 ms, and nothing on its OBJECTS tree. The cost
@@ -147,9 +262,26 @@ by the header rather than misread deeper in.
   the generated one (`JsonParityTests`): the test is that the member's type is an `IModel<T>` (every
   concrete model and every polymorphic value interface is one; `List<T>` and `Dictionary<,>` are not,
   which keeps a null collection distinguishable from an empty one, as the blob does).
-- **The mode reaches the writer, not the shared serializer**; `useGeneratedCodecs` exists only so the
-  parity test can read the same bytes through both stacks - a withdrawn reader that passed 4494 tests
-  and could not open a level is what that rule bought.
+- **The mode reaches the writer, not the shared serializer**; `SerializationSettings.useGeneratedCodecs`
+  is the switch, on by default, and exists for exactly one caller: the parity test, through
+  `SerializationService.CreateWithoutGeneratedCodecs()`, reading the same bytes through both stacks.
+  Anything that changes how a level is READ is locked that way - a withdrawn reader that passed 4494
+  tests and could not open a level is what that rule bought.
+- **`[GenerateModelKeyed]`** names the property a dictionary's key is recovered from, which is what
+  lets the collection write as a bare array of values. It records the same knowledge the twelve
+  `DictionaryAsListConverter` subclasses hold; those stay, because they are the reflective path the
+  parity test compares against.
+- The traps the generated JSON codec reproduces are all in the consuming project's
+  `docs/issues/MODEL_CODEGEN_HISTORY.md` §5, and every one of them is a way the format is not what it
+  looks like: the contract is OptOut in practice so `Resource.Type` IS written, members are ordered
+  derived-first, an abstract property is written by its override, `[JsonIgnore]` is inherited, and a
+  CONCRETE member of a value family is still tagged.
+- **A new polymorphic value/effect variant** = new enum case + concrete class + a case in the matching
+  `JsonConverterCustomType<T,TType>` subclass's `GetType`/`GetCustomType` switch. No attribute-based
+  auto-discovery anywhere in this system (unlike `[RuleContainer]`'s reflection scan or
+  `VersionedTypeRegistry`'s reflection scan) - every converter is a manual, explicit mapping. Same
+  applies to `RectObject` subtypes via `ObjectConverter`. Since 1.0.0 a new variant is also a
+  generation bump (`VERSIONING.md`).
 
 ## `IJsonModel`
 
@@ -196,10 +328,8 @@ degradation site knows for free.
   generation, only the second reads content) and hands back the value already current-shape.
 - **`SerializationType` retires numbers instead of reusing them**: a member's NUMBER is what a settings
   file on somebody's disk holds. `1` (`Bson`) and `2` (`JsonPretty`) land on an undefined value that
-  `RuleEnumValid` repairs to `Json`. Why they went: `Serialization/CLAUDE.md`.
+  `RuleEnumValid` repairs to `Json`. Why they went: "Retired `SerializationType` numbers" above.
 - **`SerializationTypeExtensions` probe order is NOT `Enum.GetValues`'** (numeric order, where a number is
   a retirement record, not a preference): `Json` first because it is the default and what a hand-made
   folder carries. Every probe goes through it, so a third format is one edit rather than a hunt for
   hand-written branch pairs, one of which being missed would resolve a real level to "no file".
-- **No indented JSON anywhere**: nothing could recover the choice from a file, so it described the
-  person saving rather than the level. `SerializationSettings` carries no `formatting`.

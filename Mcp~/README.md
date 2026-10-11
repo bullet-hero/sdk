@@ -23,12 +23,15 @@ The machine's `dotnet` can be the SDK bundled with Unity: `<Unity>/Editor/Data/D
 ## Publish a self-contained binary (development)
 
 ```sh
-dotnet publish Assets/Plugins/BH.SDK/Mcp~/BH.SDK.Mcp.csproj -c Release -r win-x64 --self-contained true \
-  -p:PublishSingleFile=true -p:PublishTrimmed=true -p:TrimMode=partial -o Assets/Plugins/BH.SDK/Mcp~/bin~/publish/win-x64
+dotnet publish Assets/Plugins/BH.SDK/Mcp~/BH.SDK.Mcp.csproj -c Release -r win-x64 \
+  -o Assets/Plugins/BH.SDK/Mcp~/bin~/publish/win-x64
 ```
 
-Other runtime identifiers (`linux-x64`, `osx-arm64`, `osx-x64`) cross-publish the same way. The output
-folder is under `bin~`, which git and Unity both ignore.
+Giving `-r` is what makes it self-contained, single-file and trimmed: the csproj sets those itself.
+Never pass them as `-p:` flags - a command-line property is global, reaches the netstandard SDK through
+the ProjectReference, and fails there (NETSDK1124). Other runtime identifiers (`linux-x64`,
+`osx-arm64`, `osx-x64`) cross-publish the same way. The output folder is under `bin~`, which git and
+Unity both ignore. A game build publishes the server itself, with the same command.
 
 ## Connect a client
 
@@ -73,6 +76,23 @@ Class per area under `Tools/`; the name is the bridge method with `_` for `.`.
 | | `raw_get` / `raw_set` | the level file as a tree; unvalidated write, last resort |
 | | `command_list` / `command_run` | whitelisted editor commands |
 | | `validate_list` / `validate_fix` | validation findings; automatic fixes in one undo step |
+| `VisionTools` | `view_schematic` | PNG schematic of any frame, computed off screen (no playhead) |
+| | `frame_stats` | per-frame counts and hazard coverage over a range |
+| | `cursor_resolve` | where objects are at a frame: world rect, pivot, effective layer, resolved span |
+| | `object_explain` | why an object is or is not drawn at a frame |
+| | `shapes_atlas` | PNG contact sheet of shapes, numbered, with their ids |
+| `CaptureTools` | `view_capture` / `view_filmstrip` | real pixels through the shared playhead; one frame or a labelled sheet |
+| | `playhead_get` / `playhead_set` | the author's playhead (set only while the author is idle) |
+| `MusicTools` | `music_analyze` | tempo, downbeat, sections, notes from the track (cached) |
+| | `music_table` / `music_strip` | per-bar or per-beat rows; a PNG of band energy, grid, markers, hazards |
+| | `music_resolve` / `music_check` | time address to frame and bar.beat; frames off the beat grid |
+| | `music_play` | play a range for the author to hear |
+| | `beatgrid_propose` / `beatgrid_apply` | beat segments from the analysis; written as one undo step |
+| `ContextTools` | `context_list` / `context_read` / `context_write` | the level's `ai/` folder: memory across sessions (a file, not an undo step) |
+| | `guide_get` | a topic of the guide rendered from the public docs |
+
+Prompts (`Prompts/WorkflowPrompts.cs`): `build_level_from_music`, `review_section`, `continue_level` -
+short workflows over the tools above.
 
 A list comes back as a header line (`total=.. offset=.. revision=.. scope=.. next=..`) and its lines;
 anything else as compact JSON. A refusal is an error result carrying the code. Hints the game attaches

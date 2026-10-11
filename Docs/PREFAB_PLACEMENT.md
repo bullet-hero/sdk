@@ -4,6 +4,50 @@ The rules every consumer of a placement shares. Two consumers exist - the edit-t
 (Materialize/Resync, in the game project) and the load-time `PrefabVirtualizationUtils.Expand` - and they
 stay correct only together, which is why the rules live here: Core references the SDK, never the reverse.
 
+The data shape and the per-instance overrides were split out of `Models/Resources/CLAUDE.md`, which keeps
+the summary and links here.
+
+## The template and the placement (data shape)
+
+- `Prefab` (`Models/Objects/Prefab.cs`, a `Level.Resources.Prefabs` entry) is the *template*: its own
+  `Objects`/`ObjectIdCounter` and its **`Root`**, which carries its name, its transform and its timeline.
+  `PrefabObject` (a `RectObject` subclass) is the *placement*: `PrefabId` (which template) +
+  `Dictionary<ObjectId, ObjectId> ObjectIds` (template-inner id -> this placement's own materialized
+  outer id) + `Dictionary<ModificationKey, Modification> Modifications` (per-instance field overrides,
+  below). Placements - whether at level scope or nested inside another `Prefab`'s own `Objects` - live
+  in the **same** `Objects` dictionary as everything else, discriminated only by
+  `GetModelType() == ObjectType.PrefabObject`; there's no separate placement list.
+- **Nesting is bounded by `PrefabRules.MaxInheritanceLevel`** (8; the consumer's
+  `ResourceSettings.PrefabsMaxInheritanceLevel` may only lower it) - a template may hold a placement of
+  another template, and `PrefabMaterializer.Resync` re-propagates through every level of that up to the
+  limit.
+- **The device-wide prefab library is the only cross-level sharing mechanism a prefab has**, since
+  prefabs have no game-defined preset tier. The editor's prefab picker offers it as its own tier
+  (`SearchOrigin.Library`); choosing an entry imports the resource, creates the placement and
+  materializes the template as ONE undo step.
+- **A TEMPLATE OWNS ITS ROOT, and a placement is that root's materialization.** `Prefab.Root` is a
+  `RectObject` that always exists, addressed by `ObjectId.PrefabRoot` - which is its own `ObjectId`, not
+  a sentinel - and is what every inner object with an unset/`PrefabRoot` parent hangs off. It is a FIELD
+  and never an entry in `Objects`, which is the one condition the whole design rests on: one in that
+  dictionary would be minted as an ordinary object UNDER the placement, costing a transform and a level
+  of depth per placement. `Prefab` has **no `Name` of its own** - `Root.Name` is the template's name, so
+  renaming a template reaches every placement of it.
+- **THE TEMPLATE'S TIMELINE IS `Root.Span`, and there is no second number for it.** A `FrameDuration`
+  field of `Prefab`'s own was read by nothing - two spellings of one fact, free to drift - so it is gone,
+  `IFrameScope` with it, and `Prefab` is a plain `IObjectScope`. The span's **duration** is the authored
+  half; its **start** is `FrameRules.MinFrame` and its anchors none, both pinned by `RulePrefabRootFixed`
+  along with the root's identity, `Active` and `Layer`. `BH.SDK.Utils.PrefabRootUtils` is the ownership
+  table and the one writer of the length (`SetTemplateLength`).
+- **`PlacementOffset` (`off`) is the fourth thing a placement carries**, and the only one that is a plain
+  authored field rather than bookkeeping: how many frames into the template this placement starts
+  playing. It moves everything the template contributes - every materialized copy's span (both
+  `ApplyPlacementFrameOffset` twins subtract it) and the placement's own instance origin
+  (`PlacementTrimMath.InstanceSpan`) - so `Span.StartFrame - PlacementOffset` is the number every frame a
+  placement contributes is measured from. That is what lets the timeline's Edges and Scissors tools trim
+  and cut a placement with the level playing identically afterwards, and it is bounded by
+  `Span.StartFrame - MinFrame`. `Docs/Issues/PREFAB_ROOT_HISTORY.md` (game repo) is the record for the
+  root, the length and the offset.
+
 ## `Prefab.Root` and who owns what (`PrefabRootUtils`)
 
 - **The template owns** the root's Name, all seven positional tracks and its span's DURATION. All are
@@ -15,7 +59,9 @@ stay correct only together, which is why the rules live here: Core references th
 - **The duration is the template's by default and overridable on top**: `ApplyRoot` writes it
   unconditionally, `ApplyModifications` runs after it in both consumers, so a placement carrying
   `ModificationFields.PlacementDuration` (root-keyed) gets its own length back one step later.
-  `OpLevelObjectSpan` records the divergence only when the written duration actually differs.
+  `OpLevelObjectSpan` records the divergence only when the written duration actually differs, so an
+  ordinary MOVE records nothing and changing a template's length still moves every placement nobody has
+  trimmed.
   `ModificationFields.Span` stays out of `IsPrefabRootField`: a whole-span override would restate the
   start and beat the next ordinary move.
 - **The placement owns** the span START, Active, Layer and `PlacementOffset` (how far into the template
@@ -32,12 +78,49 @@ stay correct only together, which is why the rules live here: Core references th
 - `ObjectIds` is keyed inner -> outer (the direction every materialize walks); the reverse question is a
   scan, since a placement holds at most `PrefabRules.MaxObjectIdRemaps` entries and a second dictionary
   would have to follow every resync.
-- `SetRootDuration` is the one writer of a template's length: start `FrameRules.MinFrame` (timeline counts
+- `SetTemplateLength` is the one writer of a template's length: start `FrameRules.MinFrame` (timeline counts
   from one), no anchors (the root has no parent to follow; `RulePrefabRootFixed` reports both).
 - `ObjectScopeExtensions.TryGetObject` is the one place an `ObjectId` becomes a `RectObject`, because the
   root is a field, not an `Objects` entry. It is deliberately NOT applied to loops that ENUMERATE a
   scope (materialization, packing, depth, the graph pass): the root is not content, it is what the
   content hangs off.
+
+## Per-instance overrides (`PrefabObject.Modifications`)
+
+**Live and load-bearing** - this is how a placement diverges from its template without breaking the
+link. Three pieces:
+
+- `ModificationKey` (`Models/Primitives/`) - the *address*: `ObjectId` (the **template's inner** id, not
+  the materialized outer one, so the key survives re-materialization - or `ObjectId.PrefabRoot`, which
+  addresses the placement ITSELF and is legal only for the fields the template owns,
+  `ModificationFields.IsPrefabRootField`) + `int Field` (a stable `ModificationFields` number, NOT a JSON
+  key spelling) + `int Index` (which element of a collection field, or `WholeField` = -1). Being the
+  dictionary key is what makes "one override per (object, field) pair" a structural guarantee rather
+  than a rule to enforce. It was a dotted string (`"pos[0].v"`) until a key rename's cost outgrew it -
+  `Docs/Issues/MODIFICATION_FIELD_IDS_HISTORY.md` (game repo) carries why, including the three
+  spellings that never resolved at all.
+- `Modification` (`Models/Objects/`) - `Key` + an untyped `object Value`. The `Value` setter
+  **normalizes integrals to `long` and floating-point to `double`** on assignment, deliberately matching
+  what Newtonsoft always produces when deserializing a raw JSON number into an `object` property -
+  without it an override built in code with a plain `int` stops `Equals`-ing itself after a round trip.
+  Its file header also lists the design limits still in force: only `RectObject`/`Prefab` targets, no
+  parenting a `RectObject` *into* a prefab's inner objects (only the reverse), and no deep inheritance -
+  an override applies only within the prefab scope it lives in.
+- `Utils/ModificationUtils.cs` + the generated `ModificationTable` - applying one. The table is a flat
+  switch written by `BH.SDK.Roslyn`'s `ModificationTableGenerator` from every member carrying
+  `[ModificationField]`, so the apply path is reflection-free; `ModificationValues.TryConvert` converts
+  the untyped value back through the serializer that shaped it, which is what makes an int, an enum and
+  an id override land at all. `ModificationUtils` keeps the rule-checked write
+  (`IsValueAllowed`/`SetValueChecked`), the one place a `PropertyInfo` is still needed - an override
+  writes past every rule the target property carries, and nothing else can judge it
+  (`UTILS_DESIGN.md`, "Overrides").
+
+Overrides are **re-applied on top of a fresh template copy after every materialize/resync** (Unity-side:
+`Core`'s `PrefabMaterializer.ApplyModifications`; recorded by `GameEditor`'s
+`ModificationRecorder`/`EditObjectOperation.RecordModification` - see those folders' `CLAUDE.md`s).
+`Modifications` serializes through its own `Serialization/Converters/Dict/DictionaryModificationsConverter`
+(the key is recoverable from the value's own `Key` property, so it writes as a plain array - same family
+as `DictionaryAsListConverter`).
 
 ## Flatten (`PrefabFlattenUtils`)
 
@@ -77,6 +160,15 @@ load. Measured: 62-82% of four corpus levels' bytes, 13% of volcano's, and gzip 
 copy carries its own id and span offset; deflate's window is 32 KB).
 `Docs/Issues/PREFAB_VIRTUALIZATION_HISTORY.md` (game repo) is the record.
 
+- **Nothing about the model changed and nothing else learns that a load-time step exists**: by the time
+  the editor, the runtime or a validator sees a level, the scope is flat exactly as it always was. The
+  one rule to keep straight is where an outer id is BORN - at edit time, in the consumer's
+  `PrefabMaterializer`; the expander reads the table and refuses rather than minting.
+- **`Level.ShallowClone` is what Thin writes through**, a reference-sharing copy (`MemberwiseClone`, used
+  only by `PrefabVirtualizationUtils.Thin`): a write must replace two collections without touching the
+  level the editor keeps editing through a save, and `Copy()` walks the whole graph (124 ms on the
+  largest level when measured, paid on every autosave). `MemberwiseClone` over a member list, so a later
+  member joins by itself; the shared instances are safe because the writer only reads.
 - **The editor still materializes.** Thin and Expand bracket the FILE, not the model: once a level plays
   the same flat `GameLevel.Objects` exists, and `PrefabMaterializer` remains the only thing that MINTS an
   outer id. Ids are born at edit time, never at load, which is what makes the table authoritative.

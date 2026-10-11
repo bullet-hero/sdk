@@ -35,7 +35,7 @@ namespace BH.SDK.Models.Resources
         public Vector4Value TextureResourceUV { get; set; }
 
         // Six independent axes of what is true of the PICTURE, never a format or a memory budget; the
-        // player's settings decide the device half (Core's TextureLoadPlanner). Models/Resources/CLAUDE.md
+        // player's settings decide the device half (Core's TextureLoadPlanner). Docs/LEVEL_RESOURCES.md
 
         /// <summary> What this image is - a photo, a drawing, pixel art - so the device can treat it
         /// the way that kind of picture has to be treated. </summary>

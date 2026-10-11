@@ -1,7 +1,29 @@
 Design facts of the post-processing keys in `Models/PostProcessing/` that the code cannot say by itself.
 A contributor changing a key reads this first; the consumer side is the Unity project's `PostProcessing`.
 
+## Structure
+
+From `Models/CLAUDE.md` ("PostProcessing"), which keeps the summary.
+
+- `GameLevel.PostProcessingEvents` is at generation 1 like every other domain (it had moved while the
+  ColorCurves migrator existed; see `docs/issues/COLOR_CURVES_HISTORY.md` in the consuming project).
+- A top-level `Active` (default `true` - the opposite default from audio's `Active`) + 12 keyframe-track
+  lists, one per URP effect (Bloom, ChromaticAberration, Vignette, LensDistortion, FilmGrain,
+  MotionBlur, ColorCurves, LiftGammaGain, ShadowsMidtonesHighlights, WhiteBalance, AnalogGlitch,
+  DigitalGlitch) - matches Unity's `Core/Models/Groups/PostProcessingGroup.cs` field-for-field.
+- `PostProcessingKeyframe` implements `IKeyframe` directly (not `: Keyframe`) and adds its own
+  per-keyframe `Active` bool - every effect is independently toggleable per-keyframe *in addition to*
+  the track-level switch.
+- Several fields are commented `HEAVY, PHONES DON'T LIKE IT` (Bloom, MotionBlur, AnalogGlitch,
+  DigitalGlitch).
+
 ## ColorCurvesKey: URP's own eight curves
+
+`Master`/`Red`/`Green`/`Blue` are an absolute mapping, neutral at the IDENTITY line; `HueVsHue`/
+`HueVsSat`/`SatVsSat`/`LumVsSat` are an offset or a multiplier, neutral at a flat
+`PostProcessingRules.ColorCurves.CurveNeutral`. Null is a real state rather than missing data. The key
+replaced two scalars, and the `LutBuilder` formula below is the reason six MORE scalars would have been
+worthless.
 
 Each curve is a nullable `CurveValue`; null means "never touched" and is neutral. What each one means is
 URP's `LutBuilder` formula:
@@ -29,7 +51,7 @@ Every axis is 0..1 on both sides; anything outside is what the 128x1 curve textu
 
 ## The grading colours carry three channels
 
-`LiftGammaGainKey` and `ShadowsMidtonesHighlightsKey` colours are `IColor3`. URP takes each as a `Vector4`
+`LiftGammaGainKey` and `ShadowsMidtonesHighlightsKey` colours are `IColor3` (an `IColor4` before). URP takes each as a `Vector4`
 whose w is a signed OFFSET, not opacity: `PrepareLiftGammaGain` adds it to every channel after removing the
 luminance (gamma also does `w += 1` and inverts), and `PrepareShadowsMidtonesHighlights` weights it - times
 one when negative, times FOUR when positive - and adds that. Its neutral is zero.

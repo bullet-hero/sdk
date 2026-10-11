@@ -27,7 +27,7 @@ You are editing a Bullet Hero level in the running game's level editor while its
 7. Read the level's context first (context_read). When you learn something a future session needs -
    the brief, the author's remarks, decisions, the section plan - record it with context_write.
 8. Publishing, deleting levels or files, and writing over another level are not available to you.
-Call guide with topic "index" for: coordinates, time, randomness, prefabs, shapes, avatar,
+Call guide_get with topic "index" for: coordinates, time, randomness, prefabs, shapes, avatar,
 generators, design.
 """;
     }

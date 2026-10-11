@@ -15,7 +15,7 @@ using Newtonsoft.Json;
 namespace BH.SDK.Models.Collections
 {
     // Lists only the file resources; ids are collection-local and renumbered by every import
-    // (ResourceRemap). A new domain, not a generation bump: Models/Resources/CLAUDE.md
+    // (ResourceRemap). A new domain, not a generation bump: Docs/LEVEL_RESOURCES.md
 
     /// <summary> A collection's manifest: who made it, under what license, and the file resources it
     /// carries. The data resources are the envelope files beside it. </summary>

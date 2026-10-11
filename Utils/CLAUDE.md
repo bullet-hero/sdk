@@ -3,94 +3,24 @@
 Read `Assets/Plugins/BH.SDK/CLAUDE.md` first - it carries the mental model, the folder index and the
 layer-wide conventions. This file is folder-local.
 
+Every helper here, and why: `Docs/UTILS_DESIGN.md` ("The folder at a glance" is the catalogue;
+model copy/merge, overrides, level measurement, hashing, text, Interop above it) and
+`Docs/RESOURCE_GRAPH.md` (references, closure, remap, naming).
 
-## Utils/
+## Traps
 
-`BHSDKMath` (Unity-independent math, since the core assembly can't reference
-  `UnityEngine.Mathf`), `DimensionalIndexer2` (flat-array↔2D-grid indexing), `LevelUtils`
-  (`RectObject` id/parent/bounds setters), `LevelCapacityUtils` (sweep-line "peak simultaneous
-  objects per type" measurement backing `LevelHints.Limits` - see below), `LevelStatsUtils`
-  (`LevelStats`/`LevelObjectStats`/`LevelResourceStats` - what a level *holds*, one O(n) allocation-free
-  pass, for showing rather than for sizing; don't reach for it when you need `LevelCapacityUtils`'
-  peak-simultaneous answer, and don't reach for that one to fill a readout), `ModelUtils`
-  (deep-copy/equality/hash helpers for `List`/`Dictionary`/`Array` of `ICopyable<T>`),
-  `ModificationUtils`/`TypeExtensions`,
-  **`PrefabVirtualizationUtils`** (+`PrefabExpandReport`) - the pair that keeps a prefab placement's
-  materialized copies OUT of the file: `Thin` drops them before a write, `Expand` rebuilds them from
-  `pfid` + `ids` + `mod` after a read, and the level every other system sees is flat either way.
-  `Docs/PREFAB_PLACEMENT.md` carries why; `Docs/Issues/PREFAB_VIRTUALIZATION_HISTORY.md` is the record. Two things about it
-  are load-bearing rather than incidental: **it never mints an outer id** (ids are born at edit time,
-  in the consumer's `PrefabMaterializer`, and a missing one is reported), and **`Expand` writes by
-  INDEXER**, which is what lets a level saved before virtualization - copies AND table both present -
-  open without doubling them - it landed before 1.0.0, when Rule 11 still meant no migrations.
-  **`ObjectDepthUtils`** - parent-chain depth math over an `IObjectScope`, bounded by
-  `LevelRules.MaxObjectDepth`. It lives here rather than beside the edit-time materializer because
-  the expander above has to refuse the same chains and cannot reach `BH.Core`; the consumer's
-  `BH.Core.Utils.HierarchyMath` is a forwarding facade over it. **The template root costs no depth**,
-  and that holds only while `Prefab.Root` stays a field: `GetTemplateDepth` walks `Objects.Values`
-  alone and stops on `ObjectId.PrefabRoot` without incrementing.
-  **`PrefabRootUtils`** - the `Prefab.Root` ownership table AS CODE, and it is here for
-  `ObjectDepthUtils`' reason doubled: there are TWO consumers of it that only stay correct together,
-  the edit-time `PrefabMaterializer` and the load-time `Expand` above, and only the SDK is reachable
-  from both. `ApplyRoot` writes the template-owned half onto the placement that materializes it
-  (`Name`, the seven positional tracks copied not aliased, and the span's DURATION) and leaves the
-  span's start, `Active` and `Layer` alone - those are the placement's, and the last two are pinned
-  on the template by `RulePrefabRootFixed` precisely because nothing copies them.
-  `SetTemplateLength` is the one writer of that duration, and it exists so the pinned half of
-  `Root.Span` (start at `FrameRules.MinFrame`, no anchors) is spelled once rather than at every
-  caller - a template's whole timeline is that span, `Prefab` carrying no `FrameDuration` any more. `TryGetModificationTarget` is the
-  branch that makes a root-keyed `Modification` land at all: the root is never a key in
-  `placement.ObjectIds`, having no outer copy, so without it such an override is recorded, saved,
-  shown as present and silently never applied. `Docs/Issues/PREFAB_ROOT_HISTORY.md` is the record.
-  **`ObjectScopeExtensions`** - the ONE place an `ObjectId` becomes a `RectObject`
-  (`TryGetObject`/`GetObject`), and it exists for the same field-not-an-entry reason: nothing that
-  resolves an id through `scope.Objects` can see a template's root. Deliberately NOT applied to the
-  loops that ENUMERATE a scope - those ask what a template HOLDS, and the root is not content but
-  what content hangs off.
-  `ShapeLoopUtils` (radial loops - the two emitters every
-  built-in shape is built out of, a fan and a resampled annulus, plus sector clipping; `Docs/SHAPES.md`
-  explains why angles are always measured RELATIVE to a reference and why the annulus resamples both
-  rims instead of walking them in lockstep, both of which were real bugs), `ShapeSynthUtils`
-  (procedural geometry for shapes the built-in library cannot name, built as level-authored data;
-  `Build` is the sanitizing wrap `ShapeCatalogService` goes through), `ShapeGeometryUtils`
-  (+`ShapeGeometryReport`) - the single
-  implementation of "what a valid shape is" and "how to make an invalid one valid", shared by
-  `RuleShapeGeometry.Fix` and the consumer's in-game shape editor on Save. Its `Sanitize` order is
-  load-bearing (clamp → weld → drop malformed → drop degenerate → trim → drop orphans → fix
-  winding): every step can reintroduce a problem an earlier one fixed, and this is the order in
-  which none does.
-
-  **`ResourceReferenceUtils`** - what still points at one of a level's own resources, as a COUNT
-  per resource family. It is the question the editor asks in front of a delete, and nothing here
-  could answer it before: `LevelGraphAnalyzer.UnresolvedReference` answers the OPPOSITE
-  direction, i.e. the state a delete creates, discovered on the next load. Two things it has to
-  get right and a caller cannot check: EVERY scope is walked, `Prefab.Root` included (a texture
-  used by nothing but a template is still used, and the root is the one object no dictionary
-  holds), and a NULL id counts nothing (null is how an object says it draws no texture, so
-  counting it would report every plain object in the level). A `ThemeRef` colour is deliberately
-  not a theme reference - it stores a slot INDEX into whichever theme is active, so only the
-  level's own theme track names a `ThemeId`.
-
-  **`SurrogateUtils`** - where a string may be cut. Every length ceiling in this format counts UTF-16
-  CODE UNITS, and an astral character (every emoji) is two of them, so a cut between the halves
-  satisfies the bound with something that is not a character; a consumer then renders U+FFFD and
-  reports nothing. `ClampLength`/`Truncate` give the shorter answer instead, and `IsLead`/`IsTrail`/
-  `IsPair` are plain `char` arithmetic, which is what lets the consumer's Burst text job share them
-  rather than restate them. Used by `RuleStringMax`/`RuleIStringMax`' fixes, by
-  `FontCharacterService`, and by `GamePlayer`'s `TextsProvider`/`TextComposeJob`. **It is NOT grapheme
-  clustering** (UAX #29): a combining mark is still its own index everywhere, deliberately - see
-  `Docs/Issues/PRE_RELEASE_STRUCTURAL_ANALYSIS.md` §7 for what that costs and what buying it would.
-
-**`ResourceGraph` is the ONE list of reference edges** - every field in a level, a prefab, an object
-or an effect that names a resource, including `EffectObjectCore.ParticleShapeId` and the id-valued
-`Modification`s of a placement (converted through `ModificationValues.TryConvert`, the same path
-`Apply` takes). `ResourceReferenceUtils`' counts, `ResourceClosure` (the transitive set a selection
-needs, game-defined ids excluded) and `ResourceRemap` (rewriting those same edges after an import)
-all walk it, so a reference field added to the format is added in ONE place - and a closure that
-misses it is the same bug as a remap that misses it. `ResourceRef` is a typed reference to any of the
-seven kinds (`Guid` for the data kinds, `int` for the file kinds - `ResourceTypeExtensions
-.IsGuidAddressed`), `ResourceSet` a set of them. `ResourceNaming` allocates the next user id and a
-unique file name, and names an entry for a list row.
-
-- **Design records**: `Docs/RESOURCE_GRAPH.md` (references, closure, remap, naming) and
-  `Docs/UTILS_DESIGN.md` (model copy/merge, overrides, level measurement, hashing, text, Interop).
+- **`ObjectScopeExtensions.TryGetObject`/`GetObject` is the ONE way an `ObjectId` becomes a
+  `RectObject`** - `scope.Objects` cannot see `Prefab.Root`. Enumerating loops deliberately skip it.
+- **`PrefabRootUtils` and `PrefabVirtualizationUtils.Expand` stay correct only together** with the
+  consumer's `PrefabMaterializer`; `Expand` never mints an outer id and writes by INDEXER.
+  `SetTemplateLength` is the one writer of a template's duration.
+- **A root-keyed `Modification` lands only through `TryGetModificationTarget`.**
+- **`ObjectDepthUtils`: the template root costs no depth** only while `Prefab.Root` is a field.
+- **`ShapeGeometryUtils.Sanitize`'s step order is load-bearing** - don't reorder it.
+- **`ResourceGraph` is the ONE list of reference edges** - a new reference field goes there, or
+  closure, remap and the delete count all miss it. `ResourceReferenceUtils` walks every scope,
+  `Prefab.Root` included, and counts no NULL id.
+- **Cut strings through `SurrogateUtils`** - every length cap counts UTF-16 code units; it is not
+  grapheme clustering.
+- **`LevelCapacityUtils` (peak simultaneous) and `LevelStatsUtils` (what a level holds) are not
+  interchangeable.**

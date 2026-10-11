@@ -192,7 +192,8 @@ What stays tolerant is everything that is not a newer generation:
 | the generated `.blob` root | migrates; a root whose CONTENT will not parse is skipped by its declared length and left at constructor defaults |
 
 **A snapshot carries `[GenerateModel]` now, which is what made the nested half possible.** It reads
-itself with its own generated codec, so `ReadEnveloped` still holds a bare `JsonReader` and no
+itself with its own generated codec, so `IJsonModel.ReadEnveloped<T>` migrates a nested domain while
+still holding a bare `JsonReader` and no
 `JsonSerializer` - the thing `IJsonModel`'s identity rests on. In `.blob` the snapshot is read
 through `IBinaryEnvelope.ReadContent` rather than `IBinaryModel.Read`, because the caller has already
 consumed the envelope that told it to migrate.
@@ -293,3 +294,43 @@ it sees the user's source through Roslyn symbols and references this assembly no
 the attribute without renaming that literal compiles perfectly and silently stops every envelope from
 being written. `ModelGenerationValues.Invalid` in the generator mirrors `ModelGenerations.Invalid`
 here for the same reason, and the two must stay in step.
+
+### Machinery notes
+
+Moved here from `Serialization/CLAUDE.md`, which keeps the summary. `Versions/README.md` is the folder
+convention (generation-first, e.g. `V0/` + `V0/Migrations/`, plus the "nested envelope always resolves
+to the domain's *current* type" rule).
+
+- **Every aggregate root carries the attribute, and the attribute is the record of where it is** -
+  `ModelDomains.cs` is the `nameof()`-based list of domains, `ModelGenerations.cs` names the
+  generations themselves (so no attribute carries a bare digit), and a grep for `[ModelGeneration(`
+  answers who is on which. The first post-release bump moved `LevelMeta`, `UserSettings`,
+  `GameStatistics` and `LevelStatistics` to `V2_SimplifyEntrance` with snapshots under `Versions/V1/`,
+  and `ResourceCollection` was born there as a new domain.
+- **Not every root is a file of its own**: `LevelSettings`, `GameLevel`, `AudioLevel`,
+  `LevelResources`, `LevelHints` nest under `Level`, the event groups nest under `GameLevel`, and
+  statistics are two roots rather than one (`STATISTICS.md`).
+- **Every reader asks "did we read one" with a flag rather than by comparing the value**, because
+  `ModelGenerations.Invalid` is `-1` and zero is a real generation (above).
+- `VersionedEnvelopeConverter` lives in `Serialization/Converters/`, not `Versions/`. It writes/reads
+  the `{"g": <int>, "v": ...}` wrapper, gated purely by `[ModelGeneration]` presence - the
+  `_activeDomains` reentrancy guard lets member serialization fall through to plain fields while
+  writing/reading that same domain's own payload, without special-casing "nested vs. top-level"
+  (`SERIALIZATION.md`). On read, it always resolves + upgrades through `VersionedTypeRegistry` and
+  returns the domain's **current-shape type**, never the historical snapshot type.
+- `VersionedTypeRegistry` populates itself via a **one-time reflection scan in a static constructor**
+  (same pattern as the Unity project's `ReflectionUtils.GetImplementations<T>()`), indexing both every
+  `[ModelGeneration]` type and every `IMigration` implementation. `UpgradeToLatest` walks `IMigration`
+  step by step from a deserialized instance's generation to the domain's latest, throwing if a step is
+  missing. `VersionedTypeRegistryTests` is its own fixture.
+- **`V0` is a scaffold that exercises the machinery end-to-end, not real shipped format history** - its
+  `Names` use placeholder JSON keys (`"test_settings"`, etc.) and its snapshot classes are structurally
+  near-identical to current ones. **It is kept for exactly that reason**: the only two real snapshots
+  this repo had before 1.0.0 were deleted along with the bumps that needed them, so it was the ONLY
+  thing that proved `VersionedTypeRegistry` and `IMigration` work at all until `Versions/V1/` brought
+  real ones. "Current" is the live, un-suffixed class carrying
+  `[ModelGeneration(..., <its generation>)]` directly, and a migrator filename like `LevelV0ToV1.cs`
+  names that live class by convention rather than an actual file.
+- This replaces an older `CompatibilityService`/`SaveData<T>`/`JsonConverterData<T>` design - those
+  names are fully gone from the codebase (they only survive in a comment explaining what replaced
+  them); don't reintroduce or reference them as if live.

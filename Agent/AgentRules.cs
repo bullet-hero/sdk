@@ -1,3 +1,5 @@
+using BH.SDK.Models.Resources;
+
 namespace BH.SDK.Agent
 {
     /// <summary> Limits and timings of the bridge, shared by the game and the MCP server. </summary>
@@ -33,5 +35,52 @@ namespace BH.SDK.Agent
         /// <summary> Renders after a seek before a still is stable; the first one shows the old moment.
         /// </summary>
         public const int EffectSettleFrames = 2;
+
+        /// <summary> The smallest side an agent image may be asked for, in pixels. </summary>
+        public const int MinImageSide = 64;
+
+        /// <summary> Frames one <c>frame.stats</c> call samples at most; a finer step is widened to fit.
+        /// </summary>
+        public const int MaxFrameStatsSamples = 240;
+
+        /// <summary> Width of the grid hazard coverage is measured on, laid over the camera rect. </summary>
+        public const int CoverageWidth = 128;
+
+        /// <summary> Height of that grid. </summary>
+        public const int CoverageHeight = 72;
+
+        /// <summary> Object labels one schematic draws at most; the rest are counted in its legend. </summary>
+        public const int MaxSchematicLabels = 256;
+
+        /// <summary> The side of one shape's cell in <c>shapes.atlas</c>, in pixels. </summary>
+        public const int AtlasCellSize = 64;
+
+        /// <summary> Frames one <c>view.filmstrip</c> captures at most; the whole sheet still fits the image
+        /// limit, so more frames means smaller cells. </summary>
+        public const int MaxFilmstripFrames = 16;
+
+        /// <summary> Frames a <c>view.filmstrip</c> over a range takes when the caller gives no count. </summary>
+        public const int DefaultFilmstripFrames = 6;
+
+        /// <summary> Frames a beat may sit from the grid before <c>music.check</c> reports it, when the
+        /// caller gives no tolerance. </summary>
+        public const int DefaultBeatTolerance = 1;
+
+        /// <summary> The longest range <c>music.play</c> plays, in seconds; it stays under
+        /// <see cref="CallTimeoutSeconds"/>, since the call answers when the range has played. </summary>
+        public const int MaxPlaySeconds = 45;
+
+        /// <summary> Height of one band row of <c>music.strip</c>, in pixels. </summary>
+        public const int MusicStripBandHeight = 24;
+
+        /// <summary> Height of each tick lane of <c>music.strip</c> (grid, markers, hazard starts), in
+        /// pixels. </summary>
+        public const int MusicStripLaneHeight = 10;
+
+        /// <summary> The outline of a collider - something that hurts - on agent images. </summary>
+        public static readonly Pixel HazardColor = new Pixel(255, 48, 48, 255);
+
+        /// <summary> The outline of the camera rect on agent images. </summary>
+        public static readonly Pixel CameraColor = new Pixel(255, 214, 0, 255);
     }
 }

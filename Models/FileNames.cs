@@ -142,5 +142,17 @@
 
         /// <summary> Under <see cref="AgentDirectory"/>: the running bridge's port, token and pid. </summary>
         public const string AgentEndpointFile = "endpoint.json";
+
+        // Inside a level folder, beside resources/: notes an AI keeps about THIS level. Not a model, never
+        // read by the loader. BH.SDK.Agent.AiFolderRules says what may live there.
+
+        /// <summary> A level's AI context folder. </summary>
+        public const string AiDirectory = "ai";
+
+        /// <summary> Under <see cref="AiDirectory"/>: the main context document. </summary>
+        public const string AiContextFile = "CONTEXT.md";
+
+        /// <summary> Under <see cref="AiDirectory"/>: whether the folder travels with the level. </summary>
+        public const string AiManifestFile = "manifest.json";
     }
 }

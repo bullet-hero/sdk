@@ -39,6 +39,8 @@ namespace BH.SDK.Mcp.Tests
         {
             typeof(SessionTools), typeof(LevelTools), typeof(ReadTools), typeof(EditTools), typeof(HistoryTools),
             typeof(SelectionTools), typeof(PrefabTools), typeof(GeneratorTools), typeof(MaintenanceTools),
+            typeof(VisionTools), typeof(CaptureTools), typeof(MusicTools),
+            typeof(ContextTools),
         };
 
         private static JsonElement Json(string text) => JsonDocument.Parse(text).RootElement.Clone();
@@ -123,6 +125,57 @@ namespace BH.SDK.Mcp.Tests
             yield return Row("validate_fix", AgentProtocol.Methods.ValidateFix,
                 "{\"expectedRevision\":8,\"rules\":[\"a\",\"b\"]}",
                 t => t.Maintenance.ValidateFix(8, new[] { "a", "b" }));
+            yield return Row("view_schematic", AgentProtocol.Methods.ViewSchematic,
+                "{\"frame\":\"s:2\",\"region\":{\"x\":-1.0,\"y\":-2.0,\"width\":10.0,\"height\":5.0},"
+                + "\"size\":512,\"labels\":false}",
+                t => t.Vision.ViewSchematic(Json("\"s:2\""), Json("{\"x\":-1,\"y\":-2,\"width\":10,\"height\":5}"),
+                    512, false));
+            yield return Row("frame_stats", AgentProtocol.Methods.FrameStats,
+                "{\"from\":1,\"to\":\"s:10\",\"step\":\"f:30\"}",
+                t => t.Vision.FrameStats(Json("1"), Json("\"s:10\""), Json("\"f:30\"")));
+            yield return Row("cursor_resolve", AgentProtocol.Methods.CursorResolve, "{\"ids\":[3,4],\"frame\":120}",
+                t => t.Vision.CursorResolve(new[] { 3, 4 }, Json("120")));
+            yield return Row("object_explain", AgentProtocol.Methods.ObjectExplain, "{\"id\":9,\"frame\":\"f:5\"}",
+                t => t.Vision.ObjectExplain(9, Json("\"f:5\"")));
+            yield return Row("shapes_atlas", AgentProtocol.Methods.ShapesAtlas,
+                "{\"form\":\"Ring\",\"name\":\"r\",\"offset\":99}",
+                t => t.Vision.ShapesAtlas("Ring", null, null, "r", 99));
+            yield return Row("view_capture", AgentProtocol.Methods.ViewCapture, "{\"frame\":\"s:3\",\"size\":400}",
+                t => t.Capture.ViewCapture(Json("\"s:3\""), 400));
+            yield return Row("view_filmstrip", AgentProtocol.Methods.ViewFilmstrip,
+                "{\"frames\":[120,\"s:5\"],\"size\":600}",
+                t => t.Capture.ViewFilmstrip(frames: Json("[120,\"s:5\"]"), size: 600));
+            yield return Row("playhead_get", AgentProtocol.Methods.PlayheadGet, null, t => t.Capture.PlayheadGet());
+            yield return Row("playhead_set", AgentProtocol.Methods.PlayheadSet, "{\"frame\":\"f:90\"}",
+                t => t.Capture.PlayheadSet(Json("\"f:90\"")));
+            yield return Row("music_analyze", AgentProtocol.Methods.MusicAnalyze, "{\"resource\":-2}",
+                t => t.Music.MusicAnalyze(-2));
+            yield return Row("music_table", AgentProtocol.Methods.MusicTable,
+                "{\"from\":\"bar:2\",\"by\":\"beat\",\"limit\":5}",
+                t => t.Music.MusicTable(Json("\"bar:2\""), null, "beat", null, null, 5));
+            yield return Row("music_strip", AgentProtocol.Methods.MusicStrip, "{\"to\":\"s:20\",\"size\":500}",
+                t => t.Music.MusicStrip(null, Json("\"s:20\""), 500));
+            yield return Row("music_resolve", AgentProtocol.Methods.MusicResolve, "{\"time\":\"bar:17.3\"}",
+                t => t.Music.MusicResolve(Json("\"bar:17.3\"")));
+            yield return Row("music_check", AgentProtocol.Methods.MusicCheck, "{\"tolerance\":2}",
+                t => t.Music.MusicCheck(2));
+            yield return Row("music_play", AgentProtocol.Methods.MusicPlay, "{\"from\":\"bar:17\",\"to\":\"bar:19\"}",
+                t => t.Music.MusicPlay(Json("\"bar:17\""), Json("\"bar:19\"")));
+            yield return Row("beatgrid_propose", AgentProtocol.Methods.BeatgridPropose, "{\"from\":30}",
+                t => t.Music.BeatgridPropose(null, Json("30")));
+            yield return Row("beatgrid_apply", AgentProtocol.Methods.BeatgridApply,
+                "{\"expectedRevision\":4,\"segments\":[{\"start\":1,\"duration\":\"s:10\",\"bpm\":120.0,"
+                + "\"offset\":0.0,\"beatsPerBar\":4}],\"caption\":\"G\"}",
+                t => t.Music.BeatgridApply(4, Json("[{\"start\":1,\"duration\":\"s:10\",\"bpm\":120,"
+                    + "\"offset\":0,\"beatsPerBar\":4}]"), "G"));
+            yield return Row("context_list", AgentProtocol.Methods.ContextList, null, t => t.Context.ContextList());
+            yield return Row("context_read", AgentProtocol.Methods.ContextRead, "{\"file\":\"plan.md\"}",
+                t => t.Context.ContextRead("plan.md"));
+            yield return Row("context_write", AgentProtocol.Methods.ContextWrite,
+                "{\"appendSection\":{\"heading\":\"Decisions\",\"text\":\"t\"}}",
+                t => t.Context.ContextWrite(heading: "Decisions", text: "t"));
+            yield return Row("guide_get", AgentProtocol.Methods.GuideGet, "{\"topic\":\"time\"}",
+                t => t.Context.GuideGet("time"));
         }
 
         private static TestCaseData Row(string tool, string method, string expectedParams,
@@ -140,12 +193,20 @@ namespace BH.SDK.Mcp.Tests
             public readonly PrefabTools Prefab;
             public readonly GeneratorTools Generator;
             public readonly MaintenanceTools Maintenance;
+            public readonly VisionTools Vision;
+            public readonly CaptureTools Capture;
+            public readonly MusicTools Music;
+            public readonly ContextTools Context;
 
             public Tools(BridgeClient client)
             {
                 Prefab = new PrefabTools(client);
                 Generator = new GeneratorTools(client);
                 Maintenance = new MaintenanceTools(client);
+                Vision = new VisionTools(client);
+                Capture = new CaptureTools(client);
+                Music = new MusicTools(client);
+                Context = new ContextTools(client);
                 Session = new SessionTools(client);
                 Level = new LevelTools(client);
                 Read = new ReadTools(client);
@@ -235,6 +296,34 @@ namespace BH.SDK.Mcp.Tests
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.Easy)]
+        public void EveryPrompt_IsDescribed_AndNamesOnlyToolsThatExist()
+        {
+            var type = typeof(BH.SDK.Mcp.Prompts.WorkflowPrompts);
+            Assert.IsFalse(type.IsAbstract && type.IsSealed, "a static prompt class is dropped by trimming");
+
+            var tools = new HashSet<string>(ToolMethods().Select(m => m.GetCustomAttribute<McpServerToolAttribute>().Name));
+            var prompts = type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+                .Where(m => m.GetCustomAttribute<McpServerPromptAttribute>() != null).ToArray();
+            Assert.AreEqual(3, prompts.Length);
+
+            foreach (var prompt in prompts)
+            {
+                Assert.IsNotEmpty(prompt.GetCustomAttribute<DescriptionAttribute>()?.Description, prompt.Name);
+
+                var args = prompt.GetParameters().Select(p => (object)"x").ToArray();
+                var text = (string)prompt.Invoke(new BH.SDK.Mcp.Prompts.WorkflowPrompts(), args);
+                Assert.IsFalse(text.Contains('—') || text.Contains('–'), prompt.Name);
+
+                foreach (System.Text.RegularExpressions.Match word in
+                         System.Text.RegularExpressions.Regex.Matches(text, @"\b[a-z]+_[a-z_]+\b"))
+                    Assert.IsTrue(tools.Contains(word.Value), prompt.Name + " names " + word.Value);
+            }
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Easy)]
         public void NoDescriptionHoldsAnEmOrEnDash()
         {
             foreach (var method in ToolMethods())
@@ -266,6 +355,32 @@ namespace BH.SDK.Mcp.Tests
             var body = JObject.Parse(TextOf(result));
             Assert.AreEqual(AgentErrorCode.Stale, (string)body["error"]);
             Assert.AreEqual(44, (int)body["data"]["revision"]);
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Normal)]
+        public async Task APictureAnswer_IsAnImageBlock_ThenTheRestAsText()
+        {
+            var png = new byte[] { 137, 80, 78, 71, 1, 2, 3 };
+            using var bridge = new FakeBridge(_directory);
+            bridge.Responder = request => FakeBridge.Ok(request, new JObject
+            {
+                ["revision"] = 3, ["png"] = Convert.ToBase64String(png), ["width"] = 4, ["legend"] = "L",
+            });
+            using var client = new BridgeClient(bridge.EndpointPath);
+
+            var result = await new VisionTools(client).ViewSchematic(Json("1"));
+
+            Assert.IsFalse(result.IsError == true);
+            Assert.AreEqual(2, result.Content.Count);
+            var image = (ImageContentBlock)result.Content[0];
+            Assert.AreEqual("image/png", image.MimeType);
+            CollectionAssert.AreEqual(png, Convert.FromBase64String(System.Text.Encoding.UTF8.GetString(image.Data.ToArray())));
+            var text = JObject.Parse(((TextContentBlock)result.Content[1]).Text);
+            Assert.IsNull(text["png"]);
+            Assert.AreEqual("L", (string)text["legend"]);
         }
 
         [Test]

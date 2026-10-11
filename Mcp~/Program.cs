@@ -1,6 +1,7 @@
 using BH.SDK;
 using BH.SDK.Agent;
 using BH.SDK.Mcp;
+using BH.SDK.Mcp.Prompts;
 using BH.SDK.Mcp.Tools;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -36,7 +37,12 @@ builder.Services
     .WithTools<SelectionTools>(toolJson)
     .WithTools<PrefabTools>(toolJson)
     .WithTools<GeneratorTools>(toolJson)
-    .WithTools<MaintenanceTools>(toolJson);
+    .WithTools<MaintenanceTools>(toolJson)
+    .WithTools<VisionTools>(toolJson)
+    .WithTools<CaptureTools>(toolJson)
+    .WithTools<MusicTools>(toolJson)
+    .WithTools<ContextTools>(toolJson)
+    .WithPrompts<WorkflowPrompts>(toolJson);
 
 await builder.Build().RunAsync();
 

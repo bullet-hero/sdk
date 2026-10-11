@@ -280,6 +280,20 @@ comments used to carry. What a player or an author needs to know is in `DocsPubl
   once cells are indistinguishable.
 - A player size modifier is a MULTIPLIER of the size the player already is (neutral 1, see
   `PlayerEvents.Sizes`), with no maximum: a player scaled to nothing is still there and hittable.
+- **`ValueRules`' layer constants define reserved draw-order bands, not just a clamp** (moved here from
+  the SDK's root `CLAUDE.md`). Authored content is capped to `[MinLayer, MaxLayer]` = `[-1000, 1000]`;
+  everything above that is reserved for the Unity project's editor-only overlays
+  (`MinLayerSelection` = `MaxLayer + MinLayerDelta` for selection outlines, `MinLayerGrid` = 1250 for
+  the viewport grid, `MinLayerColliders` = 1400 for the collider fills, `MinLayerGizmos` = 1500 for
+  viewport gizmo handles, each overlay piece stepping by `MinLayerDelta` so same-set pieces never
+  z-fight - see `Services.GameEditor`'s `LayerPolicy`), and `[MinCameraLayer, MaxCameraLayer]` bounds
+  the camera itself. Don't widen the authored range without moving those bands too. Layer is
+  **parent-relative** (a child's effective layer is the sum up its parent chain), so these are limits
+  on one object's own contribution. `LayerZOffsetStep` (0.001) × `LayerZOffsetCount` (512) is a
+  **different** concern living next to them: the depth tie-break the consumer applies to coplanar
+  *opaque* shapes so they can't z-fight (`GamePlayer`'s `BuildInstancesParentingJob`). Their product
+  must stay below 1.0, since that is how far apart the layer coefficient spaces two layers - don't
+  merge the two families of constant.
 
 ## Avatar balance (`AvatarRules`)
 

@@ -180,6 +180,14 @@ reads files (it was where the SDK started to), so any header claiming it reads n
   accumulates swapped textures, unzipped exports, `.bak` files). The listing is still read, to report how
   many files were left behind - not counting the documents the writer regenerates, nor the files a
   DIFFERENT format left behind (converting to Blob must not make the old `level.json` look stray).
+- **The `ai/` folder is the one thing packed from a listing**, because no model names it: only with an
+  `ai/manifest.json`, and only the files `AiFolderRules.SelectShareable` passes, through the same `Reserve`
+  path as a resource (sorted, pinned times). `share: false`, an unreadable manifest or ANY protected mode
+  (`LevelExportModeExtensions.IsProtected`; a protected folder would ship the notes in plaintext beside an
+  encrypted level) withholds it: `archive.ai_context_withheld`, and it is not counted as unreferenced. With no
+  manifest it is an ordinary leftover. A level without `ai/` packs to the same bytes as before
+  (`LevelArchiveAiContextTests` pins the zip, and the tar inside the tar.gz: BCL `GZipStream` output differs
+  between Mono and .NET 8, so a pinned `.tar.gz` hash holds on one runtime only).
 - **Collecting is not optional**: the editor sets `UriType = AbsolutePath` for the song a level is created
   around, so the commonest way to start a level makes one whose music lives outside its folder. An export
   that packed the folder as-is would open and load with no sound. An absolute path is COPIED in and its
@@ -344,3 +352,58 @@ it) routes them through its own mechanism, while a caller owning the model uses 
   warms a prefix and renders the rest on demand. Merging happens BEFORE the cap so a shared character
   cannot be dropped in favour of an earlier-sorting language-specific one; the cap counts code units
   (it bounds the file) and a character is taken whole or not at all.
+
+## The folder at a glance (moved from `Services/CLAUDE.md`)
+
+The folder file keeps the traps; this is its map, with what the sections above do not already say.
+
+- **Four subfolders are the level-archive feature and only make sense read together** (design record:
+  `docs/issues/ARCHIVE_HISTORY.md` in the consuming project). `Content/` (`IContentStore` - a named
+  set of blobs, ROOTED BY CONSTRUCTION, so "does this escape the folder" is a property of the type
+  rather than a check at every call site; `DirectoryContentStore`/`MemoryContentStore` are two
+  implementations rather than two parallel APIs, which lets the same pipeline serve a disk, a test and
+  a server). `Archive/` (**two containers behind one set of rules** - `TarGzService` and `ZipService`,
+  `ArchiveFormatSniffer` deciding from the first bytes and naming 7z so a refusal can say so rather
+  than call a good file corrupt; the four unpack checks are the same for both; tar carries LINK
+  ENTRIES, which no name check catches, while a zip's declared size is a CLAIM - so its limits are
+  enforced twice, cheaply from the central directory and then as a hard counter during the copy - and
+  two zip entries may SHARE A NAME, which is refused outright; `NonSeekableWrite` keeps one input
+  producing one output, since ZipOutputStream writes a different file when it can seek, and a desktop
+  export can while an Android SAF export cannot). `Crypto/` (`PgpSymmetricService`, OpenPGP symmetric,
+  SEIPD v1 because GnuPG does not implement RFC 9580; the `...Utf8` overloads are what make a Cyrillic
+  passphrase interoperate with gpg at all). `LevelArchive/` (what a level archive contains, written and
+  read; the reader is also the future server's entry point, which is why every refusal is a value
+  rather than an exception). **This is where the SDK started reading files** - a header claiming it
+  reads none is stale.
+- **`Cache/` is gone**, and what replaced it is a FORMAT rather than another layer: a side-car cache has
+  to decide when it is stale, carry an invalidation hook on every write path and keep a second
+  serializer in step with the real one, while a format cannot disagree with the file because it IS the
+  file. `Serialization/Blob/` is that format; `LevelObjectCodec`, the object tree written out by hand,
+  was its worked example and is gone.
+- `CryptographyService` (AES-256-CBC, NOT what protects a level - OpenPGP does), `TextFormatService`
+  (`{variable}` string templating), `FontCharacterService` (builds `LevelHints.FontCharacters`).
+- **`Shapes/ShapeCatalogService`** + `ShapeParameters` - the game's own built-in shape library, here
+  rather than in the consumer because it is what a `ShapeId` means: 497 shapes as the cross product of
+  a form, a sector, a thickness rung and an invert flag, an id that IS those parameters packed one axis
+  per nibble (`Encode`/`TryDecode`), and `Build` producing the geometry in pure C#. The consumer only
+  bakes what this enumerates. `SHAPES.md`'s six rules are what make a future axis free and an inserted
+  side count harmless.
+- **`Controls/`** (`ControlDeviceCatalog`/`ControlDeviceInfo`) - the STATIC per-device facts, outside
+  the settings tree because they are not the player's to change and **must not survive a file**: a
+  saved "this device supports Relative" would still claim so after the build stopped supporting it.
+  The matrix is uniform but for one hole (three devices do all three modes, `DeviceGyro` has no
+  Relative, so its `SupportedModes` is `Absolute | Direction`); the mask is the only place a future
+  device that genuinely cannot do one - a pedal, a wheel, a MIDI pad - could say so without every
+  consumer growing a special case.
+- **`Collections/`** - the unit the game keeps in `resources/collections/<guid>/`; its manifest is
+  `Models/Collections/ResourceCollection`, a new domain at `V2_SimplifyEntrance`, not a bump. Every failure is a
+  value (`CollectionReadResult`, `CollectionArchiveResult`), never a throw. The four data kinds sit in
+  `prefabs/`, `themes/`, `shapes/`, `effects/` as one envelope per file; a missing or wrong passphrase
+  comes back as `PassphraseRequired`/`WrongPassphrase`, which the host answers by asking. The planners
+  close over `Utils/ResourceClosure`.
+- **`Profile/`** - the player's whole data folder as one zip (a category is one folder, or
+  `settings.json`), written to zip only, under a policy that
+  lifts the shared 100-byte name cap (`ArchivePolicy.MaxNameBytes`; tar refuses such a policy). The
+  manifest `Models/Profile/ProfileManifest` stores each level's export-time write time, since every
+  zip entry is pinned to 1980. The unpack limits are what the archive's own directory declared
+  (`ProfileArchiveReader`). A file resource with the same digest as the level's own is `Reused`.

@@ -3,141 +3,30 @@
 Read `Assets/Plugins/BH.SDK/Models/CLAUDE.md` first - it carries the folder index,
 the `IModel<T>` contract and the cross-folder effect/audio/theme model.
 
+`RectObject` is the base of every placeable scene object (`ObjectId`, `ParentObjectId`, `Name`,
+`Active`, `Span`, `Layer`, the seven shared keyframe tracks); subclasses `ShapeObject`,
+`EffectObject`, `TextObject`, `PrefabObject`, each overriding `GetModelType() : ObjectType`. Every
+design fact, in full: `Docs/OBJECTS.md`.
 
-## Object model (`Models/Objects/`)
+## Traps
 
-**`TextObject` carries two per-character effect tracks** beyond the usual transform ones:
-`Fillments` (how much of the text is written) and `Appearings` (how much of it hides behind
-`AppearingMask`), `List<FillmentKey>`/`List<AppearingKey>` whose keys each carry a float plus their
-own `TextFillDirection` (`Forward`/`Backward`/`FromCenter`/`ToCenter`) or `TextAppearingMode`
-(`Random`=0/`Forward`/`Backward`), plus the non-keyframed `AppearingMask` (an author-set string, default `"X"`, capped by `TextRules.MaxAppearingMask` - a cap
-on CODE UNITS, so an astral character costs two of them; the consumer picks whole characters out of
-it, never halves, so an emoji mask is legal and simply takes the room of two). They
-are resolved over the string itself by the consumer's text job rather than by the keyframe→transform
-path. **Both fallbacks in `TextRules` mean "effect off"** (`Fillment_Fallback` = 1,
-`Appearing_Fallback` = 0) - an empty track has to read as unchanged, or every text authored before
-these existed would vanish. `Services/FontCharacterService` folds the mask into the font's character
-set, since a mask character needs a glyph exactly like the text it replaces.
-
-`RectObject` is the base of every placeable scene object: `ObjectId`, `ParentObjectId`, `Name`,
-`Active`, `Span` (a half-open `FrameSpan`), `Layer`, plus the shared keyframe tracks
-(`Positions`/`Rotations`/`Scales`/`Sizes`/`AnchorsMin`/`AnchorsMax`/`Pivots`). Empty keyframe lists
-are valid (mirrors Unity project's `defaults.xxx` fallback convention). Subclasses, each overriding
-`GetModelType() : ObjectType`: `ShapeObject`, `EffectObject` (thin - just an `EffectId` pointing
-into `Level.Resources.Effects`, the actual payload lives in `EffectData`), `TextObject`,
-`PrefabObject` (see "Prefab system" below).
-
-**`ShapeObject` carries TWO `ShapeId` fields and neither derives from the other**: `ShapeId` is what
-is drawn, `ColliderId` is what is hit, and a level routinely wants them to disagree - a telegraph
-beam that is drawn but harmless, a hitbox simpler than the art it guards, an invisible wall. One id
-type serves both because a shape and a hitbox are the same data: triangles inside `[-0.5, 0.5]`.
-Both resolve against the same two collections (the game's own shape presets, or
-`Level.Resources.CompositeShapes`), so a user-authored shape is usable for either or both.
-
-**A built-in `ShapeId` is its parameters packed**, and the constants naming them live in the
-generated half of the type (`Models/Primitives/ShapeId.g.cs`, one nested class per form -
-`ShapeId.Hexagon.S4_2_T8_I`). `Services/Shapes/ShapeCatalogService` owns the layout and is the only
-thing that may write that file. The previous library numbered its 78 shapes 1..78 by their position
-in the consumer's array, so inserting a form renumbered everything after it; form code 0 is now
-reserved and never issued, which is what makes every one of those retired ids decode to nothing
-rather than to some other shape.
-
-**`RectObject.Active` replaced `Visible`, and the change is semantic, not cosmetic.** `Visible`
-gated rendering only, so an invisible object still hit the player - a trap, since nothing in the
-name said so. `Active` gates *both* paths and applies down the hierarchy. "Not drawn but still
-solid" moved to where it belongs: a Null `ShapeId` with a real `ColliderId`.
-
-`ShapeObject.ShaderType` (`Models/Enums/ShaderType.cs`, byte: `Auto = 0`/`Opaque`/`Transparent`) is
-authored intent about the render path, not a shader id - the format deliberately has no
-user-defined shaders. `Auto = 0` is what an older file deserializes to, so adding it needed no
-migration and the domain stayed at generation 1. What `Auto` actually resolves to is a *consumer*
-question and lives in the Unity project (`Core`'s `ShapeShaderResolver`); the format only stores the
-three-way choice.
-
-**Polymorphism mechanism** (applies throughout the whole model tree, not just objects - see "Value
-system"): `ObjectType` (byte enum) is resolved by `Serialization/Converters/CustomTypes/
-ObjectConverter.cs`, registered globally in `SerializationService`, **not** via a `[JsonConverter]`
-attribute on `RectObject` itself and **not** via Newtonsoft `TypeNameHandling`/`$type`. Adding a new
-`RectObject` subtype means extending `ObjectConverter.GetType`'s switch (otherwise an unknown tag
-reads back as a plain `RectObject` through `Fallback`, reported to `SerializationReport`) - there's no
-attribute-based auto-discovery.
-
-## `IObjectScope` / `IObjectIdCounter` - the split every consumer must get right
-
-`IObjectScope` (`Dictionary<ObjectId, RectObject> Objects`) and `IObjectIdCounter`
-(`ObjectId GetNextObjectId()`) are two separate, narrow interfaces. **`Prefab` implements both on
-one class** (its own `Objects` + its own int counter). **At level scope the two are split across
-different classes**: `Level.Game` (`GameLevel`) is the `IObjectScope`, but `Level.Settings`
-(`LevelSettings`) is the `IObjectIdCounter` - `GameLevel` does *not* implement `IObjectIdCounter`,
-`LevelSettings` does *not* implement `IObjectScope`. Anything that needs "the scope+counter pair"
-generically (the Unity project's `PrefabMaterializer`, `LevelEditorOperation.TargetScope`/
-`TargetCounter`) must combine `Level.Game`+`Level.Settings` explicitly for the level case, unlike the
-`Prefab` case where one object satisfies both. Don't assume symmetry here.
-
-`ObjectId` has reserved negative constants beyond plain user ids: `Camera = -1` (player-runtime-only,
-invalid as an actual `ObjectId`), `LocalPlayer = -2` (a valid parent target), `PrefabRoot = -3`.
-
-**`PrefabRoot` is an ADDRESS, not a sentinel**, and it is the only reserved id that appears as an
-IDENTITY as well as a parent: `Prefab.Root` is a real `RectObject` carrying that value as its own
-`ObjectId`, and a placement of that template is what it materializes AS. An unset/`Null`
-`ParentObjectId` inside a template still resolves to the same place - "no parent here" and "attached
-to the root" describe one arrangement - so the difference is which of the two an author said.
-`Docs/Issues/PREFAB_ROOT_HISTORY.md` is the record.
-
-Both id rules are **context-checked**, each as narrowly as it can be:
-`RuleParentObjectIdValid` accepts `PrefabRoot` only in prefab scope and `Camera`/`LocalPlayer` only
-outside it, falling back to the plain range check when no scope is resolved;
-`RuleObjectIdValid` accepts `PrefabRoot` as an identity on the same terms and nothing else negative
-at all. What stops an inner object claiming that identity is `Prefab.Objects`' own
-`RuleDictionaryKeyMatches` - an id has to be the key it is filed under.
-
-**`Modification` is one of three models the generator does not cover** (`FrameSpan` and `ModificationKey` are
-structs with no constructor body to read defaults from). Its `Value` is an untyped `object`: copying it is not
-an assignment (a whole-track override stores a `List<TKeyframe>`, which would alias, so `Copy` rebuilds a
-same-type list and clones each element) and comparing it is not `object.Equals` (a `List` has no value
-equality). It is `partial` anyway for `ValidationGenerator`, which writes a walk for every `[RuleContainer]`
-(`BHS1101` is an error otherwise). The setter widens integrals to `long` and floats to `double`, the CLR types
-Newtonsoft produces for a raw JSON number, so a `Modification` built with a plain `int` still equals itself
-after a round trip. A non-scalar value comes back as a `JToken` and `JContainer` compares by REFERENCE, so
-`Equals` uses `JToken.DeepEquals` (found by `CorpusLoadCostTests` once the corpus carried whole-track
-overrides); it does NOT make an in-memory `List<TKeyframe>` equal to the `JArray` a reading of it produces -
-the round-trip promise is about the scalars. The blob and the JSON half are hand-written: `Value` is written as
-JSON TEXT, not a tagged union, because the elements of a track override are polymorphic values only this
-project's converters can write, and text from the same serializer lands on exactly what a `.json` round trip
-lands on. It costs a few bytes on a member a level carries a handful of; anything cleverer is a second
-definition of what `Value` means.
-
-**`PrefabObject.PlacementOffset` is the in-point and moves everything the template contributes**: every
-materialized copy's span (`PrefabMaterializer`/`PrefabVirtualizationUtils` subtract it) and the placement's own
-instance origin (`LevelStateBuilder`), which must move together or the placement's animation slides against
-the content it places. It exists so a placement can be trimmed and cut without the template restarting: the two
-halves of a cut are one template played from two in-points, with no per-child override. `S - PlacementOffset`
-is what both gestures preserve. The bound `PlacementOffset <= Span.StartFrame - MinFrame` is not an attribute
-(`FrameRules.MinPlacementOffset`): a property rule sees one number and never the span. A placement's own length
-is an OVERRIDE, not a field: `PrefabRootUtils.ApplyRoot` rewrites the duration from the template root on every
-materialize, resync and load, `ApplyModifications` runs after it, so a Modification against that member wins
-while a written duration would not. The property is serialized by neither codec (`[GenerateModelIgnore]` +
-`[JsonIgnore]`: the duration is already in `Span`, and the two JSON writers must agree byte for byte).
-
-**`RectObject.Layer` is static, deliberately.** A `Random*` value is addressed by Hash(seed, frame, EFFECTIVE
-layer, span start, track, channel), so a layer track would reroll every random value under the object on every
-frame it moved (`Docs/Issues/LEVEL_MODEL_ANALYSIS.md`, C5). `TextObject.FontSizes` is the only track whose key
-class is polymorphic: a `FontSizeKey` draws at its size, an `AutoFontSizeKey` is fitted into its band, a track
-mixes them freely, the LATER key of a pair decides the frame, and across the boundary a plain key blends as the
-degenerate band min = max = Value. Fillment/Appearing are per-character effects resolved over the string by the
-text job, and their direction/mode lives on each key (like `Ease`), so one track can change mode without a split.
-
-**What a prefab override may address** (`ModificationFields`): the number belongs to the DECLARATION, so
-`RectObject.Layer` is one number for every subclass, and two members sharing a wire key stay two numbers
-(`ShapeObject.Colors` 0x0205, `TextObject.Colors` 0x0303). Bands: 0x01 `RectObject`, 0x02 `ShapeObject`, 0x03
-`TextObject`, 0x04 `EffectObject`, 0x05 `PrefabObject`; a new declaring type takes the next FREE band.
-`PrefabId`, `ObjectIds` and `Modifications` are what an override is expressed IN, so none is addressable, and
-`ObjectId` is the identity the address is built from. `PlacementOffset` is addressable, because a NESTED placement
-must diverge in it like any inner object's field. `PlacementDuration` is a view onto `Span`'s duration half (not
-a stored member): overriding `Span` whole would restate the start and beat every ordinary move. A Modification
-keyed to `ObjectId.PrefabRoot` lands on the placement itself (`PrefabRootUtils`), so it may address only what the
-template owns: `Name`, the seven positional tracks and `PlacementDuration`. `Span`, `Active`, `Layer`,
-`ParentObjectId` and `PlacementOffset` are the placement's OWN authored fields, and an override would be a
-second way to say the same thing that overwrote the first, since `ApplyModifications` runs last; an outer
-placement overriding an inner one's `Span` uses the inner object's own id (case 1 in `ModificationRecorder`).
-`Docs/Issues/MODIFICATION_FIELD_IDS_HISTORY.md` is the record of the numbering.
+- **A new `RectObject` subtype extends `ObjectConverter.GetType`'s switch by hand** - no attribute
+  discovery, no `$type`; an unknown tag reads back as a plain `RectObject` (reported).
+- **`ShapeId` (drawn) and `ColliderId` (hit) are independent**; "not drawn but solid" is a Null
+  `ShapeId` with a real `ColliderId`. `Active` gates both paths, down the hierarchy.
+- **A built-in `ShapeId` is its parameters packed**; `Models/Primitives/ShapeId.g.cs` is written only
+  by `Services/Shapes/ShapeCatalogService`. Form code 0 is reserved and never issued.
+- **`IObjectScope` and `IObjectIdCounter` are split at level scope** (`Level.Game` +
+  `Level.Settings`) and joined on `Prefab` - never assume symmetry.
+- **`ObjectId` reserves `Camera = -1`, `LocalPlayer = -2`, `PrefabRoot = -3`.** `PrefabRoot` is an
+  ADDRESS (`Prefab.Root` carries it as its identity), not a sentinel; both id rules are context-checked.
+- **`Modification.Value` is an untyped `object`** - hand-written copy/equality/codecs; integrals widen
+  to `long`, floats to `double`, non-scalars compare with `JToken.DeepEquals`.
+- **`PlacementOffset` moves everything the template contributes**; a placement's length is an
+  override applied by `PrefabRootUtils.ApplyRoot`, serialized by neither codec.
+- **`RectObject.Layer` is static on purpose** (a layer track would reroll every random value under it).
+- **Override field ids belong to the DECLARATION** (`ModificationFields`, one band per declaring
+  type, a new type takes the next FREE band); a root-keyed override may address only what the
+  template owns.
+- **`TextRules`' Fillment/Appearing fallbacks mean "effect off"**; `AppearingMask`'s cap counts CODE
+  UNITS.

@@ -147,3 +147,69 @@
 
 The SDK as a third party sees it: a DLL, a level folder, nothing else. Exit codes: 0 ok, 1 usage, 2 missing
 file, 3 round-trip mismatch, 4 newer than this SDK (so a script can run it).
+
+## The folder at a glance (moved from `Utils/CLAUDE.md`)
+
+The folder file keeps the traps; this is its catalogue, with the facts not stated elsewhere.
+
+- `BHSDKMath` - Unity-independent math, since the core assembly can't reference `UnityEngine.Mathf`.
+  `DimensionalIndexer2` - flat-array to 2D-grid indexing. `LevelUtils` - `RectObject`
+  id/parent/bounds setters. `ModelUtils` - deep-copy/equality/hash helpers for
+  `List`/`Dictionary`/`Array` of `ICopyable<T>`. `ModificationUtils`/`TypeExtensions`.
+- `LevelCapacityUtils` (sweep-line "peak simultaneous objects per type", backing `LevelHints.Limits`)
+  and `LevelStatsUtils` (`LevelStats`/`LevelObjectStats`/`LevelResourceStats` - what a level *holds*,
+  one O(n) allocation-free pass, for showing rather than sizing) answer different questions; don't
+  use either for the other's.
+- **`PrefabVirtualizationUtils`** (+`PrefabExpandReport`) keeps a placement's materialized copies OUT
+  of the file: `Thin` drops them before a write, `Expand` rebuilds them from `pfid` + `ids` + `mod`
+  after a read, and the level every other system sees is flat either way (`Docs/PREFAB_PLACEMENT.md`;
+  the Unity project's `Docs/Issues/PREFAB_VIRTUALIZATION_HISTORY.md` is the record). **It never mints
+  an outer id** (ids are born at edit time, in the consumer's `PrefabMaterializer`; a missing one is
+  reported), and **`Expand` writes by INDEXER**, which is what lets a level saved with copies AND table
+  both present open without doubling them (a change that landed before 1.0.0, when Rule 11 still
+  meant no migrations).
+- **`ObjectDepthUtils`** - parent-chain depth over an `IObjectScope`, bounded by
+  `LevelRules.MaxObjectDepth`. It lives in the SDK because `Expand` has to refuse the same chains and
+  cannot reach `BH.Core`; the consumer's `BH.Core.Utils.HierarchyMath` is a forwarding facade over it.
+  **The template root costs no depth** only while `Prefab.Root` stays a field: `GetTemplateDepth`
+  walks `Objects.Values` alone and stops on `ObjectId.PrefabRoot` without incrementing.
+- **`PrefabRootUtils`** - the `Prefab.Root` ownership table as code, in the SDK because its two
+  consumers (the edit-time `PrefabMaterializer` and the load-time `Expand`) only stay correct
+  together. `ApplyRoot` writes the template-owned half onto the placement (`Name`, the seven
+  positional tracks copied not aliased, and the span's DURATION) and leaves the span's start, `Active`
+  and `Layer` alone - the last two are pinned on the template by `RulePrefabRootFixed` because nothing
+  copies them. `SetTemplateLength` is the one writer of that duration, spelling the pinned half of
+  `Root.Span` (start at `FrameRules.MinFrame`, no anchors) once; a template's whole timeline is that
+  span, `Prefab` carrying no `FrameDuration`. `TryGetModificationTarget` is what makes a root-keyed
+  `Modification` land at all: the root is never a key in `placement.ObjectIds`, so without it such an
+  override is recorded, saved, shown and silently never applied (Unity project's
+  `Docs/Issues/PREFAB_ROOT_HISTORY.md`).
+- **`ObjectScopeExtensions`** - the ONE place an `ObjectId` becomes a `RectObject`
+  (`TryGetObject`/`GetObject`): nothing that resolves an id through `scope.Objects` can see a
+  template's root. Deliberately NOT applied to loops that ENUMERATE a scope - those ask what a
+  template HOLDS, and the root is what content hangs off, not content.
+- `ShapeLoopUtils` - radial loops, the two emitters every built-in shape is built from (a fan and a
+  resampled annulus) plus sector clipping; `Docs/SHAPES.md` explains relative angles and the
+  resampled rims. `ShapeSynthUtils` - procedural geometry for shapes the library cannot name; `Build`
+  is the sanitizing wrap `ShapeCatalogService` goes through. `ShapeGeometryUtils`
+  (+`ShapeGeometryReport`) - the single "what a valid shape is / how to make one valid", shared by
+  `RuleShapeGeometry.Fix` and the consumer's shape editor on Save; its `Sanitize` order (clamp → weld
+  → drop malformed → drop degenerate → trim → drop orphans → fix winding) is load-bearing - every step
+  can reintroduce a problem an earlier one fixed, and this is the order in which none does.
+- **`ResourceReferenceUtils`** - what still points at a resource, as a COUNT per family: the question
+  in front of a delete (`LevelGraphAnalyzer.UnresolvedReference` answers the opposite direction, the
+  state a delete creates). EVERY scope is walked, `Prefab.Root` included, and a NULL id counts nothing.
+  A `ThemeRef` colour is not a theme reference (it stores a slot INDEX); only the theme track names a
+  `ThemeId`.
+- **`SurrogateUtils`** - where a string may be cut. Every length ceiling counts UTF-16 CODE UNITS; a
+  cut between a surrogate pair renders U+FFFD and reports nothing. `ClampLength`/`Truncate` give the
+  shorter answer; `IsLead`/`IsTrail`/`IsPair` are plain `char` arithmetic, so the consumer's Burst text
+  job shares them. Used by `RuleStringMax`/`RuleIStringMax`' fixes, `FontCharacterService`, and
+  `GamePlayer`'s `TextsProvider`/`TextComposeJob`. **Not grapheme clustering** (UAX #29), deliberately
+  (Unity project's `Docs/Issues/PRE_RELEASE_STRUCTURAL_ANALYSIS.md` §7).
+- **`ResourceGraph` is the ONE list of reference edges**, including `EffectObjectCore.ParticleShapeId`
+  and id-valued `Modification`s (through `ModificationValues.TryConvert`). `ResourceReferenceUtils`,
+  `ResourceClosure` and `ResourceRemap` all walk it, so a new reference field is added in ONE place.
+  `ResourceRef` is a typed reference to any of the seven kinds (`Guid` data kinds, `int` file kinds -
+  `ResourceTypeExtensions.IsGuidAddressed`), `ResourceSet` a set of them; `ResourceNaming` allocates
+  the next user id and a unique file name. Full record: `Docs/RESOURCE_GRAPH.md`.

@@ -3,6 +3,41 @@
 Contributor reference for `Tests/`. The folder map and the three mandatory attributes are in
 `Tests/CLAUDE.md`; a test file keeps one line on why a case exists and the reasoning lives here.
 
+## Shared fixtures and the attribute convention
+
+Moved here from the SDK's root `CLAUDE.md`.
+
+- **`MockData.cs` is the shared fixture builder** (kept out of `SerializationTests` so every test
+  file can reuse it). `CreateTestXxx`/`CreateValidXxx` factories deliberately touch as much field
+  surface as possible while staying rule-valid; `CreateInvalidXxx` factories are deliberately minimal,
+  each encoding exactly one rule violation `RuleFixer` must detect and fix. A `#region Generation 0`
+  half builds equivalents against `V0` snapshot types for exercising the migration path, including a
+  hand-spliced JSON envelope builder (`CreateTestLevelV0Json`) - needed because
+  `VersionedEnvelopeConverter` always tags a *whole* current-shape object with the *current* version
+  when serializing, so each historical fragment has to be serialized standalone from its own real
+  `V<n>` type and spliced in by hand.
+- **Every test method carries three attributes**, no exceptions - `[Author(Metadata.Author.Vertoker)]`,
+  `[Category(Metadata.Category.Self)]` (`"BH.SDK"`, this namespace minus its `.Tests` suffix), and
+  exactly one difficulty out of `Metadata.Category.VeryEasy`/`Easy`/`Normal`/`Hard`/`Extreme`. They
+  sit between the `[Test]`/`[TestCase]` attribute(s) and the signature. `Metadata.cs` holds the
+  constants; their string values are ordinal-prefixed (`"1_very_easy"` … `"5_extreme"`) so a category
+  dropdown sorts cheapest-first. The consuming Unity project states this as a hard rule and applies
+  the same convention to its own test assemblies.
+- **The modification fixtures are the worked example of what this suite is for.**
+  `ModificationApplyTests` drives one field of each kind through `Apply` - in memory and after a
+  serializer round trip - and it is what found that an int override never applied at all while an
+  enum and an id stopped applying once they had been through the serializer.
+  `ModificationValuesTests` pins the conversion that fixed them, `ModificationFieldsTests` the id
+  table from both sides (the constants, and the members claiming them), and
+  `Rules/ModificationCheckedWriteTests` the one write in the format that reaches a model with nothing
+  to judge it. `Docs/Issues/MODIFICATION_FIELD_IDS_HISTORY.md` (the Unity project's) is the record.
+- **Serialization is higher-risk than it looks.** Per the SDK's own `TODO.md`:
+  `SerializationService`'s stability across all keyframe/value/effect type combinations (round-trip +
+  real saved level files) is flagged as not yet fully verified, especially after the
+  `IRequiresDefaultSerializer` refactor.
+- **`Tests/BH.SDK.Tests.csproj` runs every fixture under `dotnet test`, and its `Compile` include
+  must stay RECURSIVE** - `STANDALONE_BUILD.md` has the project table and the incident.
+
 ## Async tests and the main-thread deadlock
 
 - **NUnit's `Assert.ThrowsAsync` freezes the Unity Editor** at zero CPU, silently, and the run has to be

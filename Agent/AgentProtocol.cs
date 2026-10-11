@@ -131,6 +131,79 @@ namespace BH.SDK.Agent
 
             /// <summary> Replaces the author's selection. </summary>
             public const string SelectionSet = "selection.set";
+
+            /// <summary> A PNG schematic of any frame, drawn from the level data; the playhead does not move.
+            /// </summary>
+            public const string ViewSchematic = "view.schematic";
+
+            /// <summary> Per-frame counts and hazard coverage over a range of frames. </summary>
+            public const string FrameStats = "frame.stats";
+
+            /// <summary> Where objects are at a frame: world corners, effective layer, resolved span. </summary>
+            public const string CursorResolve = "cursor.resolve";
+
+            /// <summary> Why an object is or is not drawn at a frame: the first reason that applies. </summary>
+            public const string ObjectExplain = "object.explain";
+
+            /// <summary> A contact sheet of shapes, numbered, with a line per number naming the shape. </summary>
+            public const string ShapesAtlas = "shapes.atlas";
+
+            /// <summary> A real render of one frame through the shared playhead, as the level camera sees it.
+            /// </summary>
+            public const string ViewCapture = "view.capture";
+
+            /// <summary> Several real renders laid out as one contact sheet, each labelled with its frame.
+            /// </summary>
+            public const string ViewFilmstrip = "view.filmstrip";
+
+            /// <summary> Where the playhead is, whether it plays, and whether the author is busy. </summary>
+            public const string PlayheadGet = "playhead.get";
+
+            /// <summary> Moves the playhead, paused; only while the author is idle. </summary>
+            public const string PlayheadSet = "playhead.set";
+
+            /// <summary> What the analysis of an audio resource heard: tempo, downbeat, sections, notes.
+            /// </summary>
+            public const string MusicAnalyze = "music.analyze";
+
+            /// <summary> One line per bar or beat: band loudness, onset counts, the strongest hit. </summary>
+            public const string MusicTable = "music.table";
+
+            /// <summary> A PNG of band loudness over a range with the beat grid, markers and hazard starts.
+            /// </summary>
+            public const string MusicStrip = "music.strip";
+
+            /// <summary> A time address as a frame, seconds and bar.beat. </summary>
+            public const string MusicResolve = "music.resolve";
+
+            /// <summary> Object starts and keyframes off the level's beat grid by more than a tolerance.
+            /// </summary>
+            public const string MusicCheck = "music.check";
+
+            /// <summary> Plays a range through the shared playhead for the author to hear. </summary>
+            public const string MusicPlay = "music.play";
+
+            /// <summary> Beat segments the analysis suggests; nothing is applied. </summary>
+            public const string BeatgridPropose = "beatgrid.propose";
+
+            /// <summary> Writes beat segments as one undo step, making room among the existing ones.
+            /// </summary>
+            public const string BeatgridApply = "beatgrid.apply";
+
+            /// <summary> The files in the open level's <c>ai/</c> folder and whether they travel with it.
+            /// </summary>
+            public const string ContextList = "context.list";
+
+            /// <summary> One file of the open level's <c>ai/</c> folder, by default <c>CONTEXT.md</c>.
+            /// </summary>
+            public const string ContextRead = "context.read";
+
+            /// <summary> Writes or appends to one file of the open level's <c>ai/</c> folder; not undoable.
+            /// </summary>
+            public const string ContextWrite = "context.write";
+
+            /// <summary> One topic of the guide, rendered from the public docs. </summary>
+            public const string GuideGet = "guide.get";
         }
 
         /// <summary> The numeric <c>error.code</c> of a JSON-RPC error; the readable code is in its data.

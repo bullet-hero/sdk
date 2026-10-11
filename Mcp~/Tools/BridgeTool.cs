@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
@@ -29,15 +30,57 @@ namespace BH.SDK.Mcp.Tools
             }
             catch (BridgeException e)
             {
-                var error = new JObject
-                {
-                    ["error"] = e.Code,
-                    ["message"] = e.Message,
-                };
-
-                if (e.ErrorData != null) error["data"] = JObject.FromObject(e.ErrorData);
-                return Text(error.ToString(Formatting.None), true);
+                return Refusal(e);
             }
+        }
+
+        private static CallToolResult Refusal(BridgeException e)
+        {
+            var error = new JObject
+            {
+                ["error"] = e.Code,
+                ["message"] = e.Message,
+            };
+
+            if (e.ErrorData != null) error["data"] = JObject.FromObject(e.ErrorData);
+            return Text(error.ToString(Formatting.None), true);
+        }
+
+        /// <summary> Like <see cref="ForwardAsync"/> for a result carrying a picture: the PNG becomes an image
+        /// block, the rest of the result the text block after it. </summary>
+        public static async Task<CallToolResult> ForwardImageAsync(BridgeClient bridge, string method,
+            object parameters, CancellationToken token)
+        {
+            bridge.Hints.BeginCall();
+
+            try
+            {
+                var result = await bridge.CallAsync(method, parameters, token).ConfigureAwait(false);
+                return Image(result, bridge.Hints);
+            }
+            catch (BridgeException e)
+            {
+                return Refusal(e);
+            }
+        }
+
+        /// <summary> Splits a picture result into an image block and the text of everything else. </summary>
+        public static CallToolResult Image(JToken result, HintFilter hints)
+        {
+            var png = (result as JObject)?["png"]?.Value<string>();
+            if (string.IsNullOrEmpty(png)) return Text(Shape(result, hints), false);
+
+            var obj = (JObject)result;
+            obj.Remove("png");
+
+            return new CallToolResult
+            {
+                Content =
+                {
+                    ImageContentBlock.FromBytes(Convert.FromBase64String(png), "image/png"),
+                    new TextContentBlock { Text = Shape(obj, hints) },
+                },
+            };
         }
 
         /// <summary> A page as a header line and its lines; anything else as compact JSON. Hints are

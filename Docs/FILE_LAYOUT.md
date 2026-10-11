@@ -28,3 +28,6 @@ folder reads this first; a level is a folder of files a player can zip and send,
 - **`mcp/` holds the level-editing bridge's own files** (`AgentEndpoint`: the port and token of the running game). It is
   machine-local and describes a running process, so it is no `ProfileCategory`: a profile never packs it, and no
   level carries it.
+- **`ai/` inside a level folder is the opposite: notes about THAT level**, so it lives in the folder and travels
+  with it. Not a model and never read by the loader; `ai/manifest.json` says whether an export carries it, and
+  `Agent/AiFolderRules` keeps every name a plain lowercase text file but `CONTEXT.md`.

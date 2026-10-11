@@ -62,12 +62,16 @@ namespace BH.SDK.Agent
         /// <summary> A handler threw. </summary>
         public const string Internal = "internal";
 
+        /// <summary> The author pressed Stop in the editor; no client is let in until they allow it again.
+        /// </summary>
+        public const string Stopped = "stopped";
+
         /// <summary> Every code, for a test that each one is unique. </summary>
         public static readonly IReadOnlyList<string> All = new[]
         {
             NotConnected, ProtocolMismatch, BadToken, NoEditor, NoLevel, PrefabMode, UserBusy, Preempted,
             Stale, Locked, Busy, Forbidden, UnsavedChanges, Protected, NewerGeneration, Refused,
-            InvalidParams, NotFound, Internal,
+            InvalidParams, NotFound, Internal, Stopped,
         };
     }
 }

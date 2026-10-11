@@ -23,7 +23,7 @@ plus `Marker`-style `Name`/`Color4`). Spans rather than tempo points because a p
 express a HOLE: an intro with no percussion, a break, the tail after the song ends. Editor-only in
 exactly the sense `Markers` is - saved, read back, consumed by generators and by the editor's own
 snapping, never by playback. `Span`'s setter strips `FrameAnchor`s: anchors mean "follow the parent's
-edge" and a segment has no parent. Adding it needed no migration - the domain stays at generation 1 and
+edge" and a segment has no parent. Adding it (before 1.0.0) needed no migration - the domain stays at generation 1 and
 an older file deserializes to an empty list.
 
 **Where the beats fall is computed, never stored**: `Utils/BeatMath` resolves

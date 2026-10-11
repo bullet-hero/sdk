@@ -27,11 +27,17 @@ namespace BH.SDK.Agent
         /// <summary> The editor is in Prefab Mode. </summary>
         public const string PrefabMode = "prefab-mode";
 
+        /// <summary> The level has no context file yet; the AI may create one. </summary>
+        public const string ContextMissing = "context-missing";
+
+        /// <summary> A context file is written straight to disk: no history step, no undo. </summary>
+        public const string ContextNotUndoable = "context-not-undoable";
+
         /// <summary> Every key, for a test that each one is unique. </summary>
         public static readonly IReadOnlyList<string> All = new[]
         {
             ZeroSizeGroup, SpanOutsideParent, SameLayerSameStartRandom, LocalKeyframes, EffectiveLayer,
-            StaleRead, PrefabMode,
+            StaleRead, PrefabMode, ContextMissing, ContextNotUndoable,
         };
     }
 }
