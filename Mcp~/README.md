@@ -1,4 +1,4 @@
-# bh-mcp - the Bullet Hero MCP server
+# Bullet Hero MCP - the Bullet Hero MCP server
 
 A thin MCP server (stdio) that forwards tool calls to the running game's bridge: a loopback TCP
 listener inside the game, one JSON-RPC 2.0 request per line. It reads where the game listens from the
@@ -31,14 +31,21 @@ Giving `-r` is what makes it self-contained, single-file and trimmed: the csproj
 Never pass them as `-p:` flags - a command-line property is global, reaches the netstandard SDK through
 the ProjectReference, and fails there (NETSDK1124). Other runtime identifiers (`linux-x64`,
 `osx-arm64`, `osx-x64`) cross-publish the same way. The output folder is under `bin~`, which git and
-Unity both ignore. A game build publishes the server itself, with the same command.
+Unity both ignore; the binary is `Bullet Hero MCP.exe` (`Bullet Hero MCP` off Windows). A game build
+publishes the server itself, with the same command, and puts the binary beside the game's executable.
+
+## Icon
+
+`Icon/icon.png` is the source. `Icon/icon.ico` is made from it (sizes 16 to 256) and is the Windows
+binary's icon; `Icon/icon-64.png` is embedded and sent inline as the MCP `serverInfo` icon. Change
+the PNG, then remake both.
 
 ## Connect a client
 
 Any MCP client that launches a stdio server takes the same shape:
 
 ```json
-{ "mcpServers": { "bullet-hero": { "command": "<path to bh-mcp(.exe)>", "args": ["--endpoint", "<path to endpoint.json>"] } } }
+{ "mcpServers": { "bullet-hero": { "command": "<path to Bullet Hero MCP(.exe)>", "args": ["--endpoint", "<path to endpoint.json>"] } } }
 ```
 
 `--endpoint` is optional: without it the server looks in the game's default data folder for this

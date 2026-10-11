@@ -25,7 +25,14 @@ toolJson.TypeInfoResolverChain.Add(ToolJsonContext.Default);
 builder.Services
     .AddMcpServer(options =>
     {
-        options.ServerInfo = new Implementation { Name = "bullet-hero", Version = SdkVersion.Value };
+        options.ServerInfo = new Implementation
+        {
+            Name = "bullet-hero",
+            Title = "Bullet Hero MCP",
+            Version = SdkVersion.Value,
+            WebsiteUrl = "https://bullethero.space/",
+            Icons = [new Icon { Source = IconDataUri(), MimeType = "image/png", Sizes = ["64x64"] }],
+        };
         options.ServerInstructions = ServerInstructions.Text;
     })
     .WithStdioServerTransport()
@@ -45,6 +52,15 @@ builder.Services
     .WithPrompts<WorkflowPrompts>(toolJson);
 
 await builder.Build().RunAsync();
+
+// The icon travels inline: a client may show it with no file or network access.
+static string IconDataUri()
+{
+    using var stream = typeof(BridgeClient).Assembly.GetManifestResourceStream("icon-64.png");
+    using var memory = new System.IO.MemoryStream();
+    stream.CopyTo(memory);
+    return "data:image/png;base64," + System.Convert.ToBase64String(memory.ToArray());
+}
 
 static string EndpointArgument(string[] args)
 {
