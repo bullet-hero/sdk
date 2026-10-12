@@ -18,6 +18,7 @@ namespace BH.SDK.Rules
 
         /// <summary> Upper bound of ResourceMeta.ResourceHashes. </summary>
         public const int MaxHashes = 8;
+
         /// <summary> Upper bound of ResourceMeta.ResourcePermissions. </summary>
         public const int MaxPermissions = 8;
 
@@ -37,14 +38,19 @@ namespace BH.SDK.Rules
 
         /// <summary> Upper bound of LevelResources.Textures. </summary>
         public const int MaxTextures = 256;
+
         /// <summary> Upper bound of LevelResources.Fonts. </summary>
         public const int MaxFonts = 32;
+
         /// <summary> Upper bound of LevelResources.Audios. </summary>
         public const int MaxAudios = 64;
+
         /// <summary> Upper bound of LevelResources.CompositeShapes. </summary>
-        public const int MaxCompositeShapes = 256;
+        public const int MaxCompositeShapes = 1024;
+
         /// <summary> Upper bound of LevelResources.Themes. </summary>
         public const int MaxThemes = 128;
+
         /// <summary> Upper bound of LevelResources.Effects. </summary>
         public const int MaxEffects = 256;
 
