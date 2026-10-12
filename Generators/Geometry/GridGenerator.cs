@@ -27,6 +27,24 @@ namespace BH.SDK.Generators.Geometry
             .Range(nameof(Parameters.OriginX), ValueRules.MinPos, ValueRules.MaxPos)
             .Range(nameof(Parameters.OriginY), ValueRules.MinPos, ValueRules.MaxPos)
             .Range(nameof(SpawnParameters.Size), ValueRules.MinSca, ValueRules.MaxSca)
+            .DescribeSpawnFields()
+            .Describe(nameof(Parameters.Columns),
+                "How many cells across, along X.")
+            .Describe(nameof(Parameters.Rows),
+                "How many cells along Y; rows go upward.")
+            .Describe(nameof(Parameters.SpacingX),
+                "Distance in world units between the centres of neighbouring columns.")
+            .Describe(nameof(Parameters.SpacingY),
+                "Distance in world units between the centres of neighbouring rows.")
+            .Describe(nameof(Parameters.OriginX),
+                "X of the grid's centre when Centered, else of its first (bottom-left) cell; world units " +
+                "relative to the run's parent.")
+            .Describe(nameof(Parameters.OriginY),
+                "Y of the grid's centre when Centered, else of its first (bottom-left) cell; world units " +
+                "relative to the run's parent.")
+            .Describe(nameof(Parameters.Centered),
+                "On: Origin is the grid's centre. Off: Origin is the bottom-left cell and the grid grows " +
+                "right and up.")
             .Build();
 
         /// <summary> Writes this run's objects into the scope. </summary>

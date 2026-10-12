@@ -52,6 +52,34 @@ namespace BH.SDK.Generators.Geometry
             .Range(nameof(Parameters.CenterX), ValueRules.MinPos, ValueRules.MaxPos)
             .Range(nameof(Parameters.CenterY), ValueRules.MinPos, ValueRules.MaxPos)
             .Range(nameof(SpawnParameters.Size), ValueRules.MinSca, ValueRules.MaxSca)
+            .DescribeSpawnFields()
+            .Describe(nameof(SpawnParameters.Size),
+                "Width and height in world units of each Sierpinski object; Koch and Tree segments are " +
+                "sized by their length and Thickness instead.")
+            .Describe(nameof(Parameters.Type),
+                "Koch: snowflake outline drawn with segments. Sierpinski: one object per smallest " +
+                "sub-triangle. Tree: binary branching tree of segments.")
+            .Describe(nameof(Parameters.Depth),
+                "Recursion depth. Objects grow fast: Koch 3 x 4^Depth, Sierpinski 3^Depth, Tree " +
+                "2^(Depth+1) - 1.")
+            .Describe(nameof(Parameters.Scale),
+                "Koch and Sierpinski: distance from the centre to the triangle's corners. Tree: trunk " +
+                "length. World units.")
+            .Describe(nameof(Parameters.Thickness),
+                "Width in world units of the segments Koch and Tree are drawn with.")
+            .Describe(nameof(Parameters.Rotation),
+                "Rotation of the whole figure in degrees counter-clockwise; at 0 the triangle points up " +
+                "and the tree grows up.")
+            .Describe(nameof(Parameters.CenterX),
+                "X of the figure's centre (the trunk's base for Tree), world units relative to the run's " +
+                "parent.")
+            .Describe(nameof(Parameters.CenterY),
+                "Y of the figure's centre (the trunk's base for Tree), world units relative to the run's " +
+                "parent.")
+            .Describe(nameof(Parameters.BranchAngle),
+                "Tree only: degrees each pair of child branches turns left and right from its parent.")
+            .Describe(nameof(Parameters.BranchScale),
+                "Tree only: a child branch's length as a fraction of its parent's.")
             .Build();
 
         /// <summary> Writes this run's objects into the scope. </summary>

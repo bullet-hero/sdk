@@ -52,6 +52,36 @@ namespace BH.SDK.Generators.Textures
             .Range(nameof(Parameters.OriginX), ValueRules.MinPos, ValueRules.MaxPos)
             .Range(nameof(Parameters.OriginY), ValueRules.MinPos, ValueRules.MaxPos)
             .Range(nameof(SpawnParameters.Size), ValueRules.MinSca, ValueRules.MaxSca)
+            .DescribeSpawnFields()
+            .Describe(nameof(SpawnParameters.Color),
+                "Not used: each object takes the colour of its own pixels.")
+            .Describe(nameof(Parameters.Source),
+                "Texture resource id of the image to trace; the editor decodes it. 0 (the default) " +
+                "traces nothing.")
+            .Describe(nameof(Parameters.TargetWidth),
+                "Columns the image is downsampled to before tracing; 0 uses the image's own width. " +
+                "Capped at 256.")
+            .Describe(nameof(Parameters.TargetHeight),
+                "Rows the image is downsampled to before tracing; 0 uses the image's own height. Capped " +
+                "at 256.")
+            .Describe(nameof(Parameters.PixelSize),
+                "Side of one traced pixel in world units; the picture is TargetWidth x PixelSize wide.")
+            .Describe(nameof(Parameters.OriginX),
+                "X of the picture's centre, world units relative to the run's parent.")
+            .Describe(nameof(Parameters.OriginY),
+                "Y of the picture's centre, world units relative to the run's parent.")
+            .Describe(nameof(Parameters.AlphaThreshold),
+                "Pixels whose alpha (0-1) is at or below this are skipped; 0 keeps every pixel that is " +
+                "not fully transparent.")
+            .Describe(nameof(Parameters.MergeRuns),
+                "Merge each horizontal run of one exact colour into a single wide object; off makes one " +
+                "object per pixel.")
+            .Describe(nameof(Parameters.UseThemeRef),
+                "Write each colour as a reference to the nearest colour of Theme instead of a literal, " +
+                "so the picture follows the palette.")
+            .Describe(nameof(Parameters.Theme),
+                "Theme GUID whose colours UseThemeRef matches against; a missing theme falls back to " +
+                "literal colours.")
             .Build();
 
         /// <summary> Writes this run's objects into the scope. </summary>

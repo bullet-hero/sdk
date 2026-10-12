@@ -114,7 +114,7 @@ namespace BH.SDK.Tests.Agent
 
         [TestCase("2bars", "no beat grid")]
         [TestCase("1.5bars", "bars are whole")]
-        [TestCase("bar:3", "use a frame")]
+        [TestCase("bar:3", "\"2bars\", \"3beats\"")]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.VeryEasy)]
@@ -125,6 +125,74 @@ namespace BH.SDK.Tests.Agent
             Assert.False(TimeAddress.TryParseDuration(input, Fps, context, 611, out _, out var error));
             StringAssert.Contains("\"" + input + "\"", error);
             StringAssert.Contains(reason, error);
+        }
+
+        [TestCase("2bars+1f", 611, 241)]
+        [TestCase("1bar + 1beat", 361, 290)]
+        [TestCase("s:1+10", 611, 70)]
+        [TestCase("60+f:5", 1, 65)]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Easy)]
+        public void Duration_Sum_AddsItsTerms(string input, int from, int expected)
+        {
+            Assert.True(TimeAddress.TryParseDuration(input, Fps, Context(), from, out var frames, out var error),
+                error);
+            Assert.AreEqual(expected, frames);
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.VeryEasy)]
+        public void Duration_Sum_WithABadTerm_NamesTheTerm()
+        {
+            Assert.False(TimeAddress.TryParseDuration("2bars+x", Fps, Context(), 611, out _, out var error));
+            StringAssert.Contains("\"x\"", error);
+        }
+
+        [TestCase("bar:5.2-1f", 650)]
+        [TestCase("marker:drop+3f", 614)]
+        [TestCase("marker:drop+2bars-1f", 850)]
+        [TestCase("s:2+1f", 122)]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Easy)]
+        public void Time_ShiftedByFrames_MovesTheBase(string input, int expected)
+        {
+            Assert.True(TimeAddress.TryParseFrame(input, Fps, Context(), out var frame, out var error), error);
+            Assert.AreEqual(expected, frame);
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.VeryEasy)]
+        public void Unavailable_RefusesEveryMusicalForm_WithItsReason()
+        {
+            var template = TimeAddressContext.Unavailable("no music in a template");
+
+            Assert.False(TimeAddress.TryParseFrame("bar:2", Fps, template, out _, out var error));
+            StringAssert.Contains("no music in a template", error);
+            Assert.False(TimeAddress.TryParseFrame("marker:drop", Fps, template, out _, out error));
+            StringAssert.Contains("no music in a template", error);
+            Assert.False(TimeAddress.TryParseDuration("2bars", Fps, template, 1, out _, out error));
+            StringAssert.Contains("no music in a template", error);
+            Assert.True(TimeAddress.TryParseFrame("f:30", Fps, template, out var frame, out error), error);
+            Assert.AreEqual(30, frame);
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.VeryEasy)]
+        public void WithMarkers_AddsNames_AndKeepsTheEarlierOfTwo()
+        {
+            var context = Context().WithMarkers(new Dictionary<string, int> { ["outro"] = 900, ["drop"] = 700 });
+
+            Assert.AreEqual(900, TimeAddress.ParseFrame(new JValue("marker:outro"), Fps, context));
+            Assert.AreEqual(611, TimeAddress.ParseFrame(new JValue("marker:drop"), Fps, context));
+            Assert.AreEqual(31, TimeAddress.ParseFrame(new JValue("marker:pre-drop"), Fps, context));
         }
 
         [Test]

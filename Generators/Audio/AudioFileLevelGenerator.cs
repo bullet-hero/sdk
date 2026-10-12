@@ -59,6 +59,19 @@ namespace BH.SDK.Generators.Audio
             .Hidden(nameof(Parameters.UriType))
             .Hidden(nameof(Parameters.DurationSeconds))
             .Range(nameof(Parameters.DurationSeconds), 0f, 3600f)
+            .Describe(nameof(Parameters.LevelName),
+                "Name of the new level; empty uses the audio file's name.")
+            .Describe(nameof(Parameters.Framerate),
+                "Frames per second the song's length is converted into.")
+            .Describe(nameof(Parameters.TailSeconds),
+                "Seconds of level kept after the song ends, room to author an ending.")
+            .Describe(nameof(Parameters.PinScreenAspect),
+                "Start the level with a fixed 16:9 screen limit keyframe on frame 1.")
+            .Describe(nameof(Parameters.OffsetSeconds),
+                "Seconds skipped inside the song at the level's first frame; the track itself always " +
+                "starts on frame 1.")
+            .Describe(nameof(Parameters.LevelDescription),
+                "Description of the new level.")
             .Build();
 
         /// <summary> Builds the level and its metadata together, so the two cannot disagree. </summary>

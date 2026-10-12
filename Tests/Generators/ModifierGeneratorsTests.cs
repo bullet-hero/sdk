@@ -121,6 +121,45 @@ namespace BH.SDK.Tests.Generators
             Assert.AreEqual(step, Offset(obj.Positions[0].Frame));
         }
 
+        // 167 BPM is 21.56 frames a beat: a grid stepped by a rounded 22 is 18 frames late by beat 41.
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Normal)]
+        public void Quantize_BpmGrid_PlacesEveryLineExactly_WithNoDrift()
+        {
+            var level = CreateLevel();
+            var obj = AddObject(level, 0, 0f, 886);
+
+            new QuantizeKeyframesGenerator().Run(Context(level, obj.ObjectId),
+                new QuantizeKeyframesGenerator.Parameters
+                {
+                    UseBeatGrid = false, UseBpm = true, Bpm = 167f, Mode = QuantizeMode.Nearest,
+                });
+
+            Assert.AreEqual(884, Offset(obj.Positions[0].Frame), "beat 41 is at 41 * 21.557 = 883.8");
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Normal)]
+        public void Quantize_SnapsToTheLevelBeatGrid_WhenItHasOne()
+        {
+            var level = CreateLevel();
+            level.Game.Events.Beats.Add(Agent.MusicGridTests.Segment(1, 600, 100f, 0f, 4, "all"));
+            var obj = AddObject(level, 0, 0f, 40, 50);
+
+            var parameters = new QuantizeKeyframesGenerator.Parameters
+            {
+                UseBpm = false, StepFrames = 10, Division = 2, Mode = QuantizeMode.Nearest,
+            };
+            new QuantizeKeyframesGenerator().Run(Context(level, obj.ObjectId), parameters);
+
+            CollectionAssert.AreEqual(new[] { 36, 54 }, FramesOf(obj),
+                "100 BPM split in halves: lines every 18 frames, the frame step of 10 is not used");
+        }
+
         [Test]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]

@@ -38,6 +38,22 @@ namespace BH.SDK.Generators.Modifiers
             .Range(nameof(Parameters.Framerate), FrameRules.MinFramerate, FrameRules.MaxFramerate)
             .Range(nameof(Parameters.MaxKeyShift), 0, FrameRules.MaxFrame)
             .Unit(nameof(Parameters.MaxKeyShift), "frames")
+            .Describe(nameof(Parameters.CurrentFramerate),
+                "The level's framerate now, in frames per second. Display only; the run reads the real " +
+                "value off the level.")
+            .Describe(nameof(Parameters.Framerate),
+                "Frames per second to retime the level to; frame numbers are rescaled so the timing in " +
+                "seconds stays the same.")
+            .Describe(nameof(Parameters.RemapObjects),
+                "Retime objects: their lifetimes and keyframes.")
+            .Describe(nameof(Parameters.RemapAudio),
+                "Retime audio tracks: their lifetimes and volume/pan automation.")
+            .Describe(nameof(Parameters.RemapEvents),
+                "Retime level-wide event keyframes: camera, post-processing, player, markers, " +
+                "checkpoints and the rest.")
+            .Describe(nameof(Parameters.MaxKeyShift),
+                "Frames a key may be nudged off its rescaled frame when another key already holds it; " +
+                "one that finds no free frame is dropped.")
             .Build();
 
         /// <summary> Applies this run's edit. </summary>

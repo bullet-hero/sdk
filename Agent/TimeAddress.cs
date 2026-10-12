@@ -35,6 +35,9 @@ namespace BH.SDK.Agent
         private static readonly Regex MusicalCount = new(@"^(?<n>[0-9]+(?:\.[0-9]+)?)\s*(?<unit>bars?|beats?)$",
             RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 
+        private static readonly Regex FrameShift = new(@"^(?<base>.+?)\s*(?<sign>[+-])\s*(?<n>[0-9]+)\s*f$",
+            RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+
         private static readonly Regex MarkerShift = new(
             @"^(?<name>.+?)\s*(?<sign>[+-])\s*(?<n>[0-9]+(?:\.[0-9]+)?)\s*(?<unit>bars?|beats?)$",
             RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
@@ -160,6 +163,13 @@ namespace BH.SDK.Agent
 
             if (number.HasValue) return TryFromFrames(number.Value, input, isCount, out result, out error);
 
+            if (isCount && TrySplitSum(text, out var terms))
+                return TrySum(terms, input, framerate, context, fromFrame, out result, out error);
+
+            if (!isCount && FrameShift.Match(text) is { Success: true } shifted
+                         && !text.StartsWith(FramePrefix, StringComparison.OrdinalIgnoreCase))
+                return TryShiftedTime(shifted, input, framerate, context, out result, out error);
+
             if (text.StartsWith(SecondsPrefix, StringComparison.OrdinalIgnoreCase))
             {
                 var body = text.Substring(SecondsPrefix.Length);
@@ -182,10 +192,16 @@ namespace BH.SDK.Agent
             }
 
             if (isCount && MusicalCount.Match(text) is { Success: true } count)
+            {
+                if (context?.MusicUnavailable != null) return Fail(input, true, context.MusicUnavailable, out error);
                 return TryMusicalCount(count, input, context, fromFrame, out result, out error);
+            }
 
             if (!isCount && IsMusical(text))
+            {
+                if (context?.MusicUnavailable != null) return Fail(input, false, context.MusicUnavailable, out error);
                 return TryMusicalTime(text, input, context, out result, out error);
+            }
 
             var digits = text.StartsWith(FramePrefix, StringComparison.OrdinalIgnoreCase)
                 ? text.Substring(FramePrefix.Length)
@@ -195,8 +211,70 @@ namespace BH.SDK.Agent
                 && double.TryParse(digits, NumberStyles.Float, CultureInfo.InvariantCulture, out var frames))
                 return TryFromFrames(frames, input, isCount, out result, out error);
 
-            error = $"Cannot read time {Quote(input)}: use a frame (120, \"f:120\") or seconds (\"s:12.5\").";
+            error = isCount
+                ? $"Cannot read duration {Quote(input)}: use frames (60, \"f:60\"), seconds (\"s:2\"), " +
+                  "with a beat grid bars or beats (\"2bars\", \"3beats\"), or a sum of them (\"1bars+1f\")."
+                : $"Cannot read time {Quote(input)}: use a frame (120, \"f:120\"), seconds (\"s:12.5\"), " +
+                  "with a beat grid \"bar:17\", \"bar:17.3\" or \"beat:64.5\", a marker (\"marker:drop\"), " +
+                  "any of them shifted by frames (\"bar:17-1f\").";
             return false;
+        }
+
+        // "2bars+1f": terms of a duration add up, each musical one measured from where the previous ends.
+        private static bool TrySplitSum(string text, out string[] terms)
+        {
+            terms = null;
+            if (text.IndexOf('+') <= 0) return false;
+            if (double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out _)) return false;
+            terms = text.Split('+');
+            foreach (var term in terms)
+                if (term.Trim().Length == 0)
+                    return false;
+            return true;
+        }
+
+        private static bool TrySum(string[] terms, string input, int framerate, TimeAddressContext context,
+            int fromFrame, out int result, out string error)
+        {
+            result = 0;
+            double total = 0;
+            foreach (var raw in terms)
+            {
+                var term = raw.Trim();
+                var plain = term.EndsWith("f", StringComparison.OrdinalIgnoreCase)
+                            && !MusicalCount.IsMatch(term)
+                    ? term.Substring(0, term.Length - 1)
+                    : term;
+                var from = fromFrame == FrameRules.NoFrame ? FrameRules.NoFrame : fromFrame + (int)total;
+                if (!TryParse(plain, null, framerate, true, context, from, out var part, out var reason))
+                {
+                    error = $"Cannot read duration {Quote(input)}: the term {Quote(term)} does not read " +
+                            $"({reason})";
+                    return false;
+                }
+
+                total += part;
+            }
+
+            return TryFromFrames(total, input, true, out result, out error);
+        }
+
+        // "bar:17-1f", "marker:drop+3f": any time, moved by whole frames.
+        private static bool TryShiftedTime(Match shift, string input, int framerate, TimeAddressContext context,
+            out int result, out string error)
+        {
+            result = 0;
+            var baseText = shift.Groups["base"].Value.Trim();
+            if (!TryParse(baseText, null, framerate, false, context, FrameRules.NoFrame, out var frame,
+                    out var reason))
+            {
+                error = $"Cannot read time {Quote(input)}: {Quote(baseText)} does not read ({reason})";
+                return false;
+            }
+
+            var amount = double.Parse(shift.Groups["n"].Value, NumberStyles.None, CultureInfo.InvariantCulture);
+            var sign = shift.Groups["sign"].Value == "-" ? -1 : 1;
+            return TryFromFrames(frame + sign * amount, input, false, out result, out error);
         }
 
         private static bool IsMusical(string text) =>

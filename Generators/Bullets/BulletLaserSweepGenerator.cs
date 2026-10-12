@@ -43,6 +43,37 @@ namespace BH.SDK.Generators.Bullets
             .Range(nameof(Parameters.OriginX), ValueRules.MinPos, ValueRules.MaxPos)
             .Range(nameof(Parameters.OriginY), ValueRules.MinPos, ValueRules.MaxPos)
             .Range(nameof(SpawnParameters.Size), ValueRules.MinSca, ValueRules.MaxSca)
+            .DescribeSpawnFields()
+            .Describe(nameof(SpawnParameters.Collider),
+                "What the firing beam hurts with; the warning beam never collides. Empty (the default) " +
+                "makes the beam harmless; pass a shape such as \"Square\" for a hazard.")
+            .Describe(nameof(SpawnParameters.Size),
+                "Not used: both beams are sized by Length and Width / WarnWidth.")
+            .Describe(nameof(Parameters.Length),
+                "How far the beam reaches out of its origin along the current angle, in world units.")
+            .Describe(nameof(Parameters.Width),
+                "Thickness of the firing beam in world units; this beam carries the Collider.")
+            .Describe(nameof(Parameters.WarnFrames),
+                "Frames the harmless warning beam shows before firing, at StartAngle; 0 skips it. Firing " +
+                "starts WarnFrames after the window start.")
+            .Describe(nameof(Parameters.FireFrames),
+                "Frames the firing beam lasts while it sweeps from StartAngle to EndAngle.")
+            .Describe(nameof(Parameters.WarnWidth),
+                "Thickness of the warning beam in world units; it never collides.")
+            .Describe(nameof(Parameters.StartAngle),
+                "Beam direction when it appears, degrees counter-clockwise from +X (0 = right, 90 = up).")
+            .Describe(nameof(Parameters.EndAngle),
+                "Beam direction when firing ends, in degrees counter-clockwise from +X; the beam pivots " +
+                "around the origin to it.")
+            .Describe(nameof(Parameters.OriginX),
+                "X of the pivot the beam extends out of, world units relative to the run's parent.")
+            .Describe(nameof(Parameters.OriginY),
+                "Y of the pivot the beam extends out of, world units relative to the run's parent.")
+            .Describe(nameof(Parameters.WarnAlpha),
+                "Opacity 0-1 of the warning beam, applied to a literal Color; a theme colour is not " +
+                "faded.")
+            .Describe(nameof(Parameters.Ease),
+                "Easing curve of the sweep from StartAngle to EndAngle.")
             .Build();
 
         /// <summary> Writes this run's objects into the scope. </summary>

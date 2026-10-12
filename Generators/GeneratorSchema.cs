@@ -143,6 +143,8 @@ namespace BH.SDK.Generators
             var hints = generator.Hints;
             var type = field.FieldType;
             var property = DescribeType(type);
+            if (hints.TryGetDescription(field.Name, out var text) && !string.IsNullOrEmpty(text))
+                property["description"] = text;
 
             if (hints.TryGetRange(field.Name, out var range))
             {

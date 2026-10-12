@@ -52,6 +52,33 @@ namespace BH.SDK.Generators.Audio
             .Range(nameof(Parameters.OriginX), ValueRules.MinPos, ValueRules.MaxPos)
             .Range(nameof(Parameters.OriginY), ValueRules.MinPos, ValueRules.MaxPos)
             .Range(nameof(SpawnParameters.Size), ValueRules.MinSca, ValueRules.MaxSca)
+            .DescribeSpawnFields()
+            .Describe(nameof(SpawnParameters.Size),
+                "Not used: each bar is sized by BarWidth and its own height.")
+            .Describe(nameof(Parameters.Source),
+                "Audio resource id of the track to chart; the editor samples its peaks. 0 (the default) " +
+                "charts nothing.")
+            .Describe(nameof(Parameters.BarCount),
+                "Bars drawn, each the loudest peak of its slice of the track; 0 means one bar per " +
+                "supplied peak.")
+            .Describe(nameof(Parameters.BarWidth),
+                "Width of one bar in world units.")
+            .Describe(nameof(Parameters.Height),
+                "Height in world units the loudest bar adds above MinHeight; doubled for Center " +
+                "alignment.")
+            .Describe(nameof(Parameters.Align),
+                "Bottom: bars stand on OriginY and grow up. Center: centred on it, growing both ways. " +
+                "Top: hanging from it, growing down.")
+            .Describe(nameof(Parameters.Spacing),
+                "Gap in world units between neighbouring bars.")
+            .Describe(nameof(Parameters.MinHeight),
+                "Height in world units of a silent bar, so silence still reads as a line.")
+            .Describe(nameof(Parameters.OriginX),
+                "X of the chart's centre, world units relative to the run's parent; the song runs left " +
+                "to right.")
+            .Describe(nameof(Parameters.OriginY),
+                "Y of the axis the bars are measured from (see Align), world units relative to the run's " +
+                "parent.")
             .Build();
 
         /// <summary> Writes this run's objects into the scope. </summary>

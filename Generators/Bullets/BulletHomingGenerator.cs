@@ -46,6 +46,39 @@ namespace BH.SDK.Generators.Bullets
             .Range(nameof(Parameters.TargetX), ValueRules.MinPos, ValueRules.MaxPos)
             .Range(nameof(Parameters.TargetY), ValueRules.MinPos, ValueRules.MaxPos)
             .Range(nameof(SpawnParameters.Size), ValueRules.MinSca, ValueRules.MaxSca)
+            .DescribeSpawnFields()
+            .Describe(nameof(Parameters.BurstCount),
+                "How many bullets the burst fires from the origin, fanned evenly across Spread.")
+            .Describe(nameof(Parameters.Speed),
+                "World units a bullet advances per baked step, not per frame: its path is about Speed x " +
+                "Steps long.")
+            .Describe(nameof(Parameters.TravelFrames),
+                "Frames each bullet lives; its Steps position keys are spread evenly over that lifetime.")
+            .Describe(nameof(Parameters.Spread),
+                "Degrees the burst fans over, centred on LaunchAngle; one bullet fires straight along " +
+                "LaunchAngle.")
+            .Describe(nameof(Parameters.LaunchAngle),
+                "Direction the bullets leave the origin in, degrees counter-clockwise from +X (0 = " +
+                "right, 90 = up).")
+            .Describe(nameof(Parameters.OriginX),
+                "X the burst starts from, world units relative to the run's parent.")
+            .Describe(nameof(Parameters.OriginY),
+                "Y the burst starts from, world units relative to the run's parent.")
+            .Describe(nameof(Parameters.TargetX),
+                "X of the point the bullets curve towards, world units relative to the run's parent.")
+            .Describe(nameof(Parameters.TargetY),
+                "Y of the point the bullets curve towards, world units relative to the run's parent.")
+            .Describe(nameof(Parameters.TurnRate),
+                "Most degrees a bullet turns toward the target per step; low values overshoot and curve " +
+                "back, 0 flies straight.")
+            .Describe(nameof(Parameters.StaggerFrames),
+                "Frames between one bullet launching and the next; 0 fires the burst at once. Bullets " +
+                "that would start past the run's window are dropped.")
+            .Describe(nameof(Parameters.Steps),
+                "Position keyframes the pursuit is baked into. More is smoother, and since Speed is per " +
+                "step, also travels further.")
+            .Describe(nameof(Parameters.FaceTravel),
+                "Rotate each bullet so its +X axis points along its current heading at every step.")
             .Build();
 
         /// <summary> Writes this run's objects into the scope. </summary>

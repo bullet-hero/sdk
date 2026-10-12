@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using BH.SDK.Agent;
 using BH.SDK.Models.Primitives;
 using BH.SDK.Rules;
 
@@ -22,7 +24,7 @@ namespace BH.SDK.Generators.Modifiers
     // it was. Frames stay unique ([RuleCollectionUnique]). Docs/GENERATORS.md.
 
     /// <summary>
-    /// Snaps the selection's keyframes onto a beat grid - from BPM, or from a plain frame step.
+    /// Snaps the selection's keyframes onto a beat grid - the level's own, from BPM, or from a plain frame step.
     /// </summary>
     public class QuantizeKeyframesGenerator : BaseModifier<QuantizeKeyframesGenerator.Parameters>
     {
@@ -31,8 +33,8 @@ namespace BH.SDK.Generators.Modifiers
 
         /// <summary> The order, labels and ranges a host lays its form out with. </summary>
         public override GeneratorHints Hints { get; } = new GeneratorHints.Builder()
-            .Section(GeneratorSections.Main, nameof(Parameters.UseBpm), nameof(Parameters.Bpm),
-                nameof(Parameters.Division), nameof(Parameters.StepFrames))
+            .Section(GeneratorSections.Main, nameof(Parameters.UseBeatGrid), nameof(Parameters.UseBpm),
+                nameof(Parameters.Bpm), nameof(Parameters.Division), nameof(Parameters.StepFrames))
             .Section(GeneratorSections.Additional, nameof(Parameters.OffsetFrames),
                 nameof(Parameters.Mode), nameof(Parameters.Tracks))
             .Range(nameof(Parameters.Bpm), 1f, 1000f)
@@ -42,15 +44,36 @@ namespace BH.SDK.Generators.Modifiers
             .Unit(nameof(Parameters.StepFrames), "frames")
             .Unit(nameof(Parameters.OffsetFrames), "frames")
             .VisibleWhen(nameof(Parameters.Bpm), p => ((Parameters)p).UseBpm)
-            .VisibleWhen(nameof(Parameters.Division), p => ((Parameters)p).UseBpm)
+            .VisibleWhen(nameof(Parameters.Division),
+                p => ((Parameters)p).UseBpm || ((Parameters)p).UseBeatGrid)
             .VisibleWhen(nameof(Parameters.StepFrames), p => !((Parameters)p).UseBpm)
+            .Describe(nameof(Parameters.UseBeatGrid),
+                "Snap to the level's own beat grid when it has one; Division splits each beat. Off, or " +
+                "with no grid: Bpm or StepFrames decide.")
+            .Describe(nameof(Parameters.UseBpm),
+                "Without a beat grid: on, grid lines come from Bpm and Division at the level's " +
+                "framerate; off, one line every StepFrames frames.")
+            .Describe(nameof(Parameters.Bpm),
+                "Tempo in beats per minute for the grid when UseBpm is on and no beat grid applies.")
+            .Describe(nameof(Parameters.Division),
+                "Grid lines per beat: 1 = quarter notes, 2 = eighths, 4 = sixteenths.")
+            .Describe(nameof(Parameters.StepFrames),
+                "Grid spacing in frames when UseBpm is off and no beat grid applies; lines start at " +
+                "frame 1.")
+            .Describe(nameof(Parameters.OffsetFrames),
+                "Shifts every grid line by this many frames, a delta that may be negative.")
+            .Describe(nameof(Parameters.Mode),
+                "Where a key between two grid lines goes: Nearest, Floor (the earlier line) or Ceil (the " +
+                "later one).")
+            .Describe(nameof(Parameters.Tracks),
+                "Which keyframe tracks are snapped, as flag names (Positions, Rotations, Colors, ...). " +
+                "All by default.")
             .Build();
 
         /// <summary> Applies this run's edit. </summary>
         protected override void Generate(GeneratorContext context, Parameters parameters)
         {
-            var step = StepOf(context, parameters);
-            if (step <= 0) return;
+            var grid = GridOf(context, parameters);
 
             foreach (var id in Targets(context))
             {
@@ -68,7 +91,7 @@ namespace BH.SDK.Generators.Modifiers
                     for (var i = 0; i < track.Count; i++)
                     {
                         var frame = obj.Span.ToGlobalFrame(track.FrameAt(i));
-                        var snapped = Snap(frame, step, parameters.OffsetFrames, parameters.Mode);
+                        var snapped = grid.Snap(frame, parameters.Mode);
                         if (snapped < obj.Span.StartFrame)
                             snapped = obj.Span.StartFrame; // a key cannot precede its object
                         if (snapped == frame) continue;
@@ -93,47 +116,99 @@ namespace BH.SDK.Generators.Modifiers
         protected override GeneratorCost EstimateTyped(GeneratorContext context, Parameters parameters)
             => GeneratorCost.Zero;
 
-        /// <summary> Grid spacing in frames. BPM is converted through the level's own framerate, so
-        /// the same 120 BPM means different frame counts in a 30 fps and a 60 fps level - which is
-        /// correct, since a frame is a different length of time in each. </summary>
-        private static int StepOf(GeneratorContext context, Parameters parameters)
+        /// <summary> The lines keys snap to. The level's beat grid wins when asked for and present (a
+        /// template has none); else BPM through the level's own framerate, so 120 BPM is a different frame
+        /// count at 30 and 60 fps; else a plain step. </summary>
+        private static SnapGrid GridOf(GeneratorContext context, Parameters parameters)
         {
-            if (!parameters.UseBpm) return parameters.StepFrames < 1 ? 1 : parameters.StepFrames;
+            var framerate = context?.Settings?.Fps ?? 60;
+            var division = parameters.Division < 1 ? 1 : parameters.Division;
+            var beats = context?.Game?.Events?.Beats;
+
+            if (parameters.UseBeatGrid && beats != null && beats.Count > 0)
+            {
+                var lines = BeatLines(new MusicGrid(beats, framerate), division, parameters.OffsetFrames);
+                if (lines.Count > 0) return SnapGrid.Of(lines);
+            }
+
+            if (!parameters.UseBpm)
+                return SnapGrid.Regular(parameters.StepFrames < 1 ? 1 : parameters.StepFrames,
+                    parameters.OffsetFrames);
 
             var bpm = parameters.Bpm < 1f ? 1f : parameters.Bpm;
-            var division = parameters.Division < 1 ? 1 : parameters.Division;
-            var framerate = context?.Settings?.Fps ?? 60;
-
-            var framesPerBeat = framerate * 60f / bpm / division;
-            var step = (int)(framesPerBeat + 0.5f);
-            return step < 1 ? 1 : step;
+            return SnapGrid.Regular(framerate * 60.0 / bpm / division, parameters.OffsetFrames);
         }
 
-        // The grid is anchored on the first FRAME (MinFrame), not on zero: line zero is the frame the
-        // level starts on, so a beat-derived step lands where the beat is.
-        private static int Snap(int frame, int step, int offset, QuantizeMode mode)
+        // Every beat and its subdivisions, placed by the grid itself (a fractional beat), so a line is where
+        // the editor draws it and where "beat:12.5" resolves.
+        private static List<int> BeatLines(MusicGrid grid, int division, int offset)
         {
-            var origin = offset + FrameRules.MinFrame;
-            var relative = frame - origin;
-            var floor = FloorDiv(relative, step) * step;
+            var lines = new List<int>(grid.BeatCount * division);
+            for (var beat = 1; beat <= grid.BeatCount; beat++)
+            for (var part = 0; part < division; part++)
+                if (grid.TryFrameOfBeat(beat + part / (double)division, out var frame, out _))
+                    lines.Add(frame + offset);
 
-            var snapped = mode switch
+            lines.Sort();
+            return lines;
+        }
+
+        // Each line is rounded from its exact position, never stepped by a rounded spacing: 167 BPM is 21.56
+        // frames a beat, and a 22-frame step is a beat off after forty.
+        private sealed class SnapGrid
+        {
+            private List<int> _lines;
+            private double _step;
+            private int _origin;
+
+            public static SnapGrid Of(List<int> lines) => new() { _lines = lines };
+
+            // Anchored on the first FRAME (MinFrame), not on zero: line zero is the frame the level starts on.
+            public static SnapGrid Regular(double step, int offset)
+                => new() { _step = step, _origin = offset + FrameRules.MinFrame };
+
+            public int Snap(int frame, QuantizeMode mode)
             {
-                QuantizeMode.Floor => floor,
-                QuantizeMode.Ceil => floor + (relative == floor ? 0 : step),
-                _ => relative - floor < step - (relative - floor) ? floor : floor + step,
-            };
+                Bracket(frame, out var floor, out var ceil);
+                var snapped = mode switch
+                {
+                    QuantizeMode.Floor => floor ?? ceil ?? frame,
+                    QuantizeMode.Ceil => ceil ?? floor ?? frame,
+                    _ => floor == null ? ceil ?? frame
+                        : ceil == null || frame - floor.Value < ceil.Value - frame ? floor.Value
+                        : ceil.Value,
+                };
 
-            var result = snapped + origin;
-            return result < FrameRules.MinFrame ? FrameRules.MinFrame : result;
-        }
+                return snapped < FrameRules.MinFrame ? FrameRules.MinFrame : snapped;
+            }
 
-        // C# integer division truncates toward zero, which puts a negative frame on the WRONG side
-        // of its grid line - a key at -1 with a step of 4 belongs to the line at -4, not 0.
-        private static int FloorDiv(int value, int divisor)
-        {
-            var quotient = value / divisor;
-            return value % divisor != 0 && (value < 0) != (divisor < 0) ? quotient - 1 : quotient;
+            // The last line at or before the frame and the first at or after it; both the frame on a line.
+            private void Bracket(int frame, out int? floor, out int? ceil)
+            {
+                if (_lines != null)
+                {
+                    var index = _lines.BinarySearch(frame);
+                    if (index >= 0)
+                    {
+                        floor = ceil = frame;
+                        return;
+                    }
+
+                    index = ~index;
+                    floor = index > 0 ? _lines[index - 1] : null;
+                    ceil = index < _lines.Count ? _lines[index] : null;
+                    return;
+                }
+
+                var k = (long)Math.Floor((frame - _origin) / _step);
+                while (Line(k) > frame) k--;
+                while (Line(k + 1) <= frame) k++;
+
+                floor = Line(k);
+                ceil = floor == frame ? floor : Line(k + 1);
+            }
+
+            private int Line(long k) => _origin + (int)Math.Round(k * _step, MidpointRounding.AwayFromZero);
         }
 
         /// <summary> The selection, or - when nothing is selected and the host ran it anyway - every
@@ -148,6 +223,11 @@ namespace BH.SDK.Generators.Modifiers
         /// fields, like every parameters class here - a form binds to them and a preset serializes from them. </summary>
         public class Parameters
         {
+            /// <summary> Whether keys snap to the level's own beat grid (the Beat window's segments) when it
+            /// has one; Division still splits each beat. Off, or with no grid, the fields below decide.
+            /// </summary>
+            public bool UseBeatGrid = true;
+
             /// <summary> Whether the grid is derived from a tempo rather than given in frames. </summary>
             public bool UseBpm = true;
 

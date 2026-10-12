@@ -35,6 +35,11 @@ namespace BH.SDK.Generators
         /// <summary> Field name -> unit suffix shown after the value ("px", "deg", "frames"). </summary>
         public IReadOnlyDictionary<string, string> Units { get; }
 
+        /// <summary> Field name -> one or two plain English sentences on what the field means: its
+        /// unit, its coordinate frame, what zero or the default does. For a client reading the schema,
+        /// not for a form. </summary>
+        public IReadOnlyDictionary<string, string> Descriptions { get; }
+
         /// <summary> Field name -> predicate over the parameters instance. False hides the field
         /// entirely: irrelevant-in-this-mode fields, and every ExternalAnalysis input (which the
         /// host fills in, so showing it would invite the author to fight the host over it). </summary>
@@ -62,6 +67,7 @@ namespace BH.SDK.Generators
             IReadOnlyDictionary<string, GeneratorRange> ranges,
             IReadOnlyDictionary<string, float> steps,
             IReadOnlyDictionary<string, string> units,
+            IReadOnlyDictionary<string, string> descriptions,
             IReadOnlyDictionary<string, Func<object, bool>> visible,
             IReadOnlyDictionary<string, IReadOnlyList<GeneratorChoice>> choices,
             HashSet<string> readOnly)
@@ -72,6 +78,7 @@ namespace BH.SDK.Generators
             Ranges = ranges;
             Steps = steps;
             Units = units;
+            Descriptions = descriptions;
             Visible = visible;
             Choices = choices;
             _readOnly = readOnly;
@@ -90,6 +97,8 @@ namespace BH.SDK.Generators
         public bool TryGetLabel(string field, out string label) => Labels.TryGetValue(field, out label);
         /// <summary> The unit shown beside one field. </summary>
         public bool TryGetUnit(string field, out string unit) => Units.TryGetValue(field, out unit);
+        /// <summary> What one field means, in words. </summary>
+        public bool TryGetDescription(string field, out string text) => Descriptions.TryGetValue(field, out text);
         /// <summary> The fixed set one field is chosen from, where it is not a free number. </summary>
         public bool TryGetChoices(string field, out IReadOnlyList<GeneratorChoice> choices)
             => Choices.TryGetValue(field, out choices);
@@ -103,7 +112,7 @@ namespace BH.SDK.Generators
         public bool IsReadOnly(string field) => ReadOnly.Contains(field);
 
         /// <summary> Fluent construction, so a generator declares its hints as one readonly static
-        /// initializer instead of assembling seven dictionaries by hand. </summary>
+        /// initializer instead of assembling eight dictionaries by hand. </summary>
         public sealed class Builder
         {
             private readonly List<string> _order = new();
@@ -112,6 +121,7 @@ namespace BH.SDK.Generators
             private readonly Dictionary<string, GeneratorRange> _ranges = new();
             private readonly Dictionary<string, float> _steps = new();
             private readonly Dictionary<string, string> _units = new();
+            private readonly Dictionary<string, string> _descriptions = new();
             private readonly Dictionary<string, Func<object, bool>> _visible = new();
             private readonly Dictionary<string, IReadOnlyList<GeneratorChoice>> _choices = new();
             private readonly HashSet<string> _readOnly = new();
@@ -156,6 +166,13 @@ namespace BH.SDK.Generators
                 _units[field] = unit;
                 return this;
             }
+            /// <summary> Says what one field means. A later call for the same field replaces the earlier
+            /// one, which is how a generator overrides a shared description. </summary>
+            public Builder Describe(string field, string text)
+            {
+                _descriptions[field] = text;
+                return this;
+            }
             /// <summary> Shows one field only while the predicate holds of the parameters - which is how a form hides what a mode does not use. </summary>
             public Builder VisibleWhen(string field, Func<object, bool> predicate)
             {
@@ -185,7 +202,8 @@ namespace BH.SDK.Generators
 
             /// <summary> Freezes the hints; the builder is not reused afterwards. </summary>
             public GeneratorHints Build()
-                => new(_order, _sections, _labels, _ranges, _steps, _units, _visible, _choices, _readOnly);
+                => new(_order, _sections, _labels, _ranges, _steps, _units, _descriptions, _visible, _choices,
+                    _readOnly);
         }
     }
 

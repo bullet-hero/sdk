@@ -38,6 +38,32 @@ namespace BH.SDK.Generators.Bullets
             .Range(nameof(Parameters.CenterX), ValueRules.MinPos, ValueRules.MaxPos)
             .Range(nameof(Parameters.CenterY), ValueRules.MinPos, ValueRules.MaxPos)
             .Range(nameof(SpawnParameters.Size), ValueRules.MinSca, ValueRules.MaxSca)
+            .DescribeSpawnFields()
+            .Describe(nameof(Parameters.Count),
+                "How many bullets are fired from the centre, each aimed AngularStep further than the " +
+                "last.")
+            .Describe(nameof(Parameters.AngularStep),
+                "Degrees each shot is turned from the previous one; with StaggerFrames this reads as a " +
+                "rotating spray.")
+            .Describe(nameof(Parameters.RadiusStart),
+                "Distance from the centre, in world units, a bullet appears at.")
+            .Describe(nameof(Parameters.RadiusEnd),
+                "Distance from the centre, in world units, a bullet reaches when its TravelFrames end.")
+            .Describe(nameof(Parameters.TravelFrames),
+                "Frames one bullet lives while it travels from RadiusStart to RadiusEnd.")
+            .Describe(nameof(Parameters.StartAngle),
+                "Direction of the first shot, degrees counter-clockwise from +X (0 = right, 90 = up).")
+            .Describe(nameof(Parameters.CenterX),
+                "X of the point everything is fired from, world units relative to the run's parent.")
+            .Describe(nameof(Parameters.CenterY),
+                "Y of the point everything is fired from, world units relative to the run's parent.")
+            .Describe(nameof(Parameters.StaggerFrames),
+                "Frames between one shot and the next; 0 fires every shot at once. Bullets that would " +
+                "start past the run's window are dropped.")
+            .Describe(nameof(Parameters.Ease),
+                "Easing curve of each bullet's travel outward.")
+            .Describe(nameof(Parameters.FaceOutward),
+                "Rotate each bullet so its +X axis points away from the centre.")
             .Build();
 
         /// <summary> Writes this run's objects into the scope. </summary>

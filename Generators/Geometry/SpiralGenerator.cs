@@ -29,6 +29,24 @@ namespace BH.SDK.Generators.Geometry
             .Range(nameof(Parameters.CenterX), ValueRules.MinPos, ValueRules.MaxPos)
             .Range(nameof(Parameters.CenterY), ValueRules.MinPos, ValueRules.MaxPos)
             .Range(nameof(SpawnParameters.Size), ValueRules.MinSca, ValueRules.MaxSca)
+            .DescribeSpawnFields()
+            .Describe(nameof(Parameters.Count),
+                "How many objects are placed along the spiral, evenly in both angle and radius.")
+            .Describe(nameof(Parameters.RadiusStart),
+                "Distance from the centre of the first object, in world units.")
+            .Describe(nameof(Parameters.RadiusEnd),
+                "Distance from the centre of the last object, in world units.")
+            .Describe(nameof(Parameters.Turns),
+                "Full turns the spiral makes from the first object to the last; negative winds " +
+                "clockwise.")
+            .Describe(nameof(Parameters.StartAngle),
+                "Angle of the first object, degrees counter-clockwise from +X (0 = right, 90 = up).")
+            .Describe(nameof(Parameters.CenterX),
+                "X of the spiral's centre, world units relative to the run's parent.")
+            .Describe(nameof(Parameters.CenterY),
+                "Y of the spiral's centre, world units relative to the run's parent.")
+            .Describe(nameof(Parameters.FaceOutward),
+                "Rotate each object so its +X axis points away from the centre.")
             .Build();
 
         /// <summary> Writes this run's objects into the scope. </summary>

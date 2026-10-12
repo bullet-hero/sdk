@@ -49,6 +49,29 @@ namespace BH.SDK.Generators.Modifiers
             .VisibleWhen(nameof(Parameters.Tracks), p => ((Parameters)p).ShiftKeyframes)
             .VisibleWhen(nameof(Parameters.OriginX), p => ((Parameters)p).Order == StaggerOrder.Distance)
             .VisibleWhen(nameof(Parameters.OriginY), p => ((Parameters)p).Order == StaggerOrder.Distance)
+            .Describe(nameof(Parameters.StepFrames),
+                "Frames each object is delayed more than the one before it in Order; negative moves them " +
+                "earlier, 0 does nothing.")
+            .Describe(nameof(Parameters.Order),
+                "Which object moves first: Selection order, Layer, PositionX (left to right), PositionY " +
+                "(bottom to top) or Distance from Origin.")
+            .Describe(nameof(Parameters.Reverse),
+                "Walk the order backwards: the first object in Order is delayed most, the last stays " +
+                "put.")
+            .Describe(nameof(Parameters.ShiftBounds),
+                "Move each object's lifetime. Keyframes are local to it, so the whole animation moves " +
+                "along. On by default.")
+            .Describe(nameof(Parameters.ShiftKeyframes),
+                "Also move keyframes inside each object's own lifetime; with ShiftBounds on as well, the " +
+                "motion is delayed twice.")
+            .Describe(nameof(Parameters.Tracks),
+                "Which keyframe tracks ShiftKeyframes moves, as flag names. All by default.")
+            .Describe(nameof(Parameters.OriginX),
+                "X of the point the Distance order measures from, in the objects' own position space " +
+                "(their first position key).")
+            .Describe(nameof(Parameters.OriginY),
+                "Y of the point the Distance order measures from, in the objects' own position space " +
+                "(their first position key).")
             .Build();
 
         /// <summary> Applies this run's edit. </summary>

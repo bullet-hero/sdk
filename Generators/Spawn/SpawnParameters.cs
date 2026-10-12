@@ -50,4 +50,29 @@ namespace BH.SDK.Generators.Spawn
             nameof(Size), nameof(Color),
         };
     }
+
+    /// <summary> The schema descriptions of SpawnParameters' shared fields, written once for every
+    /// spawning generator. A generator using a field differently describes it again afterwards. </summary>
+    public static class SpawnParameterHints
+    {
+        /// <summary> Describes Shape, Texture, Collider, Size and Color. </summary>
+        public static GeneratorHints.Builder DescribeSpawnFields(this GeneratorHints.Builder builder)
+            => builder
+                .Describe(nameof(SpawnParameters.Shape),
+                    "Shape every object draws: a catalog name like \"Square\" or \"Circle\", or a shape " +
+                    "GUID. Default is a filled square. Drawing only - it never hurts the player, see " +
+                    "Collider.")
+                .Describe(nameof(SpawnParameters.Texture),
+                    "Texture resource id painted onto the shape. 0 (the default) paints none, so the shape " +
+                    "shows its plain Color.")
+                .Describe(nameof(SpawnParameters.Collider),
+                    "What hurts the player. Empty (the default) makes a decoration that can never hurt; " +
+                    "pass a shape for a hazard: a catalog name like \"Circle\" or a shape GUID.")
+                .Describe(nameof(SpawnParameters.Size),
+                    "Width and height of each object in world units; the default camera view is 10 units " +
+                    "tall. Default 1 x 1.")
+                .Describe(nameof(SpawnParameters.Color),
+                    "Tint of each object: \"#RRGGBBAA\" (alpha 00 is invisible), or {\"theme\": index} to " +
+                    "follow the level's theme palette. Default opaque white.");
+    }
 }

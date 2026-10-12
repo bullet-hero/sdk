@@ -32,6 +32,17 @@ namespace BH.SDK.Generators.Modifiers
         public override GeneratorHints Hints { get; } = new GeneratorHints.Builder()
             .Section(GeneratorSections.Main, nameof(Parameters.Invert), nameof(Parameters.Objects),
                 nameof(Parameters.Audio), nameof(Parameters.EventFrames))
+            .Describe(nameof(Parameters.Invert),
+                "Off (default): delete what lies wholly inside the run's frame window. On: delete what " +
+                "shares no frame with it. Partly overlapping content survives.")
+            .Describe(nameof(Parameters.Objects),
+                "Delete objects. An object that stays keeps its parents, even ones the window would " +
+                "remove.")
+            .Describe(nameof(Parameters.Audio),
+                "Also delete audio tracks. Level scope only.")
+            .Describe(nameof(Parameters.EventFrames),
+                "Also delete level-wide event keyframes: camera, post-processing, player, markers, " +
+                "checkpoints, themes, backgrounds. Level scope only.")
             .Build();
 
         /// <summary> Applies this run's edit. </summary>

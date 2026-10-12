@@ -54,6 +54,15 @@ namespace BH.SDK.Generators.Modifiers
             .Section(GeneratorSections.Additional, nameof(Parameters.Outside))
             .VisibleWhen(nameof(Parameters.Outside),
                 parameters => ((Parameters)parameters).Mode == SpanFitMode.ClampChildren)
+            .Describe(nameof(Parameters.Mode),
+                "ClampChildren cuts each child's lifetime down to its parent's; ExpandParents stretches " +
+                "each parent to cover its children, up the chain.")
+            .Describe(nameof(Parameters.Invert),
+                "Off (default): fit objects whose lifetime lies wholly inside the run's window. On: " +
+                "those sharing no frame with it. Partial overlaps are left alone.")
+            .Describe(nameof(Parameters.Outside),
+                "ClampChildren only: a child sharing no frame with its parent is deleted with its " +
+                "subtree (Delete), cut to one edge frame (Clamp) or left (Skip).")
             .Build();
 
         /// <summary> Applies this run's edit. </summary>

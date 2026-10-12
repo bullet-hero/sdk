@@ -29,6 +29,11 @@ namespace BH.SDK.Generators.Modifiers
         public override GeneratorHints Hints { get; } = new GeneratorHints.Builder()
             .Section(GeneratorSections.Main, nameof(Parameters.IncludeTemplates),
                 nameof(Parameters.RemoveUnusedTemplates))
+            .Describe(nameof(Parameters.IncludeTemplates),
+                "Also flatten placements nested inside the level's prefab templates, so none survives " +
+                "anywhere. Level scope only.")
+            .Describe(nameof(Parameters.RemoveUnusedTemplates),
+                "Then delete the prefab templates nothing references any more. Level scope only.")
             .Build();
 
         /// <summary> Applies this run's edit. </summary>

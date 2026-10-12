@@ -59,6 +59,14 @@ namespace BH.SDK.Generators.Import
             .Hidden(nameof(Parameters.MetaFormat))
             .Hidden(nameof(Parameters.SourcePath))
             .Hidden(nameof(Parameters.ResourceFileNames))
+            .Describe(nameof(Parameters.NewLevelId),
+                "Give the imported level a fresh id, so it cannot overwrite a level already on this " +
+                "device.")
+            .Describe(nameof(Parameters.KeepAuthor),
+                "Keep the authors the archive names; off clears them, for importing your own archive as " +
+                "a starting point.")
+            .Describe(nameof(Parameters.ImportResources),
+                "Copy the archive's own files (cover, song, textures) into the new level's folder.")
             .Build();
 
         /// <summary> The report from the last run, for a host to show once the level exists. It is

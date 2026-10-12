@@ -33,6 +33,24 @@ namespace BH.SDK.Generators.Geometry
             .Range(nameof(Parameters.CenterX), ValueRules.MinPos, ValueRules.MaxPos)
             .Range(nameof(Parameters.CenterY), ValueRules.MinPos, ValueRules.MaxPos)
             .Range(nameof(SpawnParameters.Size), ValueRules.MinSca, ValueRules.MaxSca)
+            .DescribeSpawnFields()
+            .Describe(nameof(Parameters.Sides),
+                "Number of corners of the regular polygon, at least 3.")
+            .Describe(nameof(Parameters.Radius),
+                "Distance from the centre to each corner, in world units.")
+            .Describe(nameof(Parameters.AsOutline),
+                "Off: one object per corner. On: PointsPerEdge objects along every edge, drawing the " +
+                "outline.")
+            .Describe(nameof(Parameters.Rotation),
+                "Rotation of the whole polygon in degrees counter-clockwise; at 0 the first corner " +
+                "points along +X (right).")
+            .Describe(nameof(Parameters.CenterX),
+                "X of the polygon's centre, world units relative to the run's parent.")
+            .Describe(nameof(Parameters.CenterY),
+                "Y of the polygon's centre, world units relative to the run's parent.")
+            .Describe(nameof(Parameters.PointsPerEdge),
+                "Objects per edge when AsOutline is on, the first on the edge's starting corner; Sides x " +
+                "PointsPerEdge in total.")
             .Build();
 
         /// <summary> Writes this run's objects into the scope. </summary>

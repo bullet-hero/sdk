@@ -35,6 +35,30 @@ namespace BH.SDK.Generators.Bullets
             .Unit(nameof(Parameters.TravelFrames), "frames")
             .Unit(nameof(Parameters.SpreadFrames), "frames")
             .Range(nameof(SpawnParameters.Size), ValueRules.MinSca, ValueRules.MaxSca)
+            .DescribeSpawnFields()
+            .Describe(nameof(Parameters.Count),
+                "How many bullets fall, each at a random X inside AreaLeft-AreaRight. Random but " +
+                "reproducible from the run's seed.")
+            .Describe(nameof(Parameters.TravelFrames),
+                "Frames a bullet takes to fall from TopY to BottomY, before TravelJitter shortens it.")
+            .Describe(nameof(Parameters.AreaLeft),
+                "Left edge of the band bullets are scattered across, X in world units relative to the " +
+                "run's parent.")
+            .Describe(nameof(Parameters.AreaRight),
+                "Right edge of that band, X in world units relative to the run's parent.")
+            .Describe(nameof(Parameters.TopY),
+                "Y every bullet starts at, world units relative to the run's parent.")
+            .Describe(nameof(Parameters.BottomY),
+                "Y every bullet ends at, world units relative to the run's parent; above TopY makes the " +
+                "rain rise.")
+            .Describe(nameof(Parameters.SpreadFrames),
+                "Departures are spread randomly over this many frames from the window start; 0 drops " +
+                "everything at once. Bullets that would start past the run's window are dropped.")
+            .Describe(nameof(Parameters.TravelJitter),
+                "Fraction 0-1 by which a bullet's travel time may be randomly shortened; 0 makes every " +
+                "bullet fall at the same speed.")
+            .Describe(nameof(Parameters.Ease),
+                "Easing curve of each bullet's fall.")
             .Build();
 
         /// <summary> Writes this run's objects into the scope. </summary>

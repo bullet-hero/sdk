@@ -226,7 +226,12 @@ namespace BH.SDK.Agent.Messages
         [JsonProperty("size", NullValueHandling = NullValueHandling.Ignore)]
         public AgentPoint Size { get; set; }
 
-        /// <summary> The composed rotation in degrees, counter-clockwise. </summary>
+        /// <summary> The composed rotation in radians, counter-clockwise: the unit a rotation key takes.
+        /// </summary>
+        [JsonProperty("rotation", NullValueHandling = NullValueHandling.Ignore)]
+        public float? Rotation { get; set; }
+
+        /// <summary> The same rotation in degrees, for reading only. </summary>
         [JsonProperty("rotationDegrees", NullValueHandling = NullValueHandling.Ignore)]
         public float? RotationDegrees { get; set; }
     }

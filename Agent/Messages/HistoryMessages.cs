@@ -28,9 +28,17 @@ namespace BH.SDK.Agent.Messages
         [JsonProperty("nameKey", NullValueHandling = NullValueHandling.Ignore)]
         public string NameKey { get; set; }
 
+        /// <summary> The operation's name in English, as the History tab words it. </summary>
+        [JsonProperty("name", NullValueHandling = NullValueHandling.Ignore)]
+        public string Name { get; set; }
+
         /// <summary> The caption of an AI batch. </summary>
         [JsonProperty("caption", NullValueHandling = NullValueHandling.Ignore)]
         public string Caption { get; set; }
+
+        /// <summary> True when this change took the step back: the entry names the node it left. </summary>
+        [JsonProperty("undo", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public bool Undo { get; set; }
     }
 
     /// <summary> The <c>changes.since</c> request. </summary>

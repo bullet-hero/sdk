@@ -33,11 +33,14 @@ namespace BH.SDK.Agent
         /// <summary> A context file is written straight to disk: no history step, no undo. </summary>
         public const string ContextNotUndoable = "context-not-undoable";
 
+        /// <summary> A colour reads a theme slot, and the level's timeline sets no theme. </summary>
+        public const string ThemeUnset = "theme-unset";
+
         /// <summary> Every key, for a test that each one is unique. </summary>
         public static readonly IReadOnlyList<string> All = new[]
         {
             ZeroSizeGroup, SpanOutsideParent, SameLayerSameStartRandom, LocalKeyframes, EffectiveLayer,
-            StaleRead, PrefabMode, ContextMissing, ContextNotUndoable,
+            StaleRead, PrefabMode, ContextMissing, ContextNotUndoable, ThemeUnset,
         };
     }
 }

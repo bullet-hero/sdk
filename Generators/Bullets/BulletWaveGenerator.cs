@@ -38,6 +38,32 @@ namespace BH.SDK.Generators.Bullets
             .Range(nameof(Parameters.ToX), ValueRules.MinPos, ValueRules.MaxPos)
             .Range(nameof(Parameters.ToY), ValueRules.MinPos, ValueRules.MaxPos)
             .Range(nameof(SpawnParameters.Size), ValueRules.MinSca, ValueRules.MaxSca)
+            .DescribeSpawnFields()
+            .Describe(nameof(Parameters.Count),
+                "How many bullets the line holds. They are spread across the travel direction, centred " +
+                "on the From-To path.")
+            .Describe(nameof(Parameters.Spacing),
+                "Gap in world units between neighbouring bullets, measured ACROSS the travel direction " +
+                "(perpendicular to From->To); the line is centred on the path.")
+            .Describe(nameof(Parameters.TravelFrames),
+                "Frames one bullet takes to go from From to To; also its whole lifetime.")
+            .Describe(nameof(Parameters.FromX),
+                "X of the line's centre where it starts, world units relative to the run's parent. The " +
+                "bullets sit perpendicular to the path around this point.")
+            .Describe(nameof(Parameters.FromY),
+                "Y of the line's centre where it starts, world units relative to the run's parent.")
+            .Describe(nameof(Parameters.ToX),
+                "X of the line's centre where it ends, world units relative to the run's parent. To " +
+                "equal to From means no travel, and the line spreads along X.")
+            .Describe(nameof(Parameters.ToY),
+                "Y of the line's centre where it ends, world units relative to the run's parent.")
+            .Describe(nameof(Parameters.StaggerFrames),
+                "Frames between one bullet setting off and the next, in line order; 0 fires the whole " +
+                "line at once. Bullets that would start past the run's window are dropped.")
+            .Describe(nameof(Parameters.Ease),
+                "Easing curve of each bullet's move from From to To.")
+            .Describe(nameof(Parameters.FaceTravel),
+                "Rotate each bullet so its +X axis points along the travel direction.")
             .Build();
 
         /// <summary> Writes this run's objects into the scope. </summary>

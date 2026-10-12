@@ -24,6 +24,8 @@ namespace BH.SDK.Generators.Utility
         /// <summary> The order, labels and ranges a host lays its form out with. </summary>
         public override GeneratorHints Hints { get; } = new GeneratorHints.Builder()
             .Section(GeneratorSections.Main, nameof(Parameters.RemoveUnused))
+            .Describe(nameof(Parameters.RemoveUnused),
+                "Also drop the character sets of fonts no text object uses any more. On by default.")
             .Build();
 
         /// <summary> Writes this run's objects into the scope. </summary>

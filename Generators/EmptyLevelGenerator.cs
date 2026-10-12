@@ -28,6 +28,16 @@ namespace BH.SDK.Generators
             .Range(nameof(Parameters.FrameDuration), FrameRules.MinFrameDuration, FrameRules.MaxFrameDuration)
             .Unit(nameof(Parameters.FrameDuration), "frames")
             .Unit(nameof(Parameters.Framerate), "fps")
+            .Describe(nameof(Parameters.LevelName),
+                "Name of the new level.")
+            .Describe(nameof(Parameters.Framerate),
+                "Frames per second the timeline is measured in.")
+            .Describe(nameof(Parameters.FrameDuration),
+                "Length of the level in frames: seconds x Framerate.")
+            .Describe(nameof(Parameters.PinScreenAspect),
+                "Start the level with a fixed 16:9 screen limit keyframe on frame 1.")
+            .Describe(nameof(Parameters.LevelDescription),
+                "Description of the new level.")
             .Build();
 
         /// <summary> Builds the level and its metadata together, so the two cannot disagree. </summary>

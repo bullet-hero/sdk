@@ -28,6 +28,31 @@ namespace BH.SDK.Agent
         {
         }
 
+        /// <summary> Why no musical time reads here at all, or null when the grid and markers decide.
+        /// </summary>
+        public string MusicUnavailable { get; private set; }
+
+        /// <summary> A context where bars, beats and markers mean nothing (a prefab template has no music),
+        /// so every musical time fails with <paramref name="reason"/>. </summary>
+        public static TimeAddressContext Unavailable(string reason)
+            => new(null, (Func<string, int?>)null) { MusicUnavailable = reason };
+
+        /// <summary> This context with <paramref name="markers"/> added: markers an edit is about to write,
+        /// so a later op of the same batch can name them. A name in both resolves to the earlier frame.
+        /// </summary>
+        public TimeAddressContext WithMarkers(IReadOnlyDictionary<string, int> markers)
+        {
+            if (markers == null || markers.Count == 0 || MusicUnavailable != null) return this;
+
+            var own = _markers;
+            return new TimeAddressContext(Grid, name =>
+            {
+                var existing = own?.Invoke(name);
+                if (!markers.TryGetValue(name, out var added)) return existing;
+                return existing.HasValue && existing.Value < added ? existing : added;
+            });
+        }
+
         /// <summary> Whether a grid with at least one beat is present. </summary>
         public bool HasGrid => Grid != null && !Grid.IsEmpty;
 

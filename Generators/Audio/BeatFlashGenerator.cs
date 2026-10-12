@@ -39,6 +39,23 @@ namespace BH.SDK.Generators.Audio
             .VisibleWhen(nameof(Parameters.ShakeIntensity), p => ((Parameters)p).Shake)
             .VisibleWhen(nameof(Parameters.ShakeSpeed), p => ((Parameters)p).Shake)
             .Hidden(nameof(Parameters.BeatFrames))
+            .Describe(nameof(Parameters.BaseZoom),
+                "Camera zoom held between beats; a lower value is closer in. The default is the level's " +
+                "normal zoom.")
+            .Describe(nameof(Parameters.ZoomPunch),
+                "How far the zoom drops on each beat (to BaseZoom - ZoomPunch), punching the camera in; " +
+                "0 gives no punch.")
+            .Describe(nameof(Parameters.DecayFrames),
+                "Frames after each beat until the zoom, and the shake, are back at rest.")
+            .Describe(nameof(Parameters.Shake),
+                "Also shake the camera on each beat, settling after DecayFrames.")
+            .Describe(nameof(Parameters.ShakeIntensity),
+                "Strength of the beat shake; 0 is none.")
+            .Describe(nameof(Parameters.ShakeSpeed),
+                "How fast the shake moves: low values rumble, high ones jitter.")
+            .Describe(nameof(Parameters.ClearRange),
+                "First remove every camera zoom key, and shake key when Shake is on, inside the run's " +
+                "window. Undoable.")
             .Build();
 
         /// <summary> Writes this run's objects into the scope. </summary>
