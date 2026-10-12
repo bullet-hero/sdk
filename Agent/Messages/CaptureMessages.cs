@@ -86,7 +86,20 @@ namespace BH.SDK.Agent.Messages
         public JToken Frame { get; set; }
     }
 
-    /// <summary> The <c>playhead.get</c> and <c>playhead.set</c> answer. </summary>
+    /// <summary> The <c>playback.set</c> request. </summary>
+    public sealed class PlaybackSetRequest
+    {
+        /// <summary> True to play, false to pause. </summary>
+        [JsonProperty("playing")]
+        public bool Playing { get; set; }
+
+        /// <summary> Where to start or stop, a <c>TimeAddress</c>; absent to stay where the playhead is.
+        /// </summary>
+        [JsonProperty("frame")]
+        public JToken Frame { get; set; }
+    }
+
+    /// <summary> The <c>playhead.get</c>, <c>playhead.set</c> and <c>playback.set</c> answer. </summary>
     public sealed class PlayheadResult : AgentResultBase
     {
         /// <summary> The global frame under the playhead. </summary>

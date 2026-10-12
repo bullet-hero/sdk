@@ -66,6 +66,9 @@ namespace BH.SDK.Agent
             /// <summary> The keyframes of chosen tracks. </summary>
             public const string KeysGet = "keys.get";
 
+            /// <summary> The keyframes of the level's own tracks: camera, game, player, post. </summary>
+            public const string LevelKeysGet = "levelkeys.get";
+
             /// <summary> Markers, beat segments, checkpoints and audio tracks. </summary>
             public const string EventsGet = "events.get";
 
@@ -165,6 +168,9 @@ namespace BH.SDK.Agent
 
             /// <summary> Moves the playhead, paused; only while the author is idle. </summary>
             public const string PlayheadSet = "playhead.set";
+
+            /// <summary> Starts or pauses the editor's playback, optionally from a frame. </summary>
+            public const string PlaybackSet = "playback.set";
 
             /// <summary> What the analysis of an audio resource heard: tempo, downbeat, sections, notes.
             /// </summary>

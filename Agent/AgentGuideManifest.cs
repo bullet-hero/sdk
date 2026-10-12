@@ -26,7 +26,12 @@ namespace BH.SDK.Agent
         /// </summary>
         public const string Mcp = "mcp";
 
-        /// <summary> One topic: its name, what it answers, and its pages in reading order. </summary>
+        /// <summary> Splits a page from the one <c>##</c> section it is limited to: <c>page.md#Heading</c>.
+        /// </summary>
+        public const char SectionMark = '#';
+
+        /// <summary> One topic: its name, what it answers, and its pages in reading order; a page may name one
+        /// of its <c>##</c> sections after <see cref="SectionMark"/>, so two topics never repeat a page. </summary>
         public sealed class Topic
         {
             public string Name { get; }
@@ -54,7 +59,7 @@ namespace BH.SDK.Agent
                 "docs/2_editor/1_basics/5_keyframes-and-easing.md"),
             new Topic("randomness", "seeds and random values: what plays the same everywhere",
                 "docs/1_game/8_determinism.md",
-                "docs/2_editor/1_basics/5_keyframes-and-easing.md"),
+                "docs/2_editor/1_basics/5_keyframes-and-easing.md" + SectionMark + "Random values"),
             new Topic("prefabs", "templates, placements, overrides and Prefab Mode",
                 "docs/2_editor/5_workflow/2_reuse.md",
                 "docs/2_editor/7_reference/12_prefab-mode.md"),

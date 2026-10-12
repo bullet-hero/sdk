@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -103,6 +104,37 @@ namespace BH.SDK.Agent
         /// <summary> The endpoint file of the game on this machine. </summary>
         public static string DefaultPath()
             => DefaultPath(CurrentOs(), Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));
+
+        /// <summary> The folder of per-game endpoint files beside <paramref name="endpointPath"/>, so a server
+        /// started with <c>--endpoint</c> finds the games of exactly that data folder. </summary>
+        public static string InstancesDirectoryFor(string endpointPath)
+            => Path.Combine(Path.GetDirectoryName(Path.GetFullPath(endpointPath)) ?? string.Empty,
+                FileNames.AgentInstancesDirectory);
+
+        /// <summary> The endpoint file of the game <paramref name="pid"/> beside
+        /// <paramref name="endpointPath"/>. </summary>
+        public static string InstancePath(string endpointPath, int pid)
+            => Path.Combine(InstancesDirectoryFor(endpointPath), pid + ".json");
+
+        // No liveness check: whether a pid is alive is the server's question, and a crashed game's file
+        // stays until something reads past it.
+
+        /// <summary> Every usable per-game endpoint file beside <paramref name="endpointPath"/>, by pid; a
+        /// file whose name is not its own pid is skipped. </summary>
+        public static IReadOnlyList<AgentEndpoint> ListInstances(string endpointPath)
+        {
+            var directory = InstancesDirectoryFor(endpointPath);
+            if (!Directory.Exists(directory)) return Array.Empty<AgentEndpoint>();
+
+            return Directory.GetFiles(directory, "*.json")
+                .Select(file => TryRead(file, out var endpoint, out _) &&
+                                Path.GetFileNameWithoutExtension(file) == endpoint.Pid.ToString()
+                    ? endpoint
+                    : null)
+                .Where(endpoint => endpoint != null)
+                .OrderBy(endpoint => endpoint.Pid)
+                .ToList();
+        }
 
         /// <summary> Writes the file whole or not at all, creating its folder. </summary>
         public void Write(string path)

@@ -98,6 +98,44 @@ namespace BH.SDK.Agent.Messages
         public Dictionary<string, int> Totals { get; set; } = new Dictionary<string, int>();
     }
 
+    /// <summary> The <c>levelkeys.get</c> request: one owner's tracks, paged per track. </summary>
+    public sealed class LevelKeysGetRequest : AgentPagedRequest
+    {
+        /// <summary> <c>camera</c>, <c>game</c>, <c>player</c> or <c>post</c>. </summary>
+        [JsonProperty("owner")]
+        public string Owner { get; set; }
+
+        /// <summary> Tracks to read, such as <c>zoom</c>; absent for every track of the owner. </summary>
+        [JsonProperty("tracks", NullValueHandling = NullValueHandling.Ignore)]
+        public List<string> Tracks { get; set; }
+
+        /// <summary> Only keys at or after this global frame. </summary>
+        [JsonProperty("from", NullValueHandling = NullValueHandling.Ignore)]
+        public JToken From { get; set; }
+
+        /// <summary> Only keys at or before this global frame. </summary>
+        [JsonProperty("to", NullValueHandling = NullValueHandling.Ignore)]
+        public JToken To { get; set; }
+    }
+
+    /// <summary> The <c>levelkeys.get</c> answer: <c>keys.get</c>'s, plus the value form each track takes.
+    /// </summary>
+    public sealed class LevelKeysGetResult : AgentResultBase
+    {
+        /// <summary> Track name to its keys in frame order. </summary>
+        [JsonProperty("tracks")]
+        public Dictionary<string, List<AgentKey>> Tracks { get; set; } = new Dictionary<string, List<AgentKey>>();
+
+        /// <summary> Track name to the keys it holds in range, before paging. </summary>
+        [JsonProperty("totals")]
+        public Dictionary<string, int> Totals { get; set; } = new Dictionary<string, int>();
+
+        /// <summary> Track name to a default value in the form <c>levelkey</c> takes, to copy and edit.
+        /// </summary>
+        [JsonProperty("forms")]
+        public Dictionary<string, JToken> Forms { get; set; } = new Dictionary<string, JToken>();
+    }
+
     /// <summary> The <c>events.get</c> request; paging is per kind. </summary>
     public sealed class EventsGetRequest : AgentPagedRequest
     {

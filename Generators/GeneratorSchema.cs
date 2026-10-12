@@ -130,6 +130,14 @@ namespace BH.SDK.Generators
                     warnings?.Add($"{name} has no effect with these values: the generator hides it.");
         }
 
+        private const string SectionKeyPrefix = "gen_section_";
+
+        // The form's section without its localization prefix: "main", "additional".
+        private static string SectionName(string key)
+            => key != null && key.StartsWith(SectionKeyPrefix, StringComparison.Ordinal)
+                ? key.Substring(SectionKeyPrefix.Length)
+                : key;
+
         private static JObject Describe(IGenerator generator, FieldInfo field, object defaults)
         {
             var hints = generator.Hints;
@@ -155,7 +163,7 @@ namespace BH.SDK.Generators
                 }));
             }
 
-            property["x-section"] = hints.SectionOf(field.Name);
+            property["x-section"] = SectionName(hints.SectionOf(field.Name));
             property["x-readOnly"] = hints.IsReadOnly(field.Name);
             property["x-visible"] = hints.IsVisible(field.Name, defaults);
 

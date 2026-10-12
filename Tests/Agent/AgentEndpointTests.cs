@@ -129,6 +129,45 @@ namespace BH.SDK.Tests.Agent
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.VeryEasy)]
+        public void InstancePath_IsBesideTheEndpointFile()
+        {
+            var endpoint = Path.Combine(_directory, "mcp", "endpoint.json");
+
+            Assert.AreEqual(Path.Combine(_directory, "mcp", "instances", "42.json"),
+                AgentEndpoint.InstancePath(endpoint, 42));
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Hard)]
+        public void ListInstances_ReadsValidFilesOnly_ByPid()
+        {
+            var endpoint = Path.Combine(_directory, "mcp", "endpoint.json");
+            AgentEndpoint.Create(5007, 7, "a").Write(AgentEndpoint.InstancePath(endpoint, 7));
+            AgentEndpoint.Create(5003, 3, "a").Write(AgentEndpoint.InstancePath(endpoint, 3));
+            AgentEndpoint.Create(5008, 8, "a").Write(AgentEndpoint.InstancePath(endpoint, 9));
+            File.WriteAllText(Path.Combine(AgentEndpoint.InstancesDirectoryFor(endpoint), "5.json"), "not json");
+
+            var pids = System.Linq.Enumerable.ToArray(
+                System.Linq.Enumerable.Select(AgentEndpoint.ListInstances(endpoint), e => e.Pid));
+
+            CollectionAssert.AreEqual(new[] { 3, 7 }, pids);
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Easy)]
+        public void ListInstances_NoFolder_IsEmpty()
+        {
+            Assert.IsEmpty(AgentEndpoint.ListInstances(Path.Combine(_directory, "mcp", "endpoint.json")));
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.VeryEasy)]
         public void NewToken_IsHex_OfTheProtocolLength_AndFresh()
         {
             var first = AgentEndpoint.NewToken();

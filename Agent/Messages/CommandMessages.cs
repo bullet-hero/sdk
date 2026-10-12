@@ -2,6 +2,14 @@ using Newtonsoft.Json;
 
 namespace BH.SDK.Agent.Messages
 {
+    /// <summary> The <c>command.list</c> request. </summary>
+    public sealed class CommandListRequest : AgentPagedRequest
+    {
+        /// <summary> True to list the excluded commands too, each with the tool to use instead. </summary>
+        [JsonProperty("all", NullValueHandling = NullValueHandling.Ignore)]
+        public bool? All { get; set; }
+    }
+
     /// <summary> The <c>command.run</c> request. </summary>
     public sealed class CommandRunRequest
     {

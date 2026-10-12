@@ -143,6 +143,10 @@
         /// <summary> Under <see cref="AgentDirectory"/>: the running bridge's port, token and pid. </summary>
         public const string AgentEndpointFile = "endpoint.json";
 
+        /// <summary> Under <see cref="AgentDirectory"/>: one endpoint file per running game, named by its pid.
+        /// </summary>
+        public const string AgentInstancesDirectory = "instances";
+
         // Inside a level folder, beside resources/: notes an AI keeps about THIS level. Not a model, never
         // read by the loader. BH.SDK.Agent.AiFolderRules says what may live there.
 
