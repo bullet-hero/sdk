@@ -8,7 +8,7 @@ namespace BH.SDK.Services.AudioAnalysis
     {
         /// <summary> Version of the algorithm a map was made by; a cache keyed on content compares it.
         /// </summary>
-        public const int MapVersion = 1;
+        public const int MapVersion = 2;
 
         /// <summary> STFT window, in samples; a power of two. </summary>
         public const int FrameSize = 2048;
@@ -81,14 +81,18 @@ namespace BH.SDK.Services.AudioAnalysis
         /// <summary> Section window length when no tempo was found, seconds. </summary>
         public const float SectionFallbackSeconds = 8f;
 
-        /// <summary> Cosine novelty between two windows above which a boundary is a candidate. </summary>
-        public const float SectionNovelty = 0.05f;
+        /// <summary> The least spread a section feature is standardised by, so a steady track's noise is not
+        /// blown up into boundaries. In the feature's own units (0..1). </summary>
+        public const float SectionSpreadFloor = 0.1f;
 
-        /// <summary> Cosine similarity at or above which two sections share a letter. </summary>
-        public const float SameSection = 0.98f;
+        /// <summary> Distance between two windows above which a boundary is a candidate. </summary>
+        public const float SectionNovelty = 0.6f;
 
-        /// <summary> Cosine similarity at or above which a section is a variation (<c>A'</c>). </summary>
-        public const float SimilarSection = 0.9f;
+        /// <summary> Distance at or below which two sections share a letter. </summary>
+        public const float SameSection = 0.4f;
+
+        /// <summary> Distance at or below which a section is a variation (<c>A'</c>). </summary>
+        public const float SimilarSection = 0.7f;
 
         /// <summary> A section quieter than this share of the loudest is <c>low</c> energy. </summary>
         public const float LowEnergyShare = 0.5f;

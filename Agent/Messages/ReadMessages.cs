@@ -96,6 +96,11 @@ namespace BH.SDK.Agent.Messages
         /// <summary> Track name to the keys it holds in range, before paging. </summary>
         [JsonProperty("totals")]
         public Dictionary<string, int> Totals { get; set; } = new Dictionary<string, int>();
+
+        /// <summary> For each track with no keys at all, a default value in the form <c>key</c> takes.
+        /// </summary>
+        [JsonProperty("forms", NullValueHandling = NullValueHandling.Ignore)]
+        public Dictionary<string, JToken> Forms { get; set; }
     }
 
     /// <summary> The <c>levelkeys.get</c> request: one owner's tracks, paged per track. </summary>

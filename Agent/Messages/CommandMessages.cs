@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Newtonsoft.Json;
 
 namespace BH.SDK.Agent.Messages
@@ -32,5 +33,13 @@ namespace BH.SDK.Agent.Messages
         /// <summary> False when the command ran and changed nothing (an empty selection, say). </summary>
         [JsonProperty("changed")]
         public bool Changed { get; set; }
+
+        /// <summary> Ids of the objects the command created, such as Duplicate's copies. </summary>
+        [JsonProperty("created", NullValueHandling = NullValueHandling.Ignore)]
+        public List<int> Created { get; set; }
+
+        /// <summary> Legal oddities it left, such as a copy that never plays. </summary>
+        [JsonProperty("warnings", NullValueHandling = NullValueHandling.Ignore)]
+        public List<string> Warnings { get; set; }
     }
 }

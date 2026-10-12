@@ -73,6 +73,11 @@ namespace BH.SDK.Agent.Messages
         /// <summary> A step was undone or redone; false when there was nothing to do. </summary>
         [JsonProperty("applied")]
         public bool Applied { get; set; }
+
+        /// <summary> The step, as <c>history.get</c> words it: <c>#41 ai op_group_ai-batch "Chorus 1"</c>.
+        /// </summary>
+        [JsonProperty("step", NullValueHandling = NullValueHandling.Ignore)]
+        public string Step { get; set; }
     }
 
     /// <summary> The <c>selection.get</c> and <c>selection.set</c> answer. </summary>

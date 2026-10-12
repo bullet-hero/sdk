@@ -88,7 +88,7 @@ namespace BH.SDK.Agent
 
                 found = chain
                     .SelectMany(t => t.GetProperties(BindingFlags.Public | BindingFlags.Instance
-                                                     | BindingFlags.DeclaredOnly))
+                                                                         | BindingFlags.DeclaredOnly))
                     .Where(p => p.CanRead && p.CanWrite && p.GetIndexParameters().Length == 0
                                 && p.GetCustomAttribute<JsonPropertyAttribute>() != null
                                 && !IsKeyframeFrame(p))
@@ -205,6 +205,12 @@ namespace BH.SDK.Agent
 
             if (target.IsGenericType && target.GetGenericTypeDefinition() == typeof(List<>))
                 return DecodeList(target, token, path);
+
+            // A bare number is the literal of a numeric family: 3 reads as { "kind": "FloatValue", "value": 3 }.
+            if (target == typeof(IFloat) && (token.Type == JTokenType.Float || token.Type == JTokenType.Integer))
+                return new FloatValue(token.Value<float>());
+            if (target == typeof(IInt) && token.Type == JTokenType.Integer)
+                return new IntValue((int)DecodeInteger(typeof(int), token, path));
 
             if (token.Type != JTokenType.Object)
                 throw new AgentValueException(path, $"expected an object for {target.Name}, got {token.Type}.");
@@ -341,7 +347,7 @@ namespace BH.SDK.Agent
         {
             var digits = text.Length > 0 && text[0] == '#' ? text.Substring(1) : null;
             var ok = digits != null && (digits.Length == 6 || (withAlpha && digits.Length == 8))
-                     && digits.All(Uri.IsHexDigit);
+                                    && digits.All(Uri.IsHexDigit);
             if (!ok)
                 throw new AgentValueException(path,
                     $"\"{text}\" is not a colour; write {(withAlpha ? "\"#RRGGBBAA\" or " : "")}\"#RRGGBB\".");

@@ -315,6 +315,9 @@ namespace BH.SDK.Agent.Messages
         /// <summary> A shape with no mesh: a hitbox only. </summary>
         public const string NoMesh = "no_mesh";
 
+        /// <summary> An effect object whose effect id names no effect. </summary>
+        public const string NoEffect = "no_effect";
+
         /// <summary> Every corner of its colour has alpha 0. </summary>
         public const string Transparent = "transparent";
 
@@ -327,7 +330,7 @@ namespace BH.SDK.Agent.Messages
         /// <summary> Every reason. </summary>
         public static readonly string[] All =
         {
-            OutsideSpan, ResolvedAway, Orphan, NotInFrame, NotDrawable, ZeroSize, Inactive, NoMesh,
+            OutsideSpan, ResolvedAway, Orphan, NotInFrame, NotDrawable, ZeroSize, Inactive, NoMesh, NoEffect,
             Transparent, OffCamera, CapacityOverflow, Drawn,
         };
     }

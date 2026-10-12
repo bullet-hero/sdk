@@ -81,6 +81,11 @@ namespace BH.SDK.Agent.Messages
         [JsonProperty("newIssues")]
         public List<string> NewIssues { get; set; } = new List<string>();
 
+        /// <summary> The leaf as the file now holds it, read back after the write; absent for a node.
+        /// </summary>
+        [JsonProperty("stored", NullValueHandling = NullValueHandling.Ignore)]
+        public JToken Stored { get; set; }
+
         /// <summary> Things the edit left for the author to know; never a failure. </summary>
         [JsonProperty("warnings")]
         public List<string> Warnings { get; set; } = new List<string>();

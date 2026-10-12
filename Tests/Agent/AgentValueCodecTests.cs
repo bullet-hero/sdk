@@ -72,7 +72,8 @@ namespace BH.SDK.Tests.Agent
         {
             var original = Activator.CreateInstance(type);
 
-            var decoded = AgentValueCodec.Decode(family, JToken.Parse(AgentValueCodec.Encode(original).ToString(Newtonsoft.Json.Formatting.None)));
+            var decoded = AgentValueCodec.Decode(family,
+                JToken.Parse(AgentValueCodec.Encode(original).ToString(Newtonsoft.Json.Formatting.None)));
 
             Assert.AreEqual(original, decoded);
         }
@@ -267,6 +268,22 @@ namespace BH.SDK.Tests.Agent
         }
 
         #endregion
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.VeryEasy)]
+        public void Decode_BareNumber_IsTheLiteralOfItsNumericFamily()
+        {
+            var single = AgentValueCodec.Decode<IFloat>(new JValue(1.5));
+            var whole = AgentValueCodec.Decode<IFloat>(new JValue(3));
+            var integer = AgentValueCodec.Decode<IInt>(new JValue(7));
+
+            Assert.AreEqual(1.5f, ((FloatValue)single).Value);
+            Assert.AreEqual(3f, ((FloatValue)whole).Value);
+            Assert.AreEqual(7, ((IntValue)integer).Value);
+            Assert.Throws<AgentValueException>(() => AgentValueCodec.Decode<IInt>(new JValue(1.5)));
+        }
 
         #region Errors
 

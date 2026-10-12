@@ -60,11 +60,20 @@ moves `AudioAnalysisRules.MapVersion`, which a content-hash cache compares.
 9. **Sections.** Windows of `SectionBars` bars from the first downbeat (`SectionFallbackSeconds`
    with no tempo); the stretch before the first downbeat joins the first window, a tail under a bar
    the last. Features per window: mean rms/low/mid/high envelope and the onset rate per band
-   (each rate divided by its maximum over windows). A boundary is a novelty peak
-   (`1 - cosine` with the previous window) above `SectionNovelty`. Sections are lettered against the
-   earlier letters' mean features: `SameSection` or more shares the letter, `SimilarSection` or
-   more takes it with a prime (`A'`), else the next letter. Neighbours with one letter merge. Energy
-   is the section's mean rms against the loudest section (`LowEnergyShare`, `MidEnergyShare`).
+   (each rate divided by its maximum over windows), then standardised over the track: minus its mean,
+   divided by its spread, the spread never below `SectionSpreadFloor`. A boundary is a novelty peak
+   (the root mean square of the feature differences with the previous window, in spreads) above
+   `SectionNovelty`. Sections are lettered by the same distance to the earlier letters' mean
+   features: `SameSection` or less shares the letter, `SimilarSection` or less takes it with a prime
+   (`A'`), else the next letter. Neighbours with one letter merge. Energy is the section's mean rms
+   against the loudest section (`LowEnergyShare`, `MidEnergyShare`).
+
+   Why standardised and not a cosine of the raw features: every feature is positive and of a like
+   size, so the cosine of any two windows sits near 1. Measured on 2026-10-12 over three cached
+   maps (116 s, 121 s and 270 s tracks), the raw `1 - cosine` novelty had a median of 0.004-0.007;
+   the 116 s track peaked at exactly 0.05 and came out as one section. Standardised, the same maps
+   split into 6-9 sections with their returns lettered alike. The floor keeps a steady track's
+   noise from being scaled up into boundaries.
 10. **Notes.** Low or zero confidence (`LowConfidence`), ambiguity over `AmbiguityNote`, drift over
     `DriftNoteMs`, and every section with no low-band onset (when the track has onsets at all).
 

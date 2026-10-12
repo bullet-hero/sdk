@@ -681,7 +681,7 @@ namespace BH.SDK.Services.AudioAnalysis
             return support;
         }
 
-        // ---- Sections: cosine novelty between consecutive windows of SectionBars bars ----
+        // ---- Sections: standardised distance between consecutive windows of SectionBars bars ----
 
         private const int FeatureCount = 7;
 
@@ -696,9 +696,10 @@ namespace BH.SDK.Services.AudioAnalysis
             var features = new double[windows][];
             for (var w = 0; w < windows; w++) features[w] = Features(map, bounds[w], bounds[w + 1]);
             NormaliseRates(features);
+            Standardise(features);
 
             var novelty = new double[windows];
-            for (var w = 1; w < windows; w++) novelty[w] = 1 - Cosine(features[w - 1], features[w]);
+            for (var w = 1; w < windows; w++) novelty[w] = Distance(features[w - 1], features[w]);
 
             var starts = new List<int> { 0 };
             for (var w = 1; w < windows; w++)
@@ -802,6 +803,26 @@ namespace BH.SDK.Services.AudioAnalysis
             }
         }
 
+        // Each feature as standard deviations from its mean over the track: all features are positive and
+        // alike, so unscaled windows look the same to any distance or angle.
+        private static void Standardise(double[][] features)
+        {
+            if (features.Length == 0) return;
+
+            for (var f = 0; f < FeatureCount; f++)
+            {
+                var mean = 0.0;
+                foreach (var w in features) mean += w[f];
+                mean /= features.Length;
+
+                var variance = 0.0;
+                foreach (var w in features) variance += (w[f] - mean) * (w[f] - mean);
+                var spread = Math.Max(Math.Sqrt(variance / features.Length), AudioAnalysisRules.SectionSpreadFloor);
+
+                foreach (var w in features) w[f] = (w[f] - mean) / spread;
+            }
+        }
+
         private static void ClassifyEnergy(AudioMap map, List<AudioSection> sections)
         {
             var energies = new double[sections.Count];
@@ -827,18 +848,18 @@ namespace BH.SDK.Services.AudioAnalysis
             for (var s = 0; s < sections.Count; s++)
             {
                 var best = -1;
-                var similarity = -1.0;
+                var nearest = double.MaxValue;
                 for (var l = 0; l < letters.Count; l++)
                 {
-                    var c = Cosine(letters[l].feature, means[s]);
-                    if (c <= similarity) continue;
-                    similarity = c;
+                    var d = Distance(letters[l].feature, means[s]);
+                    if (d >= nearest) continue;
+                    nearest = d;
                     best = l;
                 }
 
-                if (best >= 0 && similarity >= AudioAnalysisRules.SameSection)
+                if (best >= 0 && nearest <= AudioAnalysisRules.SameSection)
                     sections[s].Letter = letters[best].letter;
-                else if (best >= 0 && similarity >= AudioAnalysisRules.SimilarSection)
+                else if (best >= 0 && nearest <= AudioAnalysisRules.SimilarSection)
                     sections[s].Letter = letters[best].letter + "'";
                 else
                 {
@@ -909,19 +930,12 @@ namespace BH.SDK.Services.AudioAnalysis
             return count;
         }
 
-        private static double Cosine(double[] a, double[] b)
+        // Root mean square of the per-feature differences, in standard deviations once standardised.
+        private static double Distance(double[] a, double[] b)
         {
-            double dot = 0, aa = 0, bb = 0;
-            for (var i = 0; i < a.Length; i++)
-            {
-                dot += a[i] * b[i];
-                aa += a[i] * a[i];
-                bb += b[i] * b[i];
-            }
-
-            if (aa <= 0 && bb <= 0) return 1;
-            if (aa <= 0 || bb <= 0) return 0;
-            return dot / Math.Sqrt(aa * bb);
+            double sum = 0;
+            for (var i = 0; i < a.Length; i++) sum += (a[i] - b[i]) * (a[i] - b[i]);
+            return Math.Sqrt(sum / a.Length);
         }
 
         private static float Percentile(float[] values, float percentile)
