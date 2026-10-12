@@ -67,6 +67,46 @@ namespace BH.SDK.Services.AudioAnalysis
             return map;
         }
 
+        /// <summary> The tempo of the onsets inside [<paramref name="fromSeconds"/>, <paramref name="toSeconds"/>)
+        /// alone, with its downbeat: a track whose tempo changes answers each window with its own. The tempo's
+        /// bpm is 0 when the window holds fewer than <see cref="AudioAnalysisRules.MinWindowEvents"/> events.
+        /// </summary>
+        public static AudioTempo FitWindow(AudioMap map, double fromSeconds, double toSeconds,
+            AudioAnalysisSettings settings, out AudioDownbeat downbeat)
+        {
+            if (map == null) throw new ArgumentNullException(nameof(map));
+            settings ??= AudioAnalysisSettings.Default;
+            settings.Validate();
+            downbeat = new AudioDownbeat();
+
+            var window = new AudioOnsets
+            {
+                Low = Inside(map.Onsets?.Low, fromSeconds, toSeconds),
+                Mid = Inside(map.Onsets?.Mid, fromSeconds, toSeconds),
+                High = Inside(map.Onsets?.High, fromSeconds, toSeconds),
+            };
+            var events = Merge(window);
+            if (events.Count < AudioAnalysisRules.MinWindowEvents) return new AudioTempo();
+
+            var grid = FitTempo(events, settings);
+            if (!grid.Found) return grid.Tempo;
+
+            grid.Tempo.DriftMs = MeasureDrift(window.Low, events, grid);
+            var beatsPerBar = map.BeatsPerBar > 0 ? map.BeatsPerBar : settings.BeatsPerBar;
+            downbeat = FindDownbeat(window, grid, beatsPerBar, toSeconds);
+            return grid.Tempo;
+        }
+
+        private static List<AudioOnset> Inside(List<AudioOnset> onsets, double from, double to)
+        {
+            var inside = new List<AudioOnset>();
+            if (onsets == null) return inside;
+            foreach (var onset in onsets)
+                if (onset.Seconds >= from && onset.Seconds < to)
+                    inside.Add(onset);
+            return inside;
+        }
+
         // ---- Energy: four band signals, 1 ms blocks; the 100 Hz envelopes are sums of ten of them ----
 
         private sealed class FineEnergy

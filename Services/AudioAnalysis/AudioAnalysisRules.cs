@@ -111,5 +111,8 @@ namespace BH.SDK.Services.AudioAnalysis
 
         /// <summary> Onsets a third of the track needs before its drift residual counts. </summary>
         public const int MinDriftOnsets = 4;
+
+        /// <summary> Merged onsets a window needs before its own tempo is fitted (<c>FitWindow</c>). </summary>
+        public const int MinWindowEvents = 8;
     }
 }

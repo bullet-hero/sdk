@@ -178,6 +178,28 @@ namespace BH.SDK.Tests.Services
                 AudioAnalyzer.Analyze(signal, SampleRate, new AudioAnalysisSettings { MinBpm = 200, MaxBpm = 100 }));
         }
 
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Hard)]
+        public void FitWindow_OnATrackThatChangesTempo_AnswersEachHalfWithItsOwn()
+        {
+            var slow = AudioSignals.ClickTrack(SampleRate, Seconds / 2, 120.0, 0.25, 4, 0);
+            var fast = AudioSignals.ClickTrack(SampleRate, Seconds / 2, 150.0, 0.25, 4, 0);
+            var map = AudioAnalyzer.Analyze(slow.Concat(fast).ToArray(), SampleRate, AudioAnalysisSettings.Default);
+
+            var first = AudioAnalyzer.FitWindow(map, 0, Seconds / 2, null, out var firstDownbeat);
+            var second = AudioAnalyzer.FitWindow(map, Seconds / 2, Seconds, null, out var secondDownbeat);
+            var empty = AudioAnalyzer.FitWindow(map, Seconds + 1, Seconds + 2, null, out _);
+
+            Assert.AreEqual(120.0, first.Bpm, 0.05, "first half");
+            Assert.AreEqual(150.0, second.Bpm, 0.05, "second half");
+            Assert.AreEqual(0.25, firstDownbeat.Seconds, 0.01, "the first half's downbeat");
+            Assert.AreEqual(0, PhaseError(secondDownbeat.Seconds, Seconds / 2 + 0.25, 4 * 60 / 150.0), 0.01,
+                "the second half's downbeat");
+            Assert.AreEqual(0, empty.Bpm, "a window with no attacks has no tempo");
+        }
+
         private static double PhaseError(double actual, double expected, double period)
         {
             var d = (actual - expected) % period;

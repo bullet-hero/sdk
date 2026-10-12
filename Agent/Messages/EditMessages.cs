@@ -37,8 +37,8 @@ namespace BH.SDK.Agent.Messages
         [JsonProperty("createdPrefabs", NullValueHandling = NullValueHandling.Ignore)]
         public Dictionary<string, string> CreatedPrefabs { get; set; }
 
-        /// <summary> Each <c>ref</c> of a <c>shapedef</c> (and the <c>$a#shape</c> of a <c>create</c> with a
-        /// polygon) to the level shape id (a GUID) it names. </summary>
+        /// <summary> Each level shape id (a GUID) a batch named, to its refs space-separated: a <c>shapedef</c>'s
+        /// <c>ref</c>, a polygon <c>create</c>'s <c>$a#shape</c>. Equal polygons share one shape. </summary>
         [JsonProperty("createdShapes", NullValueHandling = NullValueHandling.Ignore)]
         public Dictionary<string, string> CreatedShapes { get; set; }
 
