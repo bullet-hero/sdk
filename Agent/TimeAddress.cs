@@ -38,6 +38,13 @@ namespace BH.SDK.Agent
         private static readonly Regex FrameShift = new(@"^(?<base>.+?)\s*(?<sign>[+-])\s*(?<n>[0-9]+)\s*f$",
             RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 
+        private const string BeatAfterDot = ". After the dot comes a beat number, not a fraction: \"bar:17.3\" " +
+                                            "is beat 3 of bar 17, and \"bar:17+1.5beats\" moves by part of a beat";
+
+        private static readonly Regex MusicalShift = new(
+            @"^(?<base>.+?)\s*(?<sign>[+-])\s*(?<n>[0-9]+(?:\.[0-9]+)?)\s*(?<unit>bars?|beats?)$",
+            RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+
         private static readonly Regex MarkerShift = new(
             @"^(?<name>.+?)\s*(?<sign>[+-])\s*(?<n>[0-9]+(?:\.[0-9]+)?)\s*(?<unit>bars?|beats?)$",
             RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
@@ -166,6 +173,10 @@ namespace BH.SDK.Agent
             if (isCount && TrySplitSum(text, out var terms))
                 return TrySum(terms, input, framerate, context, fromFrame, out result, out error);
 
+            if (!isCount && MusicalShift.Match(text) is { Success: true } moved
+                         && !text.StartsWith(MarkerPrefix, StringComparison.OrdinalIgnoreCase))
+                return TryMusicallyShiftedTime(moved, input, framerate, context, out result, out error);
+
             if (!isCount && FrameShift.Match(text) is { Success: true } shifted
                          && !text.StartsWith(FramePrefix, StringComparison.OrdinalIgnoreCase))
                 return TryShiftedTime(shifted, input, framerate, context, out result, out error);
@@ -216,7 +227,7 @@ namespace BH.SDK.Agent
                   "with a beat grid bars or beats (\"2bars\", \"3beats\"), or a sum of them (\"1bars+1f\")."
                 : $"Cannot read time {Quote(input)}: use a frame (120, \"f:120\"), seconds (\"s:12.5\"), " +
                   "with a beat grid \"bar:17\", \"bar:17.3\" or \"beat:64.5\", a marker (\"marker:drop\"), " +
-                  "any of them shifted by frames (\"bar:17-1f\").";
+                  "any of them shifted by frames (\"bar:17-1f\") or along the grid (\"bar:17+2beats\").";
             return false;
         }
 
@@ -257,6 +268,27 @@ namespace BH.SDK.Agent
             }
 
             return TryFromFrames(total, input, true, out result, out error);
+        }
+
+        // "bar:17+2beats", "s:10-1bar": any time but a marker (which reads its own shift), moved along the grid.
+        private static bool TryMusicallyShiftedTime(Match shift, string input, int framerate,
+            TimeAddressContext context, out int result, out string error)
+        {
+            result = 0;
+            var baseText = shift.Groups["base"].Value.Trim();
+            if (!TryParse(baseText, null, framerate, false, context, FrameRules.NoFrame, out var frame,
+                    out var reason))
+            {
+                error = $"Cannot read time {Quote(input)}: {Quote(baseText)} does not read ({reason})";
+                return false;
+            }
+
+            if (context?.MusicUnavailable != null) return Fail(input, false, context.MusicUnavailable, out error);
+            if (context == null || !context.HasGrid) return Fail(input, false, NoGrid, out error);
+
+            var sign = shift.Groups["sign"].Value == "-" ? -1 : 1;
+            if (!TryShift(context.Grid, frame, sign, shift, input, out var moved, out error)) return false;
+            return TryFromFrames(moved, input, false, out result, out error);
         }
 
         // "bar:17-1f", "marker:drop+3f": any time, moved by whole frames.
@@ -300,7 +332,8 @@ namespace BH.SDK.Agent
                 var dot = body.IndexOf('.');
                 var barText = dot < 0 ? body : body.Substring(0, dot);
                 if (!TryWhole(barText, out var bar))
-                    return Fail(input, false, "a bar is a whole number, as in \"bar:17\" or \"bar:17.3\"", out error);
+                    return Fail(input, false, "a bar is a whole number, as in \"bar:17\" or \"bar:17.3\"; " +
+                                              "move it with \"bar:17+2beats\" or \"bar:17-1f\"", out error);
 
                 if (dot < 0)
                 {
@@ -312,7 +345,8 @@ namespace BH.SDK.Agent
                         return Fail(input, false, "the beat after the dot is a whole number, as in \"bar:17.3\"",
                             out error);
                     if (!grid.TryFrameOfBar(bar, beat, out frame, out reason))
-                        return Fail(input, false, reason, out error);
+                        return Fail(input, false, reason.Contains("has beats") ? reason + BeatAfterDot : reason,
+                            out error);
                 }
             }
             else

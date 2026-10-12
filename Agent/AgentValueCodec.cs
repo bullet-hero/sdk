@@ -346,11 +346,16 @@ namespace BH.SDK.Agent
         private static object ParseHex(string path, string text, bool withAlpha)
         {
             var digits = text.Length > 0 && text[0] == '#' ? text.Substring(1) : null;
-            var ok = digits != null && (digits.Length == 6 || (withAlpha && digits.Length == 8))
-                                    && digits.All(Uri.IsHexDigit);
+            var ok = digits != null && (digits.Length == 6 || digits.Length == 8) && digits.All(Uri.IsHexDigit);
             if (!ok)
                 throw new AgentValueException(path,
                     $"\"{text}\" is not a colour; write {(withAlpha ? "\"#RRGGBBAA\" or " : "")}\"#RRGGBB\".");
+
+            // A colour with no alpha takes an opaque one, so the form an object's colour uses pastes in.
+            if (!withAlpha && digits.Length == 8 && !string.Equals(digits.Substring(6), "FF",
+                    StringComparison.OrdinalIgnoreCase))
+                throw new AgentValueException(path, $"\"{text}\" has alpha {digits.Substring(6)}, and this " +
+                                                    $"colour has none; write \"#{digits.Substring(0, 6)}\".");
 
             float Channel(int index) => int.Parse(digits.Substring(index * 2, 2), NumberStyles.HexNumber,
                 CultureInfo.InvariantCulture) / 255f;

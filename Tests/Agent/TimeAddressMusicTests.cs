@@ -106,8 +106,11 @@ namespace BH.SDK.Tests.Agent
                 out var error));
             StringAssert.Contains("depends on where it starts", error);
 
-            var uniform = new TimeAddressContext(new MusicGrid(new[] { MusicGridTests.Segment(1, 6000, 120f, 0f, 4,
-                "all") }, Fps));
+            var uniform = new TimeAddressContext(new MusicGrid(new[]
+            {
+                MusicGridTests.Segment(1, 6000, 120f, 0f, 4,
+                    "all")
+            }, Fps));
             Assert.AreEqual(240, TimeAddress.ParseDuration(new JValue("2bars"), Fps, uniform, FrameRules.NoFrame));
             Assert.AreEqual(45, TimeAddress.ParseDuration(new JValue("1.5beats"), Fps, uniform, FrameRules.NoFrame));
         }
@@ -162,6 +165,32 @@ namespace BH.SDK.Tests.Agent
         {
             Assert.True(TimeAddress.TryParseFrame(input, Fps, Context(), out var frame, out var error), error);
             Assert.AreEqual(expected, frame);
+        }
+
+        [TestCase("bar:5+1beat", "bar:5.2")]
+        [TestCase("bar:5.3 - 2beats", "bar:5")]
+        [TestCase("beat:16+1beat", "beat:17")]
+        [TestCase("bar:1+4bars", "bar:5")]
+        [TestCase("f:651-1beat", "bar:5")]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Easy)]
+        public void Time_ShiftedAlongTheGrid_LandsWhereTheEquivalentAddressDoes(string input, string same)
+        {
+            Assert.True(TimeAddress.TryParseFrame(input, Fps, Context(), out var frame, out var error), error);
+            Assert.AreEqual(TimeAddress.ParseFrame(new JValue(same), Fps, Context()), frame);
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.VeryEasy)]
+        public void Time_BeatAfterTheDot_IsExplainedWhenOutOfRange()
+        {
+            Assert.False(TimeAddress.TryParseFrame("bar:4.25", Fps, Context(), out _, out var error));
+            StringAssert.Contains("beat number, not a fraction", error);
+            Assert.False(TimeAddress.TryParseFrame("bar:2+1beat", Fps, null, out _, out error));
+            StringAssert.Contains("no beat grid", error);
         }
 
         [Test]

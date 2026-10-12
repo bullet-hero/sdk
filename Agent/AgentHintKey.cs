@@ -36,11 +36,14 @@ namespace BH.SDK.Agent
         /// <summary> A colour reads a theme slot, and the level's timeline sets no theme. </summary>
         public const string ThemeUnset = "theme-unset";
 
+        /// <summary> Shapes the batch made share an effective layer: of two, the newer draws behind. </summary>
+        public const string SameLayerOrder = "same-layer-order";
+
         /// <summary> Every key, for a test that each one is unique. </summary>
         public static readonly IReadOnlyList<string> All = new[]
         {
             ZeroSizeGroup, SpanOutsideParent, SameLayerSameStartRandom, LocalKeyframes, EffectiveLayer,
-            StaleRead, PrefabMode, ContextMissing, ContextNotUndoable, ThemeUnset,
+            StaleRead, PrefabMode, ContextMissing, ContextNotUndoable, ThemeUnset, SameLayerOrder,
         };
     }
 }

@@ -196,6 +196,11 @@ The folder file keeps the traps; this is its catalogue, with the facts not state
   `RuleShapeGeometry.Fix` and the consumer's shape editor on Save; its `Sanitize` order (clamp → weld
   → drop malformed → drop degenerate → trim → drop orphans → fix winding) is load-bearing - every step
   can reintroduce a problem an earlier one fixed, and this is the order in which none does.
+- `ShapePolygonUtils` - a shape from one outline, for a tool that has points and nothing else:
+  `FitToBox` maps the outline's bounds onto the authored box and reports them (the size and centre an
+  object takes to draw the outline where it was given), `TryTriangulate` ear-clips a simple outline of
+  either winding into front-facing triangles and refuses one that crosses itself. The level-editing
+  bridge's `shapedef` is its consumer.
 - **`ResourceReferenceUtils`** - what still points at a resource, as a COUNT per family: the question
   in front of a delete (`LevelGraphAnalyzer.UnresolvedReference` answers the opposite direction, the
   state a delete creates). EVERY scope is walked, `Prefab.Root` included, and a NULL id counts nothing.

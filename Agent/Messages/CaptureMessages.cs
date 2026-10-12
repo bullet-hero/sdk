@@ -15,6 +15,11 @@ namespace BH.SDK.Agent.Messages
         /// decides the other. </summary>
         [JsonProperty("size", NullValueHandling = NullValueHandling.Ignore)]
         public int? Size { get; set; }
+
+        /// <summary> A world rect to frame instead of the level camera's view, for a close look; the image takes
+        /// its aspect. Nothing in the level changes. </summary>
+        [JsonProperty("region", NullValueHandling = NullValueHandling.Ignore)]
+        public AgentRegion Region { get; set; }
     }
 
     /// <summary> The <c>view.capture</c> answer: the frame as the player would see it, overlays hidden.

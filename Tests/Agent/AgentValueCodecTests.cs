@@ -173,8 +173,9 @@ namespace BH.SDK.Tests.Agent
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.VeryEasy)]
-        public void Color3_Decode_RefusesAnAlphaString()
+        public void Color3_Decode_TakesAnOpaqueAlpha_AndRefusesAnyOther()
         {
+            Assert.AreEqual(new Color3Value(0f, 1f, 0f), AgentValueCodec.Decode<IColor3>(new JValue("#00FF00FF")));
             Assert.Throws<AgentValueException>(() => AgentValueCodec.Decode<IColor3>(new JValue("#00FF0080")));
         }
 

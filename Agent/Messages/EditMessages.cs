@@ -37,6 +37,15 @@ namespace BH.SDK.Agent.Messages
         [JsonProperty("createdPrefabs", NullValueHandling = NullValueHandling.Ignore)]
         public Dictionary<string, string> CreatedPrefabs { get; set; }
 
+        /// <summary> Each <c>ref</c> of a <c>shapedef</c> (and the <c>$a#shape</c> of a <c>create</c> with a
+        /// polygon) to the level shape id (a GUID) it names. </summary>
+        [JsonProperty("createdShapes", NullValueHandling = NullValueHandling.Ignore)]
+        public Dictionary<string, string> CreatedShapes { get; set; }
+
+        /// <summary> Each <c>ref</c> of a <c>theme</c> to the level theme id (a GUID) it made. </summary>
+        [JsonProperty("createdThemes", NullValueHandling = NullValueHandling.Ignore)]
+        public Dictionary<string, string> CreatedThemes { get; set; }
+
         /// <summary> Clamps and legal oddities; never a failure. </summary>
         [JsonProperty("warnings")]
         public List<string> Warnings { get; set; } = new List<string>();
