@@ -19,7 +19,7 @@ namespace BH.SDK.Tests.Agent
             CollectionAssert.AreEquivalent(new[]
             {
                 "index", "coordinates", "time", "randomness", "prefabs", "shapes", "avatar", "generators", "design",
-                "context", "mcp",
+                "pictures", "context", "mcp",
             }, names);
             Assert.That(names, Has.All.Matches("^[a-z]+$"));
             Assert.AreEqual(AgentGuideManifest.Index, names[0]);

@@ -20,6 +20,11 @@ namespace BH.SDK.Agent.Messages
         /// its aspect. Nothing in the level changes. </summary>
         [JsonProperty("region", NullValueHandling = NullValueHandling.Ignore)]
         public AgentRegion Region { get; set; }
+
+        /// <summary> The id of a shape carrying a reference picture (kept inactive): the capture is scored
+        /// against that picture stretched over the shape's rect, and the pixels that differ are tinted. </summary>
+        [JsonProperty("compare", NullValueHandling = NullValueHandling.Ignore)]
+        public int? Compare { get; set; }
     }
 
     /// <summary> The <c>view.capture</c> answer: the frame as the player would see it, overlays hidden.
@@ -33,6 +38,18 @@ namespace BH.SDK.Agent.Messages
         /// <summary> Where the playhead is after the capture. </summary>
         [JsonProperty("playhead")]
         public int Playhead { get; set; }
+
+        /// <summary> With <c>compare</c>: the mean difference over the reference's pixels, 0 to 1. </summary>
+        [JsonProperty("compareMean", NullValueHandling = NullValueHandling.Ignore)]
+        public float? CompareMean { get; set; }
+
+        /// <summary> With <c>compare</c>: the share of them that differ by over a tenth. </summary>
+        [JsonProperty("compareOver", NullValueHandling = NullValueHandling.Ignore)]
+        public float? CompareOver { get; set; }
+
+        /// <summary> With <c>compare</c>: how many capture pixels the reference's rect covers. </summary>
+        [JsonProperty("comparePixels", NullValueHandling = NullValueHandling.Ignore)]
+        public int? ComparePixels { get; set; }
     }
 
     /// <summary> The <c>view.filmstrip</c> request: either <c>frames</c>, or <c>from</c> and <c>to</c> with

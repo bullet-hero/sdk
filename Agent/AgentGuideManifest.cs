@@ -79,6 +79,8 @@ namespace BH.SDK.Agent
                 "docs/2_editor/4_craft/5_color-and-postprocessing.md",
                 "docs/2_editor/5_workflow/1_order-of-work.md",
                 "docs/2_editor/6_performance/1_level-budget.md"),
+            new Topic("pictures", "a picture built from shapes: catalog shapes, overlays, prefabs, a reference",
+                "docs/2_editor/4_craft/7_pictures-from-shapes.md"),
             new Topic(Context, "what the level's ai/CONTEXT.md holds, as an empty skeleton"),
             new Topic(Mcp, "how the AI connects and what it may do",
                 "docs/2_editor/5_workflow/7_ai-assistant.md"),

@@ -329,6 +329,9 @@ namespace BH.SDK.Agent.Messages
         /// <summary> It lies wholly outside the camera rect. </summary>
         public const string OffCamera = "off_camera";
 
+        /// <summary> It is drawn, but an opaque shape that fills its rect draws over the whole of it. </summary>
+        public const string Covered = "covered";
+
         /// <summary> Nothing stops it being drawn. </summary>
         public const string Drawn = "drawn";
 
@@ -336,7 +339,7 @@ namespace BH.SDK.Agent.Messages
         public static readonly string[] All =
         {
             OutsideSpan, ResolvedAway, Orphan, NotInFrame, NotDrawable, ZeroSize, Inactive, NoMesh, NoEffect,
-            Transparent, OffCamera, CapacityOverflow, Drawn,
+            Transparent, OffCamera, CapacityOverflow, Covered, Drawn,
         };
     }
 
