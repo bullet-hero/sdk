@@ -99,5 +99,25 @@ namespace BH.SDK.Publishing
         /// <summary> A resource points at a user resource the collection does not carry. Args:
         /// type, the missing reference, and the type and name of the resource pointing at it. </summary>
         CollectionReferenceMissing = 24,
+
+        // LICENSE COMPATIBILITY - a level's license against its audio's. A track synced to a level is
+        // always an adaptation of it, so its license binds the level. LicenseTerms holds the facts.
+
+        /// <summary> An audio resource is NoDerivatives and no permission stands in. Args: type, name,
+        /// its license. </summary>
+        ResourceForbidsAdaptation = 25,
+
+        /// <summary> An audio resource is ShareAlike and the level's license is not one an adaptation
+        /// may carry. Args: type, name, its license, the accepted level licenses
+        /// TypicalLicenseType[]. </summary>
+        LevelLicenseShareAlikeMismatch = 26,
+
+        /// <summary> Two ShareAlike audio resources admit no common level license. Args: type, name,
+        /// license, the second type, name and license. </summary>
+        ResourceShareAlikeConflict = 27,
+
+        /// <summary> An audio resource is NonCommercial and the level's license is not. Args: type,
+        /// name, its license. </summary>
+        LevelLicenseOmitsNonCommercial = 28,
     }
 }

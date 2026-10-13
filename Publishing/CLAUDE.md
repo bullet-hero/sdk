@@ -36,10 +36,12 @@ Why the pass, the profiles and the roster are shaped this way: `Docs/PUBLISHING.
     enum stays an enum so a client names it in its own language. Adding a rule means documenting
     its Args on the enum member, and the client's detail string reads them by index.
   - `CreateWorkshop()` is the Steam Workshop's profile and is deliberately LOOSER than `standard`:
-    every CC BY variant passes (ND included, knowingly - `Docs/PUBLISHING.md`), and missing paperwork is a
-    warning. That warning comes from one analyzer rule, not a profile flag: a profile that LISTS
+    every CC BY variant passes, and missing paperwork is a warning. That warning comes from one
+    analyzer rule, not a profile flag: a profile that LISTS
     licenses and still tolerates an unknown one hears about the unknown (`AsksAboutUnknowns`).
     `ResourceUrlMissing` is a warning in every profile.
+  - `LicenseTerms` is the one table of license FACTS (CC elements, ShareAlike targets): whether a
+    level's license fits its audio's is one answer for every service, unlike acceptability.
   - **`ValidationFacade.ValidateForPublish` is how a host asks all three passes at once**, returning
     a `PublishValidationReport` that carries the content half and this one side by side. It exists
     for one mistake it prevents: `LevelMeta` is its own aggregate root, so `Validate(level)` never

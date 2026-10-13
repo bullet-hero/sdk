@@ -159,6 +159,7 @@ namespace BH.SDK.Publishing
                 source = candidate;
                 return true;
             }
+
             return false;
         }
 
@@ -224,8 +225,8 @@ namespace BH.SDK.Publishing
         };
 
         // The Workshop asks LESS than a public server, on purpose: refuse only where plainly unsafe.
-        // ND is accepted KNOWINGLY (CC 4.0 s.1(a), music synced to images). A public server ASKS
-        // instead of refusing: those findings are warnings. Docs/PUBLISHING.md.
+        // ND and SA pass here; what they demand of the level is a compatibility warning (tolerant
+        // profile). A public server ASKS instead of refusing. Docs/PUBLISHING.md.
 
         /// <summary> The Steam Workshop's conditions: every CC BY variant, CC0, OFL, MIT, Apache and the
         /// Unlicense pass; missing paperwork is a warning; the public server's sizes. </summary>

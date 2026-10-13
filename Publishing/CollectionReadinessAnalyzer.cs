@@ -54,7 +54,8 @@ namespace BH.SDK.Publishing
             meta.LevelAuthors = manifest.Authors;
             var records = new PublishReadinessAnalyzer().Analyze(meta, profile, null, now, null, resources);
             foreach (var issue in records.Issues)
-                if (issue.Path != null && issue.Path.StartsWith("meta.resources", StringComparison.Ordinal))
+                if (issue.Path != null && issue.Path.StartsWith("meta.resources", StringComparison.Ordinal)
+                                       && !IsLicenseCompatibility(issue.Rule))
                     issues.Add(issue);
 
             if (profile.MaxTotalBytes > 0 && totalBytes > profile.MaxTotalBytes)
@@ -68,12 +69,19 @@ namespace BH.SDK.Publishing
                 profileKey: profile.ProfileKey);
         }
 
+        // A collection is no adaptation: its tracks are judged in the level that syncs them.
+
+        private static bool IsLicenseCompatibility(PublishRule rule)
+            => rule is PublishRule.ResourceForbidsAdaptation or PublishRule.LevelLicenseShareAlikeMismatch
+                or PublishRule.ResourceShareAlikeConflict or PublishRule.LevelLicenseOmitsNonCommercial;
+
         private static void AnalyzeMedia(ResourceCollection manifest, ISet<string> presentFiles,
             List<PublishIssue> issues)
         {
             if (presentFiles == null) return;
 
-            foreach (var texture in manifest.Textures.Values) Check(texture, ResourceType.Texture, texture.TextureResourceId.value);
+            foreach (var texture in manifest.Textures.Values)
+                Check(texture, ResourceType.Texture, texture.TextureResourceId.value);
             foreach (var font in manifest.Fonts.Values) Check(font, ResourceType.Font, font.FontResourceId.value);
             foreach (var audio in manifest.Audios.Values) Check(audio, ResourceType.Audio, audio.AudioResourceId.value);
 
@@ -100,6 +108,7 @@ namespace BH.SDK.Publishing
             var reported = new HashSet<ResourceRef>();
             var ownerType = ResourceType.Prefab;
             var ownerName = string.Empty;
+
             ResourceRef Visit(ResourceRef reference)
             {
                 if (IsGameDefined(reference) || ResourceClosure.Owns(resources, reference) || !reported.Add(reference))

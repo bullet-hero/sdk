@@ -48,6 +48,8 @@ namespace BH.SDK.Publishing
                 AnalyzeResourceSize(resourceMeta, name, profile, payload, issues);
             }
 
+            AnalyzeLicenseCompatibility(meta, profile, now, names, issues);
+
             if (level != null) AnalyzeLevel(meta, level, profile, issues);
             if (payload != null) AnalyzePayloadSize(payload, profile, issues);
 
@@ -270,6 +272,95 @@ namespace BH.SDK.Publishing
 
         #endregion
 
+        #region License compatibility
+
+        // Audio only: a synced track is always an adaptation, an image may be a mere collection. A
+        // usable permission is the holder's own terms and AnalyzeResourceLicense already asks about it.
+
+        private static void AnalyzeLicenseCompatibility(LevelMeta meta, PublishProfile profile, DateTime now,
+            LevelResources names, List<PublishIssue> issues)
+        {
+            if (profile.AllowedLicenses.Count == 0) return;
+            var severity = profile.AllowUnknownLicense ? RuleGroup.Warning : RuleGroup.Error;
+
+            var tracks =
+                new List<(ResourceMeta Meta, string Name, TypicalLicenseType License, LicenseElements Elements)>();
+            foreach (var resourceMeta in meta.ResourcesMeta)
+            {
+                if (resourceMeta == null || resourceMeta.ResourceType != ResourceType.Audio) continue;
+                if (resourceMeta.ResourceLicense is not TypicalLicense typical) continue;
+                if (!LicenseTerms.TryGetElements(typical.Type, out var elements)) continue;
+                if (TryGetUsablePermission(resourceMeta, now, out _)) continue;
+                tracks.Add((resourceMeta, ResourceNames.Of(resourceMeta, names), typical.Type, elements));
+            }
+
+            if (tracks.Count == 0) return;
+
+            foreach (var track in tracks)
+            {
+                if ((track.Elements & LicenseElements.NoDerivatives) == 0) continue;
+                if (!profile.AllowsLicense(track.License)) continue;
+                issues.Add(new PublishIssue(PublishRule.ResourceForbidsAdaptation, severity,
+                    DescribeResource(track.Meta),
+                    $"Audio '{track.Name}' is licensed {track.License}, which forbids adaptations, and a track " +
+                    "synced to a level is one; only the rights holder's permission makes it publishable.",
+                    ResourceType.Audio, track.Name, track.License));
+            }
+
+            AnalyzeShareAlike(meta, tracks.Where(t => (t.Elements & LicenseElements.ShareAlike) != 0).ToList(),
+                severity, issues);
+
+            if (meta.LevelLicense is not TypicalLicense level) return;
+            LicenseTerms.TryGetElements(level.Type, out var levelElements);
+            if ((levelElements & LicenseElements.NonCommercial) != 0) return;
+            foreach (var track in tracks)
+            {
+                if ((track.Elements & LicenseElements.NonCommercial) == 0) continue;
+                if ((track.Elements & LicenseElements.ShareAlike) != 0) continue;
+                issues.Add(new PublishIssue(PublishRule.LevelLicenseOmitsNonCommercial, RuleGroup.Advice,
+                    DescribeResource(track.Meta),
+                    $"Audio '{track.Name}' is licensed {track.License}, so the level as a whole is " +
+                    $"non-commercial, while its own license, {level.Type}, does not say so.",
+                    ResourceType.Audio, track.Name, track.License));
+            }
+        }
+
+        private static void AnalyzeShareAlike(LevelMeta meta,
+            List<(ResourceMeta Meta, string Name, TypicalLicenseType License, LicenseElements Elements)> tracks,
+            RuleGroup severity, List<PublishIssue> issues)
+        {
+            for (var i = 0; i < tracks.Count; i++)
+            for (var j = i + 1; j < tracks.Count; j++)
+            {
+                var first = tracks[i];
+                var second = tracks[j];
+                if (LicenseTerms.ShareAlikeTargets(first.License)
+                    .Intersect(LicenseTerms.ShareAlikeTargets(second.License)).Any()) continue;
+
+                issues.Add(new PublishIssue(PublishRule.ResourceShareAlikeConflict, severity,
+                    DescribeResource(first.Meta),
+                    $"Audio '{first.Name}' ({first.License}) and audio '{second.Name}' ({second.License}) " +
+                    "each demand their own license of the level; no license satisfies both.",
+                    ResourceType.Audio, first.Name, first.License, ResourceType.Audio, second.Name, second.License));
+                return;
+            }
+
+            // A level with no license at all is LevelLicenseNotAllowed's to report.
+            if (meta.LevelLicense is not (TypicalLicense or CustomLicense)) return;
+            foreach (var track in tracks)
+            {
+                var targets = LicenseTerms.ShareAlikeTargets(track.License);
+                if (meta.LevelLicense is TypicalLicense typical && targets.Contains(typical.Type)) continue;
+                issues.Add(new PublishIssue(PublishRule.LevelLicenseShareAlikeMismatch, severity,
+                    DescribeResource(track.Meta),
+                    $"Audio '{track.Name}' is licensed {track.License}, so the level must carry " +
+                    $"{string.Join(" or ", targets)}; it carries {NameOf(meta.LevelLicense)}.",
+                    ResourceType.Audio, track.Name, track.License, targets.ToArray()));
+            }
+        }
+
+        #endregion
+
         #region Sizes
 
         // A size of zero is "not measured", never "an empty file": a caller hands over what it could
@@ -453,6 +544,7 @@ namespace BH.SDK.Publishing
                 grant = permission;
                 return true;
             }
+
             grant = null;
             return false;
         }

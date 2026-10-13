@@ -43,8 +43,9 @@ server queues `NeedsManualReview`, a catalogue re-runs on a policy change).
 
 - **Which typical licenses are acceptable lives in the profile only.** It reads like a property of
   the license and is a property of the receiving service (BY-SA is fine for a server that does not
-  mind ShareAlike propagating). The analyzer deliberately does not decode typical licenses into a
-  rights table: that would put the same policy in two places.
+  mind ShareAlike propagating). The analyzer does not decode typical licenses into an acceptability
+  table: that would put the same policy in two places. Whether two licenses can be COMBINED is a
+  different question with one answer for every service - "License compatibility" below.
 - **Three size ceilings, because they fail differently**: one huge file is an unconverted asset
   (re-encode); an oversized `level.json` is structural (hundreds of thousands of keyframes, no
   re-encode helps); a total fitting neither pattern is a level nobody can download on a phone. Sizes
@@ -61,9 +62,8 @@ server queues `NeedsManualReview`, a catalogue re-runs on a policy change).
 - **The Workshop profile asks less than a public server**: Steam's agreement puts a takedown on
   the uploader, so an upload is refused only where plainly unsafe (a license forbidding redistribution:
   proprietary, or a custom text nobody graded; or copyleft that collides with a store). Every CC BY
-  variant passes. **ND is accepted knowingly**: CC 4.0 s.1(a) makes music synced to moving images
-  Adapted Material, so an ND track in a level breaches on every publish; low friction was chosen over
-  catching that here, and a takedown answers it. Revisit with the licensing policy.
+  variant passes. An ND or SA license on its own is accepted; what a track's license demands of the
+  level carrying it is reported as a warning by the compatibility check below.
 - **A public server asks rather than refuses**: no license stated, no credits record and no source
   page are warnings, never blocks.
 
@@ -84,6 +84,31 @@ server queues `NeedsManualReview`, a catalogue re-runs on a policy change).
   the entry, the second says there is none.
 - **A finding names the resource the author knows** (`ResourceNames`): the record's title, then the
   resource's own name, the address only last.
+
+## License compatibility
+
+`LicenseTerms` is what the Creative Commons legal codes say about combining licenses: the elements
+each typical license carries (`LicenseElements`) and the licenses an adaptation of a ShareAlike work
+may carry. These are facts, not policy, so they are code and no profile can change them.
+`PublishReadinessAnalyzer` uses them to grade a level's license against its **audio**:
+
+- **A synced track is always an adaptation.** CC 4.0 s.1(a) and CC 3.0 s.1(a) both say so of music
+  synched in timed relation with a moving image. An image is left out: placed unmodified it is a
+  collection, and nothing records whether it was modified.
+- **ND forbids sharing an adaptation** (`ResourceForbidsAdaptation`). Reported only when the profile
+  accepts the license; a refused one already has `ResourceLicenseNotAllowed`.
+- **SA fixes the level's license** (4.0 s.3(b)(1), 3.0 s.4(b): same elements, this version or later).
+  `LevelLicenseShareAlikeMismatch` when the level carries something else, `ResourceShareAlikeConflict`
+  when two tracks admit no common license. The 4.0 "BY-SA Compatible License" list (GPLv3) is not
+  modelled: no shipped profile accepts GPL.
+- **NC without SA binds nothing**, but a level whose own license allows commercial use misleads:
+  `LevelLicenseOmitsNonCommercial`, advice only.
+- **A usable permission silences all of it**: the grant is the rights holder's own terms, and
+  `AnalyzeResourceLicense` already turns it into a review.
+- **Severity follows the profile's tolerance**: none on a profile that lists no licenses (local use),
+  a warning where `AllowUnknownLicense` is set (the Workshop), an error elsewhere.
+- **A collection is not graded on it**: it is a set of resources, not an adaptation, and each track is
+  judged in the level that syncs it.
 
 ## The site roster
 

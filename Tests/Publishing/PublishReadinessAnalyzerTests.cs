@@ -320,7 +320,8 @@ namespace BH.SDK.Tests.Publishing
             meta.ResourcesMeta[0].ResourceLicense = new TypicalLicense(license);
 
             var report = new PublishReadinessAnalyzer()
-                .Analyze(meta, PublishProfile.CreateWorkshop(), CreateLevelWithAudio(-1, ResourceUriType.LevelPath), Now);
+                .Analyze(meta, PublishProfile.CreateWorkshop(), CreateLevelWithAudio(-1, ResourceUriType.LevelPath),
+                    Now);
 
             Assert.IsFalse(report.HasErrors, string.Join("; ", report.Issues.Select(issue => issue.Message)));
         }
@@ -766,6 +767,156 @@ namespace BH.SDK.Tests.Publishing
                 PublishProfile.CreateStrict(), CreateLevelWithAudio(-1, ResourceUriType.LevelPath), Now);
 
             Assert.IsTrue(Has(report, PublishRule.ResourceHashMissing));
+        }
+
+        #endregion
+
+        #region License compatibility
+
+        private static PublishReadinessReport AnalyzeTracks(PublishProfile profile, TypicalLicenseType level,
+            params TypicalLicenseType[] tracks)
+        {
+            var meta = CreateCleanMeta();
+            meta.LevelLicense = new TypicalLicense(level);
+            meta.ResourcesMeta.Clear();
+            for (var i = 0; i < tracks.Length; i++)
+            {
+                var track = CreateResourceMeta(tracks[i]);
+                track.ResourceId = new TypedResourceId(-1 - i);
+                track.ResourceTitle = new StringValue("track " + i);
+                meta.ResourcesMeta.Add(track);
+            }
+
+            return new PublishReadinessAnalyzer().Analyze(meta, profile, null, Now);
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Easy)]
+        public void TestNoDerivativesTrackWarnsOnWorkshop()
+        {
+            var report = AnalyzeTracks(PublishProfile.CreateWorkshop(), TypicalLicenseType.CC_BY_NC_4_0,
+                TypicalLicenseType.CC_BY_ND_3_0);
+
+            var issue = Get(report, PublishRule.ResourceForbidsAdaptation);
+            Assert.AreEqual(RuleGroup.Warning, issue.Group);
+            Assert.AreEqual(ResourceType.Audio, issue.Args[0]);
+            Assert.AreEqual("track 0", issue.Args[1]);
+            Assert.AreEqual(TypicalLicenseType.CC_BY_ND_3_0, issue.Args[2]);
+            Assert.AreEqual(1, report.Issues.Count(i => i.Rule == PublishRule.ResourceForbidsAdaptation));
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Easy)]
+        public void TestPermissionSilencesNoDerivatives()
+        {
+            var meta = CreateCleanMeta();
+            meta.ResourcesMeta[0].ResourceLicense = new TypicalLicense(TypicalLicenseType.CC_BY_ND_3_0);
+            meta.ResourcesMeta[0].ResourcePermissions.Add(CreatePermission(default));
+
+            var report = new PublishReadinessAnalyzer().Analyze(meta, PublishProfile.CreateWorkshop(), null, Now);
+
+            Assert.IsFalse(Has(report, PublishRule.ResourceForbidsAdaptation), report.ToString());
+        }
+
+        // Standard refuses ND outright; a second finding about the same track would only repeat it.
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Easy)]
+        public void TestRefusedNoDerivativesIsReportedOnce()
+        {
+            var report = AnalyzeTracks(PublishProfile.CreateStandard(), TypicalLicenseType.CC_BY_NC_4_0,
+                TypicalLicenseType.CC_BY_ND_3_0);
+
+            Assert.IsTrue(Has(report, PublishRule.ResourceLicenseNotAllowed));
+            Assert.IsFalse(Has(report, PublishRule.ResourceForbidsAdaptation));
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Easy)]
+        public void TestShareAlikeTrackDemandsItsLicense()
+        {
+            var report = AnalyzeTracks(PublishProfile.CreateWorkshop(), TypicalLicenseType.CC_BY_NC_4_0,
+                TypicalLicenseType.CC_BY_SA_4_0);
+
+            var issue = Get(report, PublishRule.LevelLicenseShareAlikeMismatch);
+            Assert.AreEqual(RuleGroup.Warning, issue.Group);
+            Assert.AreEqual(TypicalLicenseType.CC_BY_SA_4_0, issue.Args[2]);
+            CollectionAssert.AreEqual(new[] { TypicalLicenseType.CC_BY_SA_4_0 }, (TypicalLicenseType[])issue.Args[3]);
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Easy)]
+        public void TestShareAlikeAcceptsLaterVersion()
+        {
+            var report = AnalyzeTracks(PublishProfile.CreateWorkshop(), TypicalLicenseType.CC_BY_SA_4_0,
+                TypicalLicenseType.CC_BY_SA_3_0);
+
+            Assert.IsFalse(Has(report, PublishRule.LevelLicenseShareAlikeMismatch), report.ToString());
+            Assert.IsFalse(Has(report, PublishRule.ResourceShareAlikeConflict), report.ToString());
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Easy)]
+        public void TestTwoShareAlikeFamiliesConflict()
+        {
+            var report = AnalyzeTracks(PublishProfile.CreateWorkshop(), TypicalLicenseType.CC_BY_SA_4_0,
+                TypicalLicenseType.CC_BY_SA_4_0, TypicalLicenseType.CC_BY_NC_SA_4_0);
+
+            Assert.AreEqual(1, report.Issues.Count(i => i.Rule == PublishRule.ResourceShareAlikeConflict));
+            Assert.IsFalse(Has(report, PublishRule.LevelLicenseShareAlikeMismatch));
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Easy)]
+        public void TestNonCommercialTrackAdvisesOnCommercialLevel()
+        {
+            var report = AnalyzeTracks(PublishProfile.CreateWorkshop(), TypicalLicenseType.CC_BY_4_0,
+                TypicalLicenseType.CC_BY_NC_4_0);
+
+            Assert.AreEqual(RuleGroup.Advice, Get(report, PublishRule.LevelLicenseOmitsNonCommercial).Group);
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Easy)]
+        public void TestOpenProfileSaysNothingAboutCompatibility()
+        {
+            var report = AnalyzeTracks(PublishProfile.CreateOpen(), TypicalLicenseType.CC_BY_NC_4_0,
+                TypicalLicenseType.CC_BY_ND_4_0);
+
+            Assert.IsFalse(Has(report, PublishRule.ResourceForbidsAdaptation), report.ToString());
+        }
+
+        // An image placed unmodified is a collection, not an adaptation; nothing records whether it was.
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Easy)]
+        public void TestNoDerivativesTextureIsNotGraded()
+        {
+            var meta = CreateCleanMeta();
+            meta.ResourcesMeta[0].ResourceType = ResourceType.Texture;
+            meta.ResourcesMeta[0].ResourceLicense = new TypicalLicense(TypicalLicenseType.CC_BY_ND_4_0);
+
+            var report = new PublishReadinessAnalyzer().Analyze(meta, PublishProfile.CreateWorkshop(), null, Now);
+
+            Assert.IsFalse(Has(report, PublishRule.ResourceForbidsAdaptation), report.ToString());
         }
 
         #endregion
