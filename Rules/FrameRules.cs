@@ -148,6 +148,21 @@ namespace BH.SDK.Rules
             return (frame - MinFrame) / (float)(lastFrame - MinFrame);
         }
 
+        // A seek bar must land on a FRAME: progress * length lands on the end boundary at 1, which plays nothing.
+
+        /// <summary> The frame <paramref name="progress"/> addresses on a timeline of <paramref name="frameCount"/>
+        /// frames - the inverse of <see cref="ProgressOf"/>: 0 and below is <see cref="MinFrame"/>, 1 and beyond
+        /// is <see cref="LastFrameOf"/>. </summary>
+        public static int FrameAtProgress(float progress, int frameCount)
+        {
+            if (frameCount <= 0 || float.IsNaN(progress) || progress <= 0f) return MinFrame;
+
+            var lastFrame = LastFrameOf(frameCount);
+            if (progress >= 1f) return lastFrame;
+
+            return MinFrame + (int)Math.Round(progress * (double)(lastFrame - MinFrame));
+        }
+
         /// <summary> True when a playback speed is inside what the game offers - negatives play backwards. </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsValidSpeed(float speed) => speed is >= MinSpeed and <= MaxSpeed;

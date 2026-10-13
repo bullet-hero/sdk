@@ -152,6 +152,31 @@ namespace BH.SDK.Tests
             Assert.AreEqual(0f, FrameRules.ProgressOf(FrameRules.MinFrame, 0), 1e-4f);
         }
 
+        // A seek bar at its right end must stand on the last frame, never on the end boundary.
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Easy)]
+        public void FrameAtProgressInvertsProgressOf()
+        {
+            const int frameCount = 480;
+
+            Assert.AreEqual(FrameRules.MinFrame, FrameRules.FrameAtProgress(0f, frameCount));
+            Assert.AreEqual(FrameRules.LastFrameOf(frameCount), FrameRules.FrameAtProgress(1f, frameCount));
+            Assert.AreEqual(FrameRules.MinFrame + 300, FrameRules.FrameAtProgress(0.5f, 601));
+
+            for (var frame = FrameRules.MinFrame; frame <= FrameRules.LastFrameOf(frameCount); frame++)
+                Assert.AreEqual(frame,
+                    FrameRules.FrameAtProgress(FrameRules.ProgressOf(frame, frameCount), frameCount));
+
+            // Off both ends, NaN, and timelines with no span to divide.
+            Assert.AreEqual(FrameRules.MinFrame, FrameRules.FrameAtProgress(-1f, frameCount));
+            Assert.AreEqual(FrameRules.LastFrameOf(frameCount), FrameRules.FrameAtProgress(2f, frameCount));
+            Assert.AreEqual(FrameRules.MinFrame, FrameRules.FrameAtProgress(float.NaN, frameCount));
+            Assert.AreEqual(FrameRules.MinFrame, FrameRules.FrameAtProgress(0.5f, 1));
+            Assert.AreEqual(FrameRules.MinFrame, FrameRules.FrameAtProgress(0.5f, 0));
+        }
+
         // Everything relative is invariant under a uniform shift of the origin, and that invariance
         // is what made moving it affordable. If one of these ever starts depending on where the
         // timeline begins, something has read a frame number as an offset.
