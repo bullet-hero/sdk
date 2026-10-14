@@ -28,8 +28,12 @@ namespace BH.SDK.Versions
         /// in Docs/VERSIONING.md. </summary>
         public const int V2_SimplifyEntrance = 2;
 
+        /// <summary> <c>ProfileManifest</c> gains <c>ProfileCategory.Skins</c>; the avatar skin domains
+        /// start here. </summary>
+        public const int V3_ImproveAppearance = 3;
+
         /// <summary> The newest generation there is - the only thing UI and reports read. A future
         /// bump adds its own named constant and moves this alias onto it. </summary>
-        public const int Current = V2_SimplifyEntrance;
+        public const int Current = V3_ImproveAppearance;
     }
 }

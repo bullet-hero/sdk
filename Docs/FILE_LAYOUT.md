@@ -8,6 +8,25 @@ folder reads this first; a level is a folder of files a player can zip and send,
   extension is resolved by what is on disk. It is reached through `LevelMeta.LevelLogo`, an ordinary resource
   uri, so the name a writer chooses is the name it records in the metadata in the same step. Which of the two
   it chooses is decided by the file's own bytes (the game's `LevelLogoFile`), never by what the source was called.
+- **`skins/` is a sibling of `levels/` and holds one avatar skin per file** (`FileNames.SkinsDirectory`), named
+  `<AvatarSkinId>.json` (`AvatarSkinFiles.FileNameOf`): a skin is a whole document a player can write, send
+  and drop in, so it is never folded into another file. Who a skin is lives INSIDE it (`AvatarSkin.Id`); the
+  name is only where a reader looks first, so a file dropped in under any other name is still the same skin.
+  `selection.json` (`FileNames.SkinSelectionFileName`) is the one reserved name - it says which skin is worn,
+  by id, and keeping it inside the folder is what makes the choice travel with the skins without
+  `UserSettings` changing. A built-in skin's id is a version-0 guid (`AvatarSkinId.IsBuiltin`), which
+  `Guid.NewGuid` never makes, so it can never be a file's. The shipped presets are one `.blob` in the build
+  (`FileNames.SkinPresetsDirectory` / `SkinPresetsBaseName`): no player writes it and the source of truth is
+  the `AvatarSkinPresets` table it is packed from, so it takes the compact format.
+- **A skin's grid is a 64-bit mask, not text.** `columns` x `rows` (3-8 each) bound it; `mask` sets bit
+  `row * 8 + column`, row 0 at the bottom (`AvatarSkinMask`) - the stride is 8 whatever the width, so
+  resizing the grid moves no cell. `cells` holds one index into `parts` per set bit, in ascending bit
+  order, or is empty for "part 0 everywhere". A part names a `shape` (a catalogue `ShapeId`, or the `id` of
+  one of the skin's own `meshes`) and a `color` (an index into `colors`), so a colour or a mesh is written
+  once however many cells use it. `elements` (`AvatarSkinElements`) switches the eyes, hands, shadow,
+  effects and dash tint on and off; the grid is always drawn. A `mask` above `long.MaxValue` is a JSON
+  number past 2^53: a reader that parses numbers as doubles loses bits, which is why
+  `JsonPrimitives.ReadUInt64` exists.
 - **A collection is a folder, the way a level is:** `resources/collections/<CollectionId>/` holding a
   `collection.*` manifest, the four data folders with the device library's own envelope files byte for byte, and
   `media/` for the file resources. Reusing the library layout lets one reader serve both and lets a library entry

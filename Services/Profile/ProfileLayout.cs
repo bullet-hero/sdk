@@ -19,6 +19,7 @@ namespace BH.SDK.Services.Profile
             ProfileCategory.Statistics,
             ProfileCategory.Levels,
             ProfileCategory.Library,
+            ProfileCategory.Skins,
             ProfileCategory.Backups,
             ProfileCategory.Reports,
             ProfileCategory.Recordings,
@@ -44,6 +45,7 @@ namespace BH.SDK.Services.Profile
                 case ProfileCategory.Backups: return FileNames.BackupsDirectory;
                 case ProfileCategory.Reports: return FileNames.ReportsDirectory;
                 case ProfileCategory.Recordings: return FileNames.RecordingsDirectory;
+                case ProfileCategory.Skins: return FileNames.SkinsDirectory;
                 default: throw new ArgumentOutOfRangeException(nameof(category), category, "Not a single category.");
             }
         }

@@ -22,7 +22,7 @@ key in another format.
 
 | Kind | Types | Where the name is used outside the file |
 |---|---|---|
-| `Guid` | `LevelId`, `ThemeId`, `EffectId`, `PrefabId`, `ShapeId` | each one **is a file name** in a device-wide store - `<persistentDataPath>/resources/{themes,effects,prefabs,shapes}/<Id>.json\|blob`, and `stats/<LevelId>.json` |
+| `Guid` | `LevelId`, `ThemeId`, `EffectId`, `PrefabId`, `ShapeId`, `AvatarSkinId` | each one **is a file name** in a device-wide store - `<persistentDataPath>/resources/{themes,effects,prefabs,shapes}/<Id>.json\|blob`, `stats/<LevelId>.json` and `skins/<AvatarSkinId>.json` |
 | `int` | `ObjectId`, `AudioId`, `TypedResourceId` and its five per-type spellings (`Audio`/`Texture`/`Text`/`Bytes`/`Font`) | never - handed out by a counter inside one scope, meaningless one file over |
 
 The correspondence is exact and is meant to stay exact: there are four device-wide libraries

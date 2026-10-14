@@ -9,13 +9,13 @@ using Newtonsoft.Json;
 namespace BH.SDK.Models.Profile
 {
     // The first zip entry, so a reader learns what the archive holds, and whether this build may read it,
-    // from the central directory. Categories are STORED, not derived. A new domain, not a bump.
+    // from the central directory. Categories are STORED, not derived. Generation 3 added Skins.
     // Services/CLAUDE.md
 
     /// <summary> A profile archive's manifest (<c>profile.json</c>): when and by what it was written,
     /// which categories it carries, and the levels with the timestamps a merge compares. </summary>
     [RuleContainer]
-    [ModelGeneration(ModelDomains.ProfileManifest, ModelGenerations.V2_SimplifyEntrance)]
+    [ModelGeneration(ModelDomains.ProfileManifest, ModelGenerations.V3_ImproveAppearance)]
     [GenerateModel]
     public sealed partial class ProfileManifest : IModel<ProfileManifest>
     {

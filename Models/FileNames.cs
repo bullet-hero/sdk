@@ -165,5 +165,20 @@
 
         /// <summary> Under <see cref="AiDirectory"/>: whether the folder travels with the level. </summary>
         public const string AiManifestFile = "manifest.json";
+
+        // One skin per file, named after its AvatarSkinId; the selection is reserved. Docs/FILE_LAYOUT.md
+
+        /// <summary> The player's avatar skins, at the save root. </summary>
+        public const string SkinsDirectory = "skins";
+
+        /// <summary> Under <see cref="SkinsDirectory"/>: which skin is worn. Never a skin itself. </summary>
+        public const string SkinSelectionFileName = "selection.json";
+
+        /// <summary> The shipped skin presets' folder, under the build's streaming assets. </summary>
+        public const string SkinPresetsDirectory = "AvatarKit";
+
+        /// <summary> Under <see cref="SkinPresetsDirectory"/>: the presets, one <c>.blob</c> pack. A build
+        /// file, never a player's, so it takes the compact format. </summary>
+        public const string SkinPresetsBaseName = "presets";
     }
 }

@@ -63,6 +63,15 @@ namespace BH.SDK.Versions
         /// <summary> When each achievement unlocked (stats/achievements.json). </summary>
         public const string AchievementsRecord = nameof(Models.Achievements.AchievementsRecord);
 
+        // Avatar
+
+        /// <summary> One avatar skin (skins/*.json). </summary>
+        public const string AvatarSkin = nameof(Models.AvatarSkin);
+        /// <summary> Which skin is worn (skins/selection.json). </summary>
+        public const string AvatarSkinSelection = nameof(Models.AvatarSkinSelection);
+        /// <summary> The shipped skin presets, many skins in one file. </summary>
+        public const string AvatarSkinPack = nameof(Models.AvatarSkinPack);
+
         // GameLevel
 
         /// <summary> The game events domain. </summary>

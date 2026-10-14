@@ -231,6 +231,17 @@ namespace BH.SDK.Serialization.Json
 
         #endregion
 
+        #region Integers
+
+        // Above long.MaxValue a text reader hands a number over as a BigInteger, which IConvertible refuses.
+
+        /// <summary> Accepts the whole ulong range, including what a text reader reads as a BigInteger.
+        /// </summary>
+        public static ulong ReadUInt64(JsonReader reader) =>
+            reader.Value is System.Numerics.BigInteger big ? (ulong)big : Convert.ToUInt64(reader.Value);
+
+        #endregion
+
         #region Guid and DateTime
 
         // A Guid arrives as a string from a text reader and as an already-boxed Guid from a binary

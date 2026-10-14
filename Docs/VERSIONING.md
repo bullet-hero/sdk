@@ -133,6 +133,10 @@ The named constants are in `Versions/ModelGenerations.cs`:
   completed tutorials; `LevelMeta` joined before any build carrying it shipped - a resource record
   can credit a theme, effect, shape or prefab (`ResourceMeta.ResourceGuid`), describe the level's
   cover (`ResourceType.LevelLogo`), and the level and each record declare `AiGeneration`.
+- `V3_ImproveAppearance = 3` - `ProfileManifest` only: `ProfileCategory` gained `Skins`, so an archive can
+  carry `skins/` (snapshot `Versions/V2/ProfileManifestV2`, migrator `ProfileManifestV2ToV3`, every
+  member carried). The avatar skin domains - `AvatarSkin`, `AvatarSkinSelection`, `AvatarSkinPack` -
+  were born here as new domains.
 - `Current` - an alias for the newest. The only one UI and reports read.
 
 ### The envelope on disk
@@ -306,7 +310,8 @@ to the domain's *current* type" rule).
   generations themselves (so no attribute carries a bare digit), and a grep for `[ModelGeneration(`
   answers who is on which. The first post-release bump moved `LevelMeta`, `UserSettings`,
   `GameStatistics` and `LevelStatistics` to `V2_SimplifyEntrance` with snapshots under `Versions/V1/`,
-  and `ResourceCollection` was born there as a new domain.
+  and `ResourceCollection` was born there as a new domain. The second moved `ProfileManifest` to
+  `V3_ImproveAppearance` (snapshot under `Versions/V2/`), where the skin domains were born.
 - **Not every root is a file of its own**: `LevelSettings`, `GameLevel`, `AudioLevel`,
   `LevelResources`, `LevelHints` nest under `Level`, the event groups nest under `GameLevel`, and
   statistics are two roots rather than one (`STATISTICS.md`).

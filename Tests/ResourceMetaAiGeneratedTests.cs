@@ -79,7 +79,7 @@ namespace BH.SDK.Tests
             meta.ResourcesMeta.Add(Audio(value));
 
             var bytes = blob.SerializeEnvelope(ModelDomains.LevelMeta,
-                new EnvelopeData(ModelGenerations.Current, meta));
+                new EnvelopeData(VersionedTypeRegistry.GetLatestAttribute(ModelDomains.LevelMeta).Generation, meta));
             var read = blob.DeserializeEnvelope(bytes, typeof(LevelMeta)).GetPayload<LevelMeta>();
 
             Assert.AreEqual(value, read.LevelAiGenerated);

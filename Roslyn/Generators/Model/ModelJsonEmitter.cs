@@ -376,7 +376,7 @@ namespace BH.SDK.Roslyn.Model
                 case ValueKind.Int: return "global::System.Convert.ToInt32(reader.Value)";
                 case ValueKind.UInt: return "global::System.Convert.ToUInt32(reader.Value)";
                 case ValueKind.Long: return "global::System.Convert.ToInt64(reader.Value)";
-                case ValueKind.ULong: return "global::System.Convert.ToUInt64(reader.Value)";
+                case ValueKind.ULong: return Primitives + ".ReadUInt64(reader)";
                 case ValueKind.Float: return "global::System.Convert.ToSingle(reader.Value)";
                 case ValueKind.Double: return "global::System.Convert.ToDouble(reader.Value)";
                 case ValueKind.String: return "(string)reader.Value";

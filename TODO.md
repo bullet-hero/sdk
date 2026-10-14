@@ -21,7 +21,6 @@ Features after alpha release
 - add sounds in timing, with custom audio support (tutorial level in JSaB)
 - add JPG, PNG, SVG importing to textures and anywhere usage
 - add tags as metadata for every object in level, only for editor
-- add free ingame skins (and maybe add custom)
 - Integrate
   - https://kenney.nl/assets/input-prompts
 

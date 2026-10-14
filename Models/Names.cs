@@ -146,8 +146,8 @@
         /// <summary> Word fragment, built into UseAlpha. </summary>
         public const string Use = "use";
 
-        /// <summary> CollidersModeGraphicsSettings.Color. The full word, because <see cref="Color"/>
-        /// is the MULTI abbreviation <c>"clr"</c>. </summary>
+        /// <summary> CollidersModeGraphicsSettings.Color, AvatarSkinPart.Color. The full word, because
+        /// <see cref="Color"/> is the MULTI abbreviation <c>"clr"</c>. </summary>
         public const string ColorWord = "color";
 
         /// <summary> AudioSettings.Game, Level.Game. </summary>
@@ -266,7 +266,7 @@
         /// <summary> Word fragment, built into PrefabIndex. </summary>
         public const string Index = "idx";
 
-        /// <summary> <c>"id"</c> - AchievementUnlock.Id; word fragment, built into AudioId, ColliderId,
+        /// <summary> <c>"id"</c> - AchievementUnlock.Id, AvatarSkin.Id, AvatarSkinShape.Id; word fragment, built into AudioId, ColliderId,
         /// LevelId, NextObjectId and 4 more. </summary>
         public const string Id = "id";
 
@@ -667,10 +667,10 @@
         /// <summary> Word fragment, built into Shader, ShapeId. </summary>
         public const string ShapeShort = "sh";
 
-        /// <summary> CompositeShape.Vertices. </summary>
+        /// <summary> CompositeShape.Vertices, AvatarSkinShape.Vertices. </summary>
         public const string Vertices = "vts";
 
-        /// <summary> CompositeShape.Indices. </summary>
+        /// <summary> CompositeShape.Indices, AvatarSkinShape.Indices. </summary>
         public const string Indices = "idxs";
 
         /// <summary> Word kept in the key vocabulary; nothing is built from it today. </summary>
@@ -697,7 +697,7 @@
         /// <summary> Word fragment, built into FillDirection. </summary>
         public const string Fill = "fill";
 
-        /// <summary> Word fragment, built into ExpansionMask. </summary>
+        /// <summary> <c>"mask"</c> - AvatarSkin.Mask; word fragment, built into ExpansionMask. </summary>
         public const string Mask = "mask";
 
         /// <summary> FillmentKey.Direction. </summary>
@@ -3148,5 +3148,70 @@
 
         /// <summary> <c>"unlocked_utc"</c> - AchievementUnlock.UnlockedUtc. </summary>
         public const string UnlockedUtc = Unlocked + _ + Utc;
+
+        // Avatar skins (skins/*.json) - one instance per file, written by hand, full words.
+
+        /// <summary> <c>"size"</c> - AvatarSkin.Size. </summary>
+        public const string BodySize = "size";
+
+        /// <summary> <c>"columns"</c> - AvatarSkin.Columns. </summary>
+        public const string Columns = "columns";
+
+        /// <summary> <c>"rows"</c> - AvatarSkin.Rows. </summary>
+        public const string Rows = "rows";
+
+        /// <summary> <c>"cells"</c> - AvatarSkin.Cells. </summary>
+        public const string Cells = "cells";
+
+        /// <summary> <c>"parts"</c> - AvatarSkin.Parts. </summary>
+        public const string Parts = "parts";
+
+        /// <summary> <c>"colors"</c> - AvatarSkin.Colors. </summary>
+        public const string Colors = "colors";
+
+        /// <summary> <c>"meshes"</c> - AvatarSkin.Meshes. </summary>
+        public const string Meshes = "meshes";
+
+        /// <summary> <c>"elements"</c> - AvatarSkin.Elements. </summary>
+        public const string Elements = "elements";
+
+        /// <summary> <c>"eyes"</c> - AvatarSkin.Eyes. </summary>
+        public const string Eyes = "eyes";
+
+        /// <summary> <c>"hands"</c> - AvatarSkin.Hands. </summary>
+        public const string Hands = "hands";
+
+        /// <summary> <c>"shadow"</c> - AvatarSkin.Shadow. </summary>
+        public const string ShadowWord = "shadow";
+
+        /// <summary> <c>"move_effect"</c> - AvatarSkin.MoveEffect. </summary>
+        public const string MoveEffect = Move + _ + Effect;
+
+        /// <summary> <c>"dash_effect"</c> - AvatarSkin.DashEffect. </summary>
+        public const string DashEffect = Dash + _ + Effect;
+
+        /// <summary> <c>"damage_effect"</c> - AvatarSkin.DamageEffect. </summary>
+        public const string DamageEffect = "damage" + _ + Effect;
+
+        /// <summary> <c>"dash_body"</c> - AvatarSkin.DashBody. </summary>
+        public const string DashBody = Dash + _ + "body";
+
+        /// <summary> <c>"shape"</c> - AvatarSkinPart.Shape. </summary>
+        public const string ShapeWord = "shape";
+
+        /// <summary> <c>"rotation"</c> - AvatarSkinPart.Rotation. </summary>
+        public const string RotationWord = "rotation";
+
+        /// <summary> <c>"mirror"</c> - AvatarSkinPart.Mirror. </summary>
+        public const string Mirror = "mirror";
+
+        /// <summary> <c>"scale"</c> - AvatarSkinPart.Scale. </summary>
+        public const string ScaleWord = "scale";
+
+        /// <summary> <c>"skin"</c> - AvatarSkinSelection.Skin. </summary>
+        public const string Skin = "skin";
+
+        /// <summary> <c>"skins"</c> - AvatarSkinPack.Skins. </summary>
+        public const string Skins = "skins";
     }
 }

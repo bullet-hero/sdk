@@ -22,8 +22,10 @@ namespace BH.SDK.Models.Profile
         Reports = 1 << 5,
         /// <summary> <c>recordings/</c> - videos the level editor exported. </summary>
         Recordings = 1 << 6,
+        /// <summary> <c>skins/</c> - avatar skins and the selection. </summary>
+        Skins = 1 << 7,
 
         /// <summary> Every category. </summary>
-        All = Levels | Statistics | Settings | Library | Backups | Reports | Recordings,
+        All = Levels | Statistics | Settings | Library | Backups | Reports | Recordings | Skins,
     }
 }
