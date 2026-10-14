@@ -1749,7 +1749,8 @@
         /// <summary> Word fragment, built into LevelsCreated, ObjectsCreated. </summary>
         public const string Created = "created";
 
-        /// <summary> Word fragment, built into LevelsDeleted. </summary>
+        /// <summary> <c>"deleted"</c> - CloudLevelEntry.Deleted; word fragment, built into
+        /// LevelsDeleted. </summary>
         public const string Deleted = "deleted";
 
         /// <summary> Word fragment, built into FirstClearUtc, FirstPlayedUtc, LastEditedUtc, LastPlayedUtc and 1 more. </summary>
@@ -1815,7 +1816,8 @@
         /// <summary> Word fragment, built into CurrentClearStreak, LongestClearStreak. </summary>
         public const string Streak = "streak";
 
-        /// <summary> Word fragment, built into LevelsCreated, LevelsDeleted, LevelsLayout. </summary>
+        /// <summary> <c>"levels"</c> - CloudManifest.Levels; word fragment, built into LevelsCreated,
+        /// LevelsDeleted, LevelsLayout. </summary>
         public const string Levels = "levels";
 
         /// <summary> Word fragment, built into LevelsLayout. </summary>
@@ -2353,7 +2355,8 @@
 
         // Instances
 
-        /// <summary> <c>"level_id"</c> - LevelMeta.LevelId, LevelStatistics.LevelId. </summary>
+        /// <summary> <c>"level_id"</c> - LevelMeta.LevelId, LevelStatistics.LevelId,
+        /// CloudLevelEntry.LevelId. </summary>
         public const string LevelId = Level + _ + Id;
 
         /// <summary> <c>"collection_id"</c> - ResourceCollection.CollectionId. </summary>
@@ -3130,10 +3133,11 @@
         /// <summary> <c>"categories"</c> - ProfileManifest.Categories. </summary>
         public const string Categories = "categories";
 
-        /// <summary> <c>"folder"</c> - ProfileLevelEntry.Folder. </summary>
+        /// <summary> <c>"folder"</c> - ProfileLevelEntry.Folder, CloudLevelEntry.Folder. </summary>
         public const string Folder = "folder";
 
-        /// <summary> <c>"modified_utc"</c> - ProfileLevelEntry.ModifiedUtc. </summary>
+        /// <summary> <c>"modified_utc"</c> - ProfileLevelEntry.ModifiedUtc,
+        /// CloudLevelEntry.ModifiedUtc. </summary>
         public const string ModifiedUtc = "modified" + _ + Utc;
     }
 }

@@ -22,6 +22,9 @@ folder reads this first; a level is a folder of files a player can zip and send,
   shell opens, zip is what Explorer opens on a double click, and 7z is only recognised well enough to be refused
   by name. What a file IS is still sniffed from its bytes; these constants name what an export WRITES.
 - **A profile archive mirrors the folders above under their own names,** so it needs only its own manifest.
+  A cloud save (Steam Cloud) mirrors the same relative paths and adds `cloud.json`
+  (`FileNames.CloudManifestFileName`, a `CloudManifest`), its index of levels and their tombstones;
+  it is never written to disk.
   `profile-backups/` is a sibling owning everything the profile transfer writes on the device (the one kept
   backup, and in `staging/` every temporary of an import); it is never itself packed, or a backup carrying the
   previous backup would grow without end.

@@ -125,6 +125,9 @@
         /// <summary> A profile archive's manifest, always its first entry. </summary>
         public const string ProfileManifestFileName = "profile.json";
 
+        /// <summary> A cloud save's level index, at the root of the cloud, never on disk. </summary>
+        public const string CloudManifestFileName = "cloud.json";
+
         /// <summary> The one kept profile backup and every temporary of a profile import. </summary>
         public const string ProfileBackupsDirectory = "profile-backups";
 

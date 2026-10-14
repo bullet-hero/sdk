@@ -51,6 +51,9 @@ namespace BH.SDK.Versions
         /// <summary> A profile archive's manifest (profile.json). </summary>
         public const string ProfileManifest = nameof(Models.Profile.ProfileManifest);
 
+        /// <summary> A cloud save's level index (cloud.json). </summary>
+        public const string CloudManifest = nameof(Models.CloudManifest);
+
         // Statistics
 
         /// <summary> The game statistics domain. </summary>
