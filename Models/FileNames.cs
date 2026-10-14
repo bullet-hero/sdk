@@ -101,6 +101,10 @@
         /// <summary> The player's device-wide statistics, beside the per-level files. </summary>
         public const string StatisticsFileName = "statistics.json";
 
+        /// <summary> Beside it: when each achievement unlocked. Not a statistics file - an achievement is
+        /// derived from statistics, and this only remembers the date. </summary>
+        public const string AchievementsFileName = "achievements.json";
+
         // level.json.gpg: the inner extension stays, as gpg itself writes it, and names the
         // SerializationType. Appended, never replacing. Docs/FILE_LAYOUT.md
 

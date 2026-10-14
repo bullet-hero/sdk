@@ -56,10 +56,6 @@ namespace BH.SDK.Models.Statistics
         [JsonProperty(Names.Tutorial)]
         public TutorialStatistics Tutorial { get; set; }
 
-        // TODO post-alpha feature: achievements. When they arrive they belong here as a ninth group, keyed by a stable
-        // achievement id. Deliberately not scaffolded now: an empty aggregate cannot be told apart
-        // from "this build has no achievements", and every reader would have to handle both anyway.
-
         /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public GameStatistics()
         {

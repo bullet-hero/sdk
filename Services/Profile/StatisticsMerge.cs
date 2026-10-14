@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using BH.SDK.Models.Achievements;
 using BH.SDK.Models.Primitives;
 using BH.SDK.Models.Statistics;
 using BH.SDK.Rules;
@@ -61,6 +62,26 @@ namespace BH.SDK.Services.Profile
 
             MergeDifficulty(local.Difficulty, incoming.Difficulty, incomingLater);
             MergeEditor(local.Editor, incoming.Editor);
+        }
+
+        // A UNION, not a max: an achievement is a set of ids, and the earlier of two real dates is when it
+        // first happened. Unknown ids travel too - the reading build may be the older one.
+
+        /// <summary> Merges <paramref name="incoming"/> into <paramref name="local"/>: every id either
+        /// side unlocked, at the earlier of the two dates. </summary>
+        public static void Merge(AchievementsRecord local, AchievementsRecord incoming)
+        {
+            if (local == null) throw new ArgumentNullException(nameof(local));
+            if (incoming?.Unlocked == null) return;
+
+            foreach (var unlock in incoming.Unlocked)
+            {
+                if (unlock == null || string.IsNullOrEmpty(unlock.Id)) continue;
+
+                var current = local.Find(unlock.Id);
+                if (current == null) local.Unlocked.Add(unlock.Copy());
+                else current.UnlockedUtc = EarliestSet(current.UnlockedUtc, unlock.UnlockedUtc);
+            }
         }
 
         /// <summary> Merges <paramref name="incoming"/> into <paramref name="local"/>. When

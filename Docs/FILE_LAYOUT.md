@@ -15,6 +15,8 @@ folder reads this first; a level is a folder of files a player can zip and send,
 - **`stats/` is a sibling of `levels/`, like `backups/`, for the same reason:** it describes the PLAYER, so it
   must survive the level folder being zipped, shared, re-imported or deleted. A per-level file is named by the
   `LevelId`, the one identifier a rename, a translation or a folder move cannot change.
+  `stats/achievements.json` (`FileNames.AchievementsFileName`) sits beside the statistics for the same reason;
+  its name is not a Guid, so nothing that lists per-level files mistakes it for one.
 - **A protected level is `level.json.gpg`;** the inner extension stays in the name because that is what `gpg`
   itself does (`gpg -c level.json`) and it answers "which `SerializationType`" without a header byte or a guess.
   It is appended, never replacing (`level.gpg` would lose that answer).

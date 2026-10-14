@@ -266,7 +266,8 @@
         /// <summary> Word fragment, built into PrefabIndex. </summary>
         public const string Index = "idx";
 
-        /// <summary> Word fragment, built into AudioId, ColliderId, LevelId, NextObjectId and 4 more. </summary>
+        /// <summary> <c>"id"</c> - AchievementUnlock.Id; word fragment, built into AudioId, ColliderId,
+        /// LevelId, NextObjectId and 4 more. </summary>
         public const string Id = "id";
 
         /// <summary> Word fragment, built into ObjectIds. </summary>
@@ -3139,5 +3140,13 @@
         /// <summary> <c>"modified_utc"</c> - ProfileLevelEntry.ModifiedUtc,
         /// CloudLevelEntry.ModifiedUtc. </summary>
         public const string ModifiedUtc = "modified" + _ + Utc;
+
+        // Achievements (stats/achievements.json) - one instance per file, full words.
+
+        /// <summary> <c>"unlocked"</c> - AchievementsRecord.Unlocked. </summary>
+        public const string Unlocked = "unlocked";
+
+        /// <summary> <c>"unlocked_utc"</c> - AchievementUnlock.UnlockedUtc. </summary>
+        public const string UnlockedUtc = Unlocked + _ + Utc;
     }
 }

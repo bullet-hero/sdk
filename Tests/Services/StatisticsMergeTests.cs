@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using BH.SDK.Models.Achievements;
 using BH.SDK.Models.Enums.Settings;
 using BH.SDK.Models.Primitives;
 using BH.SDK.Models.Statistics;
@@ -224,6 +225,47 @@ namespace BH.SDK.Tests.Services
             Assert.Greater(BestRunOrder.Compare(Run(10, 1, 1, 0, Late), Run(10, 1, 1, 1, Early)), 0);
             Assert.Greater(BestRunOrder.Compare(Run(10, 1, 1, 1, Early), Run(10, 1, 1, 1, Late)), 0);
             Assert.AreEqual(0, BestRunOrder.Compare(Run(10, 1, 1, 1, Early), Run(10, 1, 1, 1, Early)));
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Easy)]
+        public void MergingAchievements_KeepsEveryIdAtItsEarliestDate()
+        {
+            var local = new AchievementsRecord();
+            local.Add("first_clear", Late);
+            local.Add("local_only", Late);
+
+            var incoming = new AchievementsRecord();
+            incoming.Add("first_clear", Early);
+            incoming.Add("incoming_only", Early);
+
+            StatisticsMerge.Merge(local, incoming);
+
+            Assert.AreEqual(3, local.Unlocked.Count);
+            Assert.AreEqual(Early, local.Find("first_clear").UnlockedUtc);
+            Assert.AreEqual(Late, local.Find("local_only").UnlockedUtc);
+            Assert.AreEqual(Early, local.Find("incoming_only").UnlockedUtc);
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Easy)]
+        public void MergingAchievementsTwice_ChangesNothingTheSecondTime()
+        {
+            var local = new AchievementsRecord();
+            local.Add("first_clear", Late);
+            var incoming = new AchievementsRecord();
+            incoming.Add("first_clear", Early);
+            incoming.Add("streak_5", Late);
+
+            StatisticsMerge.Merge(local, incoming);
+            var once = local.Copy();
+            StatisticsMerge.Merge(local, incoming);
+
+            Assert.AreEqual(once, local);
         }
     }
 }

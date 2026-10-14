@@ -16,6 +16,12 @@ group is shaped as it is. What a player sees is in `DocsPublic/`.
   envelope per FILE, like `UserSettings`); a group is a heading on a screen. A group builds its own defaults, and
   a new group is a bump with a snapshot and a migrator. `Pull` keeps every group instance: the app holds a
   reference to each, so replacing one would leave holders pointing at a copy nothing writes.
+- **`AchievementsRecord`** (`stats/achievements.json`) is a third document beside them and NOT statistics: it
+  holds only which achievement ids unlocked and when. Whether one is unlocked is derived by the game from the two
+  documents above, so the file is a memory of dates, not an authority - an id added by hand unlocks nothing a
+  derivation would not. An id the reading build does not know is kept. It merges as a union of ids, the earliest
+  date winning (`StatisticsMerge.Merge`), never counter by counter. A new domain of its own, not a field of
+  `GameStatistics`: "a set of ids" is not a counter, and a ninth group would have been a bump for nothing.
 - **Every timestamp is UTC** (`DateTime.UtcNow`): the file outlives time zones and is read by a person. Unix
   seconds were rejected for the reason the file is JSON at all - an unreadable number is worse than a string.
 

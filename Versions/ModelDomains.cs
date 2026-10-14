@@ -60,6 +60,8 @@ namespace BH.SDK.Versions
         public const string GameStatistics = nameof(Models.Statistics.GameStatistics);
         /// <summary> The level statistics domain. </summary>
         public const string LevelStatistics = nameof(Models.Statistics.LevelStatistics);
+        /// <summary> When each achievement unlocked (stats/achievements.json). </summary>
+        public const string AchievementsRecord = nameof(Models.Achievements.AchievementsRecord);
 
         // GameLevel
 
