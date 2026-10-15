@@ -6,6 +6,7 @@ using BH.SDK.Models.Enums.Resources;
 using BH.SDK.Models.Meta;
 using BH.SDK.Models.Primitives.Resources;
 using BH.SDK.Models.Values;
+using BH.SDK.Rules;
 using BH.SDK.Serialization;
 using BH.SDK.Versions;
 using Newtonsoft.Json.Linq;
@@ -14,8 +15,8 @@ using NUnit.Framework;
 namespace BH.SDK.Tests
 {
     /// <summary> That a metadata.json 1.0.0 wrote still opens after ResourceMeta gained its guid slot -
-    /// every record carried with the slot empty - and that today's shape keeps a data resource's guid
-    /// across a round trip. </summary>
+    /// every record carried with the slot empty - that a generation 2 one opens unrated, and that today's
+    /// shape keeps a data resource's guid across a round trip. </summary>
     [TestFixture]
     public class LevelMetaMigrationTests
     {
@@ -102,9 +103,35 @@ namespace BH.SDK.Tests
             var json = service.SerializeData(meta);
             var read = service.DeserializeData<LevelMeta>(json);
 
-            Assert.AreEqual(ModelGenerations.V2_SimplifyEntrance, (int)JObject.Parse(json)["g"]);
+            Assert.AreEqual(ModelGenerations.V3_ImproveAppearance, (int)JObject.Parse(json)["g"]);
             Assert.AreEqual(ResourceType.Theme, read.ResourcesMeta[0].ResourceType);
             Assert.AreEqual(themeId, read.ResourcesMeta[0].ResourceGuid);
+        }
+
+        // The source is rated, then the key is stripped: a reader copying anything through would fail.
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Normal)]
+        public void AGeneration2File_ReadsUnrated_WithEveryOtherMemberEqual()
+        {
+            var service = Service();
+            var meta = MockData.CreateTestLevelMeta();
+            meta.LevelTags.Add("hard");
+            meta.LevelDuration = 42f;
+            meta.LevelDifficulty = 7;
+
+            var root = JObject.Parse(service.SerializeData(meta));
+            root["g"] = ModelGenerations.V2_SimplifyEntrance;
+            Assert.IsTrue(((JObject)root[Names.Value]).Remove(Names.Difficulty));
+
+            var read = service.DeserializeData<LevelMeta>(root.ToString());
+
+            var expected = meta.Copy();
+            expected.LevelDifficulty = DifficultyRules.Undefined;
+            Assert.AreEqual(DifficultyRules.Undefined, read.LevelDifficulty);
+            Assert.AreEqual(expected, read);
         }
     }
 }

@@ -8,7 +8,8 @@ layer-wide conventions. This file is folder-local.
 
 `public const` numeric/enum clamp tables (`FrameRules`, `ValueRules`, `LevelRules`,
   `AudioRules`, `EffectRules`, `PostProcessingRules`, `ResourceRules`, `TextRules`, `PrefabRules`,
-  `ControlsRules`, `KeybindingsRules`, `StatisticsRules`) plus
+  `ControlsRules`, `KeybindingsRules`, `StatisticsRules`, `DifficultyRules` with its derived
+  `DifficultyTier`) plus
   **`AvatarRules`, which is the odd one out**: every other file here bounds what an author or a player
   may set, while nothing in that one is settable at all. It is the avatar's balance - speeds, dash and
   knockback windows, scale and hitbox - frozen as constants because it used to be serialized fields

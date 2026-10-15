@@ -179,10 +179,29 @@ namespace BH.SDK.Tests
             var meta = Authored();
 
             var bytes = serializer.SerializeEnvelope(ModelDomains.LevelMeta,
-                new EnvelopeData(ModelGenerations.V2_SimplifyEntrance, meta));
+                new EnvelopeData(ModelGenerations.V3_ImproveAppearance, meta));
             var read = serializer.DeserializeEnvelope(bytes, typeof(LevelMeta)).GetPayload<LevelMeta>();
 
             Assert.AreEqual(meta.MinGeneration, read.MinGeneration);
+        }
+
+        [TestCase(SerializationType.Json, 47)]
+        [TestCase(SerializationType.Json, -3)]
+        [TestCase(SerializationType.Blob, 47)]
+        [TestCase(SerializationType.Blob, -3)]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Easy)]
+        public void TheDifficulty_SurvivesARoundTripUnclamped(SerializationType format, int difficulty)
+        {
+            var service = new SerializationService();
+            var meta = Authored();
+            meta.LevelDifficulty = difficulty;
+
+            var read = service.DeserializeEnvelope<LevelMeta>(service.SerializeEnvelope(meta, format), format);
+
+            Assert.AreEqual(difficulty, read.LevelDifficulty);
+            Assert.AreEqual(meta, read);
         }
 
         #endregion

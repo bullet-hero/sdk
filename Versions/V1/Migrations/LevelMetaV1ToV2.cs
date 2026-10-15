@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using BH.SDK.Models;
 using BH.SDK.Models.Enums.Meta;
 using BH.SDK.Models.Meta;
+using BH.SDK.Versions.V2;
 
 namespace BH.SDK.Versions.V1.Migrations
 {
@@ -14,10 +14,10 @@ namespace BH.SDK.Versions.V1.Migrations
     /// <summary> Level metadata, generation 1 to generation 2 - everything carried as it is, every
     /// resource record given an empty guid (before generation 2 a record could only describe a file
     /// resource, which is addressed by its int id alone), and every AI declaration left unspecified. </summary>
-    public class LevelMetaV1ToV2 : ModelMigration<LevelMetaV1, LevelMeta>
+    public class LevelMetaV1ToV2 : ModelMigration<LevelMetaV1, LevelMetaV2>
     {
         /// <summary> Builds the newer shape out of the older one. </summary>
-        public override LevelMeta Migrate(LevelMetaV1 from)
+        public override LevelMetaV2 Migrate(LevelMetaV1 from)
         {
             var records = new List<ResourceMeta>(from.ResourcesMeta.Count);
             foreach (var record in from.ResourcesMeta)
@@ -30,9 +30,17 @@ namespace BH.SDK.Versions.V1.Migrations
                     record.ResourceHashes, record.ResourceFeatured, Guid.Empty, AiGeneration.NotSpecified));
             }
 
-            return new LevelMeta(from.LevelId, from.LevelName, from.LevelDescription, from.LevelLogo,
-                from.LevelVersion, from.LevelLicense, from.LevelAuthors, records, from.LevelAgeRating)
+            return new LevelMetaV2
             {
+                LevelId = from.LevelId,
+                LevelName = from.LevelName,
+                LevelDescription = from.LevelDescription,
+                LevelLogo = from.LevelLogo,
+                LevelVersion = from.LevelVersion,
+                LevelLicense = from.LevelLicense,
+                LevelAuthors = from.LevelAuthors,
+                ResourcesMeta = records,
+                LevelAgeRating = from.LevelAgeRating,
                 LevelTags = from.LevelTags,
                 LevelDuration = from.LevelDuration,
                 MinGeneration = from.MinGeneration,

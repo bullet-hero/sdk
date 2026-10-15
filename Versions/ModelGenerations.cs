@@ -28,8 +28,8 @@ namespace BH.SDK.Versions
         /// in Docs/VERSIONING.md. </summary>
         public const int V2_SimplifyEntrance = 2;
 
-        /// <summary> <c>ProfileManifest</c> gains <c>ProfileCategory.Skins</c>; the avatar skin domains
-        /// start here. </summary>
+        /// <summary> <c>ProfileManifest</c> gains <c>ProfileCategory.Skins</c>, <c>LevelMeta</c> gains
+        /// <c>LevelDifficulty</c>; the avatar skin domains start here. </summary>
         public const int V3_ImproveAppearance = 3;
 
         /// <summary> The newest generation there is - the only thing UI and reports read. A future

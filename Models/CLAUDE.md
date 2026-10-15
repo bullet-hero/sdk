@@ -61,7 +61,8 @@ Full statement: `Docs/MODEL_CONTRACT.md`.
   curves are nullable and wrap `ClampForever` - `Docs/POST_PROCESSING.md`.
 - **Theme**: `ThemeKeyframe` picks the theme, `ColorType.ThemeRef` stores a raw `int ThemeColorIndex`
   (not a `ThemeId`) into it; `ColorNames` is null normally - `Docs/RESOURCE_DATA.md`.
-- **Meta**: the age rating lives on `LevelMeta` alone; "contains AI" is derived
+- **Meta**: the age rating lives on `LevelMeta` alone; difficulty is one unclamped int on `LevelMeta`, read
+  through `DifficultyRules.Read`; "contains AI" is derived
   (`LevelMeta.ContainsAiContent`), never stored; `ResourceMeta` is addressed one of three ways -
   `Docs/RESOURCE_META.md`.
 - **`Level.ShallowClone`** shares references and is used only by `PrefabVirtualizationUtils.Thin` -

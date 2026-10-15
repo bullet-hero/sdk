@@ -22,7 +22,7 @@ namespace BH.SDK.Models
     /// licensing. Its own file, so a menu can list hundreds of levels without deserializing one.
     /// </summary>
     [RuleContainer]
-    [ModelGeneration(ModelDomains.LevelMeta, ModelGenerations.V2_SimplifyEntrance)]
+    [ModelGeneration(ModelDomains.LevelMeta, ModelGenerations.V3_ImproveAppearance)]
     [GenerateModel]
     public sealed partial class LevelMeta : IModel<LevelMeta>
     {
@@ -118,6 +118,14 @@ namespace BH.SDK.Models
         [JsonProperty(Names.AiGenerated)]
         public AiGeneration LevelAiGenerated { get; set; }
 
+        // Every int is legal, so no Rule*: above ScaleMax is kept and read as the top tier.
+        // Docs/RESOURCE_META.md, "Difficulty"
+
+        /// <summary> How hard the level is; zero or less when not rated. Set by the author, overwritten
+        /// by a moderator - one value either way. </summary>
+        [JsonProperty(Names.Difficulty)]
+        public int LevelDifficulty { get; set; }
+
         /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public LevelMeta()
         {
@@ -134,6 +142,7 @@ namespace BH.SDK.Models
             LevelDuration = 0f;
             MinGeneration = ModelGenerations.Invalid;
             LevelAiGenerated = AiGeneration.NotSpecified;
+            LevelDifficulty = DifficultyRules.Undefined;
         }
 
         /// <summary> Every member at once, in declaration order. </summary>
@@ -154,6 +163,7 @@ namespace BH.SDK.Models
             LevelDuration = 0f;
             MinGeneration = ModelGenerations.Invalid;
             LevelAiGenerated = AiGeneration.NotSpecified;
+            LevelDifficulty = DifficultyRules.Undefined;
         }
 
         /// <summary> True when the level itself or any resource record, the cover's included, declares

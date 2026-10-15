@@ -28,10 +28,10 @@ namespace BH.SDK.Tests.Services
         // Pinned with the builder as it was before ai/ existed; a change here is a format change. The tar is
         // hashed inside its gzip: BCL GZipStream compresses differently on Mono and on .NET 8.
         private const string TarWithoutAiHash =
-            "sha256:c07c6910838fa29aada523aacfa29cbb5ca57dc768e15caf6f7312e1dfc8b22a";
+            "sha256:30f21217ebda5cfe90800b74ef1d1b1a69a00beab2b29a5863fab1f368677133";
 
         private const string ZipWithoutAiHash =
-            "sha256:6d70ab55600d5870ed024afcca953b2239df7ca7a535cd915f91a47b95d5ba45";
+            "sha256:195de90059770a113470fce2db76d66b48b78ef996fd48f5709cabf8999515d4";
 
         private static readonly LevelId FixedLevelId =
             new LevelId(Guid.Parse("6f0c8a52-3d4e-4b7a-9e21-5a1d2c3b4e5f"));

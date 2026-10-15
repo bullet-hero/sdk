@@ -1687,7 +1687,7 @@
         /// <summary> GameStatistics.Devices. </summary>
         public const string Devices = "devices";
 
-        /// <summary> LevelStatistics.Difficulty. </summary>
+        /// <summary> LevelStatistics.Difficulty, LevelMeta.LevelDifficulty. </summary>
         public const string Difficulty = "difficulty";
 
         /// <summary> LevelStatistics.Records. </summary>

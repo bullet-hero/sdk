@@ -55,6 +55,21 @@ free-text line in `ResourceSources`, which no code can act on.
 
 - **The age rating is on the level only** (see ResourceMeta above) and it is ONE number: a `ContentDescriptor`
   flag set (nine checkboxes about their own level, shown to a player who had read the number) was removed.
+
+### Difficulty
+
+- **One value, `LevelDifficulty` (key `difficulty`), not an author's claim beside a moderator's verdict.** The
+  author writes it, a moderator (a service re-publishing the level) overwrites the same field, a player reads
+  whatever is there. Who may overwrite it is the publishing service's business, not the format's.
+- **Every `int` is legal**, so the member carries no `Rule*`. Zero or less is not rated
+  (`DifficultyRules.Undefined`); a larger number is always at least as hard, so sorting by the raw value is
+  sorting by difficulty.
+- **Read through `DifficultyRules.Read`, never stored as a tier.** `DifficultyTier` is derived: values
+  `Auto` (1) up to `DifficultyRules.ScaleMax`, each equal to the number it is read from. A value above
+  `ScaleMax` is kept as written and read as the top tier, so a later scale past it is a reading change, not a
+  format change - and an editor must not rewrite such a value unless the author picks another tier.
+- **The tier names are the client's.** The format holds only the number.
+- A file from before generation 3 migrates unrated (`LevelMetaV2ToV3`): a migrator cannot judge a level.
 - **Tags are plain strings, not `IString`.** Everything else a player READS is localized; a tag is a filter
   token a player MATCHES, and a translated one stops matching when two players run different languages. Free
   text, not a closed set, for the reason `ILevelSource.Id` is a string: a shipped vocabulary is wrong for every
