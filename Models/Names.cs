@@ -40,7 +40,7 @@
         /// <summary> Word fragment, built into ReplayStepBudget. </summary>
         public const string Replay = "replay";
 
-        /// <summary> Word kept in the key vocabulary; nothing is built from it today. </summary>
+        /// <summary> DemandWindow.Start. </summary>
         public const string Start = "start";
 
         /// <summary> Word kept in the key vocabulary; nothing is built from it today. </summary>
@@ -3213,5 +3213,72 @@
 
         /// <summary> <c>"skins"</c> - AvatarSkinPack.Skins. </summary>
         public const string Skins = "skins";
+
+
+        // Performance rating - LevelDemand inside metadata.json and the device profile file, a handful of
+        // each per file, full words.
+
+        /// <summary> <c>"demand"</c> - LevelMeta.LevelDemand. </summary>
+        public const string Demand = "demand";
+
+        /// <summary> <c>"analyzer_version"</c> - LevelDemand.AnalyzerVersion. </summary>
+        public const string AnalyzerVersion = "analyzer" + _ + "version";
+
+        /// <summary> <c>"exact"</c> - LevelDemand.Exact. </summary>
+        public const string Exact = "exact";
+
+        /// <summary> <c>"windows"</c> - LevelDemand.Windows. </summary>
+        public const string Windows = "windows";
+
+        /// <summary> <c>"values"</c> - DemandWindow.Values. </summary>
+        public const string Values = "values";
+
+        /// <summary> <c>"benchmark_version"</c> - DeviceProfile.BenchmarkVersion. </summary>
+        public const string BenchmarkVersion = "benchmark" + _ + "version";
+
+        /// <summary> <c>"device_model"</c> - DeviceProfile.DeviceModel. </summary>
+        public const string DeviceModel = Device + _ + "model";
+
+        /// <summary> <c>"gpu_name"</c> - DeviceProfile.GpuName. </summary>
+        public const string GpuName = "gpu" + _ + Name;
+
+        /// <summary> <c>"screen_width"</c> - DeviceProfile.ScreenWidth. </summary>
+        public const string ScreenWidth = Screen + _ + Width;
+
+        /// <summary> <c>"screen_height"</c> - DeviceProfile.ScreenHeight. </summary>
+        public const string ScreenHeight = Screen + _ + Height;
+
+        /// <summary> <c>"gpu_timing"</c> - DeviceProfile.GpuTiming. </summary>
+        public const string GpuTiming = "gpu" + _ + "timing";
+
+        /// <summary> <c>"cpu_base"</c> - DeviceProfile.CpuBase. </summary>
+        public const string CpuBase = "cpu" + _ + Base;
+
+        /// <summary> <c>"gpu_base"</c> - DeviceProfile.GpuBase. </summary>
+        public const string GpuBase = "gpu" + _ + Base;
+
+        /// <summary> <c>"cpu_coefficients"</c> - DeviceProfile.CpuCoefficients. </summary>
+        public const string CpuCoefficients = "cpu" + _ + "coefficients";
+
+        /// <summary> <c>"gpu_coefficients"</c> - DeviceProfile.GpuCoefficients. </summary>
+        public const string GpuCoefficients = "gpu" + _ + "coefficients";
+
+        /// <summary> <c>"cpu_fit"</c> - DeviceProfile.CpuFit. </summary>
+        public const string CpuFit = "cpu" + _ + "fit";
+
+        /// <summary> <c>"gpu_fit"</c> - DeviceProfile.GpuFit. </summary>
+        public const string GpuFit = "gpu" + _ + "fit";
+
+        /// <summary> <c>"area_factors"</c> - DeviceProfile.AreaFactors. </summary>
+        public const string AreaFactors = Area + _ + "factors";
+
+        /// <summary> <c>"drift_error"</c> - DeviceProfile.DriftError. </summary>
+        public const string DriftError = Drift + _ + "error";
+
+        /// <summary> <c>"trusted"</c> - DeviceProfile.Trusted. </summary>
+        public const string Trusted = "trusted";
+
+        /// <summary> <c>"measured_at"</c> - DeviceProfile.MeasuredAt. </summary>
+        public const string MeasuredAt = "measured" + _ + "at";
     }
 }

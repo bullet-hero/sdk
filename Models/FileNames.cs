@@ -12,6 +12,10 @@
         /// <summary> The device-wide settings document. </summary>
         public const string SettingsFileName = "settings.json";
 
+        /// <summary> What this device can do, from its stress test. Bound to the device, so a profile
+        /// transfer leaves it behind. </summary>
+        public const string DeviceProfileFileName = "device_profile.json";
+
         // No fixed extension - level.json/level.blob and metadata.json/metadata.blob are chosen
         // per-level at creation time and resolved by which extension is present on disk at load
         // time (see PathUtils.FindDataFile), not stored as a field in Level/LevelMeta itself.

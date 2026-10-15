@@ -136,9 +136,9 @@ The named constants are in `Versions/ModelGenerations.cs`:
 - `V3_ImproveAppearance = 3` - `ProfileManifest` and `LevelMeta`. `ProfileCategory` gained `Skins`, so an
   archive can carry `skins/` (snapshot `Versions/V2/ProfileManifestV2`, migrator `ProfileManifestV2ToV3`,
   every member carried). `LevelMeta` joined before any build carrying it shipped and gained
-  `LevelDifficulty` (snapshot `Versions/V2/LevelMetaV2`, migrator `LevelMetaV2ToV3`, the difficulty left
-  unrated). The avatar skin domains - `AvatarSkin`, `AvatarSkinSelection`, `AvatarSkinPack` - were born
-  here as new domains.
+  `LevelDifficulty` and then `LevelDemand` (snapshot `Versions/V2/LevelMetaV2`, migrator `LevelMetaV2ToV3`,
+  the difficulty left unrated and the demand unmeasured). The avatar skin domains - `AvatarSkin`,
+  `AvatarSkinSelection`, `AvatarSkinPack` - and `DeviceProfile` were born here as new domains.
 - `Current` - an alias for the newest. The only one UI and reports read.
 
 ### The envelope on disk

@@ -58,6 +58,8 @@
   into the same `Objects`). `isOpaque` exists because `ShaderType.Auto` is not decidable here (it needs the
   texture's alpha, and this library has no idea what a texture is): a consumer passes a resolver, everyone
   else gets Auto counted transparent, which is the consumer's own fallback and the harmless direction.
+- **`Utils/Performance/`** measures what a level DEMANDS per time window and scores it against a device
+  - a third question, beside the peak and the holdings. `Docs/PERFORMANCE_RATING.md`.
 - **`LevelStatsUtils`** counts what a level HOLDS, a different question from what it plays: one O(n) pass
   with no allocation, so a diagnostics readout can poll it; buffer sizing still uses `LevelCapacityUtils`.
   Advisory like `LevelHints`: nothing decides from these numbers. Null-tolerant on purpose - a half-built

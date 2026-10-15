@@ -36,6 +36,9 @@ folder reads this first; a level is a folder of files a player can zip and send,
   `LevelId`, the one identifier a rename, a translation or a folder move cannot change.
   `stats/achievements.json` (`FileNames.AchievementsFileName`) sits beside the statistics for the same reason;
   its name is not a Guid, so nothing that lists per-level files mistakes it for one.
+- **`device_profile.json` (`FileNames.DeviceProfileFileName`) sits beside `settings.json` and travels
+  nowhere:** it describes the DEVICE, so no profile category names it and neither a profile archive nor a cloud
+  save carries it (`Docs/PERFORMANCE_RATING.md`).
 - **A protected level is `level.json.gpg`;** the inner extension stays in the name because that is what `gpg`
   itself does (`gpg -c level.json`) and it answers "which `SerializationType`" without a header byte or a guess.
   It is appended, never replacing (`level.gpg` would lose that answer).

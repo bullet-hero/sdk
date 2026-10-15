@@ -126,6 +126,15 @@ namespace BH.SDK.Models
         [JsonProperty(Names.Difficulty)]
         public int LevelDifficulty { get; set; }
 
+        // Computed at save from the level, never typed; null is "not measured", which scores as unknown.
+        // Docs/PERFORMANCE_RATING.md
+
+        /// <summary> What the level asks the device to do, for the performance score; null when it was
+        /// never measured. </summary>
+        [RuleOptional]
+        [JsonProperty(Names.Demand)]
+        public LevelDemand LevelDemand { get; set; }
+
         /// <summary> A fresh instance, every member at the value <c>Reset</c> restores. </summary>
         public LevelMeta()
         {
@@ -143,6 +152,7 @@ namespace BH.SDK.Models
             MinGeneration = ModelGenerations.Invalid;
             LevelAiGenerated = AiGeneration.NotSpecified;
             LevelDifficulty = DifficultyRules.Undefined;
+            LevelDemand = null;
         }
 
         /// <summary> Every member at once, in declaration order. </summary>
@@ -164,6 +174,7 @@ namespace BH.SDK.Models
             MinGeneration = ModelGenerations.Invalid;
             LevelAiGenerated = AiGeneration.NotSpecified;
             LevelDifficulty = DifficultyRules.Undefined;
+            LevelDemand = null;
         }
 
         /// <summary> True when the level itself or any resource record, the cover's included, declares

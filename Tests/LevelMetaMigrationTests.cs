@@ -133,5 +133,51 @@ namespace BH.SDK.Tests
             Assert.AreEqual(DifficultyRules.Undefined, read.LevelDifficulty);
             Assert.AreEqual(expected, read);
         }
+
+        // The source carries a demand, then the key is stripped: a generation 2 file never measured one.
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Normal)]
+        public void AGeneration2File_ReadsUnmeasured()
+        {
+            var service = Service();
+            var meta = MockData.CreateTestLevelMeta();
+            meta.LevelDemand = new LevelDemand();
+            meta.LevelDemand.Windows.Add(new DemandWindow(0.25f, new float[DemandDimensions.Count]));
+
+            var root = JObject.Parse(service.SerializeData(meta));
+            root["g"] = ModelGenerations.V2_SimplifyEntrance;
+            Assert.IsTrue(((JObject)root[Names.Value]).Remove(Names.Demand));
+            ((JObject)root[Names.Value]).Remove(Names.Difficulty);
+
+            var read = service.DeserializeData<LevelMeta>(root.ToString());
+
+            Assert.IsNull(read.LevelDemand);
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Normal)]
+        public void TodaysFile_KeepsItsDemand_AndOmitsAnAbsentOne()
+        {
+            var service = Service();
+            var meta = MockData.CreateTestLevelMeta();
+            var written = (JObject)JObject.Parse(service.SerializeData(meta))[Names.Value];
+            Assert.IsFalse(written.ContainsKey(Names.Demand), "a null demand writes no key");
+
+            meta.LevelDemand = new LevelDemand { Exact = false };
+            var values = new float[DemandDimensions.Count];
+            values[(int)DemandDimension.Glyphs] = 12.5f;
+            meta.LevelDemand.Windows.Add(new DemandWindow(1.75f, values));
+
+            var read = service.DeserializeData<LevelMeta>(service.SerializeData(meta));
+
+            Assert.AreEqual(meta.LevelDemand, read.LevelDemand);
+            Assert.IsFalse(read.LevelDemand.Exact);
+            Assert.AreEqual(12.5f, read.LevelDemand.Windows[0].Get(DemandDimension.Glyphs));
+        }
     }
 }

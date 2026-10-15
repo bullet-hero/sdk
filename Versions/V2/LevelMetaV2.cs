@@ -16,11 +16,12 @@ namespace BH.SDK.Versions.V2
 {
     // ReSharper disable once InconsistentNaming
 
-    // Nothing changed shape at generation 3 - LevelMeta only gained LevelDifficulty - so every member
-    // keeps TODAY's class. Keys are literal: a snapshot spells them the way its own generation did.
+    // Nothing changed shape at generation 3 - LevelMeta only gained LevelDifficulty and LevelDemand - so
+    // every member keeps TODAY's class. Keys are literal: a snapshot spells them as its own generation did.
 
     /// <summary> Generation 2 of the level-metadata domain - the shape gv 1.1.0 shipped, before a level
-    /// carried a difficulty. A frozen snapshot - never edit it to match today's shape. </summary>
+    /// carried a difficulty and a demand. A frozen snapshot - never edit it to match today's shape.
+    /// </summary>
     [ModelGeneration(ModelDomains.LevelMeta, ModelGenerations.V2_SimplifyEntrance)]
     [GenerateModel]
     public sealed partial class LevelMetaV2 : IModel<LevelMetaV2>
