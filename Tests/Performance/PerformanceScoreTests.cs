@@ -89,11 +89,15 @@ namespace BH.SDK.Tests.Performance
         [TestCase(10f, PerformanceBand.Holds)]
         [TestCase(PerformanceRules.ScoreWarning, PerformanceBand.Tight)]
         [TestCase(PerformanceRules.ScoreLimit, PerformanceBand.Tight)]
-        [TestCase(PerformanceRules.ScoreLimit + 1f, PerformanceBand.DoesNotHold)]
+        [TestCase(PerformanceRules.ScoreLimit + 1f, PerformanceBand.Drops)]
+        [TestCase(PerformanceRules.ScoreHeavy, PerformanceBand.Drops)]
+        [TestCase(PerformanceRules.ScoreHeavy + 1f, PerformanceBand.SevereDrops)]
+        [TestCase(PerformanceRules.ScoreSevere, PerformanceBand.SevereDrops)]
+        [TestCase(PerformanceRules.ScoreSevere + 1f, PerformanceBand.DoesNotHold)]
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.VeryEasy)]
-        public void Band_ReadsTheScoreAgainstTheTwoThresholds(float score, PerformanceBand band)
+        public void Band_ReadsTheScoreAgainstTheFourThresholds(float score, PerformanceBand band)
             => Assert.AreEqual(band, new ScoreResult(true, score, false, 0).Band);
 
         [Test]

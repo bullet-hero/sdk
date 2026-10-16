@@ -2,7 +2,7 @@ using BH.SDK.Models.Enums.Settings;
 
 namespace BH.SDK.Rules
 {
-    // Starting points the validation checks may move (Docs/Plans/LEVEL_PERFORMANCE_RATING_SPEC.md).
+    // Starting points the validation checks may move (Docs/Plans/LEVEL_PERFORMANCE_RATING_SPEC_COMPLETED.md).
 
     /// <summary> The constants of the level performance rating: the window grid a level's demand is
     /// measured on, the bands a score is read in, and the gates the device stress test must pass. </summary>
@@ -28,16 +28,22 @@ namespace BH.SDK.Rules
 
         /// <summary> What a device profile's coefficients mean. Raised when the stress test changes; a
         /// profile carrying another value is ignored. </summary>
-        public const int BenchmarkVersion = 1;
+        public const int BenchmarkVersion = 2;
 
-        /// <summary> Below this score a level holds on the device. </summary>
+        /// <summary> Below this score a level holds on the device with room to spare. </summary>
         public const float ScoreWarning = 70f;
 
         /// <summary> Above this score a level does not hold: exactly the frame budget. </summary>
         public const float ScoreLimit = 100f;
 
+        /// <summary> Above this score a level loses a third of its frames or more. </summary>
+        public const float ScoreHeavy = 150f;
+
+        /// <summary> Above this score a level loses more than half of its frames. </summary>
+        public const float ScoreSevere = 250f;
+
         /// <summary> The most points one stress test sweep measures. </summary>
-        public const int BenchmarkMaxPoints = 6;
+        public const int BenchmarkMaxPoints = 4;
 
         /// <summary> The least R² a sweep's linear fit may have before the profile is untrusted. </summary>
         public const float MinFitR2 = 0.98f;
@@ -45,6 +51,10 @@ namespace BH.SDK.Rules
         /// <summary> The largest relative difference between the up and the down slope of the thermal
         /// check. </summary>
         public const float MaxDriftError = 0.10f;
+
+        /// <summary> Milliseconds a sweep's fit must rise across its range before its R² is read: below it
+        /// the dimension is nearly free on the device, and the fit of a flat line is noise. </summary>
+        public const float NoiseFloorMs = 1f;
 
         /// <summary> The largest relative error of a mixed stress level's predicted frame time. </summary>
         public const float MaxAdditivityError = 0.15f;

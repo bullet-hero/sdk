@@ -78,10 +78,14 @@ namespace BH.SDK.Utils.Performance
         public PerformanceBand Band => !Known ? PerformanceBand.Unknown
             : Score < PerformanceRules.ScoreWarning ? PerformanceBand.Holds
             : Score <= PerformanceRules.ScoreLimit ? PerformanceBand.Tight
+            : Score <= PerformanceRules.ScoreHeavy ? PerformanceBand.Drops
+            : Score <= PerformanceRules.ScoreSevere ? PerformanceBand.SevereDrops
             : PerformanceBand.DoesNotHold;
     }
 
-    /// <summary> The three readings of a score, plus not knowing. </summary>
+    // Never stored: a band is read from a score each time, so its values may be renumbered freely.
+
+    /// <summary> The five readings of a score, lightest first, plus not knowing. </summary>
     public enum PerformanceBand : byte
     {
         /// <summary> No current demand or no usable profile. </summary>
@@ -93,8 +97,26 @@ namespace BH.SDK.Utils.Performance
         /// <summary> Up to <see cref="PerformanceRules.ScoreLimit"/>. </summary>
         Tight = 2,
 
-        /// <summary> Above <see cref="PerformanceRules.ScoreLimit"/>. </summary>
-        DoesNotHold = 3,
+        /// <summary> Up to <see cref="PerformanceRules.ScoreHeavy"/>. </summary>
+        Drops = 3,
+
+        /// <summary> Up to <see cref="PerformanceRules.ScoreSevere"/>. </summary>
+        SevereDrops = 4,
+
+        /// <summary> Above <see cref="PerformanceRules.ScoreSevere"/>. </summary>
+        DoesNotHold = 5,
+    }
+
+    /// <summary> What a band means beside its name. </summary>
+    public static class PerformanceBands
+    {
+        /// <summary> The bands a level holds in: up to <see cref="PerformanceRules.ScoreLimit"/>. </summary>
+        public static bool Holds(PerformanceBand band) => band is PerformanceBand.Holds or PerformanceBand.Tight;
+
+        /// <summary> The bands a level does not hold in: above <see cref="PerformanceRules.ScoreLimit"/>.
+        /// </summary>
+        public static bool Fails(PerformanceBand band) => band is PerformanceBand.Drops or PerformanceBand.SevereDrops
+            or PerformanceBand.DoesNotHold;
     }
 
     // The formula and the settings multipliers: Docs/PERFORMANCE_RATING.md, "The score".
@@ -138,8 +160,16 @@ namespace BH.SDK.Utils.Performance
         /// <summary> The frame time one window predicts, the larger of the CPU and GPU sides. </summary>
         public static float WindowTime(DemandWindow window, DeviceProfile profile, ScoreSettings settings)
         {
+            var (cpu, gpu) = WindowSides(window, profile, settings);
+            return Math.Max(cpu, gpu);
+        }
+
+        /// <summary> Both sides of the frame time one window predicts, ms. </summary>
+        public static (float Cpu, float Gpu) WindowSides(DemandWindow window, DeviceProfile profile,
+            ScoreSettings settings)
+        {
             var multipliers = Multipliers(profile, settings, out var extraPasses);
-            return Math.Max(Time(profile.CpuBase, profile.CpuCoefficients, window, multipliers, extraPasses),
+            return (Time(profile.CpuBase, profile.CpuCoefficients, window, multipliers, extraPasses),
                 Time(profile.GpuBase, profile.GpuCoefficients, window, multipliers, extraPasses));
         }
 

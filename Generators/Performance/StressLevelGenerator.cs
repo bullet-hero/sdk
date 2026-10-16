@@ -33,6 +33,25 @@ namespace BH.SDK.Generators.Performance
         private const int DefaultFps = 60;
     }
 
+    /// <summary> One part of a mixed stress level: a dimension and how many units of it. </summary>
+    public readonly struct StressPart
+    {
+        /// <summary> The dimension this part loads. </summary>
+        public readonly DemandDimension Dimension;
+
+        /// <summary> Its unit count. </summary>
+        public readonly int Units;
+
+        /// <summary> Every member at once, in declaration order. </summary>
+        public StressPart(DemandDimension dimension, int units)
+        {
+            Dimension = dimension;
+            Units = units;
+        }
+
+        public override string ToString() => $"{Dimension} {Units}";
+    }
+
     // Every slot is alive the whole level with one Size key; a unit only changes what a slot IS, so no other
     // dimension moves. Layout and the reasons: Docs/PERFORMANCE_RATING.md, "The stress levels".
 
@@ -73,7 +92,8 @@ namespace BH.SDK.Generators.Performance
             return dimension switch
             {
                 DemandDimension.Instances => LevelRules.MaxObjects - baseline.Pool - SpineLength,
-                DemandDimension.Keyframes => baseline.Pool * KeyTracksPerSlot * Math.Min(frames, LevelRules.MaxObjectKeys),
+                DemandDimension.Keyframes => baseline.Pool * KeyTracksPerSlot *
+                                             Math.Min(frames, LevelRules.MaxObjectKeys),
                 DemandDimension.ParentLinks => baseline.Pool * SpineLength,
                 DemandDimension.Glyphs => baseline.Pool * ValueRules.MaxGameString,
                 DemandDimension.OpaqueBatches => Math.Min(baseline.Pool, CatalogShapes.Value.Count),
@@ -90,7 +110,9 @@ namespace BH.SDK.Generators.Performance
 
             var pool = 1;
             while (MaxUnits(dimension, StressBaseline.Of(pool)) < units && pool <= MaxPool / 2
-                   && MaxUnits(dimension, StressBaseline.Of(pool * 2)) > MaxUnits(dimension, StressBaseline.Of(pool)))
+                                                                        && MaxUnits(dimension,
+                                                                            StressBaseline.Of(pool * 2)) >
+                                                                        MaxUnits(dimension, StressBaseline.Of(pool)))
                 pool *= 2;
             return StressBaseline.Of(pool);
         }
@@ -109,9 +131,46 @@ namespace BH.SDK.Generators.Performance
                 throw new ArgumentOutOfRangeException(nameof(units), units,
                     $"{dimension} holds at most {MaxUnits(dimension, baseline)} units over a pool of {baseline.Pool}.");
 
-            var frames = FrameCount(baseline);
+            return Build(new[] { (dimension, units, baseline.Pool) }, baseline.Fps);
+        }
+
+        /// <summary> A level of <c>2 * WindowSeconds</c> holding every part at once, each over its own block
+        /// of <see cref="PoolFor"/> slots: its counts are the sum of the parts' own levels, the spine counted
+        /// once. </summary>
+        /// <exception cref="ArgumentException"> A dimension named twice. </exception>
+        /// <exception cref="ArgumentOutOfRangeException"> A part its pool cannot hold, or more objects than a
+        /// level holds. </exception>
+        public static Level CreateMix(IReadOnlyList<StressPart> parts)
+        {
+            var blocks = new List<(DemandDimension Dimension, int Units, int Pool)>(parts.Count);
+            var objects = SpineLength;
+            foreach (var part in parts)
+            {
+                if (blocks.Any(block => block.Dimension == part.Dimension))
+                    throw new ArgumentException($"{part.Dimension} is named twice.", nameof(parts));
+
+                var baseline = PoolFor(part.Dimension, part.Units);
+                var max = MaxUnits(part.Dimension, baseline);
+                if (part.Units < 0 || part.Units > max)
+                    throw new ArgumentOutOfRangeException(nameof(parts), part.Units,
+                        $"{part.Dimension} holds at most {max} units.");
+
+                objects += baseline.Pool + (part.Dimension == DemandDimension.Instances ? part.Units : 0);
+                blocks.Add((part.Dimension, part.Units, baseline.Pool));
+            }
+
+            if (objects > LevelRules.MaxObjects)
+                throw new ArgumentOutOfRangeException(nameof(parts), objects,
+                    $"A level holds at most {LevelRules.MaxObjects} objects.");
+
+            return Build(blocks, StressBaseline.Of(0).Fps);
+        }
+
+        private static Level Build(IReadOnlyList<(DemandDimension Dimension, int Units, int Pool)> blocks, int fps)
+        {
+            var frames = FrameCount(fps);
             var level = new Level();
-            level.Settings.Fps = baseline.Fps;
+            level.Settings.Fps = fps;
             level.Settings.FrameDuration = frames;
             level.Game.Events.ScreenLimits.Add(new ScreenLimitKey(
                 new ScreenLimitFixed(new ScreenAspect(AspectWidth, AspectHeight)), FrameRules.MinFrame));
@@ -129,26 +188,29 @@ namespace BH.SDK.Generators.Performance
                 level.Game.Objects[node.ObjectId] = node;
             }
 
-            var slots = new List<RectObject>(baseline.Pool);
-            for (var i = 0; i < baseline.Pool; i++)
-                slots.Add(Slot(dimension, i, units, baseline.Pool, frames, span, spine));
-
-            foreach (var slot in slots)
+            foreach (var (dimension, units, pool) in blocks)
             {
-                slot.ObjectId = new ObjectId(nextId++);
-                level.Game.Objects[slot.ObjectId] = slot;
-            }
-
-            if (dimension == DemandDimension.Instances)
-            {
-                for (var i = 0; i < units; i++)
+                for (var i = 0; i < pool; i++)
                 {
-                    var extra = new RectObject { ObjectId = new ObjectId(nextId++), Span = span, Name = "extra" };
-                    level.Game.Objects[extra.ObjectId] = extra;
+                    var slot = Slot(dimension, i, units, pool, frames, span, spine);
+                    slot.ObjectId = new ObjectId(nextId++);
+                    level.Game.Objects[slot.ObjectId] = slot;
                 }
             }
 
-            if (dimension == DemandDimension.PostPasses) AddPostPasses(level, units);
+            foreach (var (dimension, units, _) in blocks)
+            {
+                if (dimension == DemandDimension.Instances)
+                {
+                    for (var i = 0; i < units; i++)
+                    {
+                        var extra = new RectObject { ObjectId = new ObjectId(nextId++), Span = span, Name = "extra" };
+                        level.Game.Objects[extra.ObjectId] = extra;
+                    }
+                }
+
+                if (dimension == DemandDimension.PostPasses) AddPostPasses(level, units);
+            }
 
             level.Settings.ObjectIdCounter = nextId;
             return level;
@@ -163,9 +225,11 @@ namespace BH.SDK.Generators.Performance
             return (float)Math.Sqrt(Math.Max(0f, share) * width * height);
         }
 
-        private static int FrameCount(StressBaseline baseline)
+        private static int FrameCount(StressBaseline baseline) => FrameCount(baseline.Fps);
+
+        private static int FrameCount(int fps)
         {
-            var fps = baseline.Fps > 0 ? baseline.Fps : StressBaseline.Of(0).Fps;
+            if (fps <= 0) fps = StressBaseline.Of(0).Fps;
             return Math.Max(FrameRules.MinFrameDuration,
                 (int)Math.Round(2 * PerformanceRules.WindowSeconds * fps));
         }
@@ -270,7 +334,8 @@ namespace BH.SDK.Generators.Performance
                     case 6: events.ColorCurves.Add(new ColorCurvesKey { Active = true, Frame = on }); break;
                     case 7: events.LiftGammaGains.Add(new LiftGammaGainKey { Active = true, Frame = on }); break;
                     case 8:
-                        events.ShadowsMidtonesHighlights.Add(new ShadowsMidtonesHighlightsKey { Active = true, Frame = on });
+                        events.ShadowsMidtonesHighlights.Add(new ShadowsMidtonesHighlightsKey
+                            { Active = true, Frame = on });
                         break;
                     case 9: events.WhiteBalances.Add(new WhiteBalanceKey { Active = true, Frame = on }); break;
                     case 10: events.AnalogGlitches.Add(new AnalogGlitchKey { Active = true, Frame = on }); break;

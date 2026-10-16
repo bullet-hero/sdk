@@ -120,10 +120,12 @@ namespace BH.SDK.Models.Device
             MeasuredAt = default;
         }
 
-        /// <summary> Whether this build can score with it: measured the way it measures, and trusted.
-        /// </summary>
+        // Not Trusted: an untrusted profile is still this device's own measurement, closer than any
+        // reference; the flag only tells the player that measuring again may be more exact.
+
+        /// <summary> Whether this build can score with it: measured the way it measures. </summary>
         public static bool IsUsable(DeviceProfile profile)
-            => profile != null && profile.Trusted && profile.BenchmarkVersion == PerformanceRules.BenchmarkVersion
+            => profile != null && profile.BenchmarkVersion == PerformanceRules.BenchmarkVersion
                && profile.CpuCoefficients != null && profile.GpuCoefficients != null;
     }
 }

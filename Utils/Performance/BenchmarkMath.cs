@@ -13,26 +13,40 @@ namespace BH.SDK.Utils.Performance
         /// <summary> Change of y per unit of x. </summary>
         public readonly double Slope;
 
-        /// <summary> Coefficient of determination; 1 when the points lie on the line or do not vary. </summary>
+        /// <summary> Coefficient of determination; 1 when the points lie on the line or do not vary.
+        /// </summary>
         public readonly double R2;
 
         /// <summary> How many points it was fitted to; below two there is no line. </summary>
         public readonly int Points;
 
+        /// <summary> How far the line rises across the fitted x range, in y units; never negative. </summary>
+        public readonly double Rise;
+
         /// <summary> Every member at once, in declaration order. </summary>
-        public LinearFit(double intercept, double slope, double r2, int points)
+        public LinearFit(double intercept, double slope, double r2, int points, double rise = 0d)
         {
             Intercept = intercept;
             Slope = slope;
             R2 = r2;
             Points = points;
+            Rise = rise;
         }
 
-        /// <summary> Whether the fit passes <see cref="PerformanceRules.MinFitR2"/> on at least two points. </summary>
+        /// <summary> Whether the fit passes <see cref="PerformanceRules.MinFitR2"/> on at least two points.
+        /// </summary>
         public bool IsLinear => Points >= 2 && R2 >= PerformanceRules.MinFitR2;
+
+        /// <summary> Whether the line rises less than <see cref="PerformanceRules.NoiseFloorMs"/>: nothing to
+        /// fit. </summary>
+        public bool IsFlat => Rise < PerformanceRules.NoiseFloorMs;
+
+        /// <summary> The linearity gate of a sweep: linear, or flat. </summary>
+        public bool PassesLinearity => IsLinear || Points >= 2 && IsFlat;
     }
 
-    /// <summary> The arithmetic of the device stress test, kept pure so the server and the tests share it. </summary>
+    /// <summary> The arithmetic of the device stress test, kept pure so the server and the tests share it.
+    /// </summary>
     public static class BenchmarkMath
     {
         /// <summary> The least-squares line through the points. </summary>
@@ -42,11 +56,13 @@ namespace BH.SDK.Utils.Performance
             if (count == 0) return new LinearFit(0d, 0d, 0d, 0);
             if (count == 1) return new LinearFit(y[0], 0d, 0d, 1);
 
-            double meanX = 0d, meanY = 0d;
+            double meanX = 0d, meanY = 0d, minX = x[0], maxX = x[0];
             for (var i = 0; i < count; i++)
             {
                 meanX += x[i];
                 meanY += y[i];
+                minX = Math.Min(minX, x[i]);
+                maxX = Math.Max(maxX, x[i]);
             }
 
             meanX /= count;
@@ -67,7 +83,7 @@ namespace BH.SDK.Utils.Performance
             var slope = sxy / sxx;
             var intercept = meanY - slope * meanX;
             var r2 = syy <= 0d ? 1d : sxy * sxy / (sxx * syy);
-            return new LinearFit(intercept, slope, r2, count);
+            return new LinearFit(intercept, slope, r2, count, Math.Abs(slope) * (maxX - minX));
         }
 
         /// <summary> The median of the values; zero for none. Sorts a copy. </summary>
@@ -91,21 +107,28 @@ namespace BH.SDK.Utils.Performance
             return scale <= 0d ? 0d : Math.Abs(upSlope - downSlope) / scale;
         }
 
-        /// <summary> The unit counts of one sweep: <paramref name="start"/> doubling, at most
-        /// <see cref="PerformanceRules.BenchmarkMaxPoints"/> of them and none above <paramref name="max"/>. </summary>
+        /// <summary> The thermal check: the slopes within <see cref="PerformanceRules.MaxDriftError"/> of
+        /// each other, or both passes flat, where the slopes are noise. </summary>
+        public static bool PassesDrift(LinearFit up, LinearFit down)
+            => Drift(up.Slope, down.Slope) <= PerformanceRules.MaxDriftError || up.IsFlat && down.IsFlat;
+
+        /// <summary> The unit counts of one sweep: <see cref="PerformanceRules.BenchmarkMaxPoints"/> of them
+        /// spread geometrically from <paramref name="start"/> to <paramref name="max"/>, rounded, without
+        /// repeats. </summary>
         public static List<int> SweepCounts(int start, int max)
         {
             var counts = new List<int>(PerformanceRules.BenchmarkMaxPoints);
-            var n = Math.Max(1, start);
-            while (counts.Count < PerformanceRules.BenchmarkMaxPoints && n <= max)
+            start = Math.Max(1, start);
+            if (max < start) return counts;
+
+            var steps = PerformanceRules.BenchmarkMaxPoints - 1;
+            var ratio = steps > 0 ? Math.Pow((double)max / start, 1d / steps) : 1d;
+            for (var i = 0; i <= steps; i++)
             {
-                counts.Add(n);
-                if (n > int.MaxValue / 2) break;
-                n *= 2;
+                var n = i == steps ? max : (int)Math.Round(start * Math.Pow(ratio, i));
+                if (counts.Count == 0 || n > counts[counts.Count - 1]) counts.Add(n);
             }
 
-            if (counts.Count < PerformanceRules.BenchmarkMaxPoints && max > 0 && (counts.Count == 0 || counts[counts.Count - 1] < max))
-                counts.Add(max);
             return counts;
         }
     }

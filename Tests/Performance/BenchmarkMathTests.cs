@@ -47,6 +47,70 @@ namespace BH.SDK.Tests.Performance
         public void Fit_OnePoint_IsNoLine()
         {
             Assert.IsFalse(BenchmarkMath.Fit(new[] { 3d }, new[] { 4d }).IsLinear);
+            Assert.IsFalse(BenchmarkMath.Fit(new[] { 3d }, new[] { 4d }).PassesLinearity);
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.VeryEasy)]
+        public void Fit_Rise_IsTheLineAcrossTheXRange()
+        {
+            var fit = BenchmarkMath.Fit(new[] { 8d, 2d, 4d }, new[] { 19d, 7d, 11d });
+
+            Assert.AreEqual(12d, fit.Rise, Tolerance);
+        }
+
+        // Run 2 in the Editor: keyframes cost nothing measurable, the medians wander and R² is 0.03.
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.VeryEasy)]
+        public void Fit_NoiseBelowTheFloor_IsFlatAndPasses()
+        {
+            var fit = BenchmarkMath.Fit(new[] { 1d, 2d, 4d, 8d }, new[] { 5.8d, 5.5d, 6.1d, 5.7d });
+
+            Assert.IsFalse(fit.IsLinear);
+            Assert.IsTrue(fit.IsFlat);
+            Assert.IsTrue(fit.PassesLinearity);
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.VeryEasy)]
+        public void Fit_ACurveThatRises_StillFails()
+        {
+            var fit = BenchmarkMath.Fit(new[] { 1d, 2d, 3d, 4d, 5d, 6d }, new[] { 1d, 4d, 9d, 16d, 25d, 100d });
+
+            Assert.IsFalse(fit.IsFlat);
+            Assert.IsFalse(fit.PassesLinearity);
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.VeryEasy)]
+        public void PassesDrift_FlatBothWays_PassesWhateverTheSlopes()
+        {
+            var up = BenchmarkMath.Fit(new[] { 0d, 8d }, new[] { 1d, 1.6d });
+            var down = BenchmarkMath.Fit(new[] { 0d, 8d }, new[] { 1d, 1.2d });
+
+            Assert.Greater(BenchmarkMath.Drift(up.Slope, down.Slope), PerformanceRules.MaxDriftError);
+            Assert.IsTrue(BenchmarkMath.PassesDrift(up, down));
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.VeryEasy)]
+        public void PassesDrift_ARealRiseThatDrifts_Fails()
+        {
+            var up = BenchmarkMath.Fit(new[] { 0d, 8d }, new[] { 1d, 9d });
+            var down = BenchmarkMath.Fit(new[] { 0d, 8d }, new[] { 1d, 6d });
+
+            Assert.IsFalse(BenchmarkMath.PassesDrift(up, down));
+            Assert.IsTrue(BenchmarkMath.PassesDrift(up, BenchmarkMath.Fit(new[] { 0d, 8d }, new[] { 1d, 9.5d })));
         }
 
         [Test]
@@ -73,10 +137,17 @@ namespace BH.SDK.Tests.Performance
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.VeryEasy)]
-        public void SweepCounts_DoubleFromTheStart_CappedByPointsAndMax()
+        public void SweepCounts_SpreadGeometricallyFromStartToMax()
         {
-            CollectionAssert.AreEqual(new[] { 1, 2, 4, 8, 12 }, BenchmarkMath.SweepCounts(1, 12));
-            Assert.AreEqual(PerformanceRules.BenchmarkMaxPoints, BenchmarkMath.SweepCounts(10, 1_000_000).Count);
+            var wide = BenchmarkMath.SweepCounts(10, 1_000_000);
+            Assert.AreEqual(PerformanceRules.BenchmarkMaxPoints, wide.Count);
+            Assert.AreEqual(10, wide[0]);
+            Assert.AreEqual(1_000_000, wide[wide.Count - 1]);
+            for (var i = 1; i < wide.Count; i++) Assert.Greater(wide[i], wide[i - 1]);
+
+            CollectionAssert.AreEqual(new[] { 1, 2 }, BenchmarkMath.SweepCounts(1, 2));
+            CollectionAssert.AreEqual(new[] { 5 }, BenchmarkMath.SweepCounts(5, 5));
+            CollectionAssert.IsEmpty(BenchmarkMath.SweepCounts(5, 4));
         }
 
         [Test]
@@ -92,7 +163,7 @@ namespace BH.SDK.Tests.Performance
         [Author(Metadata.Author.Vertoker)]
         [Category(Metadata.Category.Self)]
         [Category(Metadata.Category.Easy)]
-        public void DeviceProfile_RoundTrips_AndAnUntrustedOneIsNotUsable()
+        public void DeviceProfile_RoundTrips_AndAnUntrustedOneIsStillUsable()
         {
             var service = new SerializationService(new SerializationSettings());
             var profile = new DeviceProfile { DeviceModel = "phone", GpuName = "gpu", CpuBase = 1.5f, Trusted = true };
@@ -103,6 +174,8 @@ namespace BH.SDK.Tests.Performance
             Assert.AreEqual(profile, read);
             Assert.IsTrue(DeviceProfile.IsUsable(read));
             read.Trusted = false;
+            Assert.IsTrue(DeviceProfile.IsUsable(read));
+            read.BenchmarkVersion = PerformanceRules.BenchmarkVersion - 1;
             Assert.IsFalse(DeviceProfile.IsUsable(read));
         }
     }

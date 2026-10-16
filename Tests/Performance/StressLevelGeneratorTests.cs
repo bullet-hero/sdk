@@ -88,8 +88,8 @@ namespace BH.SDK.Tests.Performance
         {
             var baseline = StressBaseline.Of(StressLevelGenerator.MaxPool + 1);
 
-            Assert.Throws<ArgumentOutOfRangeException>(
-                () => StressLevelGenerator.Create(DemandDimension.Colliders, 0, baseline));
+            Assert.Throws<ArgumentOutOfRangeException>(() =>
+                StressLevelGenerator.Create(DemandDimension.Colliders, 0, baseline));
         }
 
         [Test]
@@ -101,8 +101,8 @@ namespace BH.SDK.Tests.Performance
             var baseline = StressBaseline.Of(4);
             var max = StressLevelGenerator.MaxUnits(DemandDimension.Colliders, baseline);
 
-            Assert.Throws<ArgumentOutOfRangeException>(
-                () => StressLevelGenerator.Create(DemandDimension.Colliders, max + 1, baseline));
+            Assert.Throws<ArgumentOutOfRangeException>(() =>
+                StressLevelGenerator.Create(DemandDimension.Colliders, max + 1, baseline));
         }
 
         [TestCaseSource(nameof(AllDimensions))]
@@ -119,6 +119,86 @@ namespace BH.SDK.Tests.Performance
                 .Where(issue => issue.Rule.Group == RuleGroup.Error).ToList();
 
             Assert.IsEmpty(errors, $"{dimension}: " + string.Join("; ", errors.Select(issue => issue.ToString())));
+        }
+
+        private static IEnumerable<StressPart[]> Mixes()
+        {
+            yield return new[]
+                { new StressPart(DemandDimension.TransparentArea, 4), new StressPart(DemandDimension.Effects, 16) };
+            yield return new[]
+                { new StressPart(DemandDimension.TransparentArea, 3), new StressPart(DemandDimension.PostPasses, 6) };
+            yield return new[]
+            {
+                new StressPart(DemandDimension.Instances, 40), new StressPart(DemandDimension.Keyframes, 300),
+                new StressPart(DemandDimension.ParentLinks, 90), new StressPart(DemandDimension.Glyphs, 70),
+                new StressPart(DemandDimension.OpaqueBatches, 12), new StressPart(DemandDimension.Colliders, 20),
+            };
+        }
+
+        // The additivity check predicts a mix from its parts; the level itself must be exactly that sum.
+        [TestCaseSource(nameof(Mixes))]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Normal)]
+        public void CreateMix_CountsAreTheSumOfItsParts(StressPart[] parts)
+        {
+            var mix = LevelDemandCounter.Count(StressLevelGenerator.CreateMix(parts))[1];
+            var spine = LevelDemandCounter.Count(
+                StressLevelGenerator.Create(DemandDimension.Instances, 0, StressBaseline.Of(0)))[1];
+
+            var expected = new float[DemandDimensions.Count];
+            foreach (var part in parts)
+            {
+                var baseline = StressLevelGenerator.PoolFor(part.Dimension, part.Units);
+                var own = LevelDemandCounter.Count(StressLevelGenerator.Create(part.Dimension, part.Units,
+                    baseline))[1];
+                for (var k = 0; k < expected.Length; k++) expected[k] += own[k] - spine[k];
+            }
+
+            for (var k = 0; k < expected.Length; k++)
+                Assert.AreEqual(expected[k] + spine[k], mix[k], Tolerance, $"{(DemandDimension)k}");
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Easy)]
+        public void CreateMix_ADimensionTwice_Throws()
+        {
+            var parts = new[]
+                { new StressPart(DemandDimension.Effects, 2), new StressPart(DemandDimension.Effects, 3) };
+
+            Assert.Throws<ArgumentException>(() => StressLevelGenerator.CreateMix(parts));
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Easy)]
+        public void CreateMix_MoreObjectsThanALevelHolds_Throws()
+        {
+            var instances = StressLevelGenerator.MaxUnits(DemandDimension.Instances, StressBaseline.Of(0));
+            var parts = new[]
+            {
+                new StressPart(DemandDimension.Instances, instances), new StressPart(DemandDimension.Effects, 1),
+            };
+
+            Assert.Throws<ArgumentOutOfRangeException>(() => StressLevelGenerator.CreateMix(parts));
+        }
+
+        [Test]
+        [Author(Metadata.Author.Vertoker)]
+        [Category(Metadata.Category.Self)]
+        [Category(Metadata.Category.Normal)]
+        public void CreateMix_IsAValidLevel()
+        {
+            var parts = Mixes().Last();
+            var level = StressLevelGenerator.CreateMix(parts);
+
+            var errors = new RuleAnalyzer().Analyze(level, new RuleAnalyzerSettings())
+                .Where(issue => issue.Rule.Group == RuleGroup.Error).ToList();
+
+            Assert.IsEmpty(errors, string.Join("; ", errors.Select(issue => issue.ToString())));
         }
     }
 }
