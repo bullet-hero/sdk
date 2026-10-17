@@ -187,7 +187,7 @@ Moved here from the SDK's root `CLAUDE.md`.
   reflective branch). **Measured, refuted: transitive pruning** (skip subtrees with no rules) buys
   almost nothing - `Keyframe.Frame` is `[RuleLevelFrame]`, `Keyframe.Ease` is `[RuleEnumValid]`, every
   value model is range-checked, so a least fixed point leaves a handful of leaves and no subtree
-  (`Docs/Plans/VALIDATION_GENERATOR_PLAN.md` expected a second order of magnitude). Worth taking in the
+  (`Docs/Plans/VALIDATION_GENERATOR_PLAN_COMPLETED.md` expected a second order of magnitude). Worth taking in the
   generator (a compiler-folded const), not in the reflective walk (the lookup costs what it saves).
 - `RuleAnalyzerPoolTests` pin the rental contract (returned on success, on throw; the prewarmed count
   is an optimization): the misapplied-rule throw is by design and once leaked a buffer each, failing the
